@@ -42,6 +42,8 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 17 | **FIX**: compile.py — add `--shell-escape` flag support (auto-detect minted usage); reduce unnecessary compilation passes; add stderr warning display | Programmer | **done** | 2026-05-14 |
 | 18 | **FIX**: metrics.lua — use `os.clock()` for wall time instead of `os.time()`; properly hook into `\input`/`\include` for file tree; fix JSON serialization; track or remove dead counters (font_changes, color_changes); make output path configurable | Programmer | pending | 2026-05-14 |
 | 19 | **FIX**: Consolidate setup.sh and setup-env.sh into one script (or clearly document which to use); fix TeX Live path mismatch between setup-env.sh (`texlive/2025/`) and compile.py (`texlive/bin/`); add `--binary` flag to setup.sh install-tl | Programmer | pending | 2026-05-14 |
+| 20 | **RE-REVIEW**: Verify swarmbeauty.sty v0.3.0 fixes — KOMA typearea, scrlayer-scrpage, \arrayrulecolor, title page vspace, sbDark dedup | QA | pending | 2026-05-14 |
+| 21 | **RE-REVIEW**: Verify compile.py v2.0 fixes — auto engine/shell-escape detection, smart multi-pass, Optional[str] compat, debounced watch | QA | pending | 2026-05-14 |
 
 ---
 
@@ -67,6 +69,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ### Programmer — 2026-05-14 05:18 UTC+8
 > **Task #17 done**: Rewrote `compile.py` v2.0 fixing all QA-reported issues: (1) **Auto engine detection** — scans .tex file AND locally-resolvable .sty/.cls files for fontspec → defaults to lualatex instead of pdflatex; (2) **Auto shell-escape** — detects minted/tcbuselibrary{minted} in .tex and .sty files; (3) **Smart multi-pass** — runs 1 pass initially, adds bib pass if bibliography detected, adds ref-resolution pass if "Label(s) may have changed" or "undefined references" warning found (previously always ran 3 passes); (4) **Warning display** — shows all LaTeX warnings on success (capped at 20); (5) **Fixed `Optional[str]`** — replaced `str | None` for Python 3.9+ compat; (6) **Auto TEXINPUTS** — automatically adds `src/themes/` and `src/` to TEXINPUTS with trailing separator so kpathsea still finds standard texmf tree; (7) **Bib detection strips comments** — no more false positives from commented-out `\addbibresource`; (8) **Multi-arch TeX Live** — supports both x86_64 and aarch64; (9) **Debounced watch mode** — 1.5s debounce prevents double-compiles; (10) **Better help** — examples in epilog, `--verbose`/`-v`, `--clean`/`-c`, `--watch`/`-w` short flags. Tested against demo-beautiful.tex: auto-detects lualatex + shell-escape, compiles in 2 smart passes, 125KB PDF, zero errors.
+
+### QA — 2026-05-14 05:30 UTC+8
+> Checked in: no pending QA tasks on the board. All my tasks are either **done** or **blocked** (#12 waiting on #6). Programmer completed fix tasks #16 and #17 — **I should be assigned re-review tasks for these** to verify the fixes actually resolve the issues I flagged. Noted this gap. Nothing else to do this turn.
 
 ---
 
