@@ -1,0 +1,507 @@
+% =============================================================================
+% swarmbeauty.sty — The "Beautiful" Theme for the LaTeX Helper Swarm
+%
+% A comprehensive, modern document theme built on KOMA-Script with:
+%   - Elegant color palette with customizable accent colors
+%   - Beautiful title page with subtle background
+%   - Styled section/chapter headings with rule decorations
+%   - Professional tables with booktabs + tabularray
+%   - Syntax-highlighted code blocks via minted + tcolorbox
+%   - Polished headers/footers with page numbers
+%   - Custom block environments (note, tip, warning, example)
+%   - Optimized typography with fontspec + microtype
+%   - Clean bibliography support via biblatex
+%
+% Usage:
+%   \documentclass[...]{scrartcl}  % or scrbook, scrreprt
+%   \usepackage{swarmbeauty}
+%
+% Requires: LuaLaTeX or XeLaTeX (--shell-escape for minted)
+% =============================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{swarmbeauty}[2026/05/14 v0.1.0 LaTeX Helper Swarm — Beautiful Theme]
+
+% ── Engine check ─────────────────────────────────────────────────────────────
+\RequirePackage{iftex}
+\ifPDFTeX
+  \PackageError{swarmbeauty}{%
+    This theme requires LuaLaTeX or XeLaTeX.\MessageBreak
+    Compile with: lualatex --shell-escape myfile.tex}{}
+  \stop
+\fi
+
+% ── Core packages ────────────────────────────────────────────────────────────
+\RequirePackage{tikz}
+\usetikzlibrary{calc, positioning, arrows.meta, shapes.geometric}
+\RequirePackage{fontspec}
+\RequirePackage{microtype}
+\RequirePackage{unicode-math}
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{calc}
+\RequirePackage{etoolbox}
+\RequirePackage{csquotes}
+\RequirePackage{amsmath}
+\RequirePackage{mathtools}
+\RequirePackage{booktabs}
+\RequirePackage{tabularray}
+\RequirePackage{caption}
+\RequirePackage{subcaption}
+\RequirePackage{float}
+\RequirePackage{placeins}
+\RequirePackage{enumitem}
+\RequirePackage{hyperref}
+\RequirePackage{tcolorbox}
+\tcbuselibrary{minted, skins, breakable, theorems}
+
+% ── Color Palette ────────────────────────────────────────────────────────────
+% Inspired by modern design systems — cool blues, warm accents, soft grays
+
+\definecolor{sbPrimary}{HTML}{2C3E50}      % Dark blue-gray (headings, titles)
+\definecolor{sbSecondary}{HTML}{3498DB}     % Bright blue (links, accents)
+\definecolor{sbAccent}{HTML}{E74C3C}        % Red accent (alerts, emphasis)
+\definecolor{sbSuccess}{HTML}{27AE60}       % Green (success, tips)
+\definecolor{sbWarning}{HTML}{F39C12}       % Orange (warnings)
+\definecolor{sbLight}{HTML}{ECF0F1}         % Light gray (backgrounds, boxes)
+\definecolor{sbMedium}{HTML}{BDC3C7}        % Medium gray (rules, borders)
+\definecolor{sbDark}{HTML}{2C3E50}          % Same as primary (text body)
+\definecolor{sbCodeBg}{HTML}{F8F9FA}        % Very light gray (code background)
+\definecolor{sbText}{HTML}{2C3E50}          % Body text color
+
+% ── Typography ───────────────────────────────────────────────────────────────
+% Default fonts — override with \setsansfont, \setmainfont, \setmonofont
+
+\setmainfont{Latin Modern Roman}[
+  BoldFont       = *-Bold,
+  ItalicFont     = *-Italic,
+  BoldItalicFont = *-BoldItalic,
+  Ligatures      = TeX,
+]
+\setsansfont{Latin Modern Sans}[
+  BoldFont       = *-Bold,
+  ItalicFont     = *-Oblique,
+  BoldItalicFont = *-BoldOblique,
+  Ligatures      = TeX,
+]
+\setmonofont{Latin Modern Mono}[
+  Scale          = MatchLowercase,
+  BoldFont       = *-Bold,
+  ItalicFont     = *-Oblique,
+  BoldItalicFont = *-BoldOblique,
+  Ligatures      = TeX,
+]
+
+% Math font
+\setmathfont{Latin Modern Math}
+
+% ── Page Layout ──────────────────────────────────────────────────────────────
+
+\KOMAoptions{
+  fontsize   = 11pt,
+  paper      = a4paper,
+  parskip    = half-,
+  DIV        = 13,
+}
+
+% Colors for text and structure
+\setkomafont{title}{\color{sbPrimary}\fontsize{28}{34}\selectfont\bfseries\sffamily}
+\setkomafont{subtitle}{\color{sbSecondary}\fontsize{16}{20}\selectfont\mdseries\sffamily}
+\setkomafont{author}{\color{sbDark}\fontsize{12}{14}\selectfont\normalfont}
+\setkomafont{date}{\color{sbMedium}\fontsize{10}{12}\selectfont\normalfont}
+\setkomafont{sectioning}{\color{sbPrimary}\sffamily\bfseries}
+\setkomafont{pagehead}{\color{sbMedium}\fontsize{8}{10}\selectfont\sffamily}
+\setkomafont{pagefoot}{\color{sbMedium}\fontsize{8}{10}\selectfont\sffamily}
+\setkomafont{caption}{\color{sbDark}\fontsize{9}{11}\selectfont\sffamily}
+\setkomafont{captionlabel}{\color{sbSecondary}\bfseries\sffamily}
+
+% ── Section Heading Styling ──────────────────────────────────────────────────
+
+% Section: large blue heading with rule underneath
+\renewcommand{\sectionformat}{\color{sbPrimary}\thesection\hspace{0.5em}}
+\RedeclareSectionCommand[
+  beforeskip    = 2.5ex plus 1ex minus 0.5ex,
+  afterskip     = 1.5ex plus 0.5ex minus 0.25ex,
+  afterindent   = false,
+  font          = \large\sffamily\bfseries\color{sbPrimary},
+]{section}
+
+\makeatletter
+\renewcommand{\sectionlinesformat}[4]{%
+  \@hangfrom{\hskip #2#3}{#4}%
+  \par\noindent\textcolor{sbSecondary}{\rule{\textwidth}{0.8pt}}\par\vspace{0.3em}%
+}
+\makeatother
+
+% Subsection: medium heading with thin rule
+\RedeclareSectionCommand[
+  beforeskip    = 1.8ex plus 0.8ex minus 0.3ex,
+  afterskip     = 1.0ex plus 0.3ex minus 0.15ex,
+  afterindent   = false,
+  font          = \normalsize\sffamily\bfseries\color{sbPrimary},
+]{subsection}
+
+\makeatletter
+\renewcommand{\subsectionlinesformat}[4]{%
+  \@hangfrom{\hskip #2#3}{#4}%
+  \par\noindent\textcolor{sbMedium}{\rule{0.4\textwidth}{0.4pt}}\par\vspace{0.2em}%
+}
+\makeatother
+
+% Subsubsection: small italic heading, no rule
+\RedeclareSectionCommand[
+  beforeskip    = 1.2ex plus 0.5ex minus 0.2ex,
+  afterskip     = 0.8ex plus 0.2ex minus 0.1ex,
+  afterindent   = false,
+  font          = \small\sffamily\itshape\color{sbDark},
+]{subsubsection}
+
+% ── Title Page ───────────────────────────────────────────────────────────────
+% Full-page title with decorative elements
+
+\newcommand{\swarmtitlepage}{%
+  \begin{titlepage}
+    % Background accent bar at top
+    \begin{tikzpicture}[remember picture, overlay]
+      \fill[sbPrimary]
+        (current page.north west) rectangle
+        ([yshift=-3cm]current page.north east);
+      \fill[sbSecondary]
+        ([yshift=-3cm]current page.north west) rectangle
+        ([yshift=-3.15cm]current page.north east);
+    \end{tikzpicture}
+
+    % Title block
+    \vspace*{1.5cm}
+    \begin{center}
+      {\usekomafont{title}\inserttitle\par}
+      \vspace{0.5em}
+      {\usekomafont{subtitle}\insertsubtitle\par}
+    \end{center}
+
+    \vfill
+
+    % Metadata block in a colored box
+    \begin{center}
+      \begin{tcolorbox}[
+        colback      = sbLight,
+        colframe     = sbSecondary,
+        boxrule      = 0pt,
+        arc          = 4pt,
+        width        = 0.65\textwidth,
+        left         = 15pt,
+        right        = 15pt,
+        top          = 12pt,
+        bottom       = 12pt,
+        before upper = \centering,
+      ]
+        {\usekomafont{author}\insertauthor\par}
+        \vspace{0.5em}
+        {\usekomafont{date}\insertdate\par}
+      \end{tcolorbox}
+    \end{center}
+
+    \vfill
+  \end{titlepage}
+}
+
+% ── Headers & Footers ────────────────────────────────────────────────────────
+
+\pagestyle{scrheadings}
+\clearpairofpagestyles
+
+% Header: section title on the right, document title on the left
+\ihead{\insertmarkhead}
+\ohead{\inserttitle}
+\ifoot*{\textcolor{sbMedium}{\insertdate}}
+\ofoot*{\textcolor{sbSecondary}{\pagemark}}
+
+% Rule under header
+\setheadsepline{0.4pt}{\color{sbMedium}}
+
+% Remove default KOMA navigation symbols
+\setkomafont{pagenumber}{\sffamily\bfseries\color{sbSecondary}}
+
+% ── Table Styling ────────────────────────────────────────────────────────────
+
+% Default booktabs look for regular tables
+\newcommand{\swarmtoprule}{\specialrule{1.2pt}{0pt}{3pt}\color{sbPrimary}}
+\newcommand{\swarmmidrule}{\specialrule{0.6pt}{3pt}{3pt}\color{sbMedium}}
+\newcommand{\swarmbottomrule}{\specialrule{1.2pt}{3pt}{0pt}\color{sbPrimary}}
+
+% Caption styling
+\captionsetup{
+  font          = {sf, small},
+  labelfont     = {bf, color=sbSecondary},
+  labelsep      = quad,
+  skip          = 6pt,
+  format        = plain,
+  indention     = 0pt,
+}
+
+% ── Code Listings (minted + tcolorbox) ───────────────────────────────────────
+
+\newtcblisting{codeblock}[2][Python]{%
+  listing engine  = minted,
+  minted language = #1,
+  minted style    = tango,
+  minted options  = {
+    fontsize     = \small,
+    breaklines   = true,
+    linenos,
+    numbersep    = 8pt,
+    autogobble,
+  },
+  colback         = sbCodeBg,
+  colframe        = sbMedium,
+  coltitle        = white,
+  coltext         = sbDark,
+  left            = 10pt,
+  right           = 10pt,
+  top             = 6pt,
+  bottom          = 6pt,
+  boxrule         = 0.5pt,
+  arc             = 3pt,
+  title           = {#2},
+  fonttitle       = \sffamily\bfseries\small\color{white},
+  titlerule       = 0pt,
+  listing only,
+  breakable,
+  enhanced,
+  overlay         = {\begin{tcbclipinterior}
+    \fill[sbSecondary]
+      (frame.south west) rectangle ([xshift=3pt]frame.north west);
+    \end{tcbclipinterior}},
+}
+
+% Inline code command
+\newcommand{\code}[1]{%
+  \colorbox{sbCodeBg}{\texttt{\small\textcolor{sbDark}{#1}}}%
+}
+
+% ── Block Environments ───────────────────────────────────────────────────────
+
+% Note block (blue)
+\newtcolorbox{noteblock}[1][Note]{%
+  colback      = sbLight,
+  colframe     = sbSecondary,
+  coltitle     = white,
+  fonttitle    = \sffamily\bfseries,
+  title        = {#1},
+  boxrule      = 0pt,
+  arc          = 3pt,
+  left         = 10pt,
+  right        = 10pt,
+  top          = 6pt,
+  bottom       = 6pt,
+  enhanced,
+  borderline west = {3pt}{0pt}{sbSecondary},
+}
+
+% Tip block (green)
+\newtcolorbox{tipblock}[1][Tip]{%
+  colback      = sbLight,
+  colframe     = sbSuccess,
+  coltitle     = white,
+  fonttitle    = \sffamily\bfseries,
+  title        = {#1},
+  boxrule      = 0pt,
+  arc          = 3pt,
+  left         = 10pt,
+  right        = 10pt,
+  top          = 6pt,
+  bottom       = 6pt,
+  enhanced,
+  borderline west = {3pt}{0pt}{sbSuccess},
+}
+
+% Warning block (orange)
+\newtcolorbox{warningblock}[1][Warning]{%
+  colback      = sbLight,
+  colframe     = sbWarning,
+  coltitle     = white,
+  fonttitle    = \sffamily\bfseries,
+  title        = {#1},
+  boxrule      = 0pt,
+  arc          = 3pt,
+  left         = 10pt,
+  right        = 10pt,
+  top          = 6pt,
+  bottom       = 6pt,
+  enhanced,
+  borderline west = {3pt}{0pt}{sbWarning},
+}
+
+% Danger block (red)
+\newtcolorbox{dangerblock}[1][Important]{%
+  colback      = sbLight,
+  colframe     = sbAccent,
+  coltitle     = white,
+  fonttitle    = \sffamily\bfseries,
+  title        = {#1},
+  boxrule      = 0pt,
+  arc          = 3pt,
+  left         = 10pt,
+  right        = 10pt,
+  top          = 6pt,
+  bottom       = 6pt,
+  enhanced,
+  borderline west = {3pt}{0pt}{sbAccent},
+}
+
+% Example block (gray, no title)
+\newtcolorbox{exampleblock}[1][Example]{%
+  colback      = sbCodeBg,
+  colframe     = sbMedium,
+  coltitle     = sbDark,
+  fonttitle    = \sffamily\bfseries,
+  title        = {#1},
+  boxrule      = 0.4pt,
+  arc          = 3pt,
+  left         = 10pt,
+  right        = 10pt,
+  top          = 6pt,
+  bottom       = 6pt,
+  enhanced,
+}
+
+% ── Hyperlink Styling ────────────────────────────────────────────────────────
+
+\hypersetup{
+  colorlinks  = true,
+  linkcolor   = sbSecondary,
+  urlcolor    = sbSecondary,
+  citecolor   = sbSecondary,
+  filecolor   = sbSecondary,
+  linkbordercolor = sbSecondary,
+  urlbordercolor  = sbSecondary,
+}
+
+% ── TOC Styling ──────────────────────────────────────────────────────────────
+
+\setkomafont{sectionentrytoc}{\sffamily\bfseries\color{sbPrimary}}
+\setkomafont{subsectionentrytoc}{\sffamily\color{sbDark}}
+\setkomafont{subsubsectionentrytoc}{\sffamily\small\color{sbMedium}}
+
+\setpnumwidth{2em}
+\setrmarg{2.5em}
+
+% Dotted leaders in TOC
+\DeclareTOCStyleEntries[
+  linefill       = \hfill\textcolor{sbMedium}{\leaders\hbox{1.2pt}{\hss}\hskip 0pt plus 1filll}\hfill,
+  entrynumberformat = \textcolor{sbSecondary}{\bfseries},
+]{tocline}{section}
+\DeclareTOCStyleEntries[
+  linefill = \hfill\textcolor{sbMedium}{\leaders\hbox{0.8pt}{\hss}\hskip 0pt plus 1filll}\hfill,
+]{tocline}{subsection}
+
+% ── Itemize / Enumerate Styling ─────────────────────────────────────────────
+
+\setlist[itemize]{
+  label        = \textcolor{sbSecondary}{\textbullet},
+  itemsep      = 4pt,
+  leftmargin   = 1.2em,
+  parsep       = 0pt,
+}
+
+\setlist[enumerate]{
+  label        = \textcolor{sbSecondary}{\bfseries\arabic*.},
+  itemsep      = 4pt,
+  leftmargin   = 1.5em,
+  parsep       = 0pt,
+}
+
+% ── Math Theorem Environments ───────────────────────────────────────────────
+
+\newtcbtheorem[number within=section]{theorem}{Theorem}{%
+  colback      = sbLight,
+  colframe     = sbPrimary,
+  fonttitle    = \sffamily\bfseries,
+  boxrule      = 0pt,
+  arc          = 2pt,
+  left         = 8pt,
+  right        = 8pt,
+  top          = 5pt,
+  bottom       = 5pt,
+  enhanced,
+  borderline west = {3pt}{0pt}{sbPrimary},
+  before skip  = 8pt,
+  after skip   = 8pt,
+}{thm}
+
+\newtcbtheorem[number within=section]{definition}{Definition}{%
+  colback      = sbLight,
+  colframe     = sbSecondary,
+  fonttitle    = \sffamily\bfseries,
+  boxrule      = 0pt,
+  arc          = 2pt,
+  left         = 8pt,
+  right        = 8pt,
+  top          = 5pt,
+  bottom       = 5pt,
+  enhanced,
+  borderline west = {3pt}{0pt}{sbSecondary},
+  before skip  = 8pt,
+  after skip   = 8pt,
+}{def}
+
+\newtcbtheorem[number within=section]{lemma}{Lemma}{%
+  colback      = sbLight,
+  colframe     = sbSuccess,
+  fonttitle    = \sffamily\bfseries,
+  boxrule      = 0pt,
+  arc          = 2pt,
+  left         = 8pt,
+  right        = 8pt,
+  top          = 5pt,
+  bottom       = 5pt,
+  enhanced,
+  borderline west = {3pt}{0pt}{sbSuccess},
+  before skip  = 8pt,
+  after skip   = 8pt,
+}{lem}
+
+% ── Utility Commands ─────────────────────────────────────────────────────────
+
+% Highlighted text
+\newcommand{\hltext}[1]{\textcolor{sbAccent}{\textbf{#1}}}
+
+% Emphasis box (inline)
+\newcommand{\emphtext}[1]{%
+  \tikz[baseline=(X.base)]
+    \node[fill=sbLight, rounded corners=2pt, inner sep=3pt] (X)
+    {\textcolor{sbPrimary}{\textbf{#1}}};%
+}
+
+% Horizontal rule with color
+\newcommand{\colorrule}{%
+  \par\noindent\textcolor{sbSecondary}{\rule{\textwidth}{0.6pt}}\par\vspace{0.5em}%
+}
+
+% ── Footnote Styling ────────────────────────────────────────────────────────
+
+\setkomafont{footnote}{\fontsize{8}{10}\selectfont}
+\setkomafont{footnotereference}{\color{sbSecondary}}
+
+% ── Bibliography Setup (optional — only loads if biblatex is used) ────────────
+
+\AtEndPreamble{%
+  \@ifpackageloaded{biblatex}{%
+    \setbibfont{small}
+    \DeclareBiblatexTemplate{bibliography}{default}{%
+    }%
+    \defbibheading{bibliography}[\bibname]{%
+      \section*{#1}%
+      \colorrule
+    }%
+  }{}%
+}
+
+% TikZ loaded above, near the top of the file
+
+% ── Final touches ────────────────────────────────────────────────────────────
+
+% Ensure tcolorbox + tikz are loaded for title page
+\RequirePackage{tikz}
+
+\endinput

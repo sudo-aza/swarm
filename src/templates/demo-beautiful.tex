@@ -1,0 +1,308 @@
+% =============================================================================
+% demo-beautiful.tex — Demo document for the swarmbeauty theme
+%
+% Compile: lualatex --shell-escape demo-beautiful.tex
+%          (run twice for TOC)
+% =============================================================================
+
+\documentclass[11pt, a4paper]{scrartcl}
+
+\usepackage{swarmbeauty}
+
+% ── Metadata ─────────────────────────────────────────────────────────────────
+
+\title{SwarmBeauty Theme Demo}
+\subtitle{A showcase of the all-in-one LaTeX Beautiful Theme}
+\author{LaTeX Helper Swarm Project}
+\date{May 14, 2026}
+
+% ── Bibliography (optional — uncomment if you have a .bib file) ─────────────
+% \usepackage[backend=biber, style=numeric]{biblatex}
+% \addbibresource{references.bib}
+
+\begin{document}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Title Page
+% ══════════════════════════════════════════════════════════════════════════════
+
+\swarmtitlepage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Table of Contents
+% ══════════════════════════════════════════════════════════════════════════════
+
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 1: Introduction
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Introduction}
+
+This document demonstrates the capabilities of the \code{swarmbeauty} theme, a comprehensive
+LaTeX document style designed for clarity, elegance, and usability. The theme is built on
+top of KOMA-Script and provides a rich set of features out of the box, including beautiful
+section headings, styled tables, syntax-highlighted code blocks, and custom block
+environments for notes, tips, and warnings.
+
+The design philosophy behind this theme prioritizes \emphtext{readability} and
+\emphtext{professional aesthetics} while maintaining compatibility with the standard
+LaTeX ecosystem. Every element---from the title page to the footnote---has been
+carefully crafted to produce documents that look polished and modern.
+
+\subsection{Motivation}
+
+Writing beautiful LaTeX documents typically requires dozens of package inclusions,
+meticulous configuration of colors, fonts, and spacing, and a deep understanding of
+the underlying typesetting system. The \code{swarmbeauty} theme aims to eliminate this
+friction by providing sensible defaults that work well for academic papers, technical
+reports, and documentation.
+
+\begin{noteblock}
+This theme requires \textbf{LuaLaTeX} or \textbf{XeLaTeX} with the
+\code{-{}-shell-escape} flag for the minted code highlighting.
+\end{noteblock}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 2: Typography & Text
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Typography and Text}
+
+The theme uses \textbf{Latin Modern} fonts throughout, with \textit{italic},
+\textbf{bold}, and \textbf{\textit{bold italic}} variants. Mathematics is rendered
+using \texttt{unicode-math} for consistent glyph quality. Microtypographic
+improvements via \code{microtype} provide better character spacing and hyphenation.
+
+\subsection{Inline Elements}
+
+You can highlight \hltext{important terms} using the \code{\\hltext} command.
+For inline code, use the \code{\\code} command like this: \code{some_function()}.
+Emphasis boxes are available too: \emphtext{key concept}.
+
+\subsection{Lists}
+
+\begin{itemize}
+  \item First item in an unordered list
+  \item Second item with \emphtext{emphasis}
+  \item Third item with nested content:
+    \begin{itemize}
+      \item Nested item A
+      \item Nested item B
+    \end{itemize}
+\end{itemize}
+
+\begin{enumerate}
+  \item Step one: read the documentation
+  \item Step two: include the theme
+  \item Step three: write beautiful documents
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 3: Block Environments
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Block Environments}
+
+The theme provides five distinct block environments, each with a unique color
+accent and left border for quick visual identification.
+
+\begin{noteblock}
+This is a \textbf{note} block. Use it for general observations, additional
+context, or supplementary information that is relevant but not critical to
+the main argument.
+\end{noteblock}
+
+\begin{tipblock}
+This is a \textbf{tip} block. Use it to highlight best practices, shortcuts,
+or recommendations that can improve the reader's workflow or understanding.
+\end{tipblock}
+
+\begin{warningblock}
+This is a \textbf{warning} block. Use it to alert the reader about potential
+pitfalls, common mistakes, or deprecated features that they should be aware of.
+\end{warningblock}
+
+\begin{dangerblock}
+This is a \textbf{danger} block. Use it for critical warnings about data loss,
+security vulnerabilities, or operations that cannot be undone.
+\end{dangerblock}
+
+\begin{exampleblock}
+This is an \textbf{example} block. Use it to present worked examples, sample
+output, or illustrations of the concepts being discussed.
+\end{exampleblock}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 4: Tables
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Tables}
+
+The theme includes custom table rules and integrates seamlessly with both
+\code{booktabs} and \code{tabularray}. Below are examples of each style.
+
+\subsection{Booktabs Table}
+
+\begin{table}[H]
+  \centering
+  \caption{Comparison of LaTeX compilation engines}
+  \label{tab:engines}
+  \begin{tabular}{l c c c}
+    \swarmtoprule
+    \textbf{Engine}   & \textbf{Speed} & \textbf{Font Support} & \textbf{Unicode} \\
+    \swarmmidrule
+    pdfLaTeX           & Fast           & Limited (Type 1)      & Partial          \\
+    XeLaTeX            & Medium         & Full (OpenType)        & Full             \\
+    LuaLaTeX           & Slow           & Full (OpenType)        & Full             \\
+    \swarmbottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Tabularray Table}
+
+\begin{table}[H]
+  \centering
+  \caption{Key packages used by the theme}
+  \label{tab:packages}
+  \begin{tblr}{
+    colspec     = {l X[c] X[c]},
+    row{1}      = {font=\sffamily\bfseries, bg=sbLight},
+    row{odd}    = {bg=sbCodeBg},
+    hline{1}    = {1pt, sbPrimary},
+    hline{2}    = {0.4pt, sbMedium},
+    hline{Z}    = {1pt, sbPrimary},
+    vlines,
+  }
+    Package       & Purpose                              & Required \\
+    fontspec      & OpenType font loading                & Yes      \\
+    microtype     & Microtypographic improvements        & Yes      \\
+    minted        & Pygments-based code highlighting     & Yes      \\
+    tcolorbox     & Styled boxes and code blocks          & Yes      \\
+    booktabs      & Professional table rules             & Yes      \\
+    tabularray    & Modern table formatting              & Optional \\
+    tikz          & Graphics and decorations             & Yes      \\
+  \end{tblr}
+\end{table}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 5: Code Listings
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Code Listings}
+
+The \code{codeblock} environment provides syntax-highlighted code with line
+numbers, powered by the Pygments library through the \code{minted} package.
+
+\begin{codeblock}[Python]{Fibonacci sequence generator}
+def fibonacci(n: int) -> list[int]:
+    """Generate the first n Fibonacci numbers."""
+    seq = [0, 1]
+    for i in range(2, n):
+        seq.append(seq[-1] + seq[-2])
+    return seq[:n]
+
+if __name__ == "__main__":
+    result = fibonacci(10)
+    print(f"First 10: {result}")
+\end{codeblock}
+
+\begin{codeblock}[LaTeX]{A simple equation}
+\begin{equation}
+  E = mc^2
+  \label{eq:einstein}
+\end{equation}
+\end{codeblock}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 6: Mathematics
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Mathematics}
+
+The theme provides styled theorem environments with colored left borders.
+
+\begin{theorem}{Euler's Identity}{euler}
+  For any real number $x$, the following identity holds:
+  \[
+    e^{i\pi} + 1 = 0
+  \]
+\end{theorem}
+
+\begin{definition}{Metric Space}{metric}
+  A \emph{metric space} is a pair $(X, d)$ where $X$ is a set and $d: X \times X \to \mathbb{R}_{\geq 0}$ satisfies:
+  \begin{enumerate}
+    \item $d(x, y) = 0 \iff x = y$ (identity of indiscernibles)
+    \item $d(x, y) = d(y, x)$ (symmetry)
+    \item $d(x, z) \leq d(x, y) + d(y, z)$ (triangle inequality)
+  \end{enumerate}
+\end{definition}
+
+\begin{lemma}{Nested Intervals}{nested}
+  Let $\{[a_n, b_n]\}_{n=1}^{\infty}$ be a sequence of closed, bounded intervals such that
+  $[a_{n+1}, b_{n+1}] \subseteq [a_n, b_n]$ for all $n$. Then
+  $\bigcap_{n=1}^{\infty} [a_n, b_n] \neq \emptyset$.
+\end{lemma}
+
+\subsection{Inline and Display Math}
+
+The quadratic formula: $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$
+
+A more complex display equation:
+\[
+  \int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}
+\]
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 7: Figures
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Figures}
+
+Figures use standard \code{figure} environments with the theme's caption styling.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+    \draw[thick, sbSecondary, fill=sbLight, rounded corners=4pt]
+      (0,0) rectangle (6,3);
+    \node[sfont, sbDark] at (3, 1.5) {Your figure goes here};
+  \end{tikzpicture}
+  \caption{A placeholder figure rendered with TikZ}
+  \label{fig:placeholder}
+\end{figure}
+
+\begin{tipblock}
+Replace the placeholder above with \code{\\includegraphics[width=\\linewidth]\{image.pdf\}}.
+\end{tipblock}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 8: Summary
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Summary}
+
+This demo has showcased the following features of the \code{swarmbeauty} theme:
+
+\begin{enumerate}
+  \item \textbf{Title page} with colored header bar and metadata box
+  \item \textbf{Section headings} with decorative rules
+  \item \textbf{Block environments} (note, tip, warning, danger, example)
+  \item \textbf{Styled tables} with booktabs and tabularray
+  \item \textbf{Syntax-highlighted code} via minted + tcolorbox
+  \item \textbf{Theorem environments} with colored borders
+  \item \textbf{Typography} with Latin Modern fonts and microtype
+  \item \textbf{Headers and footers} with page numbers and document info
+\end{enumerate}
+
+\colorrule
+
+\begin{center}
+  \small\textcolor{sbMedium}{%
+    Generated with \texttt{swarmbeauty} theme --- LaTeX Helper Swarm Project%
+  }
+\end{center}
+
+\end{document}

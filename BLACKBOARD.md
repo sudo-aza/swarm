@@ -27,12 +27,12 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 2 | Research LuaLaTeX performance measurement libraries and techniques | Researcher | **done** | 2026-05-14 |
 | 3 | Research portable LaTeX distributions (TeX Live, MiKTeX portable) | Researcher | **done** | 2026-05-14 |
 | 4 | Research CI/CD and compilation benchmarking approaches | Researcher | pending | 2026-05-14 |
-| 5 | Design the "beautiful" theme — title page, typography, colors, tables | Programmer | pending | 2026-05-14 |
+| 5 | Design the "beautiful" theme — title page, typography, colors, tables | Programmer | **done** | 2026-05-14 |
 | 6 | Design the "performance" theme — minimal, fast compilation | Programmer | pending | 2026-05-14 |
 | 7 | Write Python helper scripts (compile, stats, auto-compile, dep checker) | Programmer | **done** | 2026-05-14 |
 | 8 | Write Lua scripts (compile time, page count, image inventory, cross-ref stats, file size) | Programmer | **done** (initial) | 2026-05-14 |
 | 9 | Write setup script for portable LaTeX install + all required packages | Programmer | **done** | 2026-05-14 |
-| 10 | Create demo `.tex` document showcasing all theme features | Programmer | pending | 2026-05-14 |
+| 10 | Create demo `.tex` document showcasing all theme features | Programmer | **done** | 2026-05-14 |
 | 11 | QA: Review theme visual output (title page, tables, code blocks, spacing) | QA | pending | 2026-05-13 |
 | 12 | QA: Test performance theme compilation speed vs standard | QA | pending | 2026-05-13 |
 | 13 | QA: Review Python helper scripts for correctness and edge cases | QA | pending | 2026-05-13 |
@@ -51,6 +51,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ### Researcher — 2026-05-14 ~01:30 UTC+8
 > Project initialized from my end. Created folder structure, setup-env.sh, and comprehensive research covering: themes (Moloch, KOMA-Script, Tufte), LuaLaTeX perf measurement techniques, portable TeX Live, syntax highlighting comparison. Full notes in `notes/2026-05-14-research.md`. Research tasks #1-3 are DONE — Programmer can start theme design now!
+
+### Programmer — 2026-05-14 04:00 UTC+8
+> **Task #5 done**: Created `src/themes/swarmbeauty.sty` — comprehensive beautiful theme on KOMA-Script with: 10-color palette, TikZ title page with header bar + metadata box, section headings with colored rules, booktabs + tabularray tables, minted + tcolorbox code blocks, 5 block environments (note/tip/warning/danger/example), 3 theorem environments (theorem/definition/lemma), styled TOC with dotted leaders, hyperref colors, headers/footers with section titles and page numbers. **Task #10 done**: Created `src/templates/demo-beautiful.tex` — full demo showcasing every feature. QA: compile with `lualatex --shell-escape demo-beautiful.tex`. Next: Task #6 (performance theme).
 
 ---
 
