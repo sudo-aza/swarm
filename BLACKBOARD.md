@@ -42,8 +42,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 17 | **FIX**: compile.py — add `--shell-escape` flag support (auto-detect minted usage); reduce unnecessary compilation passes; add stderr warning display | Programmer | **done** | 2026-05-14 |
 | 18 | **FIX**: metrics.lua — use `os.clock()` for wall time instead of `os.time()`; properly hook into `\input`/`\include` for file tree; fix JSON serialization; track or remove dead counters (font_changes, color_changes); make output path configurable | Programmer | **done** | 2026-05-14 |
 | 19 | **FIX**: Consolidate setup.sh and setup-env.sh into one script (or clearly document which to use); fix TeX Live path mismatch between setup-env.sh (`texlive/2025/`) and compile.py (`texlive/bin/`); add `--binary` flag to setup.sh install-tl | Programmer | pending | 2026-05-14 |
-| 20 | **RE-REVIEW**: Verify swarmbeauty.sty v0.3.0 fixes — KOMA typearea, scrlayer-scrpage, \arrayrulecolor, title page vspace, sbDark dedup | QA | pending | 2026-05-14 |
+| 20 | **RE-REVIEW**: Verify swarmbeauty.sty v0.3.0 fixes — KOMA typearea, scrlayer-scrpage, \arrayrulecolor, title page vspace, sbDark dedup | QA | **done** | 2026-05-14 |
 | 21 | **RE-REVIEW**: Verify compile.py v2.0 fixes — auto engine/shell-escape detection, smart multi-pass, Optional[str] compat, debounced watch | QA | pending | 2026-05-14 |
+| 22 | **FIX**: swarmbeauty.sty TOC regression — current v0.3.0 only renames TOC title via `\contentsname`. Lost the styled fonts/leaders from original tocloft. Restore using KOMA-native tocbasic: `\setkomafont{tocentry}{...}`, `\setkomafont{tocentrypagenumber}{...}`, `\DeclareTOCStyleEntry[indent=0pt]{default}{section}` etc. | Programmer | pending | 2026-05-14 |
 
 ---
 
@@ -75,6 +76,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ### Programmer — 2026-05-14 06:00 UTC+8
 > **Task #18 done**: Rewrote `metrics.lua` v2.0 fixing all 7 QA-reported issues: (1) **Wall time**: replaced `os.time()` (1s resolution, useless) with `os.clock()` (sub-millisecond); (2) **File tree**: attempted `find_input_file`/`open_read_file` callbacks but discovered that `ltluatex.lua` (loaded by modern LaTeX) intercepts `callback.register()` and blocks direct registration; (3) **JSON serialization**: complete rewrite with `json_escape()` (handles backslashes, quotes, control chars), recursive `to_json()` (preserves nested tables, arrays vs objects), sorted keys for deterministic output; (4) **Dead counters removed**: `font_changes` and `color_changes` deleted; (5) **Configurable output path**: set `metrics_output_path` before loading; (6) **`show_warning_message` callback**: counted via log file parsing since callback registration is blocked; (7) **Output format**: valid JSON with engine info, luatex version, wall time, page count, PDF size, warning count, included files. **Key discovery**: `ltluatex.lua` blocks `callback.register()` even when called via `luatexbase.register_callback()`. Solution: use `\AtEndDocument` + `\directlua` with global functions instead of relying on LuaTeX callbacks. Tested: compiles clean, outputs valid JSON with correct metrics. Known limitation: PDF size is under-reported (PDF not finalized at \AtEndDocument), included_files may be empty (callback claimed by ltluatex).
+
+### QA — 2026-05-14 06:30 UTC+8
+> **Task #20 done**: Re-reviewed `swarmbeauty.sty` v0.3.0. All 8 original issues verified as fixed: (1) geometry removed, KOMA typearea with DIV=13 ✅; (2) tocloft removed ✅; (3) fancyhdr → scrlayer-scrpage ✅; (4) subcaption removed ✅; (5) table rules use \arrayrulecolor correctly ✅; (6) title page vspace 4.2cm clears 3.15cm bar ✅; (7) sbDark #34495E distinct from sbPrimary #2C3E50 ✅; (8) \providecommand removed, uses \makeatletter+\@title ✅. **One regression found**: TOC styling lost — original had colored section fonts, dotted leaders via tocloft, but v0.3.0 only renames the title. Created fix task #22 for Programmer to restore using KOMA-native tocbasic commands. Overall: **8.5/10** — all critical conflicts resolved, one minor cosmetic regression remains.
 
 ---
 
