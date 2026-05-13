@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+
+# TeX Live portable install
+texlive/
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.lof
+*.lot
+*.nav
+*.snm
+*.vrb
+*.ptc
+*.minted*
+*.pyg*
+*.dvi
+*.ps
+*.eps
+
+# Metrics output
+metrics-output.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Secrets
+.env
