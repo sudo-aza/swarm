@@ -45,7 +45,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 20 | **RE-REVIEW**: Verify swarmbeauty.sty v0.3.0 fixes — KOMA typearea, scrlayer-scrpage, \arrayrulecolor, title page vspace, sbDark dedup | QA | **done** | 2026-05-14 |
 | 21 | **RE-REVIEW**: Verify compile.py v2.0 fixes — auto engine/shell-escape detection, smart multi-pass, Optional[str] compat, debounced watch | QA | pending | 2026-05-14 |
 | 22 | **FIX**: swarmbeauty.sty TOC regression — current v0.3.0 only renames TOC title via `\contentsname`. Lost the styled fonts/leaders from original tocloft. Restore using KOMA-native tocbasic: `\setkomafont{tocentry}{...}`, `\setkomafont{tocentrypagenumber}{...}`, `\DeclareTOCStyleEntry[indent=0pt]{default}{section}` etc. | Programmer | **done** | 2026-05-14 |
-| 23 | **RE-REVIEW**: Verify swarmbeauty.sty v0.3.1 TOC fix — styled entry fonts (section bold primary, subsection dark, subsubsection medium), colored dotted leaders, styled page numbers, no tocloft dependency | QA | pending | 2026-05-14 |
+| 23 | **RE-REVIEW**: Verify swarmbeauty.sty v0.3.1 TOC fix — styled entry fonts (section bold primary, subsection dark, subsubsection medium), colored dotted leaders, styled page numbers, no tocloft dependency | QA | **done** | 2026-05-14 |
 
 ---
 
@@ -83,6 +83,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ### Programmer — 2026-05-14 07:00 UTC+8
 > **Task #22 done**: Fixed TOC regression in `swarmbeauty.sty` v0.3.1. Restored full styled TOC using KOMA-native `tocbasic` commands (no tocloft dependency): (1) **TOC title**: `\Large\sffamily\bfseries\color{sbPrimary}`; (2) **Section entries**: `\sffamily\bfseries\color{sbPrimary}`, no indent, 2.5em numwidth, colored dotted leaders; (3) **Subsection entries**: `\sffamily\color{sbDark}`, 1.5em indent, colored dotted leaders; (4) **Subsubsection entries**: `\small\color{sbMedium}`, 3em indent, colored dotted leaders; (5) **Page numbers**: `\color{sbSecondary}\sffamily\small` for all levels; (6) **Entry numbers**: `\color{sbSecondary}\bfseries` for sections. Removed `\setpnumwidth`/`\setrmarg` (tocloft-only commands that caused "Undefined control sequence" errors). Used `\DeclareTOCStyleEntry[tocline]` with `entryformat`, `entrynumberformat`, `pagenumberformat`, `linefill` keys. Compiles clean: 7 pages, 128KB, zero errors, zero cross-ref warnings. Created QA re-review task #23.
+
+### QA — 2026-05-14 07:30 UTC+8
+> **Task #23 done — 10/10**: `swarmbeauty.sty` v0.3.1 TOC fix verified. All requirements met: (1) three-level styled fonts (bold primary / dark sans / small medium) ✅; (2) colored dotted leaders via `\dotfill` ✅; (3) styled page numbers in sbSecondary ✅; (4) zero tocloft dependency — pure KOMA tocbasic `\DeclareTOCStyleEntry[tocline]` ✅; (5) all 7 keys per entry are valid tocbasic keys ✅; (6) version bumped to v0.3.1 ✅; (7) all previous v0.3.0 fixes still intact ✅; (8) demo PDF correctly removed from git tracking ✅. **First 10/10 rating!** The theme is now in excellent shape.
 
 ---
 
