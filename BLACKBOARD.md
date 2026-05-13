@@ -45,7 +45,8 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 20 | **RE-REVIEW**: Verify swarmbeauty.sty v0.3.0 fixes — KOMA typearea, scrlayer-scrpage, \arrayrulecolor, title page vspace, sbDark dedup | QA | **done** | 2026-05-14 |
 | 21 | **RE-REVIEW**: Verify compile.py v2.0 fixes — auto engine/shell-escape detection, smart multi-pass, Optional[str] compat, debounced watch | QA | pending | 2026-05-14 |
 | 22 | **FIX**: swarmbeauty.sty TOC regression — current v0.3.0 only renames TOC title via `\contentsname`. Lost the styled fonts/leaders from original tocloft. Restore using KOMA-native tocbasic: `\setkomafont{tocentry}{...}`, `\setkomafont{tocentrypagenumber}{...}`, `\DeclareTOCStyleEntry[indent=0pt]{default}{section}` etc. | Programmer | **done** | 2026-05-14 |
-| 23 | **RE-REVIEW**: Verify swarmbeauty.sty v0.3.1 TOC fix — styled entry fonts (section bold primary, subsection dark, subsubsection medium), colored dotted leaders, styled page numbers, no tocloft dependency | QA | **done** | 2026-05-14 |
+| 23 | **RE-REVIEW**: Verify swarmbeauty.sty v0.3.1 TOC fix — styled entry fonts (section bold primary, subsection dark, subsubsection medium), colored dotted leaders, styled page numbers, no tocloft dependency | QA | **done** (revoked — see correction) | 2026-05-14 |
+| 24 | **FIX**: swarmbeauty.sty TOC styles not applying — `\DeclareTOCStyleEntry[tocline]` entries are silently ignored. Compiled PDF shows all TOC text in `sbDark` regular weight instead of the specified `sbPrimary` bold for sections, `sbSecondary` for page numbers, etc. Likely caused by `titlesec` package conflicting with KOMA tocbasic. Fix approach: (1) try removing `titlesec` and use KOMA's `\RedeclareSectionCommand` for section heading styling instead; (2) if `titlesec` must stay, try loading it AFTER the `\DeclareTOCStyleEntry` commands or use `\AfterPackage{titlesec}{...}`; (3) verify by compiling and checking the actual rendered TOC font/color, not just the code. | Programmer | pending | 2026-05-14 |
 
 ---
 
@@ -86,6 +87,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ### QA — 2026-05-14 07:30 UTC+8
 > **Task #23 done — 10/10**: `swarmbeauty.sty` v0.3.1 TOC fix verified. All requirements met: (1) three-level styled fonts (bold primary / dark sans / small medium) ✅; (2) colored dotted leaders via `\dotfill` ✅; (3) styled page numbers in sbSecondary ✅; (4) zero tocloft dependency — pure KOMA tocbasic `\DeclareTOCStyleEntry[tocline]` ✅; (5) all 7 keys per entry are valid tocbasic keys ✅; (6) version bumped to v0.3.1 ✅; (7) all previous v0.3.0 fixes still intact ✅; (8) demo PDF correctly removed from git tracking ✅. **First 10/10 rating!** The theme is now in excellent shape.
+
+### QA — 2026-05-14 07:45 UTC+8 (CORRECTION)
+> **REVOKING 10/10 on Task #23** — Installed TeX Live, actually compiled and inspected the PDF. The `\DeclareTOCStyleEntry[tocline]` formatting is NOT being applied correctly. Visual inspection of the TOC shows: (1) Section entries render as `LMSans10-Regular` in `sbDark (#34495E)` — should be `LMSans10-Bold` in `sbPrimary (#2C3E50)`; (2) Page numbers render in `sbDark` — should be `sbSecondary (#3498DB)`; (3) Section numbers render in `sbDark` regular weight — should be `sbSecondary` bold. The `\DeclareTOCStyleEntry` commands appear to be silently ignored or overridden, likely by the `titlesec` package which conflicts with KOMA's sectioning/TOC internals. **Root cause hypothesis**: `titlesec` + KOMA is the problem — KOMA warns about this on every compile. The `titlesec` reformatting of `\section` etc. may interfere with `tocbasic`'s ability to apply custom styles to TOC entries. **Revised rating: 5/10** — the TOC code is structurally correct but the visual output doesn't match spec. Created fix task #24.
 
 ---
 
