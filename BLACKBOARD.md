@@ -39,7 +39,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 14 | QA: Review Lua scripts for accurate measurements | QA | **done** | 2026-05-13 |
 | 15 | QA: Test setup script on clean environment | QA | **done** | 2026-05-13 |
 | 16 | **FIX**: swarmbeauty.sty — replace geometry with KOMA typearea; replace tocloft with KOMA tocbasic; replace fancyhdr with scrlayer-scrpage; fix table rule colors; fix title page overlap with header bar | Programmer | **done** | 2026-05-14 |
-| 17 | **FIX**: compile.py — add `--shell-escape` flag support (auto-detect minted usage); reduce unnecessary compilation passes; add stderr warning display | Programmer | pending | 2026-05-14 |
+| 17 | **FIX**: compile.py — add `--shell-escape` flag support (auto-detect minted usage); reduce unnecessary compilation passes; add stderr warning display | Programmer | **done** | 2026-05-14 |
 | 18 | **FIX**: metrics.lua — use `os.clock()` for wall time instead of `os.time()`; properly hook into `\input`/`\include` for file tree; fix JSON serialization; track or remove dead counters (font_changes, color_changes); make output path configurable | Programmer | pending | 2026-05-14 |
 | 19 | **FIX**: Consolidate setup.sh and setup-env.sh into one script (or clearly document which to use); fix TeX Live path mismatch between setup-env.sh (`texlive/2025/`) and compile.py (`texlive/bin/`); add `--binary` flag to setup.sh install-tl | Programmer | pending | 2026-05-14 |
 
@@ -64,6 +64,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ### Programmer — 2026-05-14 05:00 UTC+8
 > **Task #16 done**: Rewrote `swarmbeauty.sty` v0.3.0 fixing all QA-reported issues: (1) geometry → KOMA typearea with `\KOMAoptions{DIV=13, parskip=half-, headsepline}`; (2) tocloft → simple `\renewcommand{\contentsname}` (no conflict); (3) fancyhdr → scrlayer-scrpage via `\ihead`/`\ohead`/`\ifoot`/`\ofoot`; (4) removed subcaption (KOMA built-in); (5) table rules now use `\arrayrulecolor` from colortbl — colors no longer leak into cells; (6) title page vspace increased to 4.2cm (clears 3cm header bar); (7) sbDark deduped to #34495E (distinct from sbPrimary #2C3E50); (8) fixed `\inserttitle`/`\insertdate` (KOMA doesn't provide these — using `\@title`/`\@date` via `\makeatletter`). Compiles with **zero errors**, 7 pages. Remaining warnings are cosmetic (titlesec compatibility, typearea adjustment).
+
+### Programmer — 2026-05-14 05:18 UTC+8
+> **Task #17 done**: Rewrote `compile.py` v2.0 fixing all QA-reported issues: (1) **Auto engine detection** — scans .tex file AND locally-resolvable .sty/.cls files for fontspec → defaults to lualatex instead of pdflatex; (2) **Auto shell-escape** — detects minted/tcbuselibrary{minted} in .tex and .sty files; (3) **Smart multi-pass** — runs 1 pass initially, adds bib pass if bibliography detected, adds ref-resolution pass if "Label(s) may have changed" or "undefined references" warning found (previously always ran 3 passes); (4) **Warning display** — shows all LaTeX warnings on success (capped at 20); (5) **Fixed `Optional[str]`** — replaced `str | None` for Python 3.9+ compat; (6) **Auto TEXINPUTS** — automatically adds `src/themes/` and `src/` to TEXINPUTS with trailing separator so kpathsea still finds standard texmf tree; (7) **Bib detection strips comments** — no more false positives from commented-out `\addbibresource`; (8) **Multi-arch TeX Live** — supports both x86_64 and aarch64; (9) **Debounced watch mode** — 1.5s debounce prevents double-compiles; (10) **Better help** — examples in epilog, `--verbose`/`-v`, `--clean`/`-c`, `--watch`/`-w` short flags. Tested against demo-beautiful.tex: auto-detects lualatex + shell-escape, compiles in 2 smart passes, 125KB PDF, zero errors.
 
 ---
 
