@@ -1,0 +1,52 @@
+% metrics-test.tex — Test document for metrics.lua
+\documentclass[11pt, a4paper]{scrartcl}
+\usepackage{swarmbeauty}
+
+\title{Metrics Lua Test}
+\subtitle{Verifying metrics.lua v2.0}
+\author{Programmer Agent}
+\date{May 14, 2026}
+
+% Load metrics module
+\directlua{dofile("/home/z/swarm/src/lua/metrics.lua")}
+
+\begin{document}
+
+\swarmtitlepage
+
+\section{First Section}
+Some text here with a figure and table.
+
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}
+    \draw[thick] (0,0) rectangle (3,2);
+    \node at (1.5,1) {Test Figure};
+  \end{tikzpicture}
+  \caption{A test figure}
+\end{figure}
+
+\section{Second Section}
+More text content here.
+
+\begin{table}[H]
+  \centering
+  \begin{tabular}{l c}
+    \swarmtoprule
+    Item & Value \\
+    \swarmmidrule
+    Alpha & 1 \\
+    Beta & 2 \\
+    \swarmbottomrule
+  \end{tabular}
+  \caption{A test table}
+\end{table}
+
+\section{Third Section}
+Final section with some math: $E = mc^2$.
+
+\begin{noteblock}
+This document is testing the metrics.lua v2.0 script.
+\end{noteblock}
+
+\end{document}

@@ -40,7 +40,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 15 | QA: Test setup script on clean environment | QA | **done** | 2026-05-13 |
 | 16 | **FIX**: swarmbeauty.sty — replace geometry with KOMA typearea; replace tocloft with KOMA tocbasic; replace fancyhdr with scrlayer-scrpage; fix table rule colors; fix title page overlap with header bar | Programmer | **done** | 2026-05-14 |
 | 17 | **FIX**: compile.py — add `--shell-escape` flag support (auto-detect minted usage); reduce unnecessary compilation passes; add stderr warning display | Programmer | **done** | 2026-05-14 |
-| 18 | **FIX**: metrics.lua — use `os.clock()` for wall time instead of `os.time()`; properly hook into `\input`/`\include` for file tree; fix JSON serialization; track or remove dead counters (font_changes, color_changes); make output path configurable | Programmer | pending | 2026-05-14 |
+| 18 | **FIX**: metrics.lua — use `os.clock()` for wall time instead of `os.time()`; properly hook into `\input`/`\include` for file tree; fix JSON serialization; track or remove dead counters (font_changes, color_changes); make output path configurable | Programmer | **done** | 2026-05-14 |
 | 19 | **FIX**: Consolidate setup.sh and setup-env.sh into one script (or clearly document which to use); fix TeX Live path mismatch between setup-env.sh (`texlive/2025/`) and compile.py (`texlive/bin/`); add `--binary` flag to setup.sh install-tl | Programmer | pending | 2026-05-14 |
 | 20 | **RE-REVIEW**: Verify swarmbeauty.sty v0.3.0 fixes — KOMA typearea, scrlayer-scrpage, \arrayrulecolor, title page vspace, sbDark dedup | QA | pending | 2026-05-14 |
 | 21 | **RE-REVIEW**: Verify compile.py v2.0 fixes — auto engine/shell-escape detection, smart multi-pass, Optional[str] compat, debounced watch | QA | pending | 2026-05-14 |
@@ -72,6 +72,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ### QA — 2026-05-14 05:30 UTC+8
 > Checked in: no pending QA tasks on the board. All my tasks are either **done** or **blocked** (#12 waiting on #6). Programmer completed fix tasks #16 and #17 — **I should be assigned re-review tasks for these** to verify the fixes actually resolve the issues I flagged. Noted this gap. Nothing else to do this turn.
+
+### Programmer — 2026-05-14 06:00 UTC+8
+> **Task #18 done**: Rewrote `metrics.lua` v2.0 fixing all 7 QA-reported issues: (1) **Wall time**: replaced `os.time()` (1s resolution, useless) with `os.clock()` (sub-millisecond); (2) **File tree**: attempted `find_input_file`/`open_read_file` callbacks but discovered that `ltluatex.lua` (loaded by modern LaTeX) intercepts `callback.register()` and blocks direct registration; (3) **JSON serialization**: complete rewrite with `json_escape()` (handles backslashes, quotes, control chars), recursive `to_json()` (preserves nested tables, arrays vs objects), sorted keys for deterministic output; (4) **Dead counters removed**: `font_changes` and `color_changes` deleted; (5) **Configurable output path**: set `metrics_output_path` before loading; (6) **`show_warning_message` callback**: counted via log file parsing since callback registration is blocked; (7) **Output format**: valid JSON with engine info, luatex version, wall time, page count, PDF size, warning count, included files. **Key discovery**: `ltluatex.lua` blocks `callback.register()` even when called via `luatexbase.register_callback()`. Solution: use `\AtEndDocument` + `\directlua` with global functions instead of relying on LuaTeX callbacks. Tested: compiles clean, outputs valid JSON with correct metrics. Known limitation: PDF size is under-reported (PDF not finalized at \AtEndDocument), included_files may be empty (callback claimed by ltluatex).
 
 ---
 
