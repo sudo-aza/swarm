@@ -1,5 +1,5 @@
 % =============================================================================
-% swarmbeauty.sty — The "Beautiful" Theme for the LaTeX Helper Swarm  (v0.3.0)
+% swarmbeauty.sty — The "Beautiful" Theme for the LaTeX Helper Swarm  (v0.3.1)
 %
 % A comprehensive, modern document theme built on KOMA-Script with:
 %   - Elegant color palette with customizable accent colors
@@ -21,7 +21,7 @@
 % =============================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{swarmbeauty}[2026/05/14 v0.3.0 LaTeX Helper Swarm — Beautiful Theme]
+\ProvidesPackage{swarmbeauty}[2026/05/14 v0.3.1 LaTeX Helper Swarm — Beautiful Theme]
 
 % ── Engine check ─────────────────────────────────────────────────────────────
 \RequirePackage{iftex}
@@ -303,12 +303,44 @@
   filecolor   = sbSecondary,
 }
 
-% ── TOC Styling (simple — no tocloft needed) ─────────────────────────────────
-% Avoids tocloft which conflicts with KOMA's tocbasic
+% ── TOC Styling (KOMA-native tocbasic) ────────────────────────────────────────
+% Restores the styled TOC without tocloft (which conflicts with KOMA).
+% Uses \DeclareTOCStyleEntry for full control over fonts, leaders, indents.
 
+% TOC title
 \renewcommand{\contentsname}{%
-  \sffamily\bfseries\color{sbPrimary}Table of Contents%
+  \sffamily\bfseries\Large\color{sbPrimary}Table of Contents%
 }
+
+% Section entries: bold, primary color, no indent
+\DeclareTOCStyleEntry[
+  indent      = 0pt,
+  numwidth    = 2.5em,
+  entryformat = \sffamily\bfseries\color{sbPrimary},
+  entrynumberformat = \color{sbSecondary}\bfseries,
+  pagenumberformat = \color{sbSecondary}\sffamily\small,
+  linefill    = {\color{sbMedium}\dotfill},
+]{tocline}{section}
+
+% Subsection entries: dark color, indented
+\DeclareTOCStyleEntry[
+  indent      = 1.5em,
+  numwidth    = 3em,
+  entryformat = \sffamily\color{sbDark},
+  entrynumberformat = \color{sbSecondary},
+  pagenumberformat = \color{sbSecondary}\sffamily\small,
+  linefill    = {\color{sbMedium}\dotfill},
+]{tocline}{subsection}
+
+% Subsubsection entries: smaller, medium color, more indented
+\DeclareTOCStyleEntry[
+  indent      = 3em,
+  numwidth    = 3.5em,
+  entryformat = \small\color{sbMedium},
+  entrynumberformat = \color{sbMedium},
+  pagenumberformat = \color{sbSecondary}\sffamily\small,
+  linefill    = {\color{sbMedium}\dotfill},
+]{tocline}{subsubsection}
 
 % ── Itemize / Enumerate ─────────────────────────────────────────────────────
 

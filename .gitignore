@@ -55,3 +55,5 @@ Thumbs.db
 
 # Secrets
 .env
+*.pdf
+*.listing
