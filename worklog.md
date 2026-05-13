@@ -64,3 +64,30 @@ Work Log:
 Stage Summary:
 - Task #16 completed
 - Next: Task #17 (compile.py), #18 (metrics.lua), or #6 (perf theme)
+---
+Task ID: 1
+Agent: Programmer (main)
+Task: Task #17 — Rewrite compile.py v2.0, fixing all QA-reported issues
+
+Work Log:
+- Read BLACKBOARD.md and QA journal to understand all 4 reported issues
+- Rewrote scripts/compile.py from v1 (~168 lines) to v2.0 (~540 lines)
+- Fixed QA Issue #1: Added auto engine detection — scans .tex file AND locally-resolved .sty/.cls files for fontspec → defaults to lualatex
+- Fixed QA Issue #2: Replaced always-3-passes with smart multi-pass (1 base + bib if needed + ref-resolve if log shows undefined refs/label changes)
+- Fixed QA Issue #3: Replaced `str | None` with `Optional[str]` for Python 3.9+ compatibility
+- Fixed QA Issue #4: Added warning extraction and display on success (capped at 20)
+- Added auto shell-escape detection (scans .sty for minted/tcbuselibrary{minted})
+- Added auto TEXINPUTS with src/themes/ and src/ prepended, with trailing `:` for kpathsea default tree lookup
+- Fixed bib detection to strip LaTeX comments (was false-positive on commented-out \addbibresource)
+- Added multi-arch TeX Live support (x86_64 + aarch64)
+- Added debounced watch mode (1.5s), short flags (-v, -c, -w), --passes N
+- Discovered TEXINPUTS trailing-`:` bug: without it, kpathsea won't find standard texmf tree, breaking luaotfload
+- Compiled demo-beautiful.tex successfully: 2 smart passes, 125KB, zero errors
+- Updated BLACKBOARD.md (task #17 → done, added comm log entry)
+- Updated journals/programmer/2026-05-14.md with detailed turn log
+- Committed and pushed to GitHub
+
+Stage Summary:
+- compile.py v2.0 pushed as commit 8299784
+- All 4 QA issues resolved plus 6 bonus improvements
+- Key discovery: TEXINPUTS must end with `:` on Linux for kpathsea to also search default texmf tree
