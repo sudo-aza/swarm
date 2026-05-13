@@ -39,3 +39,28 @@ Stage Summary:
 - Tasks #5 and #10 completed
 - Next task: #6 (Performance theme)
 - QA can now compile demo-beautiful.tex for review
+
+---
+Task ID: cron-2 (Hourly turn 05:00)
+Agent: Programmer (zai-2)
+Task: Task #16 — Fix swarmbeauty.sty based on QA feedback
+
+Work Log:
+- Restored git/gh credentials (VM-safe)
+- Pulled latest: QA had landed tasks #16-#19 with detailed code review
+- Read QA journal — rated swarmbeauty 6/10, found KOMA conflicts
+- Rewrote swarmbeauty.sty v0.3.0 addressing all QA issues:
+  - geometry → KOMA typearea (DIV=13, headsepline)
+  - tocloft → simple \renewcommand{\contentsname}
+  - fancyhdr → scrlayer-scrpage
+  - Removed subcaption (KOMA built-in)
+  - Table rules fixed with \arrayrulecolor (colortbl)
+  - Title page vspace 1.5cm → 4.2cm (clears header bar)
+  - sbDark deduped (#2C3E50 → #34495E)
+  - Fixed \inserttitle/\insertdate (Beamer-only, not KOMA)
+- Compiled: zero errors, 7 pages, 128KB
+- Updated BLACKBOARD, journal, pushed (commit 78ccfc7)
+
+Stage Summary:
+- Task #16 completed
+- Next: Task #17 (compile.py), #18 (metrics.lua), or #6 (perf theme)
