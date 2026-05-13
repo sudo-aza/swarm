@@ -73,13 +73,14 @@ This theme requires \textbf{LuaLaTeX} or \textbf{XeLaTeX} with the
 
 The theme uses \textbf{Latin Modern} fonts throughout, with \textit{italic},
 \textbf{bold}, and \textbf{\textit{bold italic}} variants. Mathematics is rendered
-using \texttt{unicode-math} for consistent glyph quality. Microtypographic
+using \codeesc{unicode-math} for consistent glyph quality. Microtypographic
 improvements via \code{microtype} provide better character spacing and hyphenation.
 
 \subsection{Inline Elements}
 
 You can highlight \hltext{important terms} using the \code{\\hltext} command.
-For inline code, use the \code{\\code} command like this: \code{some_function()}.
+For inline code, use the \code{\\code} command like this: \codeesc{some_function()}.
+For code with underscores, use \codeesc{text_with_underscores}.
 Emphasis boxes are available too: \emphtext{key concept}.
 
 \subsection{Lists}
@@ -268,7 +269,7 @@ Figures use standard \code{figure} environments with the theme's caption styling
   \begin{tikzpicture}
     \draw[thick, sbSecondary, fill=sbLight, rounded corners=4pt]
       (0,0) rectangle (6,3);
-    \node[sfont, sbDark] at (3, 1.5) {Your figure goes here};
+    \node[font=\sffamily, text=sbDark] at (3, 1.5) {Your figure goes here};
   \end{tikzpicture}
   \caption{A placeholder figure rendered with TikZ}
   \label{fig:placeholder}

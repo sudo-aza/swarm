@@ -13,14 +13,14 @@
 %   - Clean bibliography support via biblatex
 %
 % Usage:
-%   \documentclass[...]{scrartcl}  % or scrbook, scrreprt
+%   \documentclass[11pt, a4paper]{scrartcl}
 %   \usepackage{swarmbeauty}
 %
 % Requires: LuaLaTeX or XeLaTeX (--shell-escape for minted)
 % =============================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{swarmbeauty}[2026/05/14 v0.1.0 LaTeX Helper Swarm — Beautiful Theme]
+\ProvidesPackage{swarmbeauty}[2026/05/14 v0.2.0 LaTeX Helper Swarm — Beautiful Theme]
 
 % ── Engine check ─────────────────────────────────────────────────────────────
 \RequirePackage{iftex}
@@ -36,13 +36,13 @@
 \usetikzlibrary{calc, positioning, arrows.meta, shapes.geometric}
 \RequirePackage{fontspec}
 \RequirePackage{microtype}
-\RequirePackage{unicode-math}
 \RequirePackage{xcolor}
 \RequirePackage{graphicx}
 \RequirePackage{calc}
 \RequirePackage{etoolbox}
 \RequirePackage{csquotes}
 \RequirePackage{amsmath}
+\RequirePackage{amssymb}
 \RequirePackage{mathtools}
 \RequirePackage{booktabs}
 \RequirePackage{tabularray}
@@ -52,112 +52,87 @@
 \RequirePackage{placeins}
 \RequirePackage{enumitem}
 \RequirePackage{hyperref}
+\RequirePackage{fancyhdr}
 \RequirePackage{tcolorbox}
 \tcbuselibrary{minted, skins, breakable, theorems}
 
 % ── Color Palette ────────────────────────────────────────────────────────────
-% Inspired by modern design systems — cool blues, warm accents, soft grays
 
-\definecolor{sbPrimary}{HTML}{2C3E50}      % Dark blue-gray (headings, titles)
-\definecolor{sbSecondary}{HTML}{3498DB}     % Bright blue (links, accents)
-\definecolor{sbAccent}{HTML}{E74C3C}        % Red accent (alerts, emphasis)
-\definecolor{sbSuccess}{HTML}{27AE60}       % Green (success, tips)
-\definecolor{sbWarning}{HTML}{F39C12}       % Orange (warnings)
-\definecolor{sbLight}{HTML}{ECF0F1}         % Light gray (backgrounds, boxes)
-\definecolor{sbMedium}{HTML}{BDC3C7}        % Medium gray (rules, borders)
-\definecolor{sbDark}{HTML}{2C3E50}          % Same as primary (text body)
-\definecolor{sbCodeBg}{HTML}{F8F9FA}        % Very light gray (code background)
-\definecolor{sbText}{HTML}{2C3E50}          % Body text color
+\definecolor{sbPrimary}{HTML}{2C3E50}
+\definecolor{sbSecondary}{HTML}{3498DB}
+\definecolor{sbAccent}{HTML}{E74C3C}
+\definecolor{sbSuccess}{HTML}{27AE60}
+\definecolor{sbWarning}{HTML}{F39C12}
+\definecolor{sbLight}{HTML}{ECF0F1}
+\definecolor{sbMedium}{HTML}{BDC3C7}
+\definecolor{sbDark}{HTML}{2C3E50}
+\definecolor{sbCodeBg}{HTML}{F8F9FA}
+\definecolor{sbText}{HTML}{2C3E50}
 
 % ── Typography ───────────────────────────────────────────────────────────────
-% Default fonts — override with \setsansfont, \setmainfont, \setmonofont
 
 \setmainfont{Latin Modern Roman}[
-  BoldFont       = *-Bold,
-  ItalicFont     = *-Italic,
-  BoldItalicFont = *-BoldItalic,
-  Ligatures      = TeX,
+  AutoFakeBold       = 2,
+  AutoFakeSlant      = 0.2,
+  Ligatures          = TeX,
 ]
 \setsansfont{Latin Modern Sans}[
-  BoldFont       = *-Bold,
-  ItalicFont     = *-Oblique,
-  BoldItalicFont = *-BoldOblique,
-  Ligatures      = TeX,
+  AutoFakeBold       = 2,
+  AutoFakeSlant      = 0.2,
+  Ligatures          = TeX,
 ]
 \setmonofont{Latin Modern Mono}[
-  Scale          = MatchLowercase,
-  BoldFont       = *-Bold,
-  ItalicFont     = *-Oblique,
-  BoldItalicFont = *-BoldOblique,
-  Ligatures      = TeX,
+  Scale              = MatchLowercase,
+  AutoFakeBold       = 2,
+  AutoFakeSlant      = 0.2,
+  Ligatures          = TeX,
 ]
 
-% Math font
-\setmathfont{Latin Modern Math}
-
 % ── Page Layout ──────────────────────────────────────────────────────────────
+% Paper size and margins — use geometry for maximum compatibility
+\RequirePackage[margin=2.5cm, a4paper]{geometry}
 
-\KOMAoptions{
-  fontsize   = 11pt,
-  paper      = a4paper,
-  parskip    = half-,
-  DIV        = 13,
-}
+% Set paragraph skip (since we're not using KOMA typearea)
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5\baselineskip plus 0.1\baselineskip minus 0.1\baselineskip}
 
-% Colors for text and structure
-\setkomafont{title}{\color{sbPrimary}\fontsize{28}{34}\selectfont\bfseries\sffamily}
-\setkomafont{subtitle}{\color{sbSecondary}\fontsize{16}{20}\selectfont\mdseries\sffamily}
-\setkomafont{author}{\color{sbDark}\fontsize{12}{14}\selectfont\normalfont}
-\setkomafont{date}{\color{sbMedium}\fontsize{10}{12}\selectfont\normalfont}
-\setkomafont{sectioning}{\color{sbPrimary}\sffamily\bfseries}
-\setkomafont{pagehead}{\color{sbMedium}\fontsize{8}{10}\selectfont\sffamily}
-\setkomafont{pagefoot}{\color{sbMedium}\fontsize{8}{10}\selectfont\sffamily}
-\setkomafont{caption}{\color{sbDark}\fontsize{9}{11}\selectfont\sffamily}
-\setkomafont{captionlabel}{\color{sbSecondary}\bfseries\sffamily}
+% ── Font commands for structure ───────────────────────────────────────────────
+
+\newcommand{\sftitle}{\color{sbPrimary}\fontsize{28}{34}\selectfont\bfseries\sffamily}
+\newcommand{\sfsubtitle}{\color{sbSecondary}\fontsize{16}{20}\selectfont\mdseries\sffamily}
+\newcommand{\sfauthor}{\color{sbDark}\fontsize{12}{14}\selectfont}
+\newcommand{\sfdate}{\color{sbMedium}\fontsize{10}{12}\selectfont}
+
+% KOMA provides \inserttitle etc. but we provide LaTeX-standard fallbacks
+\providecommand{\inserttitle}{\@title}
+\providecommand{\insertsubtitle}{\@subtitle}
+\providecommand{\insertauthor}{\@author}
+\providecommand{\insertdate}{\@date}
 
 % ── Section Heading Styling ──────────────────────────────────────────────────
 
-% Section: large blue heading with rule underneath
-\renewcommand{\sectionformat}{\color{sbPrimary}\thesection\hspace{0.5em}}
-\RedeclareSectionCommand[
-  beforeskip    = 2.5ex plus 1ex minus 0.5ex,
-  afterskip     = 1.5ex plus 0.5ex minus 0.25ex,
-  afterindent   = false,
-  font          = \large\sffamily\bfseries\color{sbPrimary},
-]{section}
+% Use titlesec for reliable section formatting across all LaTeX versions
+\RequirePackage[compact]{titlesec}
 
-\makeatletter
-\renewcommand{\sectionlinesformat}[4]{%
-  \@hangfrom{\hskip #2#3}{#4}%
-  \par\noindent\textcolor{sbSecondary}{\rule{\textwidth}{0.8pt}}\par\vspace{0.3em}%
-}
-\makeatother
+\titleformat{\section}
+  {\large\sffamily\bfseries\color{sbPrimary}}
+  {\thesection}{0.5em}{}
+  [\vspace{-0.5em}{\color{sbSecondary}\rule{\textwidth}{0.8pt}}\vspace{0.3em}]
 
-% Subsection: medium heading with thin rule
-\RedeclareSectionCommand[
-  beforeskip    = 1.8ex plus 0.8ex minus 0.3ex,
-  afterskip     = 1.0ex plus 0.3ex minus 0.15ex,
-  afterindent   = false,
-  font          = \normalsize\sffamily\bfseries\color{sbPrimary},
-]{subsection}
+\titleformat{\subsection}
+  {\normalsize\sffamily\bfseries\color{sbPrimary}}
+  {\thesubsection}{0.5em}{}
+  [\vspace{-0.5em}{\color{sbMedium}\rule{0.4\textwidth}{0.4pt}}\vspace{0.2em}]
 
-\makeatletter
-\renewcommand{\subsectionlinesformat}[4]{%
-  \@hangfrom{\hskip #2#3}{#4}%
-  \par\noindent\textcolor{sbMedium}{\rule{0.4\textwidth}{0.4pt}}\par\vspace{0.2em}%
-}
-\makeatother
+\titleformat{\subsubsection}
+  {\small\sffamily\itshape\color{sbDark}}
+  {\thesubsubsection}{0.5em}{}
 
-% Subsubsection: small italic heading, no rule
-\RedeclareSectionCommand[
-  beforeskip    = 1.2ex plus 0.5ex minus 0.2ex,
-  afterskip     = 0.8ex plus 0.2ex minus 0.1ex,
-  afterindent   = false,
-  font          = \small\sffamily\itshape\color{sbDark},
-]{subsubsection}
+\titlespacing*{\section}{0pt}{2.5ex plus 1ex minus 0.5ex}{1.5ex}
+\titlespacing*{\subsection}{0pt}{1.8ex plus 0.8ex}{1.0ex}
+\titlespacing*{\subsubsection}{0pt}{1.2ex plus 0.5ex}{0.8ex}
 
 % ── Title Page ───────────────────────────────────────────────────────────────
-% Full-page title with decorative elements
 
 \newcommand{\swarmtitlepage}{%
   \begin{titlepage}
@@ -171,17 +146,15 @@
         ([yshift=-3.15cm]current page.north east);
     \end{tikzpicture}
 
-    % Title block
     \vspace*{1.5cm}
     \begin{center}
-      {\usekomafont{title}\inserttitle\par}
+      {\sftitle\inserttitle\par}
       \vspace{0.5em}
-      {\usekomafont{subtitle}\insertsubtitle\par}
+      {\sfsubtitle\insertsubtitle\par}
     \end{center}
 
     \vfill
 
-    % Metadata block in a colored box
     \begin{center}
       \begin{tcolorbox}[
         colback      = sbLight,
@@ -195,9 +168,9 @@
         bottom       = 12pt,
         before upper = \centering,
       ]
-        {\usekomafont{author}\insertauthor\par}
+        {\sfauthor\insertauthor\par}
         \vspace{0.5em}
-        {\usekomafont{date}\insertdate\par}
+        {\sfdate\insertdate\par}
       \end{tcolorbox}
     \end{center}
 
@@ -207,29 +180,21 @@
 
 % ── Headers & Footers ────────────────────────────────────────────────────────
 
-\pagestyle{scrheadings}
-\clearpairofpagestyles
-
-% Header: section title on the right, document title on the left
-\ihead{\insertmarkhead}
-\ohead{\inserttitle}
-\ifoot*{\textcolor{sbMedium}{\insertdate}}
-\ofoot*{\textcolor{sbSecondary}{\pagemark}}
-
-% Rule under header
-\setheadsepline{0.4pt}{\color{sbMedium}}
-
-% Remove default KOMA navigation symbols
-\setkomafont{pagenumber}{\sffamily\bfseries\color{sbSecondary}}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\color{sbMedium}\footnotesize\sffamily\leftmark}
+\fancyhead[R]{\color{sbMedium}\footnotesize\sffamily\@title}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\headrule}{\color{sbMedium}\hrule height 0.4pt}
+\fancyfoot[L]{\color{sbMedium}\footnotesize\sffamily\@date}
+\fancyfoot[R]{\color{sbSecondary}\sffamily\bfseries\thepage}
 
 % ── Table Styling ────────────────────────────────────────────────────────────
 
-% Default booktabs look for regular tables
 \newcommand{\swarmtoprule}{\specialrule{1.2pt}{0pt}{3pt}\color{sbPrimary}}
 \newcommand{\swarmmidrule}{\specialrule{0.6pt}{3pt}{3pt}\color{sbMedium}}
 \newcommand{\swarmbottomrule}{\specialrule{1.2pt}{3pt}{0pt}\color{sbPrimary}}
 
-% Caption styling
 \captionsetup{
   font          = {sf, small},
   labelfont     = {bf, color=sbSecondary},
@@ -268,100 +233,56 @@
   listing only,
   breakable,
   enhanced,
-  overlay         = {\begin{tcbclipinterior}
-    \fill[sbSecondary]
-      (frame.south west) rectangle ([xshift=3pt]frame.north west);
-    \end{tcbclipinterior}},
 }
 
-% Inline code command
+% Inline code — use \texttunderscore for literal underscores
 \newcommand{\code}[1]{%
   \colorbox{sbCodeBg}{\texttt{\small\textcolor{sbDark}{#1}}}%
+}
+% For code with underscores, use \code[no-escape]{text_with_underscores}
+\newcommand{\codeesc}[1]{%
+  \colorbox{sbCodeBg}{\texttt{\small\textcolor{sbDark}{\detokenize{#1}}}}%
 }
 
 % ── Block Environments ───────────────────────────────────────────────────────
 
-% Note block (blue)
 \newtcolorbox{noteblock}[1][Note]{%
-  colback      = sbLight,
-  colframe     = sbSecondary,
-  coltitle     = white,
-  fonttitle    = \sffamily\bfseries,
-  title        = {#1},
-  boxrule      = 0pt,
-  arc          = 3pt,
-  left         = 10pt,
-  right        = 10pt,
-  top          = 6pt,
-  bottom       = 6pt,
-  enhanced,
-  borderline west = {3pt}{0pt}{sbSecondary},
+  colback = sbLight, colframe = sbSecondary,
+  coltitle = white, fonttitle = \sffamily\bfseries,
+  title = {#1}, boxrule = 0pt, arc = 3pt,
+  left = 10pt, right = 10pt, top = 6pt, bottom = 6pt,
+  enhanced, borderline west = {3pt}{0pt}{sbSecondary},
 }
 
-% Tip block (green)
 \newtcolorbox{tipblock}[1][Tip]{%
-  colback      = sbLight,
-  colframe     = sbSuccess,
-  coltitle     = white,
-  fonttitle    = \sffamily\bfseries,
-  title        = {#1},
-  boxrule      = 0pt,
-  arc          = 3pt,
-  left         = 10pt,
-  right        = 10pt,
-  top          = 6pt,
-  bottom       = 6pt,
-  enhanced,
-  borderline west = {3pt}{0pt}{sbSuccess},
+  colback = sbLight, colframe = sbSuccess,
+  coltitle = white, fonttitle = \sffamily\bfseries,
+  title = {#1}, boxrule = 0pt, arc = 3pt,
+  left = 10pt, right = 10pt, top = 6pt, bottom = 6pt,
+  enhanced, borderline west = {3pt}{0pt}{sbSuccess},
 }
 
-% Warning block (orange)
 \newtcolorbox{warningblock}[1][Warning]{%
-  colback      = sbLight,
-  colframe     = sbWarning,
-  coltitle     = white,
-  fonttitle    = \sffamily\bfseries,
-  title        = {#1},
-  boxrule      = 0pt,
-  arc          = 3pt,
-  left         = 10pt,
-  right        = 10pt,
-  top          = 6pt,
-  bottom       = 6pt,
-  enhanced,
-  borderline west = {3pt}{0pt}{sbWarning},
+  colback = sbLight, colframe = sbWarning,
+  coltitle = white, fonttitle = \sffamily\bfseries,
+  title = {#1}, boxrule = 0pt, arc = 3pt,
+  left = 10pt, right = 10pt, top = 6pt, bottom = 6pt,
+  enhanced, borderline west = {3pt}{0pt}{sbWarning},
 }
 
-% Danger block (red)
 \newtcolorbox{dangerblock}[1][Important]{%
-  colback      = sbLight,
-  colframe     = sbAccent,
-  coltitle     = white,
-  fonttitle    = \sffamily\bfseries,
-  title        = {#1},
-  boxrule      = 0pt,
-  arc          = 3pt,
-  left         = 10pt,
-  right        = 10pt,
-  top          = 6pt,
-  bottom       = 6pt,
-  enhanced,
-  borderline west = {3pt}{0pt}{sbAccent},
+  colback = sbLight, colframe = sbAccent,
+  coltitle = white, fonttitle = \sffamily\bfseries,
+  title = {#1}, boxrule = 0pt, arc = 3pt,
+  left = 10pt, right = 10pt, top = 6pt, bottom = 6pt,
+  enhanced, borderline west = {3pt}{0pt}{sbAccent},
 }
 
-% Example block (gray, no title)
 \newtcolorbox{exampleblock}[1][Example]{%
-  colback      = sbCodeBg,
-  colframe     = sbMedium,
-  coltitle     = sbDark,
-  fonttitle    = \sffamily\bfseries,
-  title        = {#1},
-  boxrule      = 0.4pt,
-  arc          = 3pt,
-  left         = 10pt,
-  right        = 10pt,
-  top          = 6pt,
-  bottom       = 6pt,
+  colback = sbCodeBg, colframe = sbMedium,
+  coltitle = sbDark, fonttitle = \sffamily\bfseries,
+  title = {#1}, boxrule = 0.4pt, arc = 3pt,
+  left = 10pt, right = 10pt, top = 6pt, bottom = 6pt,
   enhanced,
 }
 
@@ -373,29 +294,18 @@
   urlcolor    = sbSecondary,
   citecolor   = sbSecondary,
   filecolor   = sbSecondary,
-  linkbordercolor = sbSecondary,
-  urlbordercolor  = sbSecondary,
 }
 
 % ── TOC Styling ──────────────────────────────────────────────────────────────
 
-\setkomafont{sectionentrytoc}{\sffamily\bfseries\color{sbPrimary}}
-\setkomafont{subsectionentrytoc}{\sffamily\color{sbDark}}
-\setkomafont{subsubsectionentrytoc}{\sffamily\small\color{sbMedium}}
+\RequirePackage{tocloft}
+\renewcommand{\cfttoctitlefont}{\Large\sffamily\bfseries\color{sbPrimary}}
+\renewcommand{\cftsecfont}{\sffamily\color{sbDark}}
+\renewcommand{\cftsubsecfont}{\sffamily\small\color{sbDark}}
+\renewcommand{\cftsecleader}{\color{sbMedium}\cftdotfill{1}}
+\renewcommand{\cftsubsecleader}{\color{sbMedium}\cftdotfill{1}}
 
-\setpnumwidth{2em}
-\setrmarg{2.5em}
-
-% Dotted leaders in TOC
-\DeclareTOCStyleEntries[
-  linefill       = \hfill\textcolor{sbMedium}{\leaders\hbox{1.2pt}{\hss}\hskip 0pt plus 1filll}\hfill,
-  entrynumberformat = \textcolor{sbSecondary}{\bfseries},
-]{tocline}{section}
-\DeclareTOCStyleEntries[
-  linefill = \hfill\textcolor{sbMedium}{\leaders\hbox{0.8pt}{\hss}\hskip 0pt plus 1filll}\hfill,
-]{tocline}{subsection}
-
-% ── Itemize / Enumerate Styling ─────────────────────────────────────────────
+% ── Itemize / Enumerate ─────────────────────────────────────────────────────
 
 \setlist[itemize]{
   label        = \textcolor{sbSecondary}{\textbullet},
@@ -414,94 +324,56 @@
 % ── Math Theorem Environments ───────────────────────────────────────────────
 
 \newtcbtheorem[number within=section]{theorem}{Theorem}{%
-  colback      = sbLight,
-  colframe     = sbPrimary,
-  fonttitle    = \sffamily\bfseries,
-  boxrule      = 0pt,
-  arc          = 2pt,
-  left         = 8pt,
-  right        = 8pt,
-  top          = 5pt,
-  bottom       = 5pt,
-  enhanced,
-  borderline west = {3pt}{0pt}{sbPrimary},
-  before skip  = 8pt,
-  after skip   = 8pt,
+  colback = sbLight, colframe = sbPrimary,
+  fonttitle = \sffamily\bfseries,
+  boxrule = 0pt, arc = 2pt,
+  left = 8pt, right = 8pt, top = 5pt, bottom = 5pt,
+  enhanced, borderline west = {3pt}{0pt}{sbPrimary},
+  before skip = 8pt, after skip = 8pt,
 }{thm}
 
 \newtcbtheorem[number within=section]{definition}{Definition}{%
-  colback      = sbLight,
-  colframe     = sbSecondary,
-  fonttitle    = \sffamily\bfseries,
-  boxrule      = 0pt,
-  arc          = 2pt,
-  left         = 8pt,
-  right        = 8pt,
-  top          = 5pt,
-  bottom       = 5pt,
-  enhanced,
-  borderline west = {3pt}{0pt}{sbSecondary},
-  before skip  = 8pt,
-  after skip   = 8pt,
+  colback = sbLight, colframe = sbSecondary,
+  fonttitle = \sffamily\bfseries,
+  boxrule = 0pt, arc = 2pt,
+  left = 8pt, right = 8pt, top = 5pt, bottom = 5pt,
+  enhanced, borderline west = {3pt}{0pt}{sbSecondary},
+  before skip = 8pt, after skip = 8pt,
 }{def}
 
 \newtcbtheorem[number within=section]{lemma}{Lemma}{%
-  colback      = sbLight,
-  colframe     = sbSuccess,
-  fonttitle    = \sffamily\bfseries,
-  boxrule      = 0pt,
-  arc          = 2pt,
-  left         = 8pt,
-  right        = 8pt,
-  top          = 5pt,
-  bottom       = 5pt,
-  enhanced,
-  borderline west = {3pt}{0pt}{sbSuccess},
-  before skip  = 8pt,
-  after skip   = 8pt,
+  colback = sbLight, colframe = sbSuccess,
+  fonttitle = \sffamily\bfseries,
+  boxrule = 0pt, arc = 2pt,
+  left = 8pt, right = 8pt, top = 5pt, bottom = 5pt,
+  enhanced, borderline west = {3pt}{0pt}{sbSuccess},
+  before skip = 8pt, after skip = 8pt,
 }{lem}
 
 % ── Utility Commands ─────────────────────────────────────────────────────────
 
-% Highlighted text
 \newcommand{\hltext}[1]{\textcolor{sbAccent}{\textbf{#1}}}
 
-% Emphasis box (inline)
 \newcommand{\emphtext}[1]{%
   \tikz[baseline=(X.base)]
     \node[fill=sbLight, rounded corners=2pt, inner sep=3pt] (X)
     {\textcolor{sbPrimary}{\textbf{#1}}};%
 }
 
-% Horizontal rule with color
 \newcommand{\colorrule}{%
   \par\noindent\textcolor{sbSecondary}{\rule{\textwidth}{0.6pt}}\par\vspace{0.5em}%
 }
 
 % ── Footnote Styling ────────────────────────────────────────────────────────
 
-\setkomafont{footnote}{\fontsize{8}{10}\selectfont}
-\setkomafont{footnotereference}{\color{sbSecondary}}
+\renewcommand{\thefootnote}{\textcolor{sbSecondary}{\arabic{footnote}}}
 
-% ── Bibliography Setup (optional — only loads if biblatex is used) ────────────
+% ── Bibliography (optional) ──────────────────────────────────────────────────
 
 \AtEndPreamble{%
   \@ifpackageloaded{biblatex}{%
     \setbibfont{small}
-    \DeclareBiblatexTemplate{bibliography}{default}{%
-    }%
-    \defbibheading{bibliography}[\bibname]{%
-      \section*{#1}%
-      \colorrule
-    }%
   }{}%
 }
-
-% TikZ loaded above, near the top of the file
-
-% ── Final touches ────────────────────────────────────────────────────────────
-
-% Ensure tcolorbox + tikz are loaded for title page
-\RequirePackage{tikz}
 
 \endinput
