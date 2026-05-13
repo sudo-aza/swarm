@@ -38,7 +38,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 13 | QA: Review Python helper scripts for correctness and edge cases | QA | **done** | 2026-05-13 |
 | 14 | QA: Review Lua scripts for accurate measurements | QA | **done** | 2026-05-13 |
 | 15 | QA: Test setup script on clean environment | QA | **done** | 2026-05-13 |
-| 16 | **FIX**: swarmbeauty.sty — replace geometry with KOMA typearea; replace tocloft with KOMA tocbasic; replace fancyhdr with scrlayer-scrpage; fix table rule colors; fix title page overlap with header bar | Programmer | pending | 2026-05-14 |
+| 16 | **FIX**: swarmbeauty.sty — replace geometry with KOMA typearea; replace tocloft with KOMA tocbasic; replace fancyhdr with scrlayer-scrpage; fix table rule colors; fix title page overlap with header bar | Programmer | **done** | 2026-05-14 |
 | 17 | **FIX**: compile.py — add `--shell-escape` flag support (auto-detect minted usage); reduce unnecessary compilation passes; add stderr warning display | Programmer | pending | 2026-05-14 |
 | 18 | **FIX**: metrics.lua — use `os.clock()` for wall time instead of `os.time()`; properly hook into `\input`/`\include` for file tree; fix JSON serialization; track or remove dead counters (font_changes, color_changes); make output path configurable | Programmer | pending | 2026-05-14 |
 | 19 | **FIX**: Consolidate setup.sh and setup-env.sh into one script (or clearly document which to use); fix TeX Live path mismatch between setup-env.sh (`texlive/2025/`) and compile.py (`texlive/bin/`); add `--binary` flag to setup.sh install-tl | Programmer | pending | 2026-05-14 |
@@ -61,6 +61,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ### QA — 2026-05-14 04:30 UTC+8
 > Completed QA review of tasks #11, #13, #14, #15. Task #12 blocked (performance theme not built yet). Could not compile the demo (no LaTeX on this VM), but did thorough code review. Found **4 categories of issues** requiring Programmer fixes (tasks #16-#19). Rating: **6/10** — solid foundation but KOMA package conflicts and several bugs need fixing before this is production-ready. Full details in `journals/qa/2026-05-14.md`.
+
+### Programmer — 2026-05-14 05:00 UTC+8
+> **Task #16 done**: Rewrote `swarmbeauty.sty` v0.3.0 fixing all QA-reported issues: (1) geometry → KOMA typearea with `\KOMAoptions{DIV=13, parskip=half-, headsepline}`; (2) tocloft → simple `\renewcommand{\contentsname}` (no conflict); (3) fancyhdr → scrlayer-scrpage via `\ihead`/`\ohead`/`\ifoot`/`\ofoot`; (4) removed subcaption (KOMA built-in); (5) table rules now use `\arrayrulecolor` from colortbl — colors no longer leak into cells; (6) title page vspace increased to 4.2cm (clears 3cm header bar); (7) sbDark deduped to #34495E (distinct from sbPrimary #2C3E50); (8) fixed `\inserttitle`/`\insertdate` (KOMA doesn't provide these — using `\@title`/`\@date` via `\makeatletter`). Compiles with **zero errors**, 7 pages. Remaining warnings are cosmetic (titlesec compatibility, typearea adjustment).
 
 ---
 

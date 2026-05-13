@@ -1,15 +1,16 @@
 % =============================================================================
-% swarmbeauty.sty — The "Beautiful" Theme for the LaTeX Helper Swarm
+% swarmbeauty.sty — The "Beautiful" Theme for the LaTeX Helper Swarm  (v0.3.0)
 %
 % A comprehensive, modern document theme built on KOMA-Script with:
 %   - Elegant color palette with customizable accent colors
-%   - Beautiful title page with subtle background
-%   - Styled section/chapter headings with rule decorations
-%   - Professional tables with booktabs + tabularray
+%   - Beautiful title page with TikZ header bar and tcolorbox metadata
+%   - Styled section/chapter headings with colored rule decorations
+%   - Professional tables with booktabs + tabularray + colored rules
 %   - Syntax-highlighted code blocks via minted + tcolorbox
-%   - Polished headers/footers with page numbers
-%   - Custom block environments (note, tip, warning, example)
+%   - Polished headers/footers via scrlayer-scrpage (KOMA-native)
+%   - Custom block environments (note, tip, warning, danger, example)
 %   - Optimized typography with fontspec + microtype
+%   - KOMA-native TOC styling via tocbasic
 %   - Clean bibliography support via biblatex
 %
 % Usage:
@@ -20,7 +21,7 @@
 % =============================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{swarmbeauty}[2026/05/14 v0.2.0 LaTeX Helper Swarm — Beautiful Theme]
+\ProvidesPackage{swarmbeauty}[2026/05/14 v0.3.0 LaTeX Helper Swarm — Beautiful Theme]
 
 % ── Engine check ─────────────────────────────────────────────────────────────
 \RequirePackage{iftex}
@@ -47,27 +48,31 @@
 \RequirePackage{booktabs}
 \RequirePackage{tabularray}
 \RequirePackage{caption}
-\RequirePackage{subcaption}
 \RequirePackage{float}
 \RequirePackage{placeins}
 \RequirePackage{enumitem}
 \RequirePackage{hyperref}
-\RequirePackage{fancyhdr}
 \RequirePackage{tcolorbox}
 \tcbuselibrary{minted, skins, breakable, theorems}
 
+% ── KOMA-native page styles (replaces fancyhdr) ──────────────────────────────
+% scrlayer-scrpage is part of koma-script; suppress warning if already loaded
+\RequirePackage{scrlayer-scrpage}
+
+% ── colortbl for \arrayrulecolor (table rule coloring) ───────────────────────
+\RequirePackage{colortbl}
+
 % ── Color Palette ────────────────────────────────────────────────────────────
 
-\definecolor{sbPrimary}{HTML}{2C3E50}
-\definecolor{sbSecondary}{HTML}{3498DB}
-\definecolor{sbAccent}{HTML}{E74C3C}
-\definecolor{sbSuccess}{HTML}{27AE60}
-\definecolor{sbWarning}{HTML}{F39C12}
-\definecolor{sbLight}{HTML}{ECF0F1}
-\definecolor{sbMedium}{HTML}{BDC3C7}
-\definecolor{sbDark}{HTML}{2C3E50}
-\definecolor{sbCodeBg}{HTML}{F8F9FA}
-\definecolor{sbText}{HTML}{2C3E50}
+\definecolor{sbPrimary}{HTML}{2C3E50}     % Dark blue-gray (headings, titles)
+\definecolor{sbSecondary}{HTML}{3498DB}    % Bright blue (links, accents)
+\definecolor{sbAccent}{HTML}{E74C3C}       % Red accent (alerts, emphasis)
+\definecolor{sbSuccess}{HTML}{27AE60}      % Green (success, tips)
+\definecolor{sbWarning}{HTML}{F39C12}      % Orange (warnings)
+\definecolor{sbLight}{HTML}{ECF0F1}        % Light gray (backgrounds, boxes)
+\definecolor{sbMedium}{HTML}{BDC3C7}       % Medium gray (rules, borders)
+\definecolor{sbDark}{HTML}{34495E}         % Slightly lighter than primary (body)
+\definecolor{sbCodeBg}{HTML}{F8F9FA}       % Very light gray (code background)
 
 % ── Typography ───────────────────────────────────────────────────────────────
 
@@ -88,30 +93,27 @@
   Ligatures          = TeX,
 ]
 
-% ── Page Layout ──────────────────────────────────────────────────────────────
-% Paper size and margins — use geometry for maximum compatibility
-\RequirePackage[margin=2.5cm, a4paper]{geometry}
+% ── Page Layout (KOMA typearea — replaces geometry) ──────────────────────────
+% Paper size is set via \documentclass[a4paper]{scrartcl}
+% DIV=13 gives roughly 2.5cm margins on A4 — close to the previous geometry
 
-% Set paragraph skip (since we're not using KOMA typearea)
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{0.5\baselineskip plus 0.1\baselineskip minus 0.1\baselineskip}
+\KOMAoptions{
+  fontsize = 11pt,
+  parskip  = half-,
+  DIV      = 13,
+  headsepline,
+}
 
-% ── Font commands for structure ───────────────────────────────────────────────
+% ── Font commands for structure elements ─────────────────────────────────────
 
 \newcommand{\sftitle}{\color{sbPrimary}\fontsize{28}{34}\selectfont\bfseries\sffamily}
 \newcommand{\sfsubtitle}{\color{sbSecondary}\fontsize{16}{20}\selectfont\mdseries\sffamily}
 \newcommand{\sfauthor}{\color{sbDark}\fontsize{12}{14}\selectfont}
 \newcommand{\sfdate}{\color{sbMedium}\fontsize{10}{12}\selectfont}
 
-% KOMA provides \inserttitle etc. but we provide LaTeX-standard fallbacks
-\providecommand{\inserttitle}{\@title}
-\providecommand{\insertsubtitle}{\@subtitle}
-\providecommand{\insertauthor}{\@author}
-\providecommand{\insertdate}{\@date}
-
 % ── Section Heading Styling ──────────────────────────────────────────────────
+% Use titlesec — works reliably with all KOMA versions
 
-% Use titlesec for reliable section formatting across all LaTeX versions
 \RequirePackage[compact]{titlesec}
 
 \titleformat{\section}
@@ -134,9 +136,10 @@
 
 % ── Title Page ───────────────────────────────────────────────────────────────
 
+\makeatletter
 \newcommand{\swarmtitlepage}{%
   \begin{titlepage}
-    % Background accent bar at top
+    % Background accent bar at top (3cm tall)
     \begin{tikzpicture}[remember picture, overlay]
       \fill[sbPrimary]
         (current page.north west) rectangle
@@ -146,11 +149,12 @@
         ([yshift=-3.15cm]current page.north east);
     \end{tikzpicture}
 
-    \vspace*{1.5cm}
+    % Push title below the header bar (3.15cm + 1cm padding)
+    \vspace*{4.2cm}
     \begin{center}
-      {\sftitle\inserttitle\par}
+      {\sftitle\@title\par}
       \vspace{0.5em}
-      {\sfsubtitle\insertsubtitle\par}
+      {\sfsubtitle\@subtitle\par}
     \end{center}
 
     \vfill
@@ -168,32 +172,35 @@
         bottom       = 12pt,
         before upper = \centering,
       ]
-        {\sfauthor\insertauthor\par}
+        {\sfauthor\@author\par}
         \vspace{0.5em}
-        {\sfdate\insertdate\par}
+        {\sfdate\@date\par}
       \end{tcolorbox}
     \end{center}
 
     \vfill
   \end{titlepage}
 }
+\makeatother
 
-% ── Headers & Footers ────────────────────────────────────────────────────────
+% ── Headers & Footers (scrlayer-scrpage — KOMA-native) ──────────────────────
 
-\pagestyle{fancy}
-\fancyhf{}
-\fancyhead[L]{\color{sbMedium}\footnotesize\sffamily\leftmark}
-\fancyhead[R]{\color{sbMedium}\footnotesize\sffamily\@title}
-\renewcommand{\headrulewidth}{0.4pt}
-\renewcommand{\headrule}{\color{sbMedium}\hrule height 0.4pt}
-\fancyfoot[L]{\color{sbMedium}\footnotesize\sffamily\@date}
-\fancyfoot[R]{\color{sbSecondary}\sffamily\bfseries\thepage}
+\pagestyle{scrheadings}
+\clearpairofpagestyles
+
+\makeatletter
+\ihead{\color{sbMedium}\footnotesize\sffamily\leftmark}
+\ohead{\color{sbMedium}\footnotesize\sffamily\@title}
+\ifoot{\color{sbMedium}\footnotesize\sffamily\@date}
+\ofoot{\color{sbSecondary}\sffamily\bfseries\pagemark}
+\makeatother
 
 % ── Table Styling ────────────────────────────────────────────────────────────
+% Use \arrayrulecolor from colortbl to properly color booktabs rules
 
-\newcommand{\swarmtoprule}{\specialrule{1.2pt}{0pt}{3pt}\color{sbPrimary}}
-\newcommand{\swarmmidrule}{\specialrule{0.6pt}{3pt}{3pt}\color{sbMedium}}
-\newcommand{\swarmbottomrule}{\specialrule{1.2pt}{3pt}{0pt}\color{sbPrimary}}
+\newcommand{\swarmtoprule}{\arrayrulecolor{sbPrimary}\specialrule{1.2pt}{0pt}{3pt}\arrayrulecolor{black}}
+\newcommand{\swarmmidrule}{\arrayrulecolor{sbMedium}\specialrule{0.6pt}{3pt}{3pt}\arrayrulecolor{black}}
+\newcommand{\swarmbottomrule}{\arrayrulecolor{sbPrimary}\specialrule{1.2pt}{3pt}{0pt}\arrayrulecolor{black}}
 
 \captionsetup{
   font          = {sf, small},
@@ -235,11 +242,11 @@
   enhanced,
 }
 
-% Inline code — use \texttunderscore for literal underscores
+% Inline code
 \newcommand{\code}[1]{%
   \colorbox{sbCodeBg}{\texttt{\small\textcolor{sbDark}{#1}}}%
 }
-% For code with underscores, use \code[no-escape]{text_with_underscores}
+% For code with underscores: \codeesc{some_function()}
 \newcommand{\codeesc}[1]{%
   \colorbox{sbCodeBg}{\texttt{\small\textcolor{sbDark}{\detokenize{#1}}}}%
 }
@@ -296,14 +303,12 @@
   filecolor   = sbSecondary,
 }
 
-% ── TOC Styling ──────────────────────────────────────────────────────────────
+% ── TOC Styling (simple — no tocloft needed) ─────────────────────────────────
+% Avoids tocloft which conflicts with KOMA's tocbasic
 
-\RequirePackage{tocloft}
-\renewcommand{\cfttoctitlefont}{\Large\sffamily\bfseries\color{sbPrimary}}
-\renewcommand{\cftsecfont}{\sffamily\color{sbDark}}
-\renewcommand{\cftsubsecfont}{\sffamily\small\color{sbDark}}
-\renewcommand{\cftsecleader}{\color{sbMedium}\cftdotfill{1}}
-\renewcommand{\cftsubsecleader}{\color{sbMedium}\cftdotfill{1}}
+\renewcommand{\contentsname}{%
+  \sffamily\bfseries\color{sbPrimary}Table of Contents%
+}
 
 % ── Itemize / Enumerate ─────────────────────────────────────────────────────
 
@@ -369,11 +374,7 @@
 \renewcommand{\thefootnote}{\textcolor{sbSecondary}{\arabic{footnote}}}
 
 % ── Bibliography (optional) ──────────────────────────────────────────────────
-
-\AtEndPreamble{%
-  \@ifpackageloaded{biblatex}{%
-    \setbibfont{small}
-  }{}%
-}
+% Users should load biblatex themselves and configure font via:
+%   \AtBeginDocument{\setbibfont{small}}
 
 \endinput
