@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.24.0 (TeX Live 2026)  (format=lualatex 2026.5.13)  13 MAY 2026 21:21
+This is LuaHBTeX, Version 1.24.0 (TeX Live 2026)  (format=lualatex 2026.5.13)  14 MAY 2026 08:11
  system commands enabled.
 **/home/z/swarm/src/templates/demo-beautiful.tex
 (/home/z/swarm/src/templates/demo-beautiful.tex
@@ -175,7 +175,7 @@ Class scrartcl Info: Redefining `\numberline' on input line 6469.
 \bibindent=\dimen149
 )
 (/home/z/swarm/src/themes/swarmbeauty.sty
-Package: swarmbeauty 2026/05/14 v0.3.0 LaTeX Helper Swarm — Beautiful Theme
+Package: swarmbeauty 2026/05/14 v0.5.0 LaTeX Helper Swarm — Beautiful Theme
 
 (/home/z/swarm/texlive/texmf-dist/tex/generic/iftex/iftex.sty
 Package: iftex 2024/12/12 v1.0g TeX engine tests
@@ -1227,8 +1227,7 @@ atex-cache/generic/names/luaotfload-lookup-cache.luc.
 Package fontspec Info: 
 (fontspec)             Font family 'LatinModernRoman(0)' created for font
 (fontspec)             'Latin Modern Roman' with options
-(fontspec)             [Ligatures=TeX,AutoFakeBold = 2,AutoFakeSlant =
-(fontspec)             0.2,Ligatures = TeX].
+(fontspec)             [Ligatures=TeX,Ligatures = TeX].
 (fontspec)              
 (fontspec)              This font family consists of the following NFSS
 (fontspec)             series/shapes:
@@ -1236,23 +1235,19 @@ Package fontspec Info:
 (fontspec)             - 'normal' (m/n) with NFSS spec.: <->"name:Latin Modern
 (fontspec)             Roman:mode=node;script=latn;language=dflt;+tlig;"
 (fontspec)             - 'bold' (b/n) with NFSS spec.: <->"name:Latin Modern
-(fontspec)             Roman:mode=node;script=latn;language=dflt;embolden=2;+tl
-ig;"
+(fontspec)             Roman/B:mode=node;script=latn;language=dflt;+tlig;"
 (fontspec)             - 'italic' (m/it) with NFSS spec.: <->"name:Latin
 (fontspec)             Modern
-(fontspec)             Roman:mode=node;script=latn;language=dflt;slant=0.2;+tli
-g;"
+(fontspec)             Roman/I:mode=node;script=latn;language=dflt;+tlig;"
 (fontspec)             - 'bold italic' (b/it) with NFSS spec.: <->"name:Latin
 (fontspec)             Modern
-(fontspec)             Roman:mode=node;script=latn;language=dflt;embolden=2;sla
-nt=0.2;+tlig;"
+(fontspec)             Roman/BI:mode=node;script=latn;language=dflt;+tlig;"
 
 
 Package fontspec Info: 
 (fontspec)             Font family 'LatinModernSans(0)' created for font
 (fontspec)             'Latin Modern Sans' with options
-(fontspec)             [Ligatures=TeX,AutoFakeBold = 2,AutoFakeSlant =
-(fontspec)             0.2,Ligatures = TeX].
+(fontspec)             [Ligatures=TeX,Ligatures = TeX].
 (fontspec)              
 (fontspec)              This font family consists of the following NFSS
 (fontspec)             series/shapes:
@@ -1260,16 +1255,13 @@ Package fontspec Info:
 (fontspec)             - 'normal' (m/n) with NFSS spec.: <->"name:Latin Modern
 (fontspec)             Sans:mode=node;script=latn;language=dflt;+tlig;"
 (fontspec)             - 'bold' (b/n) with NFSS spec.: <->"name:Latin Modern
-(fontspec)             Sans:mode=node;script=latn;language=dflt;embolden=2;+tli
-g;"
+(fontspec)             Sans/B:mode=node;script=latn;language=dflt;+tlig;"
 (fontspec)             - 'italic' (m/it) with NFSS spec.: <->"name:Latin
 (fontspec)             Modern
-(fontspec)             Sans:mode=node;script=latn;language=dflt;slant=0.2;+tlig
-;"
+(fontspec)             Sans/I:mode=node;script=latn;language=dflt;+tlig;"
 (fontspec)             - 'bold italic' (b/it) with NFSS spec.: <->"name:Latin
 (fontspec)             Modern
-(fontspec)             Sans:mode=node;script=latn;language=dflt;embolden=2;slan
-t=0.2;+tlig;"
+(fontspec)             Sans/BI:mode=node;script=latn;language=dflt;+tlig;"
 
 
 Package fontspec Info: 
@@ -1277,7 +1269,13 @@ Package fontspec Info:
 
 
 Package fontspec Info: 
-(fontspec)             Latin Modern Mono scale = 0.9999967668407183.
+(fontspec)             Could not resolve font "Latin Modern Mono/BI" (it
+(fontspec)             probably doesn't exist).
+
+
+Package fontspec Info: 
+(fontspec)             Could not resolve font "Latin Modern Mono/B" (it
+(fontspec)             probably doesn't exist).
 
 
 Package fontspec Info: 
@@ -1285,11 +1283,7 @@ Package fontspec Info:
 
 
 Package fontspec Info: 
-(fontspec)             Latin Modern Mono scale = 0.9999967668407183.
-
-
-Package fontspec Info: 
-(fontspec)             Latin Modern Mono scale = 0.9999967668407183.
+(fontspec)             Latin Modern Mono/I scale = 0.9999967668407183.
 
 
 Package fontspec Info: 
@@ -1297,8 +1291,7 @@ Package fontspec Info:
 (fontspec)             'Latin Modern Mono' with options
 (fontspec)             [WordSpace={1,0,0},HyphenChar=None,PunctuationSpace=Word
 Space,Scale
-(fontspec)             = MatchLowercase,AutoFakeBold = 2,AutoFakeSlant =
-(fontspec)             0.2,Ligatures = TeX].
+(fontspec)             = MatchLowercase,Ligatures = TeX].
 (fontspec)              
 (fontspec)              This font family consists of the following NFSS
 (fontspec)             series/shapes:
@@ -1306,21 +1299,12 @@ Space,Scale
 (fontspec)             - 'normal' (m/n) with NFSS spec.:
 (fontspec)             <->s*[0.9999967668407183]"name:Latin Modern
 (fontspec)             Mono:mode=node;script=latn;language=dflt;+tlig;"
-(fontspec)             - 'bold' (b/n) with NFSS spec.:
-(fontspec)             <->s*[0.9999967668407183]"name:Latin Modern
-(fontspec)             Mono:mode=node;script=latn;language=dflt;embolden=2;+tli
-g;"
 (fontspec)             - 'italic' (m/it) with NFSS spec.:
 (fontspec)             <->s*[0.9999967668407183]"name:Latin Modern
-(fontspec)             Mono:mode=node;script=latn;language=dflt;slant=0.2;+tlig
-;"
-(fontspec)             - 'bold italic' (b/it) with NFSS spec.:
-(fontspec)             <->s*[0.9999967668407183]"name:Latin Modern
-(fontspec)             Mono:mode=node;script=latn;language=dflt;embolden=2;slan
-t=0.2;+tlig;"
+(fontspec)             Mono/I:mode=node;script=latn;language=dflt;+tlig;"
 
 Class scrartcl Info: File `scrsize11pt.clo' used to setup font sizes on input l
-ine 105.
+ine 100.
 
 (/home/z/swarm/texlive/texmf-dist/tex/latex/koma-script/scrsize11pt.clo
 File: scrsize11pt.clo 2026/02/02 v3.49.2 KOMA-Script font size class option (11
@@ -1350,52 +1334,8 @@ Package typearea Info: These are the values describing the layout:
 (typearea)              \topskip        = 11.0pt
 (typearea)              \footskip       = 47.6pt
 (typearea)              \baselineskip   = 13.6pt
-(typearea)              on input line 105.
-
-Class scrartcl Warning: Usage of package `titlesec' together
-(scrartcl)              with a KOMA-Script class is not recommended.
-(scrartcl)              I'd suggest to use KOMA-Script features
-(scrartcl)              like \setkomafont, \RedeclareSectionCommand, \sectionli
-nesformat
-(scrartcl)              and several others to re-configure section
-(scrartcl)              headings.
-(scrartcl)              Nevertheless, using requested
-(scrartcl)              package `titlesec' on input line 118.
-
-(/home/z/swarm/texlive/texmf-dist/tex/latex/titlesec/titlesec.sty
-Package: titlesec 2025/01/04 v2.17 Sectioning titles
-\ttl@box=\box123
-\beforetitleunit=\skip79
-\aftertitleunit=\skip80
-\ttl@plus=\dimen385
-\ttl@minus=\dimen386
-\ttl@toksa=\toks50
-\titlewidth=\dimen387
-\titlewidthlast=\dimen388
-\titlewidthfirst=\dimen389
-
-
-Package titlesec Warning: Non standard sectioning command \section
-(titlesec)                detected. Using default spacing and no format.
-
-
-Package titlesec Warning: Non standard sectioning command \subsection
-(titlesec)                detected. Using default spacing and no format.
-
-
-Package titlesec Warning: Non standard sectioning command \subsubsection
-(titlesec)                detected. Using default spacing and no format.
-
-
-Package titlesec Warning: Non standard sectioning command \paragraph
-(titlesec)                detected. Using default spacing and no format.
-
-
-Package titlesec Warning: Non standard sectioning command \subparagraph
-(titlesec)                detected. Using default spacing and no format.
-
-)
-Package hyperref Info: Option `colorlinks' set `true' on input line 304.
+(typearea)              on input line 100.
+Package hyperref Info: Option `colorlinks' set `true' on input line 327.
 \c@tcb@cnt@theorem=\count430
 \c@tcb@cnt@definition=\count431
 \c@tcb@cnt@lemma=\count432
@@ -1418,9 +1358,9 @@ File: bkm-pdftex.def 2023-12-10 v1.31 bookmark driver for pdfTeX and luaTeX (HO
 )
 \BKM@id=\count433
 ))
-No file demo-beautiful.aux.
-
+(./demo-beautiful.aux)
 \openout1 = demo-beautiful.aux
+
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 23.
 LaTeX Font Info:    ... okay on input line 23.
 LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 23.
@@ -1450,19 +1390,20 @@ Package scrbase Info: activating english \listfigurename on input line 23.
 Package scrbase Info: activating english \listtablename on input line 23.
 Package scrbase Info: activating english \refname on input line 23.
 Package scrbase Info: activating english \indexname on input line 23.
+
 (/home/z/swarm/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count434
-\scratchdimen=\dimen390
-\scratchbox=\box124
+\scratchdimen=\dimen385
+\scratchbox=\box123
 \nofMPsegments=\count435
 \nofMParguments=\count436
-\everyMPshowfont=\toks51
+\everyMPshowfont=\toks50
 \MPscratchCnt=\count437
-\MPscratchDim=\dimen391
+\MPscratchDim=\dimen386
 \MPnumerator=\count438
 \makeMPintoPDFobject=\count439
-\everyMPtoPDFconversion=\toks52
+\everyMPtoPDFconversion=\toks51
 ) (/home/z/swarm/texlive/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
 Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
@@ -1576,10 +1517,21 @@ Package microtype Info: Loading generic protrusion settings for font family
 [1
 
 {/home/z/swarm/texlive/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 35.
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 35.
+
 Package tocbasic Info: character protrusion at toc deactivated on input line 35
 .
-
-No file demo-beautiful.toc.
+(./demo-beautiful.toc)
 \tf@toc=\write5
 
 \openout5 = demo-beautiful.toc
@@ -1596,6 +1548,7 @@ ilable
 (Font)              Font shape `TU/LatinModernSans(0)/m/it' tried instead on in
 put line 36.
 LaTeX Font Info:    Trying to load font information for U+msa on input line 36.
+
 
 (/home/z/swarm/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
@@ -1625,6 +1578,18 @@ LaTeX Font Info:    Font shape `TU/LatinModernSans(0)/b/sl' in size <10.95> not
 (Font)              Font shape `TU/LatinModernSans(0)/b/it' tried instead on in
 put line 36.
  [2]
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 42.
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 42.
+
 LaTeX Font Info:    Font shape `TU/LatinModernMono(0)/m/n' will be
 (Font)              scaled to size 10.95pt on input line 44.
 Package microtype Info: Loading generic protrusion settings for font family
@@ -1633,36 +1598,222 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             See the microtype manual for details.
 LaTeX Font Info:    Font shape `TU/LatinModernMono(0)/m/n' will be
 (Font)              scaled to size 10.0pt on input line 44.
- [3]
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 55.
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 55.
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 72.
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 72.
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 79.
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 79.
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 86.
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 86.
+
+[3]
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 108.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 108.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 143.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 143.
+
+
 [4]
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 148.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 148.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 165.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 165.
+
+
 \g__cctab_tmpvii_cctab=\catcodetable16
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 195.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 195.
+
+
 \g__tcobox_out_iow=\write6
 
 \openout6 = demo-beautiful.listing
 \pydata@fh@0=\write7
 
 \openout7 = _70DA7F4D3211AD43B32746DC63D0DCAD.data.minted
-runsystem(latexminted config  --timestamp 20260513212129Z 70DA7F4D3211AD43B32746
+runsystem(latexminted config  --timestamp 20260514081124Z 70DA7F4D3211AD43B32746
 DC63D0DCAD)...executed.
- (./_70DA7F4D3211AD43B32746DC63D0DCAD.config.minted)
-runsystem(latexminted cleanconfig  --timestamp 20260513212129Z 70DA7F4D3211AD43B
+(./_70DA7F4D3211AD43B32746DC63D0DCAD.config.minted)
+runsystem(latexminted cleanconfig  --timestamp 20260514081124Z 70DA7F4D3211AD43B
 32746DC63D0DCAD)...executed.
-\minted@intempfile=\read5
 
-\openout7 = _70DA7F4D3211AD43B32746DC63D0DCAD.data.minted
+(./_minted/tango.style.minted)
+(./_minted/31D745BDF3B118277CA85F8CCDAD47C0.highlight.minted
+
+LaTeX Font Warning: Font shape `TU/LatinModernMono(0)/b/n' undefined
+(Font)              using `TU/LatinModernMono(0)/m/n' instead on input line 2.
+
 LaTeX Font Info:    Font shape `TU/LatinModernMono(0)/b/n' will be
-(Font)              scaled to size 10.0pt on input line 211.
-
+(Font)              scaled to size 10.0pt on input line 2.
+LaTeX Font Info:    Font shape `TU/LatinModernMono(0)/m/it' will be
+(Font)              scaled to size 10.0pt on input line 3.
+)
 \openout6 = demo-beautiful.listing
- [5] [6] [7]
-runsystem(latexminted batch  --timestamp 20260513212129Z 70DA7F4D3211AD43B32746D
-C63D0DCAD)...executed.
+ (./_minted/52F782E5CBEECDC54D79120C0D9C296B.highlight.minted) [5]
 
-(./demo-beautiful.aux)
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 224.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 224.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 250.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 250.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 263.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 263.
+
+
+[6]
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 286.
+
+
+
+Package scrbase Warning: Usage of deprecated command `\ifstr'.
+(scrbase)                The command has been renamed because of a
+(scrbase)                recommendation of The LaTeX Project Team.
+(scrbase)                Please replace `\ifstr' by `\Ifstr' on input line 286.
+
+
+[7]
+\openout7 = _70DA7F4D3211AD43B32746DC63D0DCAD.data.minted
+
+runsystem(latexminted clean  --timestamp 20260514081124Z 70DA7F4D3211AD43B32746D
+C63D0DCAD)...executed.
+ (./demo-beautiful.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-03-20>
  ***********
+
+
+LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 
 
 LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
@@ -1670,36 +1821,41 @@ LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
 )
 
 Here is how much of LuaTeX's memory you used:
- 45296 strings out of 475900
+ 45148 strings out of 475900
  100000,1977958 words of node,token memory allocated
- 568 words of node memory still in use:
-   6 hlist, 2 vlist, 2 rule, 2 glue, 4 kern, 1 glyph, 10 attribute, 65 glue_spec
+ 573 words of node memory still in use:
+   6 hlist, 2 vlist, 2 rule, 2 glue, 4 kern, 1 glyph, 10 attribute, 66 glue_spec
 , 10 attribute_list, 2 write nodes
-   avail lists: 1:8,2:2729,3:1269,4:388,5:362,6:147,7:4880,8:20,9:1770,10:9,11:3
+   avail lists: 1:5,2:3230,3:1278,4:646,5:426,6:158,7:4926,8:20,9:1832,10:9,11:3
 49,12:1
- 67003 multiletter control sequences out of 65536+600000
- 69 fonts using 6555663 bytes
- 125i,21n,129p,11244b,1081s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmsans10-regular.otf>
-</home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmmono10-regular.otf>
-</home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmsans12-regular.otf>
-</home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmsans9-regular.otf><
-/home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmroman10-regular.otf>
-</home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmroman12-regular.otf
-></home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmsans17-regular.otf
-></home/z/swarm/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></h
-ome/z/swarm/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></home/
-z/swarm/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></home/z/swa
-rm/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></home/z/swarm/te
-xlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></home/z/swarm/texlive/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></home/z/swarm/texlive/texmf-
-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></home/z/swarm/texlive/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmsy8.pfb></home/z/swarm/texlive/texmf-dist/font
-s/type1/public/amsfonts/symbols/msbm10.pfb>
-Output written on demo-beautiful.pdf (7 pages, 122104 bytes).
+ 66836 multiletter control sequences out of 65536+600000
+ 85 fonts using 8645359 bytes
+ 125i,20n,129p,11244b,1109s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmmono10-italic.otf><
+/home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmroman6-regular.otf><
+/home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmroman10-bolditalic.o
+tf></home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmroman10-italic.o
+tf></home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmroman10-bold.otf
+></home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmmono10-regular.otf
+></home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmsans10-regular.otf
+></home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmsans9-oblique.otf>
+</home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmroman10-regular.otf
+></home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmroman12-regular.ot
+f></home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmsans17-regular.ot
+f></home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmsans10-bold.otf><
+/home/z/swarm/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></hom
+e/z/swarm/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></home/z/
+swarm/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></home/z/swarm
+/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></home/z/swarm/texl
+ive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></home/z/swarm/texlive/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></home/z/swarm/texlive/texmf-di
+st/fonts/type1/public/amsfonts/cm/cmsy10.pfb></home/z/swarm/texlive/texmf-dist/f
+onts/type1/public/amsfonts/cm/cmsy8.pfb></home/z/swarm/texlive/texmf-dist/fonts/
+type1/public/amsfonts/symbols/msbm10.pfb>
+Output written on demo-beautiful.pdf (7 pages, 142207 bytes).
 
-PDF statistics: 205 PDF objects out of 1000 (max. 8388607)
- 164 compressed objects within 2 object streams
+PDF statistics: 255 PDF objects out of 1000 (max. 8388607)
+ 199 compressed objects within 2 object streams
  42 named destinations out of 1000 (max. 1048576)
  128 words of extra memory for PDF output out of 10000 (max. 100000000)
 

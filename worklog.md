@@ -134,3 +134,23 @@ Stage Summary:
 - swarmperf.sty v1.0 verified and fixed (SPACCENT color bug)
 - Both themes now compile cleanly
 - QA Task #12 (performance comparison) unblocked
+
+---
+Task ID: 1
+Agent: Programmer (main)
+Task: Consolidate setup.sh and setup-env.sh into a single script (Task #19)
+
+Work Log:
+- Read both setup scripts and compile.py to understand path mismatch
+- Identified 4 problems: path mismatch (texlive/2025/ vs texlive/bin/), redundant scripts, missing --binary flag, hard sudo dependency
+- Rewrote setup.sh merging best features from both scripts
+- Converted setup-env.sh to deprecation stub that forwards to setup.sh
+- Verified: bash -n syntax check, --help flag, deprecation stub forwarding, path consistency with compile.py, demo compilation (7 pages, 139KB)
+- Updated BLACKBOARD.md: Task #19 marked done, Task #37 created for QA review, communication log entry added
+- Updated programmer journal
+
+Stage Summary:
+- Consolidated two setup scripts into one robust script with platform detection, optional sudo, --binary flag, installer caching, and skip flags
+- TeX Live path now consistent: texlive/bin/<arch>/ in both setup.sh and compile.py
+- setup-env.sh kept as thin deprecation stub
+- All tests pass, demo compiles clean
