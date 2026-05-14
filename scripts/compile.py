@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-compile.py — Smart LaTeX compilation helper (v2.1).
+compile.py — Smart LaTeX compilation helper (v2.2).
 
 Usage:
     python3 scripts/compile.py <file.tex> [options]
@@ -66,12 +66,23 @@ UNICODE_ENGINE_TRIGGERS = [
 
 # Warning patterns to extract from LaTeX output
 LATEX_WARNING_RE = re.compile(r"^(.*(?:Warning|Overfull|Underfull).*)$", re.MULTILINE)
+
+# Bib rerun patterns — shared between RERUN_RE and inline checks in compile_tex()
+BIB_RERUN_RE = re.compile(
+    r"Please \(re\)?run (?:Biber|BibTeX|bibtex|biber)"
+    r"|.*rerun (?:Biber|BibTeX|bibtex|biber)",
+    re.IGNORECASE,
+)
+
+# Warning patterns that indicate another compilation pass is needed.
+# Includes LaTeX cross-ref warnings and bibliography rerun requests.
+# Inherits IGNORECASE from BIB_RERUN_RE so bib tool names match regardless of case.
 RERUN_RE = re.compile(
     r"LaTeX Warning: .*undefined references"
     r"|LaTeX Warning: .*Rerun to get cross-references right"
     r"|LaTeX Warning: .*Label\(s\) may have changed"
-    r"|Please \(re\)?run (?:Biber|BibTeX|bibtex|biber)"
-    r"|.*rerun (?:Biber|BibTeX|bibtex|biber)"
+    r"|" + BIB_RERUN_RE.pattern,
+    re.IGNORECASE,
 )
 
 
@@ -194,11 +205,11 @@ def detect_bibliography(tex_content: str) -> Optional[str]:
     return None
 
 
-def has_undefined_references(log_output: str) -> bool:
-    """Check if the LaTeX log mentions undefined references or requests a rerun.
+def needs_rerun(log_output: str) -> bool:
+    """Check if the LaTeX log indicates another compilation pass is needed.
 
     Catches: undefined references, label changes, cross-reference reruns,
-    and "Please (re)run Biber/BibTeX" messages from bib tools.
+    and "Please (re)run Biber/BibTeX" messages from bibliography tools.
     """
     return bool(RERUN_RE.search(log_output))
 
@@ -307,14 +318,10 @@ def compile_tex(
         passes_run += 1
 
     # ── Extra pass for cross-references or bib reruns ─────────────────────
-    if has_undefined_references(all_stdout) and passes_run < smart_max:
+    if needs_rerun(all_stdout) and passes_run < smart_max:
         # If the rerun request is from Biber/BibTeX (not just cross-refs),
         # run the bib tool again before the extra LaTeX pass.
-        if bib_engine and re.search(
-            r"Please \(re\)?run (?:Biber|BibTeX|bibtex|biber)|"
-            r"rerun (?:Biber|BibTeX|bibtex|biber)",
-            all_stdout,
-        ):
+        if bib_engine and BIB_RERUN_RE.search(all_stdout):
             bib_base = tex_file.stem
             bib_cmd = [bib_engine, bib_base]
             subprocess.run(bib_cmd, env=env, capture_output=True, text=True, cwd=workdir)
@@ -325,12 +332,8 @@ def compile_tex(
         passes_run += 1
 
         # Check again — some complex documents need yet another pass
-        if has_undefined_references(all_stdout) and passes_run < smart_max:
-            if bib_engine and re.search(
-                r"Please \(re\)?run (?:Biber|BibTeX|bibtex|biber)|"
-                r"rerun (?:Biber|BibTeX|bibtex|biber)",
-                all_stdout,
-            ):
+        if needs_rerun(all_stdout) and passes_run < smart_max:
+            if bib_engine and BIB_RERUN_RE.search(all_stdout):
                 bib_base = tex_file.stem
                 subprocess.run([bib_engine, bib_base], env=env, capture_output=True,
                                text=True, cwd=workdir)
@@ -387,12 +390,11 @@ def clean_aux(tex_file: Path) -> int:
         if f.exists():
             f.unlink()
             removed += 1
-    # Remove minted cache directories (_minted-<filename>/)
-    minted_prefix = f"_minted-{base}"
-    for p in workdir.iterdir():
-        if p.is_dir() and p.name.startswith("_minted-"):
-            shutil.rmtree(p)
-            removed += 1
+    # Remove minted cache directory for this specific file only
+    minted_dir = workdir / f"_minted-{base}"
+    if minted_dir.is_dir():
+        shutil.rmtree(minted_dir)
+        removed += 1
     return removed
 
 

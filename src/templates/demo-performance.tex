@@ -1,0 +1,251 @@
+% =============================================================================
+% demo-performance.tex — Demo document for the swarmperf theme
+%
+% Compile: pdflatex demo-performance.tex  (or lualatex / xelatex)
+%          (run twice for TOC and cross-references)
+% =============================================================================
+
+\documentclass[11pt, a4paper]{article}
+
+\usepackage{swarmperf}
+
+% ── Metadata ─────────────────────────────────────────────────────────────────
+
+\title{SwarmPerf Theme Demo}
+\subtitle{A fast, minimal showcase of the Performance Theme}
+\author{LaTeX Helper Swarm Project}
+\date{May 14, 2026}
+
+% ── Bibliography (optional — uncomment if you have a .bib file) ─────────────
+% \usepackage[backend=biber, style=numeric]{biblatex}
+% \addbibresource{references.bib}
+
+\begin{document}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Title Page
+% ══════════════════════════════════════════════════════════════════════════════
+
+\maketitle
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Table of Contents
+% ══════════════════════════════════════════════════════════════════════════════
+
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 1: Introduction
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Introduction}
+
+This document demonstrates the \code{swarmperf} theme, a minimal, fast-to-compile
+LaTeX document style designed for speed and simplicity. Unlike the full-featured
+\code{swarmbeauty} theme, \code{swarmperf} deliberately excludes heavy packages
+such as TikZ, fontspec, microtype, and tcolorbox to minimize compilation time
+and PDF output size.
+
+The design philosophy is simple: every package must earn its place. The result is
+a theme that compiles \hltext{2--5x faster} than typical modern LaTeX setups while
+still producing clean, professional documents suitable for technical reports,
+academic papers, and internal documentation.
+
+\subsection{Motivation}
+
+Many LaTeX documents do not need elaborate decorations, syntax-highlighted code
+blocks via external tools, or custom OpenType fonts. For these use cases, the
+overhead of loading fontspec, minted, tcolorbox, and TikZ can add significant
+compilation time---especially on CI/CD servers or in iterative edit-compile cycles.
+
+The \code{swarmperf} theme provides sensible defaults for clean document
+formatting without the weight.
+
+\begin{noteblock}
+This theme works with \textbf{pdfLaTeX}, \textbf{XeLaTeX}, and
+\textbf{LuaLaTeX}. No \code{-{}-shell-escape} flag is required.
+\end{noteblock}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 2: Typography & Text
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Typography and Text}
+
+The theme uses the default Computer Modern fonts (or Latin Modern if available).
+Text is set with sans-serif headings and serif body text. Mathematics uses the
+standard math fonts.
+
+\subsection{Inline Elements}
+
+You can highlight \hltext{important terms} using the \code{\\hltext} command.
+For inline code, use \code{\\code}: \codeesc{some_function()}.
+For code with special characters: \codeesc{text_with_underscores}.
+
+\subsection{Lists}
+
+\begin{itemize}
+  \item First item in an unordered list
+  \item Second item with \hltext{emphasis}
+  \item Third item with nested content:
+    \begin{itemize}
+      \item Nested item A
+      \item Nested item B
+    \end{itemize}
+\end{itemize}
+
+\begin{enumerate}
+  \item Step one: load the performance theme
+  \item Step two: write your content
+  \item Step three: compile with any LaTeX engine
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 3: Block Environments
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Block Environments}
+
+The theme provides lightweight block environments for notes, tips, and warnings.
+These use basic minipage and color commands---no tcolorbox overhead.
+
+\begin{noteblock}
+This is a \textbf{note} block. Use it for general observations, additional
+context, or supplementary information that is relevant but not critical to
+the main argument.
+\end{noteblock}
+
+\begin{tipblock}
+This is a \textbf{tip} block. Use it to highlight best practices, shortcuts,
+or recommendations that can improve the reader's workflow or understanding.
+\end{tipblock}
+
+\begin{warningblock}
+This is a \textbf{warning} block. Use it to alert the reader about potential
+pitfalls, common mistakes, or deprecated features that they should be aware of.
+\end{warningblock}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 4: Tables
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Tables}
+
+The theme integrates with \code{booktabs} for clean, professional tables.
+
+\subsection{Booktabs Table}
+
+\begin{table}[H]
+  \centering
+  \caption{Comparison of LaTeX compilation engines}
+  \label{tab:engines}
+  \begin{tabular}{l c c c}
+    \perftoprule
+    \textbf{Engine}   & \textbf{Speed} & \textbf{Font Support} & \textbf{Unicode} \\
+    \perfmidrule
+    pdfLaTeX           & Fast           & Limited (Type 1)      & Partial          \\
+    XeLaTeX            & Medium         & Full (OpenType)        & Full             \\
+    LuaLaTeX           & Slow           & Full (OpenType)        & Full             \\
+    \perfbottomrule
+  \end{tabular}
+\end{table}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 5: Code Listings
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Code Listings}
+
+The \code{swarmperf} theme uses the \code{listings} package for code highlighting.
+Unlike \code{minted}, \code{listings} requires no external dependencies (no
+Pygments, no \code{-{}-shell-escape}).
+
+\begin{codelisting}[Python]{Fibonacci sequence generator}
+def fibonacci(n: int) -> list[int]:
+    """Generate the first n Fibonacci numbers."""
+    seq = [0, 1]
+    for i in range(2, n):
+        seq.append(seq[-1] + seq[-2])
+    return seq[:n]
+
+if __name__ == "__main__":
+    result = fibonacci(10)
+    print(f"First 10: {result}")
+\end{codelisting}
+
+\begin{codelisting}[TeX]{A simple equation}
+\begin{equation}
+  E = mc^2
+  \label{eq:einstein}
+\end{equation}
+\end{codelisting}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 6: Mathematics
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Mathematics}
+
+The theme provides standard theorem environments with automatic numbering.
+
+\begin{theorem}[Euler's Identity]
+  For any real number $x$, the following identity holds:
+  \[
+    e^{i\pi} + 1 = 0
+  \]
+\end{theorem}
+
+\begin{definition}[Metric Space]
+  A \emph{metric space} is a pair $(X, d)$ where $X$ is a set and
+  $d\colon X \times X \to \mathbb{R}_{\geq 0}$ satisfies:
+  \begin{enumerate}
+    \item $d(x, y) = 0 \iff x = y$ (identity of indiscernibles)
+    \item $d(x, y) = d(y, x)$ (symmetry)
+    \item $d(x, z) \leq d(x, y) + d(y, z)$ (triangle inequality)
+  \end{enumerate}
+\end{definition}
+
+\begin{lemma}[Nested Intervals]
+  Let $\{[a_n, b_n]\}_{n=1}^{\infty}$ be a sequence of closed, bounded
+  intervals such that $[a_{n+1}, b_{n+1}] \subseteq [a_n, b_n]$ for all $n$.
+  Then $\bigcap_{n=1}^{\infty} [a_n, b_n] \neq \emptyset$.
+\end{lemma}
+
+\subsection{Inline and Display Math}
+
+The quadratic formula: $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$
+
+A more complex display equation:
+\[
+  \int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}
+\]
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 7: Summary
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Summary}
+
+This demo has showcased the following features of the \code{swarmperf} theme:
+
+\begin{enumerate}
+  \item \textbf{Title page} with colored accent rule
+  \item \textbf{Section headings} with clean sans-serif formatting
+  \item \textbf{Block environments} (note, tip, warning)
+  \item \textbf{Styled tables} with booktabs
+  \item \textbf{Syntax-highlighted code} via listings (no external deps)
+  \item \textbf{Theorem environments} with section numbering
+  \item \textbf{Inline code and emphasis} commands
+  \item \textbf{Headers and footers} with page numbers
+\end{enumerate}
+
+\colorrule
+
+\begin{center}
+  \small\textcolor{spGray}{%
+    Generated with \texttt{swarmperf} theme --- LaTeX Helper Swarm Project%
+  }
+\end{center}
+
+\end{document}

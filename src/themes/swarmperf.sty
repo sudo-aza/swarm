@@ -1,0 +1,271 @@
+% =============================================================================
+% swarmperf.sty — The "Performance" Theme for the LaTeX Helper Swarm  (v1.0)
+%
+% A minimal, fast-to-compile document theme optimized for:
+%   - Maximum compilation speed (works with pdfLaTeX, XeLaTeX, LuaLaTeX)
+%   - Zero external dependencies (no Pygments, no fontspec, no shell-escape)
+%   - Small PDF output size
+%   - Clean, professional typography with minimal overhead
+%
+% Design philosophy: every package must earn its place. Heavy packages like
+% TikZ, fontspec, microtype, tcolorbox, and minted are deliberately excluded
+% to minimize load and compilation time. Uses `listings` instead of `minted`
+% for code highlighting, `fancyhdr` for headers/footers, and basic LaTeX
+% environments instead of tcolorbox for blocks.
+%
+% NOTE: titlesec is NOT used due to known incompatibility with LuaLaTeX in
+% TeX Live 2026. Standard LaTeX sectioning commands are used instead.
+%
+% Usage:
+%   \documentclass[11pt, a4paper]{article}      % or scrartcl
+%   \usepackage{swarmperf}
+%
+% Compatible with: pdfLaTeX (fastest), XeLaTeX, LuaLaTeX
+% =============================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{swarmperf}[2026/05/14 v1.0 LaTeX Helper Swarm — Performance Theme]
+
+% ── Core packages (minimal set) ──────────────────────────────────────────────
+\RequirePackage{xcolor}
+\RequirePackage{graphicx}
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+\RequirePackage{mathtools}
+\RequirePackage{booktabs}
+\RequirePackage{caption}
+\RequirePackage{float}
+\RequirePackage{placeins}
+\RequirePackage{enumitem}
+\RequirePackage{fancyhdr}
+\RequirePackage{listings}
+\RequirePackage{hyperref}
+
+% ── Color Palette (minimal — 5 colors) ──────────────────────────────────────
+
+\definecolor{spDark}{HTML}{2C3E50}      % Dark blue-gray (headings, titles)
+\definecolor{spAccent}{HTML}{3498DB}     % Bright blue (links, accents)
+\definecolor{spGray}{HTML}{7F8C8D}      % Medium gray (subtle elements)
+\definecolor{spLight}{HTML}{F2F3F4}      % Light gray (backgrounds)
+\definecolor{spCodeBg}{HTML}{F8F9FA}    % Very light gray (code background)
+
+% ── Page Layout ─────────────────────────────────────────────────────────────
+% Use geometry for simple, reliable page setup. Works with article, scrartcl, etc.
+
+\RequirePackage[
+  a4paper,
+  left   = 2.5cm,
+  right  = 2.5cm,
+  top    = 2.5cm,
+  bottom = 2.5cm,
+  headheight = 14pt,
+]{geometry}
+
+% ── Paragraph spacing ───────────────────────────────────────────────────────
+\parskip  = 0.5ex plus 0.2ex
+\parindent = 0pt
+
+% ── \subtitle compatibility ────────────────────────────────────────────────
+% \subtitle is built into KOMA-Script but not in standard article class.
+% Provide a definition so it works with both article and scrartcl.
+
+\makeatletter
+\providecommand{\subtitle}[1]{\gdef\@subtitle{#1}}
+\providecommand{\@subtitle}{}
+\makeatother
+
+% ── Section Heading Styling ────────────────────────────────────────────────
+% NOTE: titlesec is NOT used — it has a known incompatibility with LuaLaTeX
+% in TeX Live 2026 (breaks \@xdblarg). Standard LaTeX sectioning is used.
+% \sectionfont/\subsectionfont are KOMA-only — override numbering color instead.
+
+% Override section numbering to use accent color
+\renewcommand{\thesection}{\textcolor{spAccent}{\bfseries\arabic{section}}}
+\renewcommand{\thesubsection}{\textcolor{spAccent}{\arabic{section}.\arabic{subsection}}}
+
+% ── Title Page ──────────────────────────────────────────────────────────────
+% Simple, fast title page using basic LaTeX commands. No TikZ.
+
+\makeatletter
+\renewcommand{\maketitle}{%
+  \begin{titlepage}
+    \vspace*{2cm}
+    \begin{center}
+      {\LARGE\sffamily\bfseries\color{spDark}\@title\par}
+      \vspace{0.4em}
+      {\large\color{spAccent}\rule{0.6\textwidth}{0.8pt}\par}
+      \vspace{0.6em}
+      {\large\sffamily\color{spGray}\@subtitle\par}
+    \end{center}
+
+    \vfill
+
+    \begin{center}
+      {\normalsize\color{spGray}\@author\par}
+      \vspace{0.5em}
+      {\small\color{spGray}\@date\par}
+    \end{center}
+
+    \vfill
+  \end{titlepage}
+}
+\makeatother
+
+% ── Headers & Footers ──────────────────────────────────────────────────────
+% Simple header/footer via fancyhdr.
+
+\pagestyle{fancy}
+\fancyhf{}
+
+\fancyhead[L]{\footnotesize\sffamily\color{spGray}\leftmark}
+\fancyhead[R]{\footnotesize\sffamily\color{spGray}\@title}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\fancyfoot[L]{\footnotesize\color{spGray}\@date}
+\fancyfoot[R]{\footnotesize\sffamily\bfseries\color{spAccent}\thepage}
+\renewcommand{\footrulewidth}{0pt}
+
+% ── Table Styling ──────────────────────────────────────────────────────────
+% Clean booktabs tables with minimal decoration.
+
+\newcommand{\perftoprule}{\toprule}
+\newcommand{\perfmidrule}{\midrule}
+\newcommand{\perfbottomrule}{\bottomrule}
+
+\captionsetup{
+  font      = {sf, small},
+  labelfont = {bf, color=spAccent},
+  labelsep  = quad,
+  skip      = 6pt,
+  format    = plain,
+  indention = 0pt,
+}
+
+% ── Code Listings (listings — zero external deps) ───────────────────────────
+
+\lstset{
+  basicstyle       = \ttfamily\small,
+  keywordstyle     = \bfseries,
+  commentstyle     = \itshape,
+  stringstyle      = ,
+  numberstyle      = \tiny,
+  numbers          = left,
+  numbersep        = 8pt,
+  breaklines       = true,
+  frame            = single,
+  rulecolor        = \color{spGray!40},
+  backgroundcolor  = \color{spCodeBg},
+  captionpos       = b,
+  tabsize          = 4,
+  showstringspaces = false,
+  columns          = fullflexible,
+  keepspaces       = true,
+  xleftmargin      = 2em,
+  framexleftmargin = 1.5em,
+  aboveskip        = 1em,
+  belowskip        = 0.5em,
+}
+
+% Named listing environment with a title
+\lstnewenvironment{codelisting}[2][Python]{%
+  \lstset{language=#1, title={\sffamily\small\bfseries #2}}%
+}{}
+
+% Inline code
+\newcommand{\code}[1]{%
+  \colorbox{spCodeBg}{\texttt{\small\color{spDark}{#1}}}%
+}
+% For code with underscores/special chars: \codeesc{some_function()}
+\newcommand{\codeesc}[1]{%
+  \colorbox{spCodeBg}{\texttt{\small\color{spDark}{\detokenize{#1}}}}%
+}
+
+% ── Block Environments (lightweight — no tcolorbox) ─────────────────────────
+% Simple blocks using minipage. Minimal compilation overhead.
+
+\newenvironment{noteblock}[1][Note]{%
+  \par\vspace{0.6em}%
+  \noindent\hspace{0pt}%
+  \begin{minipage}[t]{\dimexpr\linewidth-4pt\relax}%
+    \hspace{4pt}%
+    {\sffamily\small\bfseries\color{spAccent}#1}%
+    \par\vspace{0.2em}%
+}{%
+  \end{minipage}%
+  \par\vspace{0.4em}%
+}
+
+\newenvironment{tipblock}[1][Tip]{%
+  \par\vspace{0.6em}%
+  \noindent\hspace{0pt}%
+  \begin{minipage}[t]{\dimexpr\linewidth-4pt\relax}%
+    \hspace{4pt}%
+    {\sffamily\small\bfseries\color{spDark}#1}%
+    \par\vspace{0.2em}%
+}{%
+  \end{minipage}%
+  \par\vspace{0.4em}%
+}
+
+\newenvironment{warningblock}[1][Warning]{%
+  \par\vspace{0.6em}%
+  \noindent\hspace{0pt}%
+  \begin{minipage}[t]{\dimexpr\linewidth-4pt\relax}%
+    \hspace{4pt}%
+    {\sffamily\small\bfseries\color{spDark}#1}%
+    \par\vspace{0.2em}%
+}{%
+  \end{minipage}%
+  \par\vspace{0.4em}%
+}
+
+% ── Math Theorem Environments (standard LaTeX) ─────────────────────────────
+% No tcolorbox overhead — use standard \newtheorem.
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{lemma}[theorem]{Lemma}
+
+% ── Hyperlink Styling ──────────────────────────────────────────────────────
+
+\hypersetup{
+  colorlinks = true,
+  linkcolor  = spDark,
+  urlcolor   = spAccent,
+  citecolor  = spAccent,
+  filecolor  = spAccent,
+}
+
+% ── Itemize / Enumerate ─────────────────────────────────────────────────────
+
+\setlist[itemize]{
+  label      = \textcolor{spAccent}{\textbullet},
+  itemsep    = 4pt,
+  leftmargin = 1.2em,
+  parsep     = 0pt,
+}
+
+\setlist[enumerate]{
+  label      = \textcolor{spAccent}{\bfseries\arabic*.},
+  itemsep    = 4pt,
+  leftmargin = 1.5em,
+  parsep     = 0pt,
+}
+
+% ── Utility Commands ───────────────────────────────────────────────────────
+
+\newcommand{\hltext}[1]{\textcolor{spAccent}{\textbf{#1}}}
+
+\newcommand{\colorrule}{%
+  \par\noindent\textcolor{spAccent}{\rule{\textwidth}{0.4pt}}\par\vspace{0.5em}%
+}
+
+% ── Footnote Styling ───────────────────────────────────────────────────────
+
+\renewcommand{\thefootnote}{\textcolor{spAccent}{\arabic{footnote}}}
+
+% ── Bibliography (optional) ────────────────────────────────────────────────
+% Users should load biblatex themselves:
+%   \usepackage[backend=biber, style=numeric]{biblatex}
+
+\endinput
