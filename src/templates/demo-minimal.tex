@@ -1,0 +1,205 @@
+% =============================================================================
+% demo-minimal.tex — Demo document for the swarmmin theme
+%
+% Compile:  pdflatex demo-minimal.tex   (run twice for TOC)
+%      or:  lualatex demo-minimal.tex
+%      or:  xelatex  demo-minimal.tex
+%
+% This demo uses only 3 lazy-loaded packages (hyperref, amsmath, enumitem)
+% to demonstrate the theme's API. Everything else is zero-overhead.
+% =============================================================================
+
+\documentclass[11pt, a4paper]{article}
+
+\usepackage{swarmmin}
+
+% ── Lazy-load only what this demo actually needs ─────────────────────────────
+\usehyperref     % for clickable TOC and cross-references
+\usemath         % for theorems and equations (sections 4-5)
+\useenumitem     % for styled lists (section 3)
+% booktabs loaded lazily by \swarmtoprule on first table use (section 4)
+
+% ── Metadata ─────────────────────────────────────────────────────────────────
+
+\title{SwarmMin Theme Demo}
+\subtitle{Ultra-minimal, ultra-fast --- zero packages by default}
+\author{LaTeX Helper Swarm Project}
+\date{May 15, 2026}
+
+\begin{document}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Title Page
+% ══════════════════════════════════════════════════════════════════════════════
+
+\swarmtitlepage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Table of Contents
+% ══════════════════════════════════════════════════════════════════════════════
+
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 1: Introduction
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Introduction}
+
+The \code{swarmmin} theme is the most minimal member of the LaTeX Helper Swarm
+theme family. It provides \hltext{API-compatible} commands with
+\code{swarmbeauty} while loading \emphtext{zero packages} by default. Every
+feature is opt-in via lazy \code{\textbackslash use*} commands: call
+\code{\textbackslash usegraphics} for images, \code{\textbackslash usemath}
+for equations, \code{\textbackslash uselistings} for code blocks, and so on.
+Only load what you actually need.
+
+The design philosophy is radical minimalism: no custom colors, no custom
+layouts, no headers or footers, no TOC styling, no section decorations. Block
+environments are plain bold-text markers. The title page uses the built-in
+\code{titlepage} environment. Table rules lazy-load \code{booktabs} on first
+use. The result is the fastest possible compilation while maintaining full API
+compatibility with the beautiful and performance themes.
+
+\begin{tipblock}
+  Works with pdfLaTeX, XeLaTeX, and LuaLaTeX. No \code{-{}-shell-escape}
+  flag is required unless you use \code{\textbackslash useminted}.
+\end{tipblock}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 2: Block Environments
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Block Environments}
+
+All five block types are plain bold-text markers with zero overhead. No
+tcolorbox, no minipage, no colors, no backgrounds --- just a bold label
+followed by normal paragraph text.
+
+\begin{noteblock}
+  This is a note block. Use it for general observations, additional context,
+  or supplementary information that is relevant but not critical to the main
+  argument.
+\end{noteblock}
+
+\begin{tipblock}
+  This is a tip block. Use it to highlight best practices, shortcuts, or
+  recommendations that can improve the reader's workflow or understanding.
+\end{tipblock}
+
+\begin{warningblock}
+  This is a warning block. Use it to alert the reader about potential pitfalls,
+  common mistakes, or deprecated features that they should be aware of.
+\end{warningblock}
+
+\begin{dangerblock}
+  This is an important notice block. Use it for critical information that the
+  reader must not overlook --- breaking changes, security issues, or required
+  actions.
+\end{dangerblock}
+
+\begin{exampleblock}
+  This is an example block. Use it for illustrative content, worked examples,
+  or step-by-step demonstrations.
+\end{exampleblock}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 3: Typography and Text
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Typography and Text}
+
+Inline code: \code{some\_function()}.
+Escaped code with special characters: \codeesc{text_with_underscores}.
+Highlighted text: \hltext{important concept}.
+Emphasized text with box: \emphtext{key idea}.
+
+\subsection{Lists}
+
+\begin{itemize}[itemsep=4pt, leftmargin=1.2em]
+  \item First item in an unordered list
+  \item Second item with \hltext{emphasis}
+  \item Third item with nested content:
+    \begin{itemize}[itemsep=2pt, leftmargin=1.2em]
+      \item Nested item A
+      \item Nested item B
+    \end{itemize}
+\end{itemize}
+
+\begin{enumerate}[itemsep=4pt, leftmargin=1.5em]
+  \item Step one: load the minimal theme
+  \item Step two: call \code{\textbackslash use*} commands as needed
+  \item Step three: compile with any LaTeX engine
+\end{enumerate}
+
+\colorrule
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 4: Tables
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Tables}
+
+Table rules (\code{\textbackslash swarmtoprule}, \code{\textbackslash swarmmidrule},
+\code{\textbackslash swarmbottomrule}) lazy-load \code{booktabs} on first use.
+
+\begin{table}[h]
+  \centering
+  \caption{Swarm theme comparison}
+  \label{tab:comparison}
+  \begin{tabular}{l c c c}
+    \swarmtoprule
+    \textbf{Theme} & \textbf{Packages at load} & \textbf{Features} & \textbf{Engine} \\
+    \swarmmidrule
+    swarmbeauty & 20+                & Full styling, TikZ, minted & LuaLaTeX only \\
+    swarmperf   & 13                 & Colors, headers, listings  & Any           \\
+    swarmmin    & 0 (lazy loading)   & Bare API, opt-in packages  & Any           \\
+    \swarmbottomrule
+  \end{tabular}
+\end{table}
+
+See Table~\ref{tab:comparison} for a feature overview.
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 5: Mathematics
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Mathematics}
+
+Theorem environments use plain text formatting with section-based numbering.
+API-compatible with swarmbeauty: accepts \code{[optional name]\{label\}}.
+
+\begin{theorem}[Euler's Identity]{euler}
+  For any real number $x$, the following identity holds:
+  \[
+    e^{i\pi} + 1 = 0
+  \]
+\end{theorem}
+
+\begin{definition}[Metric Space]{metric}
+  A \emph{metric space} is a pair $(X, d)$ where $X$ is a set and
+  $d\colon X \times X \to \mathbb{R}_{\geq 0}$ satisfies:
+  \begin{enumerate}[itemsep=2pt]
+    \item $d(x, y) = 0 \iff x = y$ \quad (identity of indiscernibles)
+    \item $d(x, y) = d(y, x)$ \quad (symmetry)
+    \item $d(x, z) \leq d(x, y) + d(y, z)$ \quad (triangle inequality)
+  \end{enumerate}
+\end{definition}
+
+\begin{lemma}[Nested Intervals]{nested}
+  Let $\{[a_n, b_n]\}_{n=1}^{\infty}$ be a sequence of closed, bounded
+  intervals such that $[a_{n+1}, b_{n+1}] \subseteq [a_n, b_n]$ for all $n$.
+  Then $\bigcap_{n=1}^{\infty} [a_n, b_n] \neq \emptyset$.
+\end{lemma}
+
+\subsection{Inline and Display Math}
+
+The quadratic formula: $x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$
+
+A more complex display equation:
+\[
+  \int_{-\infty}^{\infty} e^{-x^2} \, dx = \sqrt{\pi}
+\]
+
+\end{document}

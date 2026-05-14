@@ -1,0 +1,231 @@
+% =============================================================================
+% swarmmin.sty — The "Minimal" Theme for the LaTeX Helper Swarm  (v1.0)
+%
+% Ultra-minimal, ultra-fast document theme. API-compatible with swarmbeauty
+% (same command/environment names) but strips everything to the bone:
+%   - ZERO packages loaded by default
+%   - Lazy import via \use* commands (\usegraphics, \usemath, \uselistings, ...)
+%   - Zero custom colors (uses default black throughout)
+%   - Zero custom layouts (no headers/footers, no TOC styling, no section rules)
+%   - Block environments as plain bold-text markers (no tcolorbox, no minipage)
+%   - No tcolorbox, no TikZ, no fontspec, no microtype, no minted, no xcolor
+%
+% Philosophy: every millisecond counts. Only load what you actually use.
+% Swap \usepackage{swarmbeauty} for \usepackage{swarmmin} and your document
+% still compiles — same API, none of the overhead.
+%
+% Usage:
+%   \documentclass[11pt, a4paper]{article}  % or scrartcl
+%   \usepackage{swarmmin}
+%   \usehyperref     % for clickable TOC / cross-references (preamble only)
+%   \usemath         % for equations and theorems
+%   \usegraphics     % for \includegraphics
+%   \uselistings     % for code listings (no external deps)
+%   \useminted       % for minted + tcolorbox code blocks (needs --shell-escape)
+%   \usecaption      % for float environments with caption customization
+%   \usefancyhdr     % for headers and footers
+%   \useenumitem     % for list styling
+%
+% Compatible with: pdfLaTeX (fastest), XeLaTeX, LuaLaTeX
+% =============================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{swarmmin}[2026/05/15 v1.0 LaTeX Helper Swarm — Minimal Theme]
+
+% ── Zero packages loaded at require time ────────────────────────────────────
+% This theme loads NOTHING in its preamble. All packages are opt-in via the
+% \use* commands defined at the bottom of this file. Only the LaTeX kernel is
+% assumed.
+
+% ── \subtitle compatibility (article + scrartcl) ───────────────────────────
+% \subtitle is built into KOMA-Script but not standard article class.
+
+\makeatletter
+\providecommand{\subtitle}[1]{\gdef\@subtitle{#1}}
+\providecommand{\@subtitle}{}
+\makeatother
+
+% ── Font commands (built-in, no packages required) ─────────────────────────
+% These mirror swarmbeauty's API but use default LaTeX fonts (no fontspec).
+
+\newcommand{\sftitle}{\fontsize{28}{34}\selectfont\bfseries\sffamily}
+\newcommand{\sfsubtitle}{\fontsize{16}{20}\selectfont\mdseries\sffamily}
+\newcommand{\sfauthor}{\fontsize{12}{14}\selectfont}
+\newcommand{\sfdate}{\fontsize{10}{12}\selectfont}
+
+% ── Title page (built-in titlepage environment, zero decoration) ────────────
+
+\makeatletter
+\newcommand{\swarmtitlepage}{%
+  \begin{titlepage}
+    \centering
+    \vspace*{2cm}%
+    {\sftitle\@title\par}%
+    \vspace{0.5em}%
+    {\sfsubtitle\@subtitle\par}%
+    \vfill
+    {\sfauthor\@author\par}%
+    \vspace{0.5em}%
+    {\sfdate\@date\par}%
+    \vfill
+  \end{titlepage}%
+}
+\makeatother
+
+% ── Inline code (monospace, no background, no colors) ──────────────────────
+
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\codeesc}[1]{\texttt{\small\detokenize{#1}}}
+
+% ── Highlight & emphasis (bold only, no colors) ─────────────────────────────
+% \emphtext uses \fbox (built-in) for a simple box. No xcolor needed.
+
+\newcommand{\hltext}[1]{\textbf{#1}}
+\newcommand{\emphtext}[1]{%
+  \fboxsep=3pt\fbox{\textbf{#1}}%
+}
+
+% ── Horizontal rule (plain black rule) ──────────────────────────────────────
+
+\newcommand{\colorrule}{%
+  \par\noindent\rule{\textwidth}{0.4pt}\par\vspace{0.5em}%
+}
+
+% ── Block environments (plain text markers, zero overhead) ──────────────────
+% No boxes, no colors, no backgrounds, no minipage. Just a bold label
+% followed by normal paragraph text. API-compatible with swarmbeauty.
+
+\newenvironment{noteblock}[1][Note]{%
+  \par\vspace{0.5em}%
+  \noindent\textbf{#1: }\ignorespaces
+}{\par\vspace{0.5em}}
+
+\newenvironment{tipblock}[1][Tip]{%
+  \par\vspace{0.5em}%
+  \noindent\textbf{#1: }\ignorespaces
+}{\par\vspace{0.5em}}
+
+\newenvironment{warningblock}[1][Warning]{%
+  \par\vspace{0.5em}%
+  \noindent\textbf{#1: }\ignorespaces
+}{\par\vspace{0.5em}}
+
+\newenvironment{dangerblock}[1][Important]{%
+  \par\vspace{0.5em}%
+  \noindent\textbf{#1: }\ignorespaces
+}{\par\vspace{0.5em}}
+
+\newenvironment{exampleblock}[1][Example]{%
+  \par\vspace{0.5em}%
+  \noindent\textbf{#1: }\ignorespaces
+}{\par\vspace{0.5em}}
+
+% ── Theorem environments (plain, no tcolorbox) ──────────────────────────────
+% API-compatible with swarmbeauty: accepts [optional name]{label}.
+% The mandatory {label} argument from tcolorbox-style theorems is accepted
+% but ignored. Users who need \label should add it manually inside the env.
+% Numbered within \section by default.
+
+\newcounter{smtheorem}[section]
+\newcounter{smdefinition}[section]
+\newcounter{smlemma}[section]
+\renewcommand{\thesmtheorem}{\thesection.\arabic{smtheorem}}
+\renewcommand{\thesmdefinition}{\thesection.\arabic{smdefinition}}
+\renewcommand{\thesmlemma}{\thesection.\arabic{smlemma}}
+
+\makeatletter
+\newenvironment{theorem}[2][]{%
+  \refstepcounter{smtheorem}%
+  \par\vspace{0.5em}%
+  \noindent\textbf{Theorem~\thesmtheorem\ifx\\#1\\\else~(#1)\fi.}%
+  \space\itshape\ignorespaces
+}{\par\vspace{0.5em}\upshape}
+
+\newenvironment{definition}[2][]{%
+  \refstepcounter{smdefinition}%
+  \par\vspace{0.5em}%
+  \noindent\textbf{Definition~\thesmdefinition\ifx\\#1\\\else~(#1)\fi.}%
+  \space\itshape\ignorespaces
+}{\par\vspace{0.5em}\upshape}
+
+\newenvironment{lemma}[2][]{%
+  \refstepcounter{smlemma}%
+  \par\vspace{0.5em}%
+  \noindent\textbf{Lemma~\thesmlemma\ifx\\#1\\\else~(#1)\fi.}%
+  \space\itshape\ignorespaces
+}{\par\vspace{0.5em}\upshape}
+\makeatother
+
+% ── Table rules (lazy booktabs) ─────────────────────────────────────────────
+% booktabs is loaded on first use of any table rule command.
+% \RequirePackage is a safe no-op if the package is already loaded.
+
+\makeatletter
+\newcommand{\sm@loadbooktabs}{%
+  \@ifpackageloaded{booktabs}{}{\RequirePackage{booktabs}}%
+}
+\newcommand{\swarmtoprule}{\sm@loadbooktabs\toprule}
+\newcommand{\swarmmidrule}{\sm@loadbooktabs\midrule}
+\newcommand{\swarmbottomrule}{\sm@loadbooktabs\bottomrule}
+\makeatother
+
+% ── Footnote (plain number, no color) ──────────────────────────────────────
+
+\renewcommand{\thefootnote}{\arabic{footnote}}
+
+% ── Lazy package import commands ────────────────────────────────────────────
+% Call these in your preamble (or document body) as needed.
+% Safe to call multiple times — \RequirePackage skips if already loaded.
+% Each command loads ONLY the requested package(s), nothing more.
+
+% Graphics support — defines \includegraphics, \graphicspath, etc.
+\newcommand{\usegraphics}{\RequirePackage{graphicx}}
+
+% Math support — amsmath, amssymb, mathtools
+\newcommand{\usemath}{%
+  \RequirePackage{amsmath}%
+  \RequirePackage{amssymb}%
+  \RequirePackage{mathtools}%
+}
+
+% Code listings via listings package (zero external deps, no shell-escape)
+\newcommand{\uselistings}{%
+  \RequirePackage{listings}%
+  \lstset{
+    basicstyle       = \ttfamily\small,
+    breaklines       = true,
+    showstringspaces = false,
+    columns          = fullflexible,
+    keepspaces       = true,
+    tabsize          = 4,
+  }%
+}
+
+% Syntax-highlighted code blocks via minted + tcolorbox (needs --shell-escape)
+\newcommand{\useminted}{%
+  \RequirePackage{minted}%
+  \RequirePackage{tcolorbox}%
+  \tcbuselibrary{minted,skins,breakable,theorems}%
+}
+
+% Headers and footers via fancyhdr
+\newcommand{\usefancyhdr}{\RequirePackage{fancyhdr}}
+
+% Float environments with caption customization
+\newcommand{\usecaption}{%
+  \RequirePackage{caption}%
+  \RequirePackage{float}%
+  \RequirePackage{placeins}%
+}
+
+% Enhanced list styling via enumitem
+\newcommand{\useenumitem}{\RequirePackage{enumitem}}
+
+% Hyperlinks, TOC, cross-references (preamble recommended)
+\newcommand{\usehyperref}{%
+  \RequirePackage{hyperref}%
+  \hypersetup{hidelinks}%
+}
+
+% ── END ────────────────────────────────────────────────────────────────────
+\endinput
