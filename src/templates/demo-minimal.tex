@@ -5,8 +5,9 @@
 %      or:  lualatex demo-minimal.tex
 %      or:  xelatex  demo-minimal.tex
 %
-% This demo uses only 3 lazy-loaded packages (hyperref, amsmath, enumitem)
+% This demo uses 4 lazy-loaded packages (hyperref, amsmath, enumitem, listings)
 % to demonstrate the theme's API. Everything else is zero-overhead.
+% No shell-escape required. No Pygments. No external dependencies.
 % =============================================================================
 
 \documentclass[11pt, a4paper]{article}
@@ -17,6 +18,7 @@
 \usehyperref     % for clickable TOC and cross-references
 \usemath         % for theorems and equations (sections 4-5)
 \useenumitem     % for styled lists (section 3)
+\uselistings     % for code blocks (section 6)
 % booktabs loaded lazily by \swarmtoprule on first table use (section 4)
 
 % ── Metadata ─────────────────────────────────────────────────────────────────
@@ -64,7 +66,7 @@ compatibility with the beautiful and performance themes.
 
 \begin{tipblock}
   Works with pdfLaTeX, XeLaTeX, and LuaLaTeX. No \code{-{}-shell-escape}
-  flag is required unless you use \code{\textbackslash useminted}.
+  flag is required. No Pygments, no external dependencies, ever.
 \end{tipblock}
 
 % ══════════════════════════════════════════════════════════════════════════════
@@ -111,7 +113,7 @@ followed by normal paragraph text.
 \section{Typography and Text}
 
 Inline code: \code{some\_function()}.
-Escaped code with special characters: \codeesc{text_with_underscores}.
+Escaped code with special characters: \codeesc{text\_with\_underscores}.
 Highlighted text: \hltext{important concept}.
 Emphasized text with box: \emphtext{key idea}.
 
@@ -162,7 +164,37 @@ Table rules (\code{\textbackslash swarmtoprule}, \code{\textbackslash swarmmidru
 See Table~\ref{tab:comparison} for a feature overview.
 
 % ══════════════════════════════════════════════════════════════════════════════
-% Section 5: Mathematics
+% Section 5: Code Listings
+% ══════════════════════════════════════════════════════════════════════════════
+
+\section{Code Listings}
+
+Code blocks use the \code{listings} package (loaded via
+\code{\textbackslash uselistings}). Zero external dependencies --- no Pygments,
+no shell-escape required.
+
+\begin{lstlisting}[language=Python,
+  title={\sffamily\small Fibonacci sequence generator}]
+def fibonacci(n: int) -> list[int]:
+    """Generate the first n Fibonacci numbers."""
+    seq = [0, 1]
+    for i in range(2, n):
+        seq.append(seq[-1] + seq[-2])
+    return seq[:n]
+
+if __name__ == "__main__":
+    result = fibonacci(10)
+    print(f"First 10: {result}")
+\end{lstlisting}
+
+\begin{lstlisting}[language=TeX]
+\begin{equation}
+  E = mc^2
+\end{equation}
+\end{lstlisting}
+
+% ══════════════════════════════════════════════════════════════════════════════
+% Section 6: Mathematics
 % ══════════════════════════════════════════════════════════════════════════════
 
 \section{Mathematics}

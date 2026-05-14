@@ -1,14 +1,15 @@
 % =============================================================================
-% swarmmin.sty — The "Minimal" Theme for the LaTeX Helper Swarm  (v1.0)
+% swarmmin.sty — The "Minimal" Theme for the LaTeX Helper Swarm  (v2.0)
 %
 % Ultra-minimal, ultra-fast document theme. API-compatible with swarmbeauty
 % (same command/environment names) but strips everything to the bone:
-%   - ZERO packages loaded by default
-%   - Lazy import via \use* commands (\usegraphics, \usemath, \uselistings, ...)
+%   - Only booktabs loaded unconditionally (~15KB, zero dependencies)
+%   - All other packages lazy-loaded via \use* commands
 %   - Zero custom colors (uses default black throughout)
 %   - Zero custom layouts (no headers/footers, no TOC styling, no section rules)
 %   - Block environments as plain bold-text markers (no tcolorbox, no minipage)
 %   - No tcolorbox, no TikZ, no fontspec, no microtype, no minted, no xcolor
+%   - No Pygments, no shell-escape required — EVER
 %
 % Philosophy: every millisecond counts. Only load what you actually use.
 % Swap \usepackage{swarmbeauty} for \usepackage{swarmmin} and your document
@@ -20,17 +21,16 @@
 %   \usehyperref     % for clickable TOC / cross-references (preamble only)
 %   \usemath         % for equations and theorems
 %   \usegraphics     % for \includegraphics
-%   \uselistings     % for code listings (no external deps)
-%   \useminted       % for minted + tcolorbox code blocks (needs --shell-escape)
-%   \usecaption      % for float environments with caption customization
+%   \uselistings     % for code listings (zero external deps, no shell-escape)
 %   \usefancyhdr     % for headers and footers
+%   \usecaption      % for float environments with caption customization
 %   \useenumitem     % for list styling
 %
 % Compatible with: pdfLaTeX (fastest), XeLaTeX, LuaLaTeX
 % =============================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{swarmmin}[2026/05/15 v1.0 LaTeX Helper Swarm — Minimal Theme]
+\ProvidesPackage{swarmmin}[2026/05/15 v2.0 LaTeX Helper Swarm — Minimal Theme]
 
 % ── Zero packages loaded at require time ────────────────────────────────────
 % This theme loads NOTHING in its preamble. All packages are opt-in via the
@@ -156,18 +156,15 @@
 }{\par\vspace{0.5em}\upshape}
 \makeatother
 
-% ── Table rules (lazy booktabs) ─────────────────────────────────────────────
-% booktabs is loaded on first use of any table rule command.
-% \RequirePackage is a safe no-op if the package is already loaded.
+% ── Table rules ──────────────────────────────────────────────────────────────
+% booktabs is tiny (~15KB, zero dependencies) so we load it unconditionally.
+% This avoids the preamble-only restriction of \RequirePackage when trying
+% to lazy-load inside tabular environments.
 
-\makeatletter
-\newcommand{\sm@loadbooktabs}{%
-  \@ifpackageloaded{booktabs}{}{\RequirePackage{booktabs}}%
-}
-\newcommand{\swarmtoprule}{\sm@loadbooktabs\toprule}
-\newcommand{\swarmmidrule}{\sm@loadbooktabs\midrule}
-\newcommand{\swarmbottomrule}{\sm@loadbooktabs\bottomrule}
-\makeatother
+\RequirePackage{booktabs}
+\newcommand{\swarmtoprule}{\toprule}
+\newcommand{\swarmmidrule}{\midrule}
+\newcommand{\swarmbottomrule}{\bottomrule}
 
 % ── Footnote (plain number, no color) ──────────────────────────────────────
 
@@ -188,7 +185,9 @@
   \RequirePackage{mathtools}%
 }
 
-% Code listings via listings package (zero external deps, no shell-escape)
+% Code listings via listings package (zero external deps, no shell-escape).
+% Loads listings and sets sensible defaults. Use \begin{lstlisting}[language=Python]
+% for code blocks, or \lstinline|...| for inline code within listings.
 \newcommand{\uselistings}{%
   \RequirePackage{listings}%
   \lstset{
@@ -199,13 +198,6 @@
     keepspaces       = true,
     tabsize          = 4,
   }%
-}
-
-% Syntax-highlighted code blocks via minted + tcolorbox (needs --shell-escape)
-\newcommand{\useminted}{%
-  \RequirePackage{minted}%
-  \RequirePackage{tcolorbox}%
-  \tcbuselibrary{minted,skins,breakable,theorems}%
 }
 
 % Headers and footers via fancyhdr
