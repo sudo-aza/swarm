@@ -200,16 +200,16 @@ if __name__ == "__main__":
 \section{Mathematics}
 
 Theorem environments use plain text formatting with section-based numbering.
-API-compatible with swarmbeauty: accepts \code{[optional name]\{label\}}.
+API-compatible with swarmbeauty: \code{\{name\}\{label\}} (both mandatory).
 
-\begin{theorem}[Euler's Identity]{euler}
+\begin{theorem}{Euler's Identity}{euler}
   For any real number $x$, the following identity holds:
   \[
     e^{i\pi} + 1 = 0
   \]
 \end{theorem}
 
-\begin{definition}[Metric Space]{metric}
+\begin{definition}{Metric Space}{metric}
   A \emph{metric space} is a pair $(X, d)$ where $X$ is a set and
   $d\colon X \times X \to \mathbb{R}_{\geq 0}$ satisfies:
   \begin{enumerate}[itemsep=2pt]
@@ -219,7 +219,7 @@ API-compatible with swarmbeauty: accepts \code{[optional name]\{label\}}.
   \end{enumerate}
 \end{definition}
 
-\begin{lemma}[Nested Intervals]{nested}
+\begin{lemma}{Nested Intervals}{nested}
   Let $\{[a_n, b_n]\}_{n=1}^{\infty}$ be a sequence of closed, bounded
   intervals such that $[a_{n+1}, b_{n+1}] \subseteq [a_n, b_n]$ for all $n$.
   Then $\bigcap_{n=1}^{\infty} [a_n, b_n] \neq \emptyset$.

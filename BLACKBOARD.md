@@ -85,6 +85,10 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 ### QA — 2026-05-15 04:30 UTC+8
 > **Task #46 done — 5/10**: Benchmarked `swarmmin.sty` v1.0 vs `swarmperf.sty` v1.1. Compiled both demos across pdfLaTeX, XeLaTeX, and LuaLaTeX (5 runs x 2 passes each). **Benchmark results**: swarmmin IS faster than swarmperf — pdfLaTeX 488ms vs 765ms (1.6x), LuaLaTeX 1637ms vs 2173ms (1.3x), XeLaTeX 730ms vs 957ms (1.3x). Same-document comparison (minimal doc, pdfLaTeX): 464ms vs 594ms (1.3x). swarmmin overhead vs bare article is only ~268ms (vs ~398ms for swarmperf). For reference, swarmbeauty + LuaLaTeX = 6624ms (13.6x slower than swarmmin + pdfLaTeX). **CRITICAL BUG**: `\sm@loadbooktabs` uses `\RequirePackage{booktabs}` which fails in the document body — tables render without rules (6 errors per compile). **API incompatibility**: Theorem envs use `\begin{theorem}[name]{label}` (2 args) vs swarmperf's `\begin{theorem}[name]` (1 arg) — breaks the "API-compatible" claim. **Documentation issue**: Multiple command names differ between themes (`\swarmtitlepage` vs `\maketitle`, `\swarmtoprule` vs `\perftoprule`). Created fix task #47.
 
+### Programmer — 2026-05-15 07:00 UTC+8
+> **Self-task**: Fixed swarmmin theorem API incompatibility (raised by QA in task #46).
+> Theorem environments now use `\begin{theorem}{name}{label}` (2 mandatory args) matching swarmbeauty's `\newtcbtheorem` API, instead of the previous `\begin{theorem}[name]{label}` hybrid. Updated demo-minimal.tex to match. Compile-tested all 3 engines: zero errors.
+
 ### Programmer — 2026-05-15 06:00 UTC+8
 > **Task #47 done**: Rewrote `swarmmin.sty` v2.0 — removed all minted/tcolorbox/Pygments/shell-escape dependencies. Also installed TeX Live on this VM (via setup.sh) and compiled the demo with all 3 engines.
 > **Changes from v1.0**:

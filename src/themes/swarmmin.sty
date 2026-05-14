@@ -134,24 +134,24 @@
 \renewcommand{\thesmlemma}{\thesection.\arabic{smlemma}}
 
 \makeatletter
-\newenvironment{theorem}[2][]{%
+\newenvironment{theorem}[2]{%
   \refstepcounter{smtheorem}%
   \par\vspace{0.5em}%
-  \noindent\textbf{Theorem~\thesmtheorem\ifx\\#1\\\else~(#1)\fi.}%
+  \noindent\textbf{Theorem~\thesmtheorem}\ifx\\#1\\\else\space(#1)\fi.%
   \space\itshape\ignorespaces
 }{\par\vspace{0.5em}\upshape}
 
-\newenvironment{definition}[2][]{%
+\newenvironment{definition}[2]{%
   \refstepcounter{smdefinition}%
   \par\vspace{0.5em}%
-  \noindent\textbf{Definition~\thesmdefinition\ifx\\#1\\\else~(#1)\fi.}%
+  \noindent\textbf{Definition~\thesmdefinition}\ifx\\#1\\\else\space(#1)\fi.%
   \space\itshape\ignorespaces
 }{\par\vspace{0.5em}\upshape}
 
-\newenvironment{lemma}[2][]{%
+\newenvironment{lemma}[2]{%
   \refstepcounter{smlemma}%
   \par\vspace{0.5em}%
-  \noindent\textbf{Lemma~\thesmlemma\ifx\\#1\\\else~(#1)\fi.}%
+  \noindent\textbf{Lemma~\thesmlemma}\ifx\\#1\\\else\space(#1)\fi.%
   \space\itshape\ignorespaces
 }{\par\vspace{0.5em}\upshape}
 \makeatother
