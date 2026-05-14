@@ -1,5 +1,5 @@
 % =============================================================================
-% swarmbeauty.sty — The "Beautiful" Theme for the LaTeX Helper Swarm  (v0.3.1)
+% swarmbeauty.sty — The "Beautiful" Theme for the LaTeX Helper Swarm  (v0.4.0)
 %
 % A comprehensive, modern document theme built on KOMA-Script with:
 %   - Elegant color palette with customizable accent colors
@@ -11,6 +11,7 @@
 %   - Custom block environments (note, tip, warning, danger, example)
 %   - Optimized typography with fontspec + microtype
 %   - KOMA-native TOC styling via tocbasic
+%   - KOMA-native section headings (NO titlesec — avoids tocbasic conflict)
 %   - Clean bibliography support via biblatex
 %
 % Usage:
@@ -21,7 +22,7 @@
 % =============================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{swarmbeauty}[2026/05/14 v0.3.1 LaTeX Helper Swarm — Beautiful Theme]
+\ProvidesPackage{swarmbeauty}[2026/05/14 v0.4.0 LaTeX Helper Swarm — Beautiful Theme]
 
 % ── Engine check ─────────────────────────────────────────────────────────────
 \RequirePackage{iftex}
@@ -77,19 +78,13 @@
 % ── Typography ───────────────────────────────────────────────────────────────
 
 \setmainfont{Latin Modern Roman}[
-  AutoFakeBold       = 2,
-  AutoFakeSlant      = 0.2,
   Ligatures          = TeX,
 ]
 \setsansfont{Latin Modern Sans}[
-  AutoFakeBold       = 2,
-  AutoFakeSlant      = 0.2,
   Ligatures          = TeX,
 ]
 \setmonofont{Latin Modern Mono}[
   Scale              = MatchLowercase,
-  AutoFakeBold       = 2,
-  AutoFakeSlant      = 0.2,
   Ligatures          = TeX,
 ]
 
@@ -111,28 +106,50 @@
 \newcommand{\sfauthor}{\color{sbDark}\fontsize{12}{14}\selectfont}
 \newcommand{\sfdate}{\color{sbMedium}\fontsize{10}{12}\selectfont}
 
-% ── Section Heading Styling ──────────────────────────────────────────────────
-% Use titlesec — works reliably with all KOMA versions
+% ── Section Heading Styling (KOMA-native — NO titlesec) ──────────────────────
+% IMPORTANT: titlesec conflicts with KOMA's tocbasic, causing TOC entry styles
+% (entryformat, entrynumberformat, pagenumberformat) to be silently overridden.
+% Using KOMA-native section commands instead.
 
-\RequirePackage[compact]{titlesec}
+% Section fonts
+\setkomafont{section}{\large\sffamily\bfseries\color{sbPrimary}}
+\setkomafont{subsection}{\normalsize\sffamily\bfseries\color{sbPrimary}}
+\setkomafont{subsubsection}{\small\sffamily\itshape\color{sbDark}}
 
-\titleformat{\section}
-  {\large\sffamily\bfseries\color{sbPrimary}}
-  {\thesection}{0.5em}{}
-  [\vspace{-0.5em}{\color{sbSecondary}\rule{\textwidth}{0.8pt}}\vspace{0.3em}]
+% Section spacing
+\RedeclareSectionCommand[
+  beforeskip = 2.5ex plus 1ex minus 0.5ex,
+  afterskip  = 1.5ex,
+]{section}
 
-\titleformat{\subsection}
-  {\normalsize\sffamily\bfseries\color{sbPrimary}}
-  {\thesubsection}{0.5em}{}
-  [\vspace{-0.5em}{\color{sbMedium}\rule{0.4\textwidth}{0.4pt}}\vspace{0.2em}]
+\RedeclareSectionCommand[
+  beforeskip = 1.8ex plus 0.8ex,
+  afterskip  = 1.0ex,
+]{subsection}
 
-\titleformat{\subsubsection}
-  {\small\sffamily\itshape\color{sbDark}}
-  {\thesubsubsection}{0.5em}{}
+\RedeclareSectionCommand[
+  beforeskip = 1.2ex plus 0.5ex,
+  afterskip  = 0.8ex,
+]{subsubsection}
 
-\titlespacing*{\section}{0pt}{2.5ex plus 1ex minus 0.5ex}{1.5ex}
-\titlespacing*{\subsection}{0pt}{1.8ex plus 0.8ex}{1.0ex}
-\titlespacing*{\subsubsection}{0pt}{1.2ex plus 0.5ex}{0.8ex}
+% Decorative rules after section and subsection headings
+% Redefine \sectionlinesformat (KOMA hook) to append colored rules.
+% Args: #1=section name, #2=level, #3=numbered label, #4=title text
+\makeatletter
+\renewcommand*{\sectionlinesformat}[4]{%
+  \@hangfrom{#3}{#4}%
+  \ifstr{#1}{section}{%
+    \par\nobreak\vspace*{-0.8em}%
+    \noindent{\color{sbSecondary}\rule{\textwidth}{0.8pt}}%
+    \vspace{0.3em}%
+  }{}%
+  \ifstr{#1}{subsection}{%
+    \par\nobreak\vspace*{-0.6em}%
+    \noindent{\color{sbMedium}\rule{0.4\textwidth}{0.4pt}}%
+    \vspace{0.2em}%
+  }{}%
+}
+\makeatother
 
 % ── Title Page ───────────────────────────────────────────────────────────────
 
@@ -294,10 +311,16 @@
 }
 
 % ── Hyperlink Styling ────────────────────────────────────────────────────────
+% IMPORTANT: linkcolor must be `.` (inherit current color) so that tocbasic's
+% \DeclareTOCStyleEntry entryformat colors actually apply to TOC entries.
+% hyperref wraps TOC entries in \hyperlink, which would otherwise override
+% entryformat/entrynumberformat/pagenumberformat colors with a single linkcolor.
+% With `.` the TOC entry colors from entryformat are preserved.
+% External URLs and citations remain colored (urlcolor, citecolor).
 
 \hypersetup{
   colorlinks  = true,
-  linkcolor   = sbSecondary,
+  linkcolor   = .,
   urlcolor    = sbSecondary,
   citecolor   = sbSecondary,
   filecolor   = sbSecondary,
