@@ -57,3 +57,4 @@ Thumbs.db
 .env
 *.pdf
 *.listing
+.install-tl-cache/
