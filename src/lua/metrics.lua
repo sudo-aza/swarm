@@ -1,5 +1,5 @@
 --[[
-  metrics.lua — TeX document metrics collector (v3.0)
+  metrics.lua — TeX document metrics collector (v3.1)
 
   Collects detailed statistics about a document during LuaLaTeX compilation.
   Writes results to a JSON file at the end of compilation.
@@ -164,7 +164,7 @@ local LOG_SKIP_EXTENSIONS = {
     ["gls"]  = true, ["ist"]  = true, ["mtc"]  = true, ["mtc1"] = true,
     ["end"]  = true, ["ptc"]  = true, ["acn"]  = true, ["acr"]  = true,
     ["alg"]  = true, ["glg"]  = true, ["maf"]  = true, ["mlf"]  = true,
-    ["mlt"]  = true, ["end"]  = true,
+    ["mlt"]  = true,
 }
 
 local function parse_log_for_files(log_path)
@@ -215,71 +215,6 @@ local function parse_log_for_files(log_path)
 
     table.sort(files)
     return files
-end
-
--- ── .aux File Parser — Document Structure Counters ──────────────────────────
--- The .aux file contains structured data about the document:
---   \@writefile{toc}{\contentsline {section}{...}{...}}  → sections
---   \@writefile{lof}{\contentsline {figure}{...}{...}}    → figures
---   \@writefile{lot}{\contentsline {table}{...}{...}}     → tables
---   \newlabel{eq:...}{...}                                 → equations
---   \newlabel{fig:...}{...}                                → figures (alt)
---   \newlabel{tab:...}{...}                                → tables (alt)
-
-local function parse_aux_for_structure(aux_path)
-    local result = {
-        section_count    = 0,
-        subsection_count = 0,
-        figure_count     = 0,
-        table_count      = 0,
-        equation_count   = 0,
-    }
-
-    local f = io.open(aux_path, "r")
-    if not f then return result end
-
-    local content = f:read("*a")
-    f:close()
-
-    -- Count sections via \contentsline
-    for _ in content:gmatch("\\contentsline%s*{section}%s*{") do
-        result.section_count = result.section_count + 1
-    end
-
-    -- Count subsections
-    for _ in content:gmatch("\\contentsline%s*{subsection}%s*{") do
-        result.subsection_count = result.subsection_count + 1
-    end
-
-    -- Count figures via \contentsline {figure}
-    for _ in content:gmatch("\\contentsline%s*{figure}%s*{") do
-        result.figure_count = result.figure_count + 1
-    end
-
-    -- Count tables via \contentsline {table}
-    for _ in content:gmatch("\\contentsline%s*{table}%s*{") do
-        result.table_count = result.table_count + 1
-    end
-
-    -- Count equations via \newlabel{eq:...} (standard LaTeX equation labels)
-    for _ in content:gmatch("\\newlabel{%s*eq:") do
-        result.equation_count = result.equation_count + 1
-    end
-
-    -- Also count figures/tables from \newlabel (in case \contentsline missed them)
-    -- Only count if \contentsline count is 0 (fallback)
-    if result.figure_count == 0 then
-        for _ in content:gmatch("\\newlabel{%s*fig:") do
-            result.figure_count = result.figure_count + 1
-        end
-    end
-    if result.table_count == 0 then
-        for _ in content:gmatch("\\newlabel{%s*tab:") do
-            result.table_count = result.table_count + 1
-        end
-    end
-
-    return result
 end
 
 -- ── Word Count Estimator ────────────────────────────────────────────────────
@@ -396,7 +331,7 @@ function collect_metrics()
         f:write("\n")
         f:close()
         texio.write_nl(string.format(
-            "[metrics.lua v3.0] Written %s — %d pages, %.2fs, %d files, "
+            "[metrics.lua v3.1] Written %s — %d pages, %.2fs, %d files, "
             .. "~%d words, %d warnings",
             metrics_output_path,
             data.page_count,

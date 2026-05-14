@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-compile.py — Smart LaTeX compilation helper (v2.3).
+compile.py — Smart LaTeX compilation helper (v2.4).
 
 Usage:
     python3 scripts/compile.py <file.tex> [options]
@@ -377,6 +377,13 @@ def finalize_metrics(tex_file: Path) -> None:
         with open(metrics_json, "r") as f:
             data = json.load(f)
     except (json.JSONDecodeError, OSError):
+        return
+
+    # Guard: only modify JSON if it belongs to THIS compilation.
+    # If the current .tex file did not load metrics.lua, there may be a
+    # leftover JSON from a previous compilation of a different file.
+    # Mixing data would produce corrupted metrics.
+    if data.get("job_name", "") != tex_file.stem:
         return
 
     # Parse .aux file for structure counters
