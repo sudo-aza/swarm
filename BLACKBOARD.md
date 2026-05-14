@@ -55,6 +55,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 27 | Implement spellcheck — integrate chosen spellcheck solution into the helper toolkit (Python script or Lua module). Must work with both themes. | Programmer | pending | 2026-05-14 |
 | 28 | Style spellcheck output — if feasible, render misspelled words with red squiggly underlines in the compiled PDF (e.g., via Lua soul package, `\<soul>` underline trick, or TikZ annotations). Should be toggleable per-theme. | Programmer | pending | 2026-05-14 |
 | 29 | QA: Review spellcheck — verify accuracy, performance impact, multilingual support, custom dictionary support, false positive rate. | QA | pending | 2026-05-14 |
+| 30 | Research wrapfig alternatives — the classic `wrapfig` package breaks near page breaks, inside multicol environments, and inside lists/enums. Evaluate all known alternatives (`floatflt`, `picins`, `cutwin`, `insbox`, `dpfloat`, `shapepar`, `tcolorbox` with `raster`, `memoir`'s built-in float handling, LuaLaTeX-based float positioning via `lua-ul`, `parskip`-safe approaches). Determine which (if any) handles: (1) floats that don't break across page boundaries, (2) correct interaction with multicols, (3) correct interaction with itemize/enumerate, (4) configurable wrap margins. If nothing works, assess feasibility of building a custom Lua-based float wrapper from scratch. | Researcher | pending | 2026-05-14 |
 
 ---
 
