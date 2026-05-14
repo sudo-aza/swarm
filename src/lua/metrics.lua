@@ -25,24 +25,24 @@
     - PDF output file path and approximate size
     - Warning count (parsed from .log)
     - File inclusion tree (parsed from .log parentheses)
-    - Document structure: sections, figures, tables, equations (from .aux)
     - Word count estimate (tokens in main .tex body)
 
-  Design notes (v3.0):
+  Architecture (v3.1):
     - File inclusions are tracked by PARSING THE .LOG FILE for parenthesis-
       delimited file references.  This is more reliable than the open_read_file
       LuaTeX callback, which is intercepted by ltluatex.lua in modern TeX Live.
-    - Document structure (sections, figures, tables) is parsed from the .aux
-      file at \\AtEndDocument time.  On the first compile, the .aux may not
-      exist yet (counters stay at 0).  On subsequent compiles, the .aux from
-      the previous run provides accurate structure counts.  This matches
-      standard LaTeX behavior where 2+ runs are needed for correct output.
+    - Document structure counters (sections, figures, tables, equations) are
+      NOT parsed by this Lua script.  TeX has the .aux file open for writing
+      at \AtEndDocument time, so Lua's io.open sees 0 bytes.  Instead,
+      compile.py's finalize_metrics() reads the .aux file AFTER compilation
+      finishes and updates the JSON with structure counters and the final
+      (accurate) PDF size.
     - Word count is a rough estimate based on whitespace-delimited tokens in
       the main .tex file, excluding LaTeX commands and comments.  For accurate
       word counts, use the external texcount tool.
-    - PDF size is read at \AtEndDocument time; it may be slightly smaller than
-      the final file because the PDF xref/trailer hasn't been written yet.
-      Use compile.py's _pdf_size() for the accurate post-compilation size.
+    - PDF size and structure counters are finalized by compile.py after the
+      TeX process exits.  The values written by collect_metrics() at
+      \AtEndDocument are approximate/zero and will be overwritten.
 ]]
 
 local metrics_output_path = metrics_output_path or "metrics-output.json"
@@ -346,21 +346,10 @@ function collect_metrics()
     end
 end
 
--- ── (no longer needed) ─────────────────────────────────────────────────────
--- The finalize_metrics() function was removed.  Structure counter parsing
--- now happens inside collect_metrics() directly.
-
 -- ── TeX Integration ─────────────────────────────────────────────────────────
 -- NOTE: We must NOT use % (comment) inside tex.sprint because tex.sprint
 -- converts newlines to spaces, causing % to eat everything until the end
 -- of the input buffer.  Use \relax or nothing for spacing.
---
--- Phase 2 (structure counters from .aux) runs inside collect_metrics()
--- itself.  The .aux file from the PREVIOUS compilation run is available
--- at \AtEndDocument time (TeX reads it at \begin{document} and keeps it
--- open).  On the very first compile, structure counters will be 0 (no
--- previous .aux exists).  This matches standard LaTeX behavior: you
--- always need 2+ runs for correct cross-references and TOC.
 
 if tex then
     tex.sprint("\\AtEndDocument{\\directlua{collect_metrics()}}")
