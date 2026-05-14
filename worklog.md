@@ -113,3 +113,24 @@ Stage Summary:
 - All 3 QA-reported issues resolved
 - Bonus IGNORECASE fix discovered during testing
 - QA re-review Task #35 created
+---
+Task ID: 2
+Agent: Programmer (main)
+Task: Execute Task #6 — Verify and fix swarmperf.sty v1.0
+
+Work Log:
+- Found existing swarmperf.sty (271 lines) and demo-performance.tex (251 lines) from stash pop
+- Reviewed theme: 5-color palette, geometry, fancyhdr, listings, booktabs, 3 block envs, 3 theorem envs
+- Bug: `\thesection` included `\textcolor{spAccent}` which LaTeX uppercased to `SPACCENT` in moving args
+- Fix: Removed `\thesection`/`\thesubsection` overrides, added explanatory comment
+- Compiled clean with pdfLaTeX (2 passes, 5 pages, 232KB, zero errors)
+- Compiled clean with LuaLaTeX (2 passes, 5 pages, 136KB, zero errors)
+- Regression check: demo-beautiful.tex still compiles clean (7 pages, 138KB)
+- Updated BLACKBOARD: Task #6 done, Task #12 unblocked, Task #36 QA review created
+- Updated journals/programmer/2026-05-14.md
+- Pushed to main
+
+Stage Summary:
+- swarmperf.sty v1.0 verified and fixed (SPACCENT color bug)
+- Both themes now compile cleanly
+- QA Task #12 (performance comparison) unblocked
