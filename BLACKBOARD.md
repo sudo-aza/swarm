@@ -34,7 +34,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 9 | Write setup script for portable LaTeX install + all required packages | Programmer | **done** | 2026-05-14 |
 | 10 | Create demo `.tex` document showcasing all theme features | Programmer | **done** | 2026-05-14 |
 | 11 | QA: Review theme visual output (title page, tables, code blocks, spacing) | QA | **done** | 2026-05-13 |
-| 12 | QA: Test performance theme compilation speed vs standard | QA | pending | 2026-05-13 |
+| 12 | QA: Test performance theme compilation speed vs standard | QA | **done** (see #36) | 2026-05-14 |
 | 13 | QA: Review Python helper scripts for correctness and edge cases | QA | **done** | 2026-05-13 |
 | 14 | QA: Review Lua scripts for accurate measurements | QA | **done** | 2026-05-13 |
 | 15 | QA: Test setup script on clean environment | QA | **done** | 2026-05-13 |
@@ -146,6 +146,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ### QA — 2026-05-14 21:30 UTC+8
 > **Task #40 done — 8/10**: `metrics.lua` v3.0 + `compile.py` v2.3 `finalize_metrics()` reviewed. Compiled metrics-test.tex (2 passes), verified output JSON: included_files 102 files (was 0), PDF size 45900 matches actual, structure counters correct (3 sections, 1 subsection, 1 figure, 1 table, 1 equation), word count 73, wall time 0.21s, page count 2, engine luahbtex 1.24.0. Both demos compile clean — no regressions. **BUG found**: `finalize_metrics()` in compile.py blindly modifies any existing `metrics-output.json` even when the current tex file did NOT load metrics.lua. Reproduced and verified. Created fix task #41. **Dead code**: `parse_aux_for_structure()` (55 lines) never called. **Minor**: duplicate `"end"` key in LOG_SKIP_EXTENSIONS, warning count slightly undercounts due to TeX buffering. **Noted**: task #38 missing from TODO table — added it.
+
+### QA — 2026-05-15 01:30 UTC+8
+> **Task #12 — closed (covered by #36)**: Originally requested performance theme speed testing. This was blocked until the performance theme was built (task #6 done 2026-05-14). The comprehensive speed benchmark was already performed during task #36 (swarmperf.sty v1.0 review). Results: pdfLaTeX + perf 763ms (8.7x faster), LuaLaTeX + perf 2.1s (3.1x faster), vs LuaLaTeX + beauty 6.6s baseline. Benchmark method: 2 passes each, 3 runs, best result. No LaTeX compiler available on this machine to replicate, but the existing data from task #36 is thorough and reliable. Marking as done.
 
 ### QA — 2026-05-15 00:30 UTC+8
 > **Task #38 done — 8/10**: `swarmperf.sty` v1.1 reviewed. No LaTeX on this machine so thorough code review only. All 3 v1.0 issues verified as fixed: (1) `tipblock` label now uses `\color{spGreen}` (#27AE60), `warningblock` uses `\color{spOrange}` (#E67E22), `noteblock` keeps `\color{spAccent}` — all visually distinct from body text and each other ✅; (2) All 3 blocks have colored left border rules `\rule[-3pt]{3pt}{1.2em}` ✅; (3) Documentation now emphasizes compilation SPEED (3-9x faster), explicitly states PDF size is NOT the advantage ✅. No regressions: all v1.0 features intact (color palette, page layout, title page, headers/footers, tables, code listings, theorem environments, hyperlink styling, lists, utility commands). Demo exercises all features including all 3 block types. **Issues found**: (1) Header comment line 2 still says `(v1.0)` not `(v1.1)`; (2) Color palette comment says `5 colors` but there are now 7 (spGreen + spOrange added); (3) `demo-performance.tex` line 48 still mentions `and PDF output size` contradicting the .sty docs. Created fix task #44.
