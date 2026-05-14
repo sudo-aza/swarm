@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-compile.py — Smart LaTeX compilation helper (v2.0).
+compile.py — Smart LaTeX compilation helper (v2.1).
 
 Usage:
     python3 scripts/compile.py <file.tex> [options]
@@ -36,6 +36,7 @@ Features:
 import argparse
 import os
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -65,10 +66,12 @@ UNICODE_ENGINE_TRIGGERS = [
 
 # Warning patterns to extract from LaTeX output
 LATEX_WARNING_RE = re.compile(r"^(.*(?:Warning|Overfull|Underfull).*)$", re.MULTILINE)
-UNDEFINED_REF_RE = re.compile(
+RERUN_RE = re.compile(
     r"LaTeX Warning: .*undefined references"
     r"|LaTeX Warning: .*Rerun to get cross-references right"
     r"|LaTeX Warning: .*Label\(s\) may have changed"
+    r"|Please \(re\)?run (?:Biber|BibTeX|bibtex|biber)"
+    r"|.*rerun (?:Biber|BibTeX|bibtex|biber)"
 )
 
 
@@ -192,8 +195,12 @@ def detect_bibliography(tex_content: str) -> Optional[str]:
 
 
 def has_undefined_references(log_output: str) -> bool:
-    """Check if the LaTeX log mentions undefined references."""
-    return bool(UNDEFINED_REF_RE.search(log_output))
+    """Check if the LaTeX log mentions undefined references or requests a rerun.
+
+    Catches: undefined references, label changes, cross-reference reruns,
+    and "Please (re)run Biber/BibTeX" messages from bib tools.
+    """
+    return bool(RERUN_RE.search(log_output))
 
 
 def extract_warnings(output: str) -> list:
@@ -299,12 +306,38 @@ def compile_tex(
         all_stderr += result.stderr
         passes_run += 1
 
-    # ── Extra pass for cross-references ────────────────────────────────────
+    # ── Extra pass for cross-references or bib reruns ─────────────────────
     if has_undefined_references(all_stdout) and passes_run < smart_max:
+        # If the rerun request is from Biber/BibTeX (not just cross-refs),
+        # run the bib tool again before the extra LaTeX pass.
+        if bib_engine and re.search(
+            r"Please \(re\)?run (?:Biber|BibTeX|bibtex|biber)|"
+            r"rerun (?:Biber|BibTeX|bibtex|biber)",
+            all_stdout,
+        ):
+            bib_base = tex_file.stem
+            bib_cmd = [bib_engine, bib_base]
+            subprocess.run(bib_cmd, env=env, capture_output=True, text=True, cwd=workdir)
+
         result = subprocess.run(cmd, env=env, capture_output=True, text=True, cwd=workdir)
         all_stdout += result.stdout
         all_stderr += result.stderr
         passes_run += 1
+
+        # Check again — some complex documents need yet another pass
+        if has_undefined_references(all_stdout) and passes_run < smart_max:
+            if bib_engine and re.search(
+                r"Please \(re\)?run (?:Biber|BibTeX|bibtex|biber)|"
+                r"rerun (?:Biber|BibTeX|bibtex|biber)",
+                all_stdout,
+            ):
+                bib_base = tex_file.stem
+                subprocess.run([bib_engine, bib_base], env=env, capture_output=True,
+                               text=True, cwd=workdir)
+            result = subprocess.run(cmd, env=env, capture_output=True, text=True, cwd=workdir)
+            all_stdout += result.stdout
+            all_stderr += result.stderr
+            passes_run += 1
 
     elapsed = time.time() - start
     pdf_size = _pdf_size(tex_file)
@@ -336,8 +369,9 @@ def _make_result(success, elapsed, pdf_size, stdout, stderr,
 
 
 def clean_aux(tex_file: Path) -> int:
-    """Remove auxiliary files. Returns count of files removed."""
+    """Remove auxiliary files and cache directories. Returns count removed."""
     base = tex_file.stem
+    workdir = tex_file.parent
     extensions = [
         ".aux", ".log", ".toc", ".out", ".fls", ".fdb_latexmk",
         ".synctex.gz", ".bbl", ".blg", ".bcf", ".run.xml",
@@ -347,10 +381,17 @@ def clean_aux(tex_file: Path) -> int:
         ".mlt", ".mtc", ".mtc1", ".end",
     ]
     removed = 0
+    # Remove auxiliary files by extension
     for ext in extensions:
-        f = tex_file.parent / (base + ext)
+        f = workdir / (base + ext)
         if f.exists():
             f.unlink()
+            removed += 1
+    # Remove minted cache directories (_minted-<filename>/)
+    minted_prefix = f"_minted-{base}"
+    for p in workdir.iterdir():
+        if p.is_dir() and p.name.startswith("_minted-"):
+            shutil.rmtree(p)
             removed += 1
     return removed
 
