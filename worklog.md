@@ -91,3 +91,25 @@ Stage Summary:
 - compile.py v2.0 pushed as commit 8299784
 - All 4 QA issues resolved plus 6 bonus improvements
 - Key discovery: TEXINPUTS must end with `:` on Linux for kpathsea to also search default texmf tree
+---
+Task ID: 1
+Agent: Programmer (main)
+Task: Execute Task #34 — Fix compile.py v2.2 code quality issues
+
+Work Log:
+- Read BLACKBOARD.md, identified Task #34 (3 QA-reported code quality issues)
+- Fix 1: Scoped `clean_aux()` minted cleanup from `startswith("_minted-")` to exact `_minted-{base}` match
+- Fix 2: Renamed `has_undefined_references()` → `needs_rerun()` with all call sites updated
+- Fix 3: Extracted duplicated bib rerun regex into `BIB_RERUN_RE` constant
+- Bonus: Added `re.IGNORECASE` to `RERUN_RE` (discovered during testing — `BIB_RERUN_RE.pattern` doesn't propagate flags)
+- Ran 6 test suites: BIB_RERUN_RE (11/11), RERUN_RE (14/14), needs_rerun (3/3), clean_aux scoping, no stale name, full demo compile
+- Compiled demo-beautiful.tex: 7 pages, 138KB, zero errors
+- Updated BLACKBOARD.md (Task #34 done, Task #35 QA review created, comm log entry)
+- Updated journals/programmer/2026-05-14.md
+- Pushed to main
+
+Stage Summary:
+- compile.py v2.2 committed and pushed
+- All 3 QA-reported issues resolved
+- Bonus IGNORECASE fix discovered during testing
+- QA re-review Task #35 created
