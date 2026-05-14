@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-compile.py — Smart LaTeX compilation helper (v2.2).
+compile.py — Smart LaTeX compilation helper (v2.3).
 
 Usage:
     python3 scripts/compile.py <file.tex> [options]
@@ -357,6 +357,64 @@ def _pdf_size(tex_file: Path) -> int:
     return pdf.stat().st_size if pdf.exists() else 0
 
 
+def finalize_metrics(tex_file: Path) -> None:
+    """Post-compilation: augment metrics-output.json with .aux structure counters.
+
+    metrics.lua writes basic metrics (time, pages, files, warnings) at
+    \\AtEndDocument, but cannot read the .aux file (TeX has it open for
+    writing, buffer not flushed).  This function runs AFTER compilation
+    finishes, reads the .aux file for structure counters (sections, figures,
+    tables, equations), updates the PDF size (now finalized), and rewrites
+    the JSON.  No-op if metrics-output.json doesn't exist.
+    """
+    workdir = tex_file.parent
+    metrics_json = workdir / "metrics-output.json"
+    if not metrics_json.exists():
+        return
+
+    import json
+    try:
+        with open(metrics_json, "r") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return
+
+    # Parse .aux file for structure counters
+    aux_path = tex_file.with_suffix(".aux")
+    if aux_path.exists():
+        aux_content = aux_path.read_text(errors="ignore")
+        data["section_count"] = len(re.findall(
+            r"\\contentsline\s*\{section\}\s*\{", aux_content))
+        data["subsection_count"] = len(re.findall(
+            r"\\contentsline\s*\{subsection\}\s*\{", aux_content))
+        data["figure_count"] = len(re.findall(
+            r"\\contentsline\s*\{figure\}\s*\{", aux_content))
+        data["table_count"] = len(re.findall(
+            r"\\contentsline\s*\{table\}\s*\{", aux_content))
+        data["equation_count"] = len(re.findall(
+            r"\\newlabel\s*\{\s*eq:", aux_content))
+        # Fallback: count figures/tables from \\newlabel if \\contentsline found 0
+        if data["figure_count"] == 0:
+            data["figure_count"] = len(re.findall(
+                r"\\newlabel\s*\{\s*fig:", aux_content))
+        if data["table_count"] == 0:
+            data["table_count"] = len(re.findall(
+                r"\\newlabel\s*\{\s*tab:", aux_content))
+
+    # Update PDF size (now finalized after compilation)
+    actual_pdf_size = _pdf_size(tex_file)
+    if actual_pdf_size > 0:
+        data["pdf_size"] = actual_pdf_size
+
+    # Rewrite JSON
+    try:
+        with open(metrics_json, "w") as f:
+            json.dump(data, f, indent=2)
+            f.write("\n")
+    except OSError:
+        pass
+
+
 def _make_result(success, elapsed, pdf_size, stdout, stderr,
                  warnings, passes_run, bib_engine) -> dict:
     return {
@@ -590,6 +648,10 @@ Examples:
         result = compile_tex(tex_file, engine, bin_path, shell_escape,
                              args.passes, args.verbose)
         print(format_result(result, args.verbose))
+
+        # Post-compilation: finalize metrics JSON with .aux data
+        if result["success"]:
+            finalize_metrics(tex_file)
 
         if args.clean and result["success"]:
             removed = clean_aux(tex_file)

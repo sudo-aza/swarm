@@ -1,21 +1,21 @@
-% metrics-test.tex — Test document for metrics.lua
+% metrics-test.tex — Test document for metrics.lua v3.0
 \documentclass[11pt, a4paper]{scrartcl}
 \usepackage{swarmbeauty}
 
 \title{Metrics Lua Test}
-\subtitle{Verifying metrics.lua v2.0}
+\subtitle{Verifying metrics.lua v3.0}
 \author{Programmer Agent}
 \date{May 14, 2026}
 
 % Load metrics module
-\directlua{dofile("/home/z/swarm/src/lua/metrics.lua")}
+\directlua{dofile("../lua/metrics.lua")}
 
 \begin{document}
 
 \swarmtitlepage
 
 \section{First Section}
-Some text here with a figure and table.
+Some text here with a figure and table. This section should be counted.
 
 \begin{figure}[H]
   \centering
@@ -26,8 +26,11 @@ Some text here with a figure and table.
   \caption{A test figure}
 \end{figure}
 
+\subsection{Subsection One}
+This subsection tests subsection counting.
+
 \section{Second Section}
-More text content here.
+More text content here for word counting.
 
 \begin{table}[H]
   \centering
@@ -44,9 +47,11 @@ More text content here.
 
 \section{Third Section}
 Final section with some math: $E = mc^2$.
+\label{eq:einstein}
 
 \begin{noteblock}
-This document is testing the metrics.lua v2.0 script.
+This document is testing the metrics.lua v3.0 script with file inclusion
+tracking, structure counters, and word count estimation.
 \end{noteblock}
 
 \end{document}

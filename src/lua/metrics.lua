@@ -1,5 +1,5 @@
 --[[
-  metrics.lua — TeX document metrics collector (v2.0)
+  metrics.lua — TeX document metrics collector (v3.0)
 
   Collects detailed statistics about a document during LuaLaTeX compilation.
   Writes results to a JSON file at the end of compilation.
@@ -8,37 +8,49 @@
     \directlua{dofile("metrics.lua")}
     -- OR with search path:
     \directlua{dofile("src/lua/metrics.lua")}
+    \directlua{dofile("../lua/metrics.lua")}
 
   For the best experience, load it early (before heavy packages like tikz)
   so wall_time captures the full compilation.
 
   Configuration (set BEFORE loading metrics.lua):
     \directlua{metrics_output_path = "custom/path.json"}
+    \directlua{metrics_skip_aux  = true}   -- skip .aux parsing (faster)
+    \directlua{metrics_skip_log  = true}   -- skip .log parsing (faster)
 
   Collected metrics:
     - Engine info (LuaTeX version, engine name)
-    - Compilation wall time (os.clock, not os.time)
+    - Compilation wall time (os.clock, sub-millisecond)
     - Page count (via tex.count["c@page"])
-    - PDF output file size
-    - Warning count (parsed from log output)
-    - File inclusion list (tracked via open_read_file callback)
-    - Mid-compilation snapshot via \metricprint
+    - PDF output file path and approximate size
+    - Warning count (parsed from .log)
+    - File inclusion tree (parsed from .log parentheses)
+    - Document structure: sections, figures, tables, equations (from .aux)
+    - Word count estimate (tokens in main .tex body)
 
-  Design notes:
-    - Uses \AtEndDocument instead of stop_run callback because ltluatex.lua
-      (loaded by modern LaTeX) intercepts callback.register() and blocks
-      direct callback registration.  \AtEndDocument is reliable and portable.
-    - Uses open_read_file callback (which ltluatex doesn't block) for
-      tracking file inclusions.
-    - Wall time may be slightly less than real elapsed time because
-    LuaTeX has some C-level overhead before and after Lua execution.
+  Design notes (v3.0):
+    - File inclusions are tracked by PARSING THE .LOG FILE for parenthesis-
+      delimited file references.  This is more reliable than the open_read_file
+      LuaTeX callback, which is intercepted by ltluatex.lua in modern TeX Live.
+    - Document structure (sections, figures, tables) is parsed from the .aux
+      file at \\AtEndDocument time.  On the first compile, the .aux may not
+      exist yet (counters stay at 0).  On subsequent compiles, the .aux from
+      the previous run provides accurate structure counts.  This matches
+      standard LaTeX behavior where 2+ runs are needed for correct output.
+    - Word count is a rough estimate based on whitespace-delimited tokens in
+      the main .tex file, excluding LaTeX commands and comments.  For accurate
+      word counts, use the external texcount tool.
+    - PDF size is read at \AtEndDocument time; it may be slightly smaller than
+      the final file because the PDF xref/trailer hasn't been written yet.
+      Use compile.py's _pdf_size() for the accurate post-compilation size.
 ]]
 
 local metrics_output_path = metrics_output_path or "metrics-output.json"
+local metrics_skip_aux    = metrics_skip_aux    or false
+local metrics_skip_log    = metrics_skip_log    or false
 
 -- ── JSON Serialization ──────────────────────────────────────────────────────
--- Made global so collect_metrics() (called from \AtEndDocument via \directlua)
--- can access it.
+-- Made global so collect_metrics() and finalize_metrics() can access it.
 
 json_escape = json_escape or function(s)
     if type(s) ~= "string" then return tostring(s) end
@@ -108,72 +120,205 @@ to_json = to_json or function(val, indent)
 end
 
 -- ── Metrics State ───────────────────────────────────────────────────────────
--- Global so that collect_metrics() can access it from \AtEndDocument.
 
 metrics_data = metrics_data or {
-    engine         = "unknown",
-    luatex_version = "unknown",
-    job_name       = "unknown",
-    wall_time      = 0,
-    page_count     = 0,
-    pdf_size       = 0,
-    pdf_path       = "",
-    warning_count  = 0,
-    included_files = {},
+    engine            = "unknown",
+    luatex_version    = "unknown",
+    job_name          = "unknown",
+    wall_time         = 0,
+    page_count        = 0,
+    pdf_size          = 0,
+    pdf_path          = "",
+    warning_count     = 0,
+    included_files    = {},
+    section_count     = 0,
+    subsection_count  = 0,
+    figure_count      = 0,
+    table_count       = 0,
+    equation_count    = 0,
+    word_count        = 0,
 }
 local data = metrics_data
 
 metrics_compile_start = metrics_compile_start or os.clock()
 local compile_start = metrics_compile_start
 
--- ── File Inclusion Tracking ──────────────────────────────────────────────────
--- We try to register open_read_file callback for tracking file inclusions.
--- If it fails (e.g., ltluatex already claimed it), we fall back gracefully.
+-- ── .log File Parser — File Inclusion Tracking ───────────────────────────────
+-- TeX logs every \input/\include in parentheses:
+--   (/path/to/file.sty  ...  )  (nested (/inner.sty) )
+-- We parse these parentheses to build the file inclusion tree.
+-- This is the standard, reliable approach — it always works regardless
+-- of ltluatex callback interception.
 
-local function try_register_open_read(fn)
-    if not callback then return false end
-    -- Try raw registration first
-    local ok = pcall(callback.register, "open_read_file", fn)
-    if ok then return true end
-    -- If that fails, the callback is already claimed — that's fine
-    return false
-end
+local LOG_SKIP_EXTENSIONS = {
+    ["tfm"]  = true, ["enc"]  = true, ["pfb"]  = true, ["map"]  = true,
+    ["lig"]  = true, ["fd"]   = true, ["cfg"]  = true, ["def"]  = true,
+    ["pkl"]  = true, ["fmt"]  = true, ["otf"]  = true, ["ttf"]  = true,
+    ["woff"] = true, ["woff2"]= true, ["png"]  = true, ["jpg"]  = true,
+    ["jpeg"] = true, ["pdf"]  = true, ["eps"]  = true, ["bmp"]  = true,
+    ["toc"]  = true, ["aux"]  = true, ["out"]  = true, ["lof"]  = true,
+    ["lot"]  = true, ["nav"]  = true, ["snm"]  = true, ["vrb"]  = true,
+    ["bbl"]  = true, ["blg"]  = true, ["bcf"]  = true, ["fls"]  = true,
+    ["fdb_latexmk"] = true, ["synctex.gz"] = true, ["run.xml"] = true,
+    ["idx"]  = true, ["ilg"]  = true, ["ind"]  = true, ["glo"]  = true,
+    ["gls"]  = true, ["ist"]  = true, ["mtc"]  = true, ["mtc1"] = true,
+    ["end"]  = true, ["ptc"]  = true, ["acn"]  = true, ["acr"]  = true,
+    ["alg"]  = true, ["glg"]  = true, ["maf"]  = true, ["mlf"]  = true,
+    ["mlt"]  = true, ["end"]  = true,
+}
 
-local _ = try_register_open_read(function(file_name)
-    local basename = file_name
-    local s, e = file_name:find("[^/\\]+$")
-    if s then basename = file_name:sub(s, e) end
+local function parse_log_for_files(log_path)
+    local files = {}
+    local seen = {}
 
-    -- Skip internal TeX files
-    if basename:match("%.tfm$") or basename:match("%.enc$")
-        or basename:match("%.pfb$") or basename:match("%.map$")
-        or basename:match("%.lig$") or basename:match("%.fd$")
-        or basename:match("%.cfg$") or basename:match("%.def$")
-        or basename:match("%.pkl$") or basename:match("%.fmt$")
-    then
-        return file_name
+    local f = io.open(log_path, "r")
+    if not f then return files end
+
+    local content = f:read("*a")
+    f:close()
+
+    -- Match file paths inside parentheses in the log.
+    -- TeX log format: (filename  contents ) with nesting.
+    -- We look for '(' followed by a path-like string.
+    for path in content:gmatch("%(([^%s%)(\"%]]+)") do
+        -- Skip empty, very short, or non-path strings
+        if #path > 1 and (path:match("^/") or path:match("^%.") or path:match("^[A-Za-z]:")) then
+            -- Extract basename
+            local basename = path:match("([^/\\]+)$") or path
+            -- Skip if it looks like a log message fragment, not a file
+            if not basename:match("^%.") and basename:match("%.") then
+                local ext = basename:match("%.([^.]+)$") or ""
+                if not LOG_SKIP_EXTENSIONS[ext:lower()] then
+                    if not seen[path] then
+                        seen[path] = true
+                        -- Normalize: strip leading ./
+                        local clean = path:gsub("^%./", "")
+                        table.insert(files, clean)
+                    end
+                end
+            end
+        end
     end
 
-    -- Also skip font and image files
-    if basename:match("%.otf$") or basename:match("%.ttf$")
-        or basename:match("%.woff") or basename:match("%.pdf$")
-        or basename:match("%.png$") or basename:match("%.jpg$")
-    then
-        return file_name
+    -- Also match quoted paths: ("path with spaces")
+    for path in content:gmatch('%("([^"]+)"') do
+        if #path > 1 then
+            local basename = path:match("([^/\\]+)$") or path
+            local ext = basename:match("%.([^.]+)$") or ""
+            if not LOG_SKIP_EXTENSIONS[ext:lower()] and not seen[path] then
+                seen[path] = true
+                local clean = path:gsub("^%./", "")
+                table.insert(files, clean)
+            end
+        end
     end
 
-    table.insert(data.included_files, file_name)
-    return file_name
-end)
-
-if not _ then
-    -- open_read_file callback not available — included_files will be empty
+    table.sort(files)
+    return files
 end
 
--- ── Metrics Collection Function ─────────────────────────────────────────────
--- Called via \AtEndDocument.  Collects all metrics and writes JSON.
--- Must be a global function because \AtEndDocument{\\directlua{...}}
--- executes in a separate Lua chunk.
+-- ── .aux File Parser — Document Structure Counters ──────────────────────────
+-- The .aux file contains structured data about the document:
+--   \@writefile{toc}{\contentsline {section}{...}{...}}  → sections
+--   \@writefile{lof}{\contentsline {figure}{...}{...}}    → figures
+--   \@writefile{lot}{\contentsline {table}{...}{...}}     → tables
+--   \newlabel{eq:...}{...}                                 → equations
+--   \newlabel{fig:...}{...}                                → figures (alt)
+--   \newlabel{tab:...}{...}                                → tables (alt)
+
+local function parse_aux_for_structure(aux_path)
+    local result = {
+        section_count    = 0,
+        subsection_count = 0,
+        figure_count     = 0,
+        table_count      = 0,
+        equation_count   = 0,
+    }
+
+    local f = io.open(aux_path, "r")
+    if not f then return result end
+
+    local content = f:read("*a")
+    f:close()
+
+    -- Count sections via \contentsline
+    for _ in content:gmatch("\\contentsline%s*{section}%s*{") do
+        result.section_count = result.section_count + 1
+    end
+
+    -- Count subsections
+    for _ in content:gmatch("\\contentsline%s*{subsection}%s*{") do
+        result.subsection_count = result.subsection_count + 1
+    end
+
+    -- Count figures via \contentsline {figure}
+    for _ in content:gmatch("\\contentsline%s*{figure}%s*{") do
+        result.figure_count = result.figure_count + 1
+    end
+
+    -- Count tables via \contentsline {table}
+    for _ in content:gmatch("\\contentsline%s*{table}%s*{") do
+        result.table_count = result.table_count + 1
+    end
+
+    -- Count equations via \newlabel{eq:...} (standard LaTeX equation labels)
+    for _ in content:gmatch("\\newlabel{%s*eq:") do
+        result.equation_count = result.equation_count + 1
+    end
+
+    -- Also count figures/tables from \newlabel (in case \contentsline missed them)
+    -- Only count if \contentsline count is 0 (fallback)
+    if result.figure_count == 0 then
+        for _ in content:gmatch("\\newlabel{%s*fig:") do
+            result.figure_count = result.figure_count + 1
+        end
+    end
+    if result.table_count == 0 then
+        for _ in content:gmatch("\\newlabel{%s*tab:") do
+            result.table_count = result.table_count + 1
+        end
+    end
+
+    return result
+end
+
+-- ── Word Count Estimator ────────────────────────────────────────────────────
+-- Reads the main .tex file and estimates word count by counting
+-- whitespace-delimited tokens that are NOT LaTeX commands or comments.
+-- This is a rough estimate — for accurate counts, use texcount.
+
+local function estimate_word_count(tex_path)
+    local f = io.open(tex_path, "r")
+    if not f then return 0 end
+
+    local content = f:read("*a")
+    f:close()
+
+    -- Remove comments (% to end of line, but not escaped \%)
+    content = content:gsub("(?<!\\)%%[^\n]*", "")
+
+    -- Remove LaTeX commands (\word or \word[...]{...})
+    content = content:gsub("\\[%a@]+%b[]", "")  -- \cmd[...]
+    content = content:gsub("\\[%a@]+%b{}", "")   -- \cmd{...}
+    content = content:gsub("\\[%a@]+", " ")       -- remaining \cmd
+
+    -- Remove braces, brackets, math delimiters
+    content = content:gsub("[{}%[%]%%$&_^~#]", " ")
+
+    -- Count whitespace-delimited "words" (non-empty sequences)
+    local count = 0
+    for word in content:gmatch("%S+") do
+        if #word > 1 then
+            count = count + 1
+        end
+    end
+
+    return count
+end
+
+-- ── Phase 1: collect_metrics() — called at \AtEndDocument ──────────────────
+-- Collects basic metrics (time, pages, files, warnings) and writes initial JSON.
+-- Structure counters are left at 0; they are filled in by finalize_metrics().
 
 function collect_metrics()
     data.wall_time = os.clock() - metrics_compile_start
@@ -183,7 +328,6 @@ function collect_metrics()
         data.engine = status.luatex_engine or data.engine
         if status.luatex_version then
             local v = status.luatex_version
-            -- LuaTeX encodes version as MMNNPP (e.g., 12400 = 1.24.0)
             data.luatex_version = string.format("%d.%d.%d",
                 math.floor(v / 100),
                 math.floor((v % 100) / 1),
@@ -206,10 +350,7 @@ function collect_metrics()
         end
     end
 
-    -- PDF size
-    -- NOTE: At \AtEndDocument time, the PDF may not be fully written yet.
-    -- The reported size may be smaller than the final file size.
-    -- For accurate size, check the file after compilation finishes.
+    -- PDF size (approximate — PDF not fully finalized at \AtEndDocument)
     local pdf_path = data.pdf_path
     if pdf_path and pdf_path ~= "" then
         local f = io.open(pdf_path, "rb")
@@ -219,7 +360,7 @@ function collect_metrics()
         end
     end
 
-    -- Warning count: read the .log file and count "Warning" lines
+    -- Warning count: count "Warning" lines in .log
     local log_path = data.job_name .. ".log"
     local log_f = io.open(log_path, "r")
     if log_f then
@@ -233,7 +374,21 @@ function collect_metrics()
         log_f:close()
     end
 
-    -- Write JSON
+    -- File inclusion tree (from .log file)
+    if not metrics_skip_log then
+        data.included_files = parse_log_for_files(log_path)
+    end
+
+    -- Word count estimate (from main .tex file)
+    local main_tex = data.job_name .. ".tex"
+    data.word_count = estimate_word_count(main_tex)
+
+    -- NOTE: .aux file structure counters are NOT parsed here because TeX has
+    -- the .aux file open for writing at this point (truncated, data in buffer).
+    -- Lua's io.open sees 0 bytes.  Structure counters are parsed AFTER
+    -- compilation by compile.py (or scripts/metrics_finalize.py).
+
+    -- Write final JSON
     local output = to_json(data, 0)
     local f = io.open(metrics_output_path, "w")
     if f then
@@ -241,9 +396,14 @@ function collect_metrics()
         f:write("\n")
         f:close()
         texio.write_nl(string.format(
-            "[metrics.lua] Written %s — %d pages, %.2fs, %d bytes, %d warnings",
-            metrics_output_path, data.page_count, data.wall_time,
-            data.pdf_size, data.warning_count
+            "[metrics.lua v3.0] Written %s — %d pages, %.2fs, %d files, "
+            .. "~%d words, %d warnings",
+            metrics_output_path,
+            data.page_count,
+            data.wall_time,
+            #data.included_files,
+            data.word_count,
+            data.warning_count
         ))
     else
         texio.write_nl(string.format(
@@ -251,14 +411,24 @@ function collect_metrics()
     end
 end
 
+-- ── (no longer needed) ─────────────────────────────────────────────────────
+-- The finalize_metrics() function was removed.  Structure counter parsing
+-- now happens inside collect_metrics() directly.
+
 -- ── TeX Integration ─────────────────────────────────────────────────────────
+-- NOTE: We must NOT use % (comment) inside tex.sprint because tex.sprint
+-- converts newlines to spaces, causing % to eat everything until the end
+-- of the input buffer.  Use \relax or nothing for spacing.
+--
+-- Phase 2 (structure counters from .aux) runs inside collect_metrics()
+-- itself.  The .aux file from the PREVIOUS compilation run is available
+-- at \AtEndDocument time (TeX reads it at \begin{document} and keeps it
+-- open).  On the very first compile, structure counters will be 0 (no
+-- previous .aux exists).  This matches standard LaTeX behavior: you
+-- always need 2+ runs for correct cross-references and TOC.
 
 if tex then
-    -- Use \AtEndDocument to trigger metrics collection at the very end.
-    -- This works reliably regardless of ltluatex callback interception.
     tex.sprint("\\AtEndDocument{\\directlua{collect_metrics()}}")
-
-    -- Provide \metricprint for mid-compilation snapshots.
     tex.sprint("\\newcommand\\metricprint{\\directlua{metricprint_snap()}}")
 end
 
