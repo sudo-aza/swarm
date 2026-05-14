@@ -28,13 +28,13 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 3 | Research portable LaTeX distributions (TeX Live, MiKTeX portable) | Researcher | **done** | 2026-05-14 |
 | 4 | Research CI/CD and compilation benchmarking approaches | Researcher | pending | 2026-05-14 |
 | 5 | Design the "beautiful" theme — title page, typography, colors, tables | Programmer | **done** | 2026-05-14 |
-| 6 | Design the "performance" theme — minimal, fast compilation | Programmer | pending | 2026-05-14 |
+| 6 | Design the "performance" theme — minimal, fast compilation | Programmer | **done** | 2026-05-14 |
 | 7 | Write Python helper scripts (compile, stats, auto-compile, dep checker) | Programmer | **done** | 2026-05-14 |
 | 8 | Write Lua scripts (compile time, page count, image inventory, cross-ref stats, file size) | Programmer | **done** (initial) | 2026-05-14 |
 | 9 | Write setup script for portable LaTeX install + all required packages | Programmer | **done** | 2026-05-14 |
 | 10 | Create demo `.tex` document showcasing all theme features | Programmer | **done** | 2026-05-14 |
 | 11 | QA: Review theme visual output (title page, tables, code blocks, spacing) | QA | **done** | 2026-05-13 |
-| 12 | QA: Test performance theme compilation speed vs standard | QA | blocked (#6) | 2026-05-13 |
+| 12 | QA: Test performance theme compilation speed vs standard | QA | pending | 2026-05-13 |
 | 13 | QA: Review Python helper scripts for correctness and edge cases | QA | **done** | 2026-05-13 |
 | 14 | QA: Review Lua scripts for accurate measurements | QA | **done** | 2026-05-13 |
 | 15 | QA: Test setup script on clean environment | QA | **done** | 2026-05-13 |
@@ -48,6 +48,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 33 | **RE-REVIEW**: Verify compile.py v2.1 — (1) `clean_aux()` now removes `_minted-*` directories via `shutil.rmtree()` + `import shutil`; (2) `RERUN_RE` regex catches "Please (re)run Biber/BibTeX" and "rerun Biber/BibTeX"; (3) smart multi-pass now re-runs bib tool when biber rerun is detected, supports up to smart_max passes with alternating bib+latex; (4) 11/11 unit tests pass for rerun detection | QA | **done** (9/10) | 2026-05-14 |
 | 34 | **FIX**: compile.py v2.2 — (1) `clean_aux()` now targets only `_minted-{base}` (exact match), not all `_minted-*` dirs; (2) renamed `has_undefined_references()` to `needs_rerun()`; (3) extracted duplicated bib rerun regex into `BIB_RERUN_RE` constant used by both `RERUN_RE` and inline checks in `compile_tex()`; (4) added `re.IGNORECASE` to `RERUN_RE` so it inherits BIB_RERUN_RE's case-insensitive matching | Programmer | **done** | 2026-05-14 |
 | 35 | **RE-REVIEW**: Verify compile.py v2.2 — (1) `clean_aux()` only removes `_minted-{base}` not all `_minted-*` dirs; (2) `has_undefined_references` renamed to `needs_rerun`; (3) `BIB_RERUN_RE` constant extracted and used in 3 places; (4) `RERUN_RE` has `re.IGNORECASE`; (5) demo compiles clean, 6/6 unit tests pass | QA | pending | 2026-05-14 |
+| 36 | **QA**: Review performance theme `swarmperf.sty` v1.0 — verify: (1) zero external deps (no fontspec, no minted, no TikZ, no shell-escape); (2) compiles with pdfLaTeX, XeLaTeX, and LuaLaTeX; (3) title page, block environments (note/tip/warning), booktabs tables, listings code blocks, theorem environments all work; (4) headers/footers display correctly; (5) demo-performance.tex compiles clean; (6) PDF size is significantly smaller than swarmbeauty demo | QA | pending | 2026-05-14 |
 | 22 | **FIX**: swarmbeauty.sty TOC regression — current v0.3.0 only renames TOC title via `\contentsname`. Lost the styled fonts/leaders from original tocloft. Restore using KOMA-native tocbasic: `\setkomafont{tocentry}{...}`, `\setkomafont{tocentrypagenumber}{...}`, `\DeclareTOCStyleEntry[indent=0pt]{default}{section}` etc. | Programmer | **done** | 2026-05-14 |
 | 23 | **RE-REVIEW**: Verify swarmbeauty.sty v0.3.1 TOC fix — styled entry fonts (section bold primary, subsection dark, subsubsection medium), colored dotted leaders, styled page numbers, no tocloft dependency | QA | **done** (revoked — see correction) | 2026-05-14 |
 | 24 | **FIX**: swarmbeauty.sty TOC styles not applying — `\DeclareTOCStyleEntry[tocline]` entries are silently ignored. Compiled PDF shows all TOC text in `sbDark` regular weight instead of the specified `sbPrimary` bold for sections, `sbSecondary` for page numbers, etc. Likely caused by `titlesec` package conflicting with KOMA tocbasic. Fix approach: (1) try removing `titlesec` and use KOMA's `\RedeclareSectionCommand` for section heading styling instead; (2) if `titlesec` must stay, try loading it AFTER the `\DeclareTOCStyleEntry` commands or use `\AfterPackage{titlesec}{...}`; (3) verify by compiling and checking the actual rendered TOC font/color, not just the code. | Programmer | **done** | 2026-05-14 |
@@ -142,6 +143,12 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > **Fix 1 — `clean_aux()` too broad**: Changed from `startswith("_minted-")` (deletes ALL minted dirs) to exact match on `_minted-{base}` (only deletes the current file's cache). Dead `minted_prefix` variable eliminated. Tested: cleaning `paper.tex` no longer removes `_minted-thesis/`.
 > **Fix 2 — Misleading function name**: Renamed `has_undefined_references()` → `needs_rerun()` to accurately reflect that it now catches both cross-ref and bib rerun signals. All call sites updated. Verified old name no longer exists in module.
 > **Fix 3 — Duplicated regex**: Extracted the bib rerun pattern into `BIB_RERUN_RE` constant (with `re.IGNORECASE`). Used in `RERUN_RE` composition and both inline `re.search()` calls in `compile_tex()`. Also added `re.IGNORECASE` to `RERUN_RE` so case-insensitive matching propagates correctly. **Tested**: 6/6 test suites pass (11 BIB_RERUN_RE patterns, 14 RERUN_RE patterns, 3 needs_rerun cases, clean_aux scoping, no stale name, full demo compile). Demo compiles clean: 7 pages, 138KB. Created QA re-review task #35.
+
+### Programmer — 2026-05-14 14:00 UTC+8
+> **Task #6 done**: Verified and fixed `swarmperf.sty` v1.0 — the performance theme. The theme and demo were created in a previous session (stashed changes that got included in the v2.2 commit).
+> **Theme features**: 5-color palette (spDark/spAccent/spGray/spLight/spCodeBg), geometry page layout, fancyhdr headers/footers, listings code highlighting (zero external deps), booktabs tables, 3 lightweight block environments (note/tip/warning via minipage), 3 theorem environments, inline `\code{}`/`\hltext{}` commands, enumerate/itemize styling, `\subtitle` compatibility for both article and KOMA classes.
+> **Bug found and fixed**: `\thesection` was redefined to include `\textcolor{spAccent}{...}`, which caused `Undefined color 'SPACCENT'` errors because LaTeX uppercases text in moving arguments (TOC shipping, page headers). **Fix**: Removed the `\thesection`/`\thesubsection` overrides entirely. Section numbers remain plain — color is applied at display level only where safe.
+> **Verified**: Compiles clean with zero errors on both pdfLaTeX and LuaLaTeX (2 passes each). pdfLaTeX: 5 pages, 232KB. LuaLaTeX: 5 pages, 136KB. No external dependencies needed (no Pygments, no shell-escape). Beautiful demo still compiles clean (regression check). Unblocked QA Task #12 (performance comparison). Created QA review task #36.
 
 ---
 

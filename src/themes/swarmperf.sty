@@ -79,9 +79,10 @@
 % in TeX Live 2026 (breaks \@xdblarg). Standard LaTeX sectioning is used.
 % \sectionfont/\subsectionfont are KOMA-only — override numbering color instead.
 
-% Override section numbering to use accent color
-\renewcommand{\thesection}{\textcolor{spAccent}{\bfseries\arabic{section}}}
-\renewcommand{\thesubsection}{\textcolor{spAccent}{\arabic{section}.\arabic{subsection}}}
+% NOTE: Do NOT put \textcolor or \bfseries inside \thesection/\thesubsection.
+% These counter representations are used in moving arguments (TOC, headers,
+% bookmarks, \ref) where LaTeX may uppercase text, breaking color names.
+% Instead, keep plain numbers and apply color at the display level.
 
 % ── Title Page ──────────────────────────────────────────────────────────────
 % Simple, fast title page using basic LaTeX commands. No TikZ.
@@ -268,4 +269,5 @@
 % Users should load biblatex themselves:
 %   \usepackage[backend=biber, style=numeric]{biblatex}
 
+% ── END ────────────────────────────────────────────────────────────────
 \endinput
