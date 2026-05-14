@@ -22,7 +22,7 @@
 % =============================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{swarmbeauty}[2026/05/14 v0.4.0 LaTeX Helper Swarm — Beautiful Theme]
+\ProvidesPackage{swarmbeauty}[2026/05/14 v0.5.0 LaTeX Helper Swarm — Beautiful Theme]
 
 % ── Engine check ─────────────────────────────────────────────────────────────
 \RequirePackage{iftex}
@@ -328,17 +328,25 @@
 
 % ── TOC Styling (KOMA-native tocbasic) ────────────────────────────────────────
 % Restores the styled TOC without tocloft (which conflicts with KOMA).
-% Uses \DeclareTOCStyleEntry for full control over fonts, leaders, indents.
+% Uses \DeclareTOCStyleEntry for full control over fonts, leaders, indents, spacing.
+
+% Kill global parskip inside the TOC — parskip=half- inherited by TOC paragraph
+% entries causes wildly inconsistent vertical spacing (24pt to 76pt). We reset it
+% here and use explicit beforeskip values per entry level instead.
+\BeforeStartingTOC[toc]{%
+  \setlength{\parskip}{0pt plus 0pt}%
+}
 
 % TOC title
 \renewcommand{\contentsname}{%
   \sffamily\bfseries\Large\color{sbPrimary}Table of Contents%
 }
 
-% Section entries: bold, primary color, no indent
+% Section entries: bold, primary color, no indent, tighter numwidth
 \DeclareTOCStyleEntry[
   indent      = 0pt,
-  numwidth    = 2.5em,
+  numwidth    = 1.5em,
+  beforeskip  = 0.8em plus 0.2em,
   entryformat = \sffamily\bfseries\color{sbPrimary},
   entrynumberformat = \color{sbSecondary}\bfseries,
   pagenumberformat = \color{sbSecondary}\sffamily\small,
@@ -348,7 +356,8 @@
 % Subsection entries: dark color, indented
 \DeclareTOCStyleEntry[
   indent      = 1.5em,
-  numwidth    = 3em,
+  numwidth    = 2.5em,
+  beforeskip  = 0.3em plus 0.1em,
   entryformat = \sffamily\color{sbDark},
   entrynumberformat = \color{sbSecondary},
   pagenumberformat = \color{sbSecondary}\sffamily\small,
@@ -358,7 +367,8 @@
 % Subsubsection entries: smaller, medium color, more indented
 \DeclareTOCStyleEntry[
   indent      = 3em,
-  numwidth    = 3.5em,
+  numwidth    = 3.0em,
+  beforeskip  = 0.2em plus 0.1em,
   entryformat = \small\color{sbMedium},
   entrynumberformat = \color{sbMedium},
   pagenumberformat = \color{sbSecondary}\sffamily\small,
