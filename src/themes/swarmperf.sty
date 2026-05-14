@@ -4,8 +4,11 @@
 % A minimal, fast-to-compile document theme optimized for:
 %   - Maximum compilation speed (works with pdfLaTeX, XeLaTeX, LuaLaTeX)
 %   - Zero external dependencies (no Pygments, no fontspec, no shell-escape)
-%   - Small PDF output size
 %   - Clean, professional typography with minimal overhead
+%
+% NOTE: The performance advantage is compilation SPEED (3-9x faster than the
+% beautiful theme), not PDF size. Font embedding dominates PDF size, so the
+% output files are comparable in kilobytes.
 %
 % Design philosophy: every package must earn its place. Heavy packages like
 % TikZ, fontspec, microtype, tcolorbox, and minted are deliberately excluded
@@ -24,7 +27,7 @@
 % =============================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{swarmperf}[2026/05/14 v1.0 LaTeX Helper Swarm — Performance Theme]
+\ProvidesPackage{swarmperf}[2026/05/14 v1.1 LaTeX Helper Swarm — Performance Theme]
 
 % ── Core packages (minimal set) ──────────────────────────────────────────────
 \RequirePackage{xcolor}
@@ -48,6 +51,8 @@
 \definecolor{spGray}{HTML}{7F8C8D}      % Medium gray (subtle elements)
 \definecolor{spLight}{HTML}{F2F3F4}      % Light gray (backgrounds)
 \definecolor{spCodeBg}{HTML}{F8F9FA}    % Very light gray (code background)
+\definecolor{spGreen}{HTML}{27AE60}      % Green (tip blocks)
+\definecolor{spOrange}{HTML}{E67E22}     % Orange (warning blocks)
 
 % ── Page Layout ─────────────────────────────────────────────────────────────
 % Use geometry for simple, reliable page setup. Works with article, scrartcl, etc.
@@ -187,8 +192,9 @@
 \newenvironment{noteblock}[1][Note]{%
   \par\vspace{0.6em}%
   \noindent\hspace{0pt}%
-  \begin{minipage}[t]{\dimexpr\linewidth-4pt\relax}%
-    \hspace{4pt}%
+  \color{spAccent}\rule[-3pt]{3pt}{1.2em}%
+  \begin{minipage}[t]{\dimexpr\linewidth-7pt\relax}%
+    \hspace{6pt}%
     {\sffamily\small\bfseries\color{spAccent}#1}%
     \par\vspace{0.2em}%
 }{%
@@ -199,9 +205,10 @@
 \newenvironment{tipblock}[1][Tip]{%
   \par\vspace{0.6em}%
   \noindent\hspace{0pt}%
-  \begin{minipage}[t]{\dimexpr\linewidth-4pt\relax}%
-    \hspace{4pt}%
-    {\sffamily\small\bfseries\color{spDark}#1}%
+  \color{spGreen}\rule[-3pt]{3pt}{1.2em}%
+  \begin{minipage}[t]{\dimexpr\linewidth-7pt\relax}%
+    \hspace{6pt}%
+    {\sffamily\small\bfseries\color{spGreen}#1}%
     \par\vspace{0.2em}%
 }{%
   \end{minipage}%
@@ -211,9 +218,10 @@
 \newenvironment{warningblock}[1][Warning]{%
   \par\vspace{0.6em}%
   \noindent\hspace{0pt}%
-  \begin{minipage}[t]{\dimexpr\linewidth-4pt\relax}%
-    \hspace{4pt}%
-    {\sffamily\small\bfseries\color{spDark}#1}%
+  \color{spOrange}\rule[-3pt]{3pt}{1.2em}%
+  \begin{minipage}[t]{\dimexpr\linewidth-7pt\relax}%
+    \hspace{6pt}%
+    {\sffamily\small\bfseries\color{spOrange}#1}%
     \par\vspace{0.2em}%
 }{%
   \end{minipage}%
