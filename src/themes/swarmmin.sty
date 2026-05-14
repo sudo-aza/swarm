@@ -3,8 +3,7 @@
 %
 % Ultra-minimal, ultra-fast document theme. API-compatible with swarmbeauty
 % (same command/environment names) but strips everything to the bone:
-%   - Only booktabs loaded unconditionally (~15KB, zero dependencies)
-%   - All other packages lazy-loaded via \use* commands
+%   - Only the LaTeX kernel is assumed at require time
 %   - Zero custom colors (uses default black throughout)
 %   - Zero custom layouts (no headers/footers, no TOC styling, no section rules)
 %   - Block environments as plain bold-text markers (no tcolorbox, no minipage)
@@ -21,6 +20,7 @@
 %   \usehyperref     % for clickable TOC / cross-references (preamble only)
 %   \usemath         % for equations and theorems
 %   \usegraphics     % for \includegraphics
+%   \usebooktabs     % for proper \swarmtoprule/\swarmmidrule/\swarmbottomrule
 %   \uselistings     % for code listings (zero external deps, no shell-escape)
 %   \usefancyhdr     % for headers and footers
 %   \usecaption      % for float environments with caption customization
@@ -157,14 +157,14 @@
 \makeatother
 
 % ── Table rules ──────────────────────────────────────────────────────────────
-% booktabs is tiny (~15KB, zero dependencies) so we load it unconditionally.
-% This avoids the preamble-only restriction of \RequirePackage when trying
-% to lazy-load inside tabular environments.
+% Falls back to \hline if booktabs is not loaded. Call \usebooktabs in the
+% preamble (or before your first table) to get proper booktabs rules.
 
-\RequirePackage{booktabs}
-\newcommand{\swarmtoprule}{\toprule}
-\newcommand{\swarmmidrule}{\midrule}
-\newcommand{\swarmbottomrule}{\bottomrule}
+\makeatletter
+\newcommand{\swarmtoprule}{\@ifpackageloaded{booktabs}{\toprule}{\hline}}
+\newcommand{\swarmmidrule}{\@ifpackageloaded{booktabs}{\midrule}{\hline}}
+\newcommand{\swarmbottomrule}{\@ifpackageloaded{booktabs}{\bottomrule}{\hline}}
+\makeatother
 
 % ── Footnote (plain number, no color) ──────────────────────────────────────
 
@@ -184,6 +184,10 @@
   \RequirePackage{amssymb}%
   \RequirePackage{mathtools}%
 }
+
+% Booktabs — proper table rules (\toprule, \midrule, \bottomrule).
+% Without this, \swarmtoprule/\swarmmidrule/\swarmbottomrule fall back to \hline.
+\newcommand{\usebooktabs}{\RequirePackage{booktabs}}
 
 % Code listings via listings package (zero external deps, no shell-escape).
 % Loads listings and sets sensible defaults. Use \begin{lstlisting}[language=Python]

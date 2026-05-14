@@ -5,7 +5,7 @@
 %      or:  lualatex demo-minimal.tex
 %      or:  xelatex  demo-minimal.tex
 %
-% This demo uses 4 lazy-loaded packages (hyperref, amsmath, enumitem, listings)
+% This demo uses 5 lazy-loaded packages (hyperref, amsmath, enumitem, booktabs, listings)
 % to demonstrate the theme's API. Everything else is zero-overhead.
 % No shell-escape required. No Pygments. No external dependencies.
 % =============================================================================
@@ -18,8 +18,8 @@
 \usehyperref     % for clickable TOC and cross-references
 \usemath         % for theorems and equations (sections 4-5)
 \useenumitem     % for styled lists (section 3)
-\uselistings     % for code blocks (section 6)
-% booktabs loaded lazily by \swarmtoprule on first table use (section 4)
+\usebooktabs     % for proper table rules (section 4)
+\uselistings     % for code blocks (section 5)
 
 % ── Metadata ─────────────────────────────────────────────────────────────────
 
