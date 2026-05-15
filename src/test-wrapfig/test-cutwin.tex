@@ -1,57 +1,134 @@
-% Test: cutwin (v0.2) — CORRECTED SYNTAX
-% cutwin uses: \begin{cutout}{lines}{overlap}{width}{ntext-lines}
-% Then text INSIDE the environment fills around the cutout.
+% test-cutwin.tex — cutwin (v0.2) test
+% cutwin API: \begin{cutout}{numtop}{leftwidth}{rightwidth}{numcut}
+%   numtop     = full-width lines above window
+%   numcut     = number of cutout lines (window height)
+%   leftwidth  = text line width LEFT of window (ignored for open-right)
+%   rightwidth = text line width RIGHT of window (ignored for open-left)
+%   For centered: both are used (left and right text widths)
+% Body of env = text paragraph (must be single paragraph)
+% Window content via \renewcommand{\windowpagestuff}{...}
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{cutwin}
 \usepackage{lipsum}
 
-\title{cutwin Test}
+\title{cutwin (v0.2) Test}
 \author{Programmer Agent}
-\date{2026-05-15}
+\date{2026-05-16}
 
 \begin{document}
 \maketitle
 
-\section{Test 1: Basic cutwin (right)}
+% ============================================================
+% Test 1: Basic right-side window
+% opencutright: leftwidth=text width on left, rightwidth=ignored
+% ============================================================
+\section{Test 1: Basic right-side window}
 
 \opencutright
-\begin{cutout}{4}{0.65\linewidth}{0.30\linewidth}{10}
-  \centering
-  \vspace*{1em}
-  \includegraphics[width=0.27\linewidth]{test-image.png}
+\renewcommand{\windowpagestuff}{%
+  \centering\vspace*{0.5em}%
+  \includegraphics[width=3cm]{test-image.png}%
+}
+\begin{cutout}{3}{8.5cm}{0pt}{8}
+  \lipsum[1-2]
 \end{cutout}
-\lipsum[1-3]
 
-\section{Test 2: cutwin near page break}
+% ============================================================
+% Test 2: Left-side window
+% opencutleft: leftwidth=ignored, rightwidth=text width on right
+% ============================================================
+\section{Test 2: Left-side window}
 
-\lipsum[4-5]
+\opencutleft
+\renewcommand{\windowpagestuff}{%
+  \centering\vspace*{0.5em}%
+  \includegraphics[width=3cm]{test-image.png}%
+}
+\begin{cutout}{2}{0pt}{8.5cm}{7}
+  \lipsum[2-3]
+\end{cutout}
+
+% ============================================================
+% Test 3: Tall figure near page break
+% ============================================================
+\section{Test 3: Tall figure near page break}
+
+\lipsum[4]
+
+\vspace{6cm}
 
 \opencutright
-\begin{cutout}{4}{0.65\linewidth}{0.30\linewidth}{10}
-  \centering
-  \vspace*{1em}
-  \includegraphics[width=0.27\linewidth]{test-image.png}
+\renewcommand{\windowpagestuff}{%
+  \centering\vspace*{0.5em}%
+  \includegraphics[width=3cm]{test-image.png}%
+}
+\begin{cutout}{2}{8.5cm}{0pt}{12}
+  \lipsum[5-6]
 \end{cutout}
-\lipsum[6-7]
 
-\section{Test 3: cutwin inside itemize}
+\newpage
+
+% ============================================================
+% Test 4: Figure before itemize (text wrapping into list)
+% ============================================================
+\section{Test 4: Text wrapping into itemize}
+
+\opencutright
+\renewcommand{\windowpagestuff}{%
+  \centering\vspace*{0.5em}%
+  \includegraphics[width=3cm]{test-image.png}%
+}
+\begin{cutout}{1}{8.5cm}{0pt}{10}
+  Here is a list of items about this figure. Each item provides some
+  relevant detail.
+  \begin{itemize}
+    \item First item in the list, should wrap around the figure.
+    \item Second item, also wrapping.
+    \item Third item, may or may not wrap depending on figure height.
+    \item Fourth item.
+    \item Fifth item, likely at full width.
+  \end{itemize}
+  This is trailing text after the list.
+\end{cutout}
+
+% ============================================================
+% Test 5: Figure inside itemize (stress test)
+% ============================================================
+\section{Test 5: Figure inside itemize}
+
+This test places the cutout environment inside an itemize environment.
 
 \begin{itemize}
-  \item First item.
+  \item First item before the cutout.
+
   \opencutright
-  \begin{cutout}{4}{0.65\linewidth}{0.30\linewidth}{8}
-    \centering
-    \vspace*{1em}
-    \includegraphics[width=0.27\linewidth]{test-image.png}
+  \renewcommand{\windowpagestuff}{%
+    \centering\vspace*{0.5em}%
+    \includegraphics[width=3cm]{test-image.png}%
+  }
+  \begin{cutout}{1}{7cm}{0pt}{6}
+    This text is inside the cutout within an item. It should wrap
+    around the figure on the right side.
   \end{cutout}
-  \item Text next to figure.
-  \item More text.
-  \item \lipsum[8][1-3]
-  \item More text.
-  \item \lipsum[9][1-3]
-  \item Final item.
+
+  \item Second item after the cutout.
+  \item Third item, should be at full width.
 \end{itemize}
+
+% ============================================================
+% Test 6: Centered window
+% ============================================================
+\section{Test 6: Centered window}
+
+\opencutcenter
+\renewcommand{\windowpagestuff}{%
+  \centering\vspace*{0.5em}%
+  \includegraphics[width=3cm]{test-image.png}%
+}
+\begin{cutout}{3}{4.5cm}{4.5cm}{7}
+  \lipsum[7]
+\end{cutout}
 
 \end{document}

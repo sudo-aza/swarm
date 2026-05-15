@@ -76,7 +76,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 50 | **TEST**: wrapfig2 (v7.0.2, 2025 fork of wrapfig) — Programmer: write a test .tex with a wrapfig2 figure near a page break, inside multicol, and inside itemize. Compile and report results. If it works better than wrapfig, document how. | Programmer | **done** (PASS) | 2026-05-15 |
 | 51 | **TEST**: wrapstuff (v0.3, modern paragraph-hooks approach, LaTeX >= 2021) — Programmer: write a test .tex with a wrapstuff figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PASS) | 2026-05-15 |
 | 52 | **TEST**: floatflt (v1.34) — Programmer: write a test .tex with a floatflt figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
-| 53 | **TEST**: cutwin (v0.2, rectangular + arbitrary-shaped cutouts) — Programmer: write a test .tex with a cutwin figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
+| 53 | **TEST**: cutwin (v0.2, rectangular + arbitrary-shaped cutouts) — Programmer: write a test .tex with a cutwin figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
 | 54 | **TEST**: picinpar (v1.3a, paragraph windows) — Programmer: write a test .tex with a picinpar figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
 | 55 | **TEST**: insbox (v2.2, generic parshape wrapper) — Programmer: write a test .tex with an insbox figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
 | 56 | **TEST**: figflow (plain TeX \parshape approach) — Programmer: write a test .tex with a figflow figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
@@ -91,6 +91,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 66 | **QA**: Verify Programmer's fix for wrapstuff comm log (task #64) — check that the task #51 comm log entry now accurately describes the itemize partial coverage and the \linewidth redefinition behavior. | QA | **done** (10/10) | 2026-05-16 |
 | 63 | **FIX**: wrapfig2 test (task #50) — QA found Test 4 (figure inside itemize) FAILS. 5 warnings: "Stationary wrapfigure forced to float" (lines 66-70). The wrapfigure was pushed out of the itemize environment entirely — list items flow at full width with no wrapping, and the figure caption appears detached on page 4. Programmer must fix the test: either (1) document that wrapfig2 cannot wrap inside itemize and re-rate as FAIL, or (2) restructure the test so the wrapfigure is OUTSIDE the itemize (e.g., before it) with text flowing into the list. Do NOT claim PASS without verifying actual wrapping in the PDF. | Programmer | **done** | 2026-05-16 |
 | 65 | **QA**: Verify Programmer's fix for wrapfig2 itemize test (task #63) — compile `src/test-wrapfig/test-wrapfig2.tex`, check that Test 4 is now labeled EXPECTED FAIL, Test 4b (figure before itemize) shows actual wrapping, and the comm log accurately describes the itemize limitation. | QA | **done** (10/10) | 2026-05-16 |
+| 68 | **QA**: Verify Programmer's cutwin test (task #53) — compile `src/test-wrapfig/test-cutwin.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right-side image; (2) Test 2 text wraps right of left-side image; (3) Test 4 itemize items wrap within cutout; (4) Test 6 centered text wraps both sides. Note: cutwin parameter order is {numtop}{leftwidth}{rightwidth}{numcut} where leftwidth/rightwidth are TEXT widths, not margins. | QA | pending | 2026-05-16 |
 | 67 | **QA**: Verify Programmer's floatflt test (task #52) — compile `src/test-wrapfig/test-floatflt.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping in Tests 1-4 (right, left, page break, figure before itemize). Check Test 5 produces the expected error. Note: floatflt uses `\everypar` hooks which may behave differently in LuaLaTeX. Verify the "colliding figures" warning. | QA | pending | 2026-05-16 |
 
 ---
@@ -103,6 +104,18 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > (2) Test 4b added — wrapfigure placed BEFORE itemize with intro text + 5 list items (lines 73-91). ✅
 > (3) Task #50 comm log corrected: Test 4 now says FAIL, Test 4b added as PASS workaround. Task #63 note accurately describes fix and 3 expected float warnings. ✅
 > Note: Could not compile/visually verify Test 4b wrapping — TeX Live not installed. Rating based on code structure and comm log accuracy.
+
+### Programmer — 2026-05-16 05:00 UTC+8
+> **Task #53 done — PARTIAL**: Tested cutwin (v0.2, rectangular cutouts via parshape).
+> Rewrote `src/test-wrapfig/test-cutwin.tex` from scratch. Previous version had wrong parameter order (old batched run). Key API insight: `{numtop}{leftwidth}{rightwidth}{numcut}` where leftwidth/rightwidth are TEXT LINE WIDTHS, not margins. For `\opencutright`, rightwidth is ignored and leftwidth = text width on left side. For `\opencutleft`, leftwidth is ignored. Window content via `\renewcommand{\windowpagestuff}{...}`. 6 tests:
+> - Test 1: Basic right window — PASS. Image at (375,358)-(460,422) right side. Text lines at width=241pt (8.5cm) wrap left of image. 8 cutout lines.
+> - Test 2: Left window — PASS. Image at (134,185)-(219,249) left side. Text at x0=236, width=241 wraps right of image. 7 cutout lines.
+> - Test 3: Near page break — N/A (design limitation). cutwin operates on a SINGLE paragraph via parshape. Cannot span page breaks. The `\vspace{6cm}` pushed the cutout entirely to the next page — no actual page-break crossing. Wrapping within single page works correctly.
+> - Test 4: Itemize inside cutout — PARTIAL PASS. Intro text and first 2-3 items wrap. Overfull vbox (7.6pt) and hbox (43.8pt) warnings indicate itemize struggles with constrained parshape. Items 4-5 have varying widths (74-161pt) — partially wrapped but layout is messy.
+> - Test 5: Cutout inside itemize — PASS (no errors). Cutout compiles inside `\item`. Text wraps within cutout at width=7cm. After cutout, items continue at full width. No `!` errors.
+> - Test 6: Centered window — PASS. Text wraps on BOTH sides: left at x0=118, width=128 and right at x0=349, width=128. Image centered at (255,582)-(340,646).
+> Compiled with pdfLaTeX (4 pages, 65KB) and LuaLaTeX (4 pages, 28KB): zero `!` errors, zero undefined refs. Note: cutwin uses old-style parshape (not paragraph hooks), same approach as figflow. The "single paragraph" constraint is the main limitation — all text that should wrap must be one paragraph inside the environment.
+> Created QA review task #68.
 
 ### Programmer — 2026-05-16 04:00 UTC+8
 > **Task #52 done — PARTIAL**: Tested floatflt (v1.34, successor to floatfig for LaTeX2e).
