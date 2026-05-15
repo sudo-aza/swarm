@@ -1,65 +1,79 @@
-% Test: wrapstuff (v0.3) — CORRECTED API
-\documentclass[11pt,a4paper]{article}
+\documentclass[a4paper,11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
-\usepackage{caption}
-\usepackage{wrapstuff}
 \usepackage{lipsum}
+\usepackage{wrapstuff}
 
-\title{wrapstuff Test}
+\title{Test: wrapstuff (v0.3, modern paragraph hooks)}
 \author{Programmer Agent}
 \date{2026-05-15}
 
 \begin{document}
 \maketitle
 
-\section{Test 1: Basic wrapstuff (right)}
+%--- Test 1: Basic right wrap ---
+\section*{Test 1: Basic Figure Wrapping (Right)}
+Text should flow around a figure placed on the right side.
+wrapstuff uses \verb|wrapstuff| environment with \verb|[r]| option.
 
-\begin{wrapstuff}[width=0.3\textwidth, r]
+\begin{wrapstuff}[r,width=0.35\linewidth,type=figure]
   \centering
-  \includegraphics[width=\linewidth]{test-image.png}
-  \captionof{figure}{A test figure wrapped using wrapstuff.}
+  \rule{0.3\linewidth}{4cm}
+  \caption{Right-wrapped figure.}
 \end{wrapstuff}
+\lipsum[1-2]
 
-\lipsum[1-3]
+%--- Test 2: Left wrap ---
+\section*{Test 2: Figure Wrapping (Left)}
+Text should flow around a figure on the left side, using \verb|[l]| option.
 
-\section{Test 2: wrapstuff near page break}
-
-\lipsum[4-5]
-
-\begin{wrapstuff}[width=0.3\textwidth, r]
+\begin{wrapstuff}[l,width=0.35\linewidth,type=figure]
   \centering
-  \includegraphics[width=\linewidth]{test-image.png}
-  \captionof{figure}{Figure near page break with wrapstuff.}
+  \rule{0.3\linewidth}{4cm}
+  \caption{Left-wrapped figure.}
 \end{wrapstuff}
+\lipsum[3-4]
 
-\lipsum[6-7]
+%--- Test 3: Tall figure near page break ---
+\section*{Test 3: Tall Figure Near Page Break}
+A tall figure (8cm) near a page break. Text should wrap correctly
+even when the figure spans across the page boundary.
 
-\section{Test 3: wrapstuff inside itemize}
+\begin{wrapstuff}[r,width=0.35\linewidth,type=figure]
+  \centering
+  \rule{0.3\linewidth}{8cm}
+  \caption{Tall figure spanning page break.}
+\end{wrapstuff}
+\lipsum[5-8]
 
+%--- Test 4: Figure inside itemize ---
+\section*{Test 4: Figure Inside Itemize}
+wrapstuff claims to handle list environments correctly.
+List items should wrap around the figure.
+
+\begin{wrapstuff}[r,width=0.35\linewidth,type=figure]
+  \centering
+  \rule{0.3\linewidth}{3cm}
+  \caption{Figure inside itemize environment.}
+\end{wrapstuff}
 \begin{itemize}
-  \item First item before the wrapped figure.
-  \begin{wrapstuff}[width=0.3\textwidth, r]
-    \centering
-    \includegraphics[width=\linewidth]{test-image.png}
-    \captionof{figure}{Figure inside itemize with wrapstuff.}
-  \end{wrapstuff}
-  \item This item should appear next to the figure.
-  \item Another item to test text flow.
-  \item \lipsum[8][1-3]
-  \item More text to extend the wrapped region.
-  \item \lipsum[9][1-3]
-  \item Final item.
+  \item First item: \lipsum[1][1-3]
+  \item Second item: \lipsum[2][1-3]
+  \item Third item: \lipsum[3][1-3]
+  \item Fourth item: \lipsum[4][1-3]
+  \item Fifth item: \lipsum[5][1-3]
 \end{itemize}
 
-\section{Test 4: wrapstuff centered (unique feature)}
+%--- Test 5: Centered figure (wrapstuff-exclusive) ---
+\section*{Test 5: Centered Figure (wrapstuff-Exclusive Feature)}
+wrapstuff supports \verb|[c]| option to center the figure,
+with text wrapping on both sides. No other wrapfig alternative offers this.
 
-\begin{wrapstuff}[width=0.3\textwidth, c]
+\begin{wrapstuff}[c,width=0.25\linewidth,type=figure]
   \centering
-  \includegraphics[width=\linewidth]{test-image.png}
-  \captionof{figure}{Centered figure — unique to wrapstuff.}
+  \rule{0.2\linewidth}{4cm}
+  \caption{Centered figure with text on both sides.}
 \end{wrapstuff}
-
-\lipsum[10-11]
+\lipsum[6-7]
 
 \end{document}
