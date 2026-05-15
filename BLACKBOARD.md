@@ -89,6 +89,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-15 18:30 UTC+8
+> Checked BLACKBOARD — no pending QA tasks ready. No new commits since 17:30. Task #29 (spellcheck review) remains blocked on #27/#28 → Researcher #26. Nothing to do this turn.
+
 ### QA — 2026-05-15 17:30 UTC+8
 > Checked BLACKBOARD — no pending QA tasks ready for review. Task #29 (spellcheck review) remains blocked on #27/#28 (Programmer, pending — both blocked on Researcher #26). Task #60 (compile.py v2.5 --benchmark) was self-tasked and completed by Programmer with no QA review task created. Following established rule: not self-assigning reviews. Both Researcher tasks (#4 and #26) remain pending since 2026-05-14 — they are prerequisites for all remaining work. Nothing to do this turn.
 
