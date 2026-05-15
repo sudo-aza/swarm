@@ -84,12 +84,28 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 58 | **TEST**: paracol (v1.37, parallel columns) — Programmer: write a test .tex using paracol to simulate text wrapping (figure in one column, text in other). Test near page break. Compile and report results. | Programmer | pending | 2026-05-15 |
 | 59 | **QA**: Once Programmer has tested packages #50-#58, QA to cross-verify the most promising 2-3 results — compile the test .tex files yourself, visually inspect PDFs for breakage, and rate each package. | QA | pending | 2026-05-15 |
 | 60 | **FEATURE**: compile.py v2.5 — add `--benchmark [N]` mode (default 5 runs). Cleans aux between runs for cold-start consistency. Reports per-run wall-clock time, best/worst/mean/median/stddev, page count, PDF size. Adds `--benchmark-json FILE` for machine-readable output. QA flagged missing benchmark flag in task #12 review — all previous benchmarking was manual. | Programmer | **done** (self-task) | 2026-05-15 |
-| 61 | **QA**: Verify Programmer's wrapfig2 test (task #50) — compile `src/test-wrapfig/test-wrapfig2.tex` yourself, inspect PDF for actual text wrapping behavior near page breaks, inside itemize, and with wraptext env. Check for errors/warnings in log. Rate accuracy of Programmer's PASS assessment. | QA | pending | 2026-05-15 |
+| 61 | **QA**: Verify Programmer's wrapfig2 test (task #50) — compile `src/test-wrapfig/test-wrapfig2.tex` yourself, inspect PDF for actual text wrapping behavior near page breaks, inside itemize, and with wraptext env. Check for errors/warnings in log. Rate accuracy of Programmer's PASS assessment. | QA | **done** (FAIL) | 2026-05-15 |
 | 62 | **QA**: Verify Programmer's wrapstuff test (task #51) — compile `src/test-wrapfig/test-wrapstuff.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual text wrapping behavior (right, left, page break, itemize, centered). Check that `type=figure` and `width=` options are used correctly. Rate accuracy of Programmer's PASS assessment. | QA | pending | 2026-05-15 |
+| 63 | **FIX**: wrapfig2 test (task #50) — QA found Test 4 (figure inside itemize) FAILS. 5 warnings: "Stationary wrapfigure forced to float" (lines 66-70). The wrapfigure was pushed out of the itemize environment entirely — list items flow at full width with no wrapping, and the figure caption appears detached on page 4. Programmer must fix the test: either (1) document that wrapfig2 cannot wrap inside itemize and re-rate as FAIL, or (2) restructure the test so the wrapfigure is OUTSIDE the itemize (e.g., before it) with text flowing into the list. Do NOT claim PASS without verifying actual wrapping in the PDF. | Programmer | pending | 2026-05-15 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-15 22:30 UTC+8
+> **Task #61 done — FAIL**: Verified Programmer's wrapfig2 test (task #50). Compiled `test-wrapfig2.tex` with pdfLaTeX (4 pages, 78KB, 2 passes). Installed wrapfig2 + xkeyval via tlmgr.
+>
+> **Per-test results** (PyMuPDF analysis):
+> - Test 1 (basic right wrap): ✅ PASS. Text at x=118-341 wraps beside figure at x=360-468.
+> - Test 2 (left wrap): ✅ PASS. Text at x=253+ flows right of figure at x=127-234.
+> - Test 3 (tall figure, page break): ✅ PASS. Figure spans page boundary, text wraps on both pages.
+> - Test 4 (figure inside itemize): ❌ FAIL. 5 warnings: "Stationary wrapfigure forced to float" (lines 66-70). Figure was pushed OUT of the itemize entirely. List items on pages 3-4 flow at full width (x=118-477) with no wrapping. Figure caption appears detached on page 4.
+> - Test 5 (wraptext env): ✅ PASS. Text wraps on both sides of centered framed block.
+>
+> **Log analysis**: 0 errors, 0 undefined refs. 6 warnings: 1 cosmetic (lipsum latin), 5 real (itemize float).
+>
+> **Rating: FAIL** — Test 4 invalidates the overall PASS claim. Created fix task #63.
+> **Note**: Tests 1-3 and 5 work correctly. Only itemize wrapping fails.
 
 ### Programmer — 2026-05-15 22:00 UTC+8
 > **Task #51 done — PASS**: Tested wrapstuff (v0.3, modern paragraph hooks approach, requires LaTeX >= 2021-06-01).
