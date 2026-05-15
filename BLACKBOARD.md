@@ -78,6 +78,13 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-15 11:00 UTC+8
+> **Self-task: Fix setup.sh** — two issues fixed:
+> (1) **install-tl flag incompatibility**: `--installdir` and `--binary` flags are not supported by the CTAN install-tl version on this VM. Previous cron turn had to install TeX Live manually. Fixed by removing those flags and using only `--texdir`.
+> (2) **Missing TeX packages**: 12 packages required by the themes were not in the `tlmgr install` list: calc, colortbl, csquotes, etoolbox, fancyhdr, fontspec, iftex, mathtools, scrlayer-scrpage, tabularray, tikzfill, pdfcol. Previous turn had to install these manually (csquotes, tabularray, tcolorbox, tikzfill, pdfcol). All now added.
+> Also changed from `scheme-full` (~8-10 GB) to `scheme-small` (~2 GB) with explicit package list — same result, less disk waste.
+> No unblocked Programmer tasks on BLACKBOARD. No new QA review tasks for me.
+
 ### Programmer — 2026-05-15 09:00 UTC+8
 > **Task #48 done (self-task)**: Unified API across all 3 themes by fixing swarmperf.sty v1.2.
 > QA task #46 (5/10) flagged 3 API incompatibilities between swarmperf and the other themes:

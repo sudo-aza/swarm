@@ -7,7 +7,7 @@
 #
 # Installs:
 #   - System dependencies (optional sudo, with fallback)
-#   - TeX Live (portable, full scheme) into ./texlive/
+#   - TeX Live (portable, scheme-small + explicit packages) into ./texlive/
 #   - Python 3 virtual environment with required pip packages
 #   - Convenience aliases in ~/.bashrc
 #
@@ -124,8 +124,9 @@ install_texlive() {
         return 0
     fi
 
-    info "Installing TeX Live (scheme-full, portable)..."
-    info "This may take a while (~8-10 GB download)..."
+    info "Installing TeX Live (scheme-small + explicit packages, portable)..."
+    info "Using scheme-small to save disk space (~2 GB vs ~8 GB for scheme-full)..."
+    info "All required packages installed explicitly after base install."
 
     mkdir -p "${TEXLIVE_DIR}" "${INSTALLER_CACHE}"
     cd "${INSTALLER_CACHE}"
@@ -140,25 +141,23 @@ install_texlive() {
     tar -xzf install-tl-unx.tar.gz
     cd install-tl-*/
 
-    # Use --binary for correct architecture on non-x86_64 systems.
-    # Install directly into texlive/ (flat, no year subdirectory) so that
-    # compile.py can find texlive/bin/<arch>/ without guessing the year.
+    # NOTE: --installdir and --binary flags are not supported by install-tl on
+    # some CTAN mirror versions. Use --texdir only for the installation root.
+    # The binary symlinks end up in ${TEXLIVE_DIR}/bin/${PLATFORM} automatically.
     ./install-tl \
-        --scheme=full \
+        --scheme=small \
         --portable \
-        --installdir="${TEXLIVE_DIR}" \
         --texdir="${TEXLIVE_DIR}" \
-        --texmflocal="${TEXLIVE_DIR}/texmf-local" \
-        --binary="${PLATFORM}" \
         --no-interaction \
         --logfile="${INSTALLER_CACHE}/install.log" \
         2>&1
 
     cd "${REPO_ROOT}"
-    ok "TeX Live installed."
+    ok "TeX Live base installed."
 
-    # Install commonly-needed extra packages
-    info "Installing extra TeX packages..."
+    # Install ALL packages required by swarm themes (swarmbeauty, swarmperf, swarmmin)
+    # Plus dependencies that tcolorbox/tikz pull in transitively.
+    info "Installing swarm theme packages..."
     "${texbin}/tlmgr" install \
         collection-fontsrecommended \
         collection-latexextra \
@@ -166,30 +165,41 @@ install_texlive() {
         collection-bibtexextra \
         collection-pictures \
         collection-publisher \
-        minted \
-        pygments \
-        tcolorbox \
-        fontawesome5 \
-        babel \
-        microtype \
-        hyperref \
+        amsmath amssymb amsthm \
+        mathtools \
         booktabs \
-        tabularx \
-        longtable \
-        geometry \
+        tabularx longtable \
         xcolor \
         graphicx \
+        calc \
+        etoolbox \
+        geometry \
         enumitem \
         caption \
-        subcaption \
         float \
         placeins \
-        ntheorem \
-        amsmath amssymb amsthm \
-        algorithm2e \
+        fancyhdr \
         listings \
-        pgfplots \
+        hyperref \
+        microtype \
+        fontspec \
+        iftex \
+        colortbl \
+        csquotes \
+        scrlayer-scrpage \
+        tabularray \
+        tcolorbox \
         tikz \
+        tikzfill \
+        pdfcol \
+        minted \
+        pygments \
+        fontawesome5 \
+        babel \
+        pgfplots \
+        ntheorem \
+        algorithm2e \
+        subcaption \
         2>/dev/null || true
 
     ok "TeX Live ready at ${TEXLIVE_DIR}"
