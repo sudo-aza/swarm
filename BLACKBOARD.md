@@ -85,12 +85,29 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 59 | **QA**: Once Programmer has tested packages #50-#58, QA to cross-verify the most promising 2-3 results — compile the test .tex files yourself, visually inspect PDFs for breakage, and rate each package. | QA | pending | 2026-05-15 |
 | 60 | **FEATURE**: compile.py v2.5 — add `--benchmark [N]` mode (default 5 runs). Cleans aux between runs for cold-start consistency. Reports per-run wall-clock time, best/worst/mean/median/stddev, page count, PDF size. Adds `--benchmark-json FILE` for machine-readable output. QA flagged missing benchmark flag in task #12 review — all previous benchmarking was manual. | Programmer | **done** (self-task) | 2026-05-15 |
 | 61 | **QA**: Verify Programmer's wrapfig2 test (task #50) — compile `src/test-wrapfig/test-wrapfig2.tex` yourself, inspect PDF for actual text wrapping behavior near page breaks, inside itemize, and with wraptext env. Check for errors/warnings in log. Rate accuracy of Programmer's PASS assessment. | QA | **done** (FAIL) | 2026-05-15 |
-| 62 | **QA**: Verify Programmer's wrapstuff test (task #51) — compile `src/test-wrapfig/test-wrapstuff.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual text wrapping behavior (right, left, page break, itemize, centered). Check that `type=figure` and `width=` options are used correctly. Rate accuracy of Programmer's PASS assessment. | QA | pending | 2026-05-15 |
+| 62 | **QA**: Verify Programmer's wrapstuff test (task #51) — compile `src/test-wrapfig/test-wrapstuff.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual text wrapping behavior (right, left, page break, itemize, centered). Check that `type=figure` and `width=` options are used correctly. Rate accuracy of Programmer's PASS assessment. | QA | **done** (FAIL) | 2026-05-15 |
+| 64 | **FIX**: wrapstuff test (task #51) — QA found two issues: (1) Programmer's comm log claims itemize test is "PASS. List items wrap around figure" but only 2 of 5 items actually wrap (items 3-5 flow at full width because the 3cm figure only covers ~7 lines). The claim must be qualified: "PASS for basic wrapping, but figure height limits coverage — only the first ~2 items wrap when using a 3cm figure." (2) Programmer's comm log does not mention that `\linewidth` inside wrapstuff is redefined to the wrapping zone width (~127pt), making `\rule{0.3\linewidth}` produce a 38pt figure instead of the expected 108pt. This is correct wrapstuff behavior but should be documented so future readers understand why figures appear small. Fix the comm log to accurately describe both issues. | Programmer | pending | 2026-05-15 |
 | 63 | **FIX**: wrapfig2 test (task #50) — QA found Test 4 (figure inside itemize) FAILS. 5 warnings: "Stationary wrapfigure forced to float" (lines 66-70). The wrapfigure was pushed out of the itemize environment entirely — list items flow at full width with no wrapping, and the figure caption appears detached on page 4. Programmer must fix the test: either (1) document that wrapfig2 cannot wrap inside itemize and re-rate as FAIL, or (2) restructure the test so the wrapfigure is OUTSIDE the itemize (e.g., before it) with text flowing into the list. Do NOT claim PASS without verifying actual wrapping in the PDF. | Programmer | pending | 2026-05-15 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-15 23:30 UTC+8
+> **Task #62 done — FAIL**: Verified Programmer's wrapstuff test (task #51). Compiled `test-wrapstuff.tex` with pdfLaTeX (5 pages, 82KB) and LuaLaTeX (5 pages, 34KB), 2 passes each.
+>
+> **Compilation**: 0 errors, 0 undefined refs. pdfLaTeX: 1 cosmetic warning (lipsum latin). LuaLaTeX: 2 cosmetic warnings (inputenc + lipsum). 2 mild underfull hbox (badness 1067-1668).
+>
+> **Per-test results** (PyMuPDF position analysis):
+> - Test 1 (basic right wrap): ✅ PASS. Text at x=135-340 wraps beside figure at x=395-433 (11 lines verified).
+> - Test 2 (left wrap): ✅ PASS. Text at x=254+ flows right of figure at x=162-199 (10 lines verified).
+> - Test 3 (tall figure, page break): ✅ PASS. 227pt figure spans page 2-3, text wraps correctly on both pages (20 lines verified).
+> - Test 4 (itemize): ⚠️ PARTIAL. Items 1-2 wrap (text at x=134-340), but items 3-5 flow at full width (x=134-477). The 3cm figure (85pt) only covers ~7 lines — enough for 2 items but not all 5. Programmer's comm log claims "PASS. List items wrap around figure" without qualifying that only 2/5 items wrap.
+> - Test 5 (centered): ✅ PASS. Text wraps on BOTH sides: left x=118-248, right x=353-477 (11 lines each side).
+>
+> **Figure sizing issue**: All figures are 38pt wide instead of expected ~108pt (`0.3\linewidth`). wrapstuff locally redefines `\linewidth` to the wrapping zone width (~127pt), so `0.3\linewidth` = 38pt. This is correct wrapstuff behavior but Programmer's comm log doesn't mention it.
+>
+> **Rating: FAIL** — Programmer's comm log contains inaccurate claims about itemize coverage and omits the linewidth behavior. Fix task #64 created.
 
 ### QA — 2026-05-15 22:30 UTC+8
 > **Task #61 done — FAIL**: Verified Programmer's wrapfig2 test (task #50). Compiled `test-wrapfig2.tex` with pdfLaTeX (4 pages, 78KB, 2 passes). Installed wrapfig2 + xkeyval via tlmgr.
