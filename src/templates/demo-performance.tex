@@ -26,7 +26,7 @@
 % Title Page
 % ══════════════════════════════════════════════════════════════════════════════
 
-\maketitle
+\swarmtitlepage
 
 % ══════════════════════════════════════════════════════════════════════════════
 % Table of Contents
@@ -140,13 +140,13 @@ The theme integrates with \code{booktabs} for clean, professional tables.
   \caption{Comparison of LaTeX compilation engines}
   \label{tab:engines}
   \begin{tabular}{l c c c}
-    \perftoprule
+    \swarmtoprule
     \textbf{Engine}   & \textbf{Speed} & \textbf{Font Support} & \textbf{Unicode} \\
-    \perfmidrule
+    \swarmmidrule
     pdfLaTeX           & Fast           & Limited (Type 1)      & Partial          \\
     XeLaTeX            & Medium         & Full (OpenType)        & Full             \\
     LuaLaTeX           & Slow           & Full (OpenType)        & Full             \\
-    \perfbottomrule
+    \swarmbottomrule
   \end{tabular}
 \end{table}
 
@@ -188,14 +188,14 @@ if __name__ == "__main__":
 
 The theme provides standard theorem environments with automatic numbering.
 
-\begin{theorem}[Euler's Identity]
+\begin{theorem}{Euler's Identity}{thm:euler}
   For any real number $x$, the following identity holds:
   \[
     e^{i\pi} + 1 = 0
   \]
 \end{theorem}
 
-\begin{definition}[Metric Space]
+\begin{definition}{Metric Space}{def:metric}
   A \emph{metric space} is a pair $(X, d)$ where $X$ is a set and
   $d\colon X \times X \to \mathbb{R}_{\geq 0}$ satisfies:
   \begin{enumerate}
@@ -205,7 +205,7 @@ The theme provides standard theorem environments with automatic numbering.
   \end{enumerate}
 \end{definition}
 
-\begin{lemma}[Nested Intervals]
+\begin{lemma}{Nested Intervals}{lem:nested}
   Let $\{[a_n, b_n]\}_{n=1}^{\infty}$ be a sequence of closed, bounded
   intervals such that $[a_{n+1}, b_{n+1}] \subseteq [a_n, b_n]$ for all $n$.
   Then $\bigcap_{n=1}^{\infty} [a_n, b_n] \neq \emptyset$.

@@ -1,5 +1,5 @@
 % =============================================================================
-% swarmperf.sty — The "Performance" Theme for the LaTeX Helper Swarm  (v1.1)
+% swarmperf.sty — The "Performance" Theme for the LaTeX Helper Swarm  (v1.2)
 %
 % A minimal, fast-to-compile document theme optimized for:
 %   - Maximum compilation speed (works with pdfLaTeX, XeLaTeX, LuaLaTeX)
@@ -27,7 +27,7 @@
 % =============================================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{swarmperf}[2026/05/14 v1.1 LaTeX Helper Swarm — Performance Theme]
+\ProvidesPackage{swarmperf}[2026/05/15 v1.2 LaTeX Helper Swarm — Performance Theme]
 
 % ── Core packages (minimal set) ──────────────────────────────────────────────
 \RequirePackage{xcolor}
@@ -91,9 +91,10 @@
 
 % ── Title Page ──────────────────────────────────────────────────────────────
 % Simple, fast title page using basic LaTeX commands. No TikZ.
+% Provides \swarmtitlepage (unified API) with \maketitle as backward-compat alias.
 
 \makeatletter
-\renewcommand{\maketitle}{%
+\newcommand{\swarmtitlepage}{%
   \begin{titlepage}
     \vspace*{2cm}
     \begin{center}
@@ -115,6 +116,8 @@
     \vfill
   \end{titlepage}
 }
+% Backward compatibility: \maketitle delegates to \swarmtitlepage
+\renewcommand{\maketitle}{\swarmtitlepage}
 \makeatother
 
 % ── Headers & Footers ──────────────────────────────────────────────────────
@@ -133,10 +136,15 @@
 
 % ── Table Styling ──────────────────────────────────────────────────────────
 % Clean booktabs tables with minimal decoration.
+% Provides \swarmtoprule/\swarmmidrule/\swarmbottomrule (unified API)
+% with \perftoprule/\perfmidrule/\perfbottomrule as backward-compat aliases.
 
-\newcommand{\perftoprule}{\toprule}
-\newcommand{\perfmidrule}{\midrule}
-\newcommand{\perfbottomrule}{\bottomrule}
+\newcommand{\swarmtoprule}{\toprule}
+\newcommand{\swarmmidrule}{\midrule}
+\newcommand{\swarmbottomrule}{\bottomrule}
+\newcommand{\perftoprule}{\swarmtoprule}
+\newcommand{\perfmidrule}{\swarmmidrule}
+\newcommand{\perfbottomrule}{\swarmbottomrule}
 
 \captionsetup{
   font      = {sf, small},
@@ -228,12 +236,39 @@
   \par\vspace{0.4em}%
 }
 
-% ── Math Theorem Environments (standard LaTeX) ─────────────────────────────
-% No tcolorbox overhead — use standard \newtheorem.
+% ── Math Theorem Environments ───────────────────────────────────────────────
+% API-compatible with swarmbeauty/swarmmin: \begin{theorem}{name}{label}
+% Both arguments are mandatory (matches \newtcbtheorem from tcolorbox).
+% The {label} arg is accepted but unused — users should add \label{} manually.
+% Numbered within \section.
 
-\newtheorem{theorem}{Theorem}[section]
-\newtheorem{definition}[theorem]{Definition}
-\newtheorem{lemma}[theorem]{Lemma}
+\newcounter{sptheorem}[section]
+\newcounter{spdefinition}[section]
+\newcounter{splemma}[section]
+\renewcommand{\thesptheorem}{\thesection.\arabic{sptheorem}}
+\renewcommand{\thespdefinition}{\thesection.\arabic{spdefinition}}
+\renewcommand{\thesplemma}{\thesection.\arabic{splemma}}
+
+\newenvironment{theorem}[2]{%
+  \refstepcounter{sptheorem}%
+  \par\vspace{0.5em}%
+  \noindent\textbf{Theorem~\thesptheorem}\ifx\\#1\\\else\space(#1)\fi.%
+  \space\itshape\ignorespaces
+}{\par\vspace{0.5em}\upshape}
+
+\newenvironment{definition}[2]{%
+  \refstepcounter{spdefinition}%
+  \par\vspace{0.5em}%
+  \noindent\textbf{Definition~\thespdefinition}\ifx\\#1\\\else\space(#1)\fi.%
+  \space\itshape\ignorespaces
+}{\par\vspace{0.5em}\upshape}
+
+\newenvironment{lemma}[2]{%
+  \refstepcounter{splemma}%
+  \par\vspace{0.5em}%
+  \noindent\textbf{Lemma~\thesplemma}\ifx\\#1\\\else\space(#1)\fi.%
+  \space\itshape\ignorespaces
+}{\par\vspace{0.5em}\upshape}
 
 % ── Hyperlink Styling ──────────────────────────────────────────────────────
 

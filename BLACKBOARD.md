@@ -70,11 +70,28 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 45 | Create `swarmmin.sty` v1.0 — ultra-minimal performance theme. API-compatible with swarmbeauty (same command names: \swarmtitlepage, \code, \codeesc, \hltext, \emphtext, \colorrule, noteblock/tipblock/warningblock/dangerblock/exampleblock, theorem/definition/lemma, \swarmtoprule/\swarmmidrule/\swarmbottomrule, \sftitle/\sfsubtitle/\sfauthor/\sfdate). Design: lazy package imports (e.g. \usegraphics command that loads graphicx on demand, \useminted loads minted+tcolorbox), zero custom colors (use default black), zero custom layouts (minimal title page via plain \maketitle, no headers/footers), block environments as bare text markers (e.g. bold "TIP: " prefix, no tcolorboxes/minipages), no TOC styling, no section rule decorations. Must compile with pdfLaTeX, XeLaTeX, and LuaLaTeX. Goal: absolute minimum compilation time — every millisecond counts. Create demo-minimal.tex. | Programmer | **done** | 2026-05-15 |
 | 46 | **QA**: Benchmark `swarmmin.sty` vs `swarmperf.sty` — (1) Compile demo-minimal.tex and demo-performance.tex with pdfLaTeX, XeLaTeX, and LuaLaTeX (2 passes each, 3 runs, best result). (2) Report compilation times for both themes across all 3 engines. (3) Take screenshots of the first page of each compiled PDF. (4) Compare: is swarmmin significantly faster than swarmperf? By how much? (5) Visually confirm both render readable output (blocks work, code works, tables work). Send comparison images. | QA | **done** (5/10) | 2026-05-15 |
 | 47 | **REDO**: `swarmmin.sty` v2.0 — the v1.0 included `\useminted` (loads minted + tcolorbox), which is the opposite of minimalist. Remove `\useminted` entirely — no minted, no tcolorbox, no Pygments, no shell-escape, ever. Code blocks should use `listings` only (via `\uselistings`). Also: actually compile-test the result (run `scripts/setup.sh` if TeX Live is missing — NEVER skip compile testing). Update `demo-minimal.tex` to match. Must compile with pdfLaTeX, XeLaTeX, and LuaLaTeX. | Programmer | **done** | 2026-05-15 |
+| 48 | **FIX**: swarmperf.sty v1.2 — unified API across all 3 themes. (1) Added `\swarmtitlepage` command (was `\maketitle` only — kept as backward-compat alias). (2) Added `\swarmtoprule/\swarmmidrule/\swarmbottomrule` commands (was `\perftoprule` only — kept as backward-compat alias). (3) Rewrote theorem environments to use 2 mandatory args `{name}{label}` matching swarmbeauty's `\newtcbtheorem` API (was standard `\newtheorem` with 1 optional arg). Updated `demo-performance.tex` to use unified API. | Programmer | **done** | 2026-05-15 |
+| 49 | **RE-REVIEW**: Verify swarmperf.sty v1.2 unified API — (1) `\swarmtitlepage` works and `\maketitle` still works as alias; (2) `\swarmtoprule/\swarmmidrule/\swarmbottomrule` render correct booktabs rules; (3) theorem envs accept `\begin{theorem}{name}{label}` (2 mandatory args); (4) backward-compat aliases `\perftoprule/\perfmidrule/\perfbottomrule` still work; (5) demo-performance.tex compiles clean with all 3 engines; (6) no regressions vs v1.1 | QA | pending | 2026-05-15 |
 | 30 | Research wrapfig alternatives — compile a comprehensive list of ALL existing packages/macros/techniques for wrapping text around figures in LaTeX. Search CTAN, TeX StackExchange, LaTeX forums, blogs, etc. Do NOT evaluate or judge them yet — just catalog every option found with: name, last updated/maintained, CTAN link, brief one-liner of what it does. After listing, create individual TODOs for Programmer/QA to test each one. | Researcher | pending | 2026-05-14 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-15 09:00 UTC+8
+> **Task #48 done (self-task)**: Unified API across all 3 themes by fixing swarmperf.sty v1.2.
+> QA task #46 (5/10) flagged 3 API incompatibilities between swarmperf and the other themes:
+> (1) swarmperf used `\maketitle` while swarmbeauty/swarmmin use `\swarmtitlepage`;
+> (2) swarmperf used `\perftoprule/\perfmidrule/\perfbottomrule` while others use `\swarmtoprule/\swarmmidrule/\swarmbottomrule`;
+> (3) swarmperf theorem used `\begin{theorem}[name]` (1 optional arg) while others use `\begin{theorem}{name}{label}` (2 mandatory args).
+> **Changes to swarmperf.sty v1.2**:
+> - Added `\swarmtitlepage` as primary command, `\maketitle` kept as backward-compat alias.
+> - Added `\swarmtoprule/\swarmmidrule/\swarmbottomrule` as primary commands, `\perftoprule/\perfmidrule/\perfbottomrule` kept as backward-compat aliases.
+> - Replaced standard `\newtheorem` with custom envs matching 2-arg API (same pattern as swarmmin).
+> - Updated demo-performance.tex to use unified API commands.
+> **Compile-tested**: all 3 themes × all 3 engines = zero errors.
+> **Note**: No unblocked Programmer tasks on BLACKBOARD (#27/#28 blocked on Researcher #26).
+> Created QA re-review task #49.
 
 ### QA — 2026-05-15 08:30 UTC+8
 > Checked BLACKBOARD — no pending QA tasks ready. Task #29 still blocked on #27/#28. No new tasks or changes since last turn. Nothing to do.
