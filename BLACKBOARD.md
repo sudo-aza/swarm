@@ -82,11 +82,22 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 56 | **TEST**: figflow (plain TeX \parshape approach) — Programmer: write a test .tex with a figflow figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (SKIP: plain TeX only) | 2026-05-15 |
 | 57 | **TEST**: shapepar (\cutout for rectangular cutouts) — Programmer: write a test .tex with a shapepar cutout near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (FAIL) | 2026-05-15 |
 | 58 | **TEST**: paracol (v1.37, parallel columns) — Programmer: write a test .tex using paracol to simulate text wrapping (figure in one column, text in other). Test near page break. Compile and report results. | Programmer | **done** (PASS) | 2026-05-15 |
-| 59 | **QA**: Once Programmer has tested packages #50-#58, QA to cross-verify the most promising 2-3 results — compile the test .tex files yourself, visually inspect PDFs for breakage, and rate each package. | QA | pending | 2026-05-15 |
+| 59 | **QA**: Once Programmer has tested packages #50-#58, QA to cross-verify the most promising 2-3 results — compile the test .tex files yourself, visually inspect PDFs for breakage, and rate each package. | QA | **done** ( Programmer results partially verified — cutwin downgraded to FAIL, floatflt has image overflow bug) | 2026-05-15 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-15 13:30 UTC+8
+> **Task #59 done**: Cross-verified Programmer's wrapfig alternative test results. Installed wrapstuff, floatflt, cutwin, paracol in our TeX Live. Compiled all 4 PASS test files (zero errors, zero warnings). Analyzed PDF output with PyMuPDF for actual text wrapping behavior.
+>
+> **QA Ratings** (disagree with Programmer on 2 of 4):
+> - **wrapstuff** (Prog: PASS, QA: 7/10) ✅ CONFIRMED. Basic wrapping works. Near page break: image positioned too low, minimal wrapping. Itemize: works. Centered feature unique.
+> - **floatflt** (Prog: PASS, QA: 5/10) ⚠️ DOWNGRADED. Wrapping works BUT image overflows page edge (x=728 exceeds A4 width 595). `\linewidth` inside `floatingfigure` doesn't constrain `\includegraphics` correctly. Test image renders at 359x269pt instead of expected ~135x101pt.
+> - **cutwin** (Prog: PASS, QA: 2/10) ❌ DOWNGRADED TO FAIL. PyMuPDF analysis shows NO text wrapping on any page. Text flows ABOVE/BELOW the cutout window, never beside it. All 3 tests (basic, page break, itemize) show the same issue. The `cutout` environment creates a window but text doesn't wrap around it.
+> - **paracol** (Prog: PASS, QA: 7/10) ✅ CONFIRMED. Not true wrapping (parallel columns) but achieves similar layout. Works near page breaks. Well-maintained.
+>
+> **Revised recommendation**: wrapstuff (best for actual wrapping, if LaTeX >= 2021), paracol (good column-based alternative). Avoid cutwin (doesn't work) and floatflt (image size bug).
 
 ### QA — 2026-05-15 12:30 UTC+8
 > **Task #49 done — 9/10**: Verified `swarmperf.sty` v1.2 unified API. All 6 requirements met: (1) `\swarmtitlepage` works, `\maketitle` still works as alias ✅; (2) `\swarmtoprule/\swarmmidrule/\swarmbottomrule` render correct booktabs rules ✅; (3) theorem envs accept `\begin{theorem}{name}{label}` (2 mandatory args) ✅; (4) backward-compat aliases `\perftoprule/\perfmidrule/\perfbottomrule` still work ✅; (5) demo-performance.tex compiles clean with all 3 engines (pdfLaTeX/XeLaTeX/LuaLaTeX, zero errors, zero warnings, 5 pages) ✅; (6) no regressions vs v1.1 ✅. Also verified: version header says v1.2, color count says 7 colors, `\ProvidesPackage` says v1.2 — all 3 task #44 issues remain fixed. **Minor deduction**: theorem API change from v1.1 (`\begin{theorem}[name]`) to v1.2 (`\begin{theorem}{name}{label}`) is silently breaking for existing documents — old syntax compiles but produces garbled output with no error/warning. No fix task created since the unified API was the explicit goal of task #48.
