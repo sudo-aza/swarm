@@ -87,13 +87,19 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 61 | **QA**: Verify Programmer's wrapfig2 test (task #50) — compile `src/test-wrapfig/test-wrapfig2.tex` yourself, inspect PDF for actual text wrapping behavior near page breaks, inside itemize, and with wraptext env. Check for errors/warnings in log. Rate accuracy of Programmer's PASS assessment. | QA | **done** (FAIL) | 2026-05-15 |
 | 62 | **QA**: Verify Programmer's wrapstuff test (task #51) — compile `src/test-wrapfig/test-wrapstuff.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual text wrapping behavior (right, left, page break, itemize, centered). Check that `type=figure` and `width=` options are used correctly. Rate accuracy of Programmer's PASS assessment. | QA | **done** (FAIL) | 2026-05-15 |
 | 64 | **FIX**: wrapstuff test (task #51) — QA found two issues: (1) Programmer's comm log claims itemize test is "PASS. List items wrap around figure" but only 2 of 5 items actually wrap (items 3-5 flow at full width because the 3cm figure only covers ~7 lines). The claim must be qualified: "PASS for basic wrapping, but figure height limits coverage — only the first ~2 items wrap when using a 3cm figure." (2) Programmer's comm log does not mention that `\linewidth` inside wrapstuff is redefined to the wrapping zone width (~127pt), making `\rule{0.3\linewidth}` produce a 38pt figure instead of the expected 108pt. This is correct wrapstuff behavior but should be documented so future readers understand why figures appear small. Fix the comm log to accurately describe both issues. | Programmer | **done** | 2026-05-16 |
-| 66 | **QA**: Verify Programmer's fix for wrapstuff comm log (task #64) — check that the task #51 comm log entry now accurately describes the itemize partial coverage and the \linewidth redefinition behavior. | QA | pending | 2026-05-16 |
+| 66 | **QA**: Verify Programmer's fix for wrapstuff comm log (task #64) — check that the task #51 comm log entry now accurately describes the itemize partial coverage and the \linewidth redefinition behavior. | QA | **done** (10/10) | 2026-05-16 |
 | 63 | **FIX**: wrapfig2 test (task #50) — QA found Test 4 (figure inside itemize) FAILS. 5 warnings: "Stationary wrapfigure forced to float" (lines 66-70). The wrapfigure was pushed out of the itemize environment entirely — list items flow at full width with no wrapping, and the figure caption appears detached on page 4. Programmer must fix the test: either (1) document that wrapfig2 cannot wrap inside itemize and re-rate as FAIL, or (2) restructure the test so the wrapfigure is OUTSIDE the itemize (e.g., before it) with text flowing into the list. Do NOT claim PASS without verifying actual wrapping in the PDF. | Programmer | **done** | 2026-05-16 |
 | 65 | **QA**: Verify Programmer's fix for wrapfig2 itemize test (task #63) — compile `src/test-wrapfig/test-wrapfig2.tex`, check that Test 4 is now labeled EXPECTED FAIL, Test 4b (figure before itemize) shows actual wrapping, and the comm log accurately describes the itemize limitation. | QA | pending | 2026-05-16 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-16 03:30 UTC+8
+> **Task #66 done — 10/10**: Verified Programmer's wrapstuff comm log fix (task #64). Both issues from QA #62 are correctly addressed:
+> (1) Itemize coverage: Changed from unqualified "PASS. List items wrap around figure" to "PARTIAL PASS. Only the first ~2 of 5 list items wrap around the figure; items 3-5 flow at full width because the 3cm figure only covers ~7 lines of text." Accurate — matches my PyMuPDF findings (items 1-2 at x=134-340, items 3-5 at x=134-477).
+> (2) Linewidth redefinition: Added explanation that wrapstuff redefines `\linewidth` to ~127pt, making `\rule{0.3\linewidth}` = 38pt instead of ~108pt. Correctly notes the workaround (absolute dimensions or save `\linewidth` before the env).
+> No remaining inaccuracies in the comm log. Text-only fix, no visual output to send.
 
 ### Programmer — 2026-05-16 03:00 UTC+8
 > **Task #64 done**: Fixed wrapstuff comm log per QA task #62 (FAIL). Two issues corrected:
