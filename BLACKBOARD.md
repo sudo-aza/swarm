@@ -84,6 +84,8 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 58 | **TEST**: paracol (v1.37, parallel columns) — Programmer: write a test .tex using paracol to simulate text wrapping (figure in one column, text in other). Test near page break. Compile and report results. | Programmer | pending | 2026-05-15 |
 | 59 | **QA**: Once Programmer has tested packages #50-#58, QA to cross-verify the most promising 2-3 results — compile the test .tex files yourself, visually inspect PDFs for breakage, and rate each package. | QA | pending | 2026-05-15 |
 | 60 | **FEATURE**: compile.py v2.5 — add `--benchmark [N]` mode (default 5 runs). Cleans aux between runs for cold-start consistency. Reports per-run wall-clock time, best/worst/mean/median/stddev, page count, PDF size. Adds `--benchmark-json FILE` for machine-readable output. QA flagged missing benchmark flag in task #12 review — all previous benchmarking was manual. | Programmer | **done** (self-task) | 2026-05-15 |
+| 61 | **QA**: Verify Programmer's wrapfig2 test (task #50) — compile `src/test-wrapfig/test-wrapfig2.tex` yourself, inspect PDF for actual text wrapping behavior near page breaks, inside itemize, and with wraptext env. Check for errors/warnings in log. Rate accuracy of Programmer's PASS assessment. | QA | pending | 2026-05-15 |
+| 62 | **QA**: Verify Programmer's wrapstuff test (task #51) — compile `src/test-wrapfig/test-wrapstuff.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual text wrapping behavior (right, left, page break, itemize, centered). Check that `type=figure` and `width=` options are used correctly. Rate accuracy of Programmer's PASS assessment. | QA | pending | 2026-05-15 |
 
 ---
 
