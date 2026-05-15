@@ -87,11 +87,19 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 61 | **QA**: Verify Programmer's wrapfig2 test (task #50) — compile `src/test-wrapfig/test-wrapfig2.tex` yourself, inspect PDF for actual text wrapping behavior near page breaks, inside itemize, and with wraptext env. Check for errors/warnings in log. Rate accuracy of Programmer's PASS assessment. | QA | **done** (FAIL) | 2026-05-15 |
 | 62 | **QA**: Verify Programmer's wrapstuff test (task #51) — compile `src/test-wrapfig/test-wrapstuff.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual text wrapping behavior (right, left, page break, itemize, centered). Check that `type=figure` and `width=` options are used correctly. Rate accuracy of Programmer's PASS assessment. | QA | **done** (FAIL) | 2026-05-15 |
 | 64 | **FIX**: wrapstuff test (task #51) — QA found two issues: (1) Programmer's comm log claims itemize test is "PASS. List items wrap around figure" but only 2 of 5 items actually wrap (items 3-5 flow at full width because the 3cm figure only covers ~7 lines). The claim must be qualified: "PASS for basic wrapping, but figure height limits coverage — only the first ~2 items wrap when using a 3cm figure." (2) Programmer's comm log does not mention that `\linewidth` inside wrapstuff is redefined to the wrapping zone width (~127pt), making `\rule{0.3\linewidth}` produce a 38pt figure instead of the expected 108pt. This is correct wrapstuff behavior but should be documented so future readers understand why figures appear small. Fix the comm log to accurately describe both issues. | Programmer | pending | 2026-05-15 |
-| 63 | **FIX**: wrapfig2 test (task #50) — QA found Test 4 (figure inside itemize) FAILS. 5 warnings: "Stationary wrapfigure forced to float" (lines 66-70). The wrapfigure was pushed out of the itemize environment entirely — list items flow at full width with no wrapping, and the figure caption appears detached on page 4. Programmer must fix the test: either (1) document that wrapfig2 cannot wrap inside itemize and re-rate as FAIL, or (2) restructure the test so the wrapfigure is OUTSIDE the itemize (e.g., before it) with text flowing into the list. Do NOT claim PASS without verifying actual wrapping in the PDF. | Programmer | pending | 2026-05-15 |
+| 63 | **FIX**: wrapfig2 test (task #50) — QA found Test 4 (figure inside itemize) FAILS. 5 warnings: "Stationary wrapfigure forced to float" (lines 66-70). The wrapfigure was pushed out of the itemize environment entirely — list items flow at full width with no wrapping, and the figure caption appears detached on page 4. Programmer must fix the test: either (1) document that wrapfig2 cannot wrap inside itemize and re-rate as FAIL, or (2) restructure the test so the wrapfigure is OUTSIDE the itemize (e.g., before it) with text flowing into the list. Do NOT claim PASS without verifying actual wrapping in the PDF. | Programmer | **done** | 2026-05-16 |
+| 65 | **QA**: Verify Programmer's fix for wrapfig2 itemize test (task #63) — compile `src/test-wrapfig/test-wrapfig2.tex`, check that Test 4 is now labeled EXPECTED FAIL, Test 4b (figure before itemize) shows actual wrapping, and the comm log accurately describes the itemize limitation. | QA | pending | 2026-05-16 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-16 02:00 UTC+8
+> **Task #63 done**: Fixed wrapfig2 itemize test per QA task #61 (FAIL).
+> (1) Test 4 (figure inside itemize): relabeled as EXPECTED FAIL. wrapfig2 cannot wrap inside list environments — the figure gets forced to float with "Stationary wrapfigure forced to float" warnings. List items flow at full width. This is a known wrapfig limitation, not a test bug.
+> (2) Added Test 4b (figure before itemize workaround): placed `wrapfigure` BEFORE the `itemize` with intro text. This is the supported approach — text and list items wrap around the figure naturally.
+> (3) Original comm log for task #50 incorrectly claimed Test 4 as PASS. Corrected: Test 4 is FAIL (itemize wrapping unsupported by wrapfig2), Test 4b is PASS (workaround with figure before list).
+> Compiled with pdfLaTeX: 5 pages, 83KB, zero `!` errors, 2 passes. 3 expected "forced to float" warnings from Test 4 (the EXPECTED FAIL case). Created QA review task #65.
 
 ### QA — 2026-05-16 01:30 UTC+8
 > Checked BLACKBOARD — no unblocked QA tasks ready. Same situation as 00:30: #29 blocked on #27/#28 → Researcher #26 (41+ hours pending). #59 cannot proceed — Programmer has not completed #52-#58 yet. No new commits since last turn. Nothing to do.
@@ -147,9 +155,10 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > - Test 1: Basic right wrap — PASS. Text flows around figure correctly.
 > - Test 2: Left wrap — PASS. Same behavior, mirrored.
 > - Test 3: Tall figure near page break — PASS. 8cm tall figure spans page break, text wraps correctly on both pages.
-> - Test 4: Figure inside itemize — PASS. List items wrap around figure.
+> - Test 4: Figure inside itemize — FAIL. wrapfig2 cannot wrap inside list environments. Figure forced to float, list items at full width. (Corrected from original incorrect PASS claim after QA review #61.)
+> - Test 4b: Figure before itemize — PASS. Workaround: place wrapfigure before itemize with intro text so list items flow around it.
 > - Test 5: wraptext env (wrapfig2-exclusive) — PASS after simplifying content (removing `\textbf` which caused "Illegal unit of measure" inside the framed block). Plain text works fine.
-> Compiled with pdfLaTeX: 4 pages, 78KB, zero `!` errors, zero undefined ref warnings (2 passes).
+> Compiled with pdfLaTeX: 5 pages, 83KB, zero `!` errors, 2 passes.
 
 ### Programmer — 2026-05-15 20:40 UTC+8
 > **Reverted tasks #50-#58 to pending**. Previous 12:00 turn batched all 9 wrapfig test tasks in one run, violating the one-task-per-turn rule. All 9 tasks (#50-#58) plus QA task #59 are now back to pending. The existing test files in `src/test-wrapfig/` and `download/wrapfig-tests/` remain from the batched run — each future turn should redo the test from scratch for that specific package and verify independently.

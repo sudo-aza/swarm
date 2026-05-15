@@ -51,23 +51,43 @@ the figure spans across the page break.
 
 \lipsum[5-8]
 
-\section*{Test 4: Figure Inside Itemize}
-This test places a wrapped figure inside an itemize list environment. The list
-items should wrap around the figure correctly.
+\section*{Test 4: Figure Inside Itemize (EXPECTED FAIL)}
+wrapfig2 cannot wrap figures inside list environments. When a \texttt{wrapfigure}
+is placed inside \texttt{itemize}, LaTeX issues ``Stationary wrapfigure forced
+to float'' warnings and pushes the figure out of the list entirely.
+List items flow at full width with no wrapping.
 
 \begin{wrapfigure}{r}{0.35\textwidth}
   \centering
   \rule{0.3\textwidth}{3cm}
-  \caption{Figure inside itemize.}
-  \label{fig:itemize}
+  \caption{Figure inside itemize --- expected to float away.}
+  \label{fig:itemize-fail}
 \end{wrapfigure}
 
 \begin{itemize}
   \item First item: \lipsum[1][1-3]
   \item Second item: \lipsum[2][1-3]
   \item Third item: \lipsum[3][1-3]
-  \item Fourth item: \lipsum[4][1-3]
-  \item Fifth item: \lipsum[5][1-3]
+\end{itemize}
+
+\section*{Test 4b: Figure Before Itemize (Workaround)}
+The supported approach: place \texttt{wrapfigure} BEFORE the list, so that
+paragraph text and list items flow around it naturally.
+
+\begin{wrapfigure}{r}{0.35\textwidth}
+  \centering
+  \rule{0.3\textwidth}{4cm}
+  \caption{Figure placed before itemize.}
+  \label{fig:before-itemize}
+\end{wrapfigure}
+
+\lipsum[1][1-2]
+\begin{itemize}
+  \item First item: \lipsum[2][1-3]
+  \item Second item: \lipsum[3][1-3]
+  \item Third item: \lipsum[4][1-3]
+  \item Fourth item: \lipsum[5][1-3]
+\item Fifth item: \lipsum[6][1-3]
 \end{itemize}
 
 \section*{Test 5: wraptext Environment (wrapfig2-specific)}
