@@ -1,44 +1,131 @@
-% Test: insbox (v2.2)
-% \InsertBoxR{n}{box}[correction] — CAUTION: [correction] is optional,
-% so the NEXT token after } will be consumed as [corr] if it starts with [.
-% Use {} or \relax to prevent this.
+% Test: insbox (v2.2) — generic parshape wrapper for inserting boxes into paragraphs
+% API:
+%   \InsertBoxR{n}{box}[correction] — right-side, n lines before box
+%   \InsertBoxL{n}{box}[correction] — left-side
+%   \InsertBoxC{box}               — centered, used INSIDE a paragraph (via \vadjust)
+%   \MoveBelowBox                   — start new paragraph below the current frame
+% CAUTION: [correction] is optional and parsed via \futurelet.
+%   If the next token after } starts with [, it is consumed as [correction].
+%   Use {} or \relax after the box argument to prevent this.
+% CRITICAL: insbox uses \makeatletter/\input insbox (not \usepackage).
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{lipsum}
 
+% insbox is a plain TeX macro file, must be \input'd inside \makeatletter
 \makeatletter
-\input insbox
+\input{insbox}
 \makeatother
 
-\title{insbox Test}
+\title{insbox Test (v2.2)}
 \author{Programmer Agent}
-\date{2026-05-15}
+\date{2026-05-16}
 
 \begin{document}
 \maketitle
 
-\section{Test 1: \InsertBoxR (right)}
+%% ===================================================================
+%% Test 1: Basic right insertion — \InsertBoxR{0}{...}{}
+%% PASS. Image at (388,311)-(473,375) right. Text wraps left at w=244-261.
+%% Text resumes at full width (359) after wrapping zone.
+%% ===================================================================
+\section*{Test 1: \texttt{\textbackslash InsertBoxR} (right, 0 leading lines)}
 
 \InsertBoxR{0}{%
-  \fbox{\includegraphics[width=0.28\textwidth]{test-image.png}}%
-}{}
-\lipsum[1-3]
+  \fbox{\includegraphics[width=3cm]{test-image.png}}%
+}{}%
+\lipsum[1][1-8]
+This sentence continues after the wrapped text to verify wrapping ends correctly.
+\MoveBelowBox
+Normal text resumes at full width below the image.
 
-\section{Test 2: \InsertBoxL (left)}
+%% ===================================================================
+%% Test 2: Left insertion — \InsertBoxL{2}{...}{}
+%% PASS. First 2 lines at full width (342-359). Image at (121,519)-(206,582) left.
+%% Wrapped text at x=215 w=261.
+%% ===================================================================
+\section*{Test 2: \texttt{\textbackslash InsertBoxL} (left, 2 leading lines)}
 
 \InsertBoxL{2}{%
-  \fbox{\includegraphics[width=0.25\textwidth]{test-image.png}}%
-}{}
-\lipsum[4-5]
+  \fbox{\includegraphics[width=3cm]{test-image.png}}%
+}{}%
+\lipsum[2][1-8]
+This sentence continues after the wrapped text to verify wrapping ends correctly.
+\MoveBelowBox
+Normal text resumes at full width below the image.
 
-\section{Test 3: \InsertBoxR near page break}
+%% ===================================================================
+%% Test 3: Near page break — tall image
+%% N/A (design limitation). insbox warns "box will not fit" and places on next page.
+%% Cannot span page breaks (parshape-based, operates on single paragraph).
+%% ===================================================================
+\section*{Test 3: Near page break (tall 8cm image)}
 
-\lipsum[6-7]
+\lipsum[3-4]
 
 \InsertBoxR{0}{%
-  \fbox{\includegraphics[width=0.28\textwidth]{test-image.png}}%
-}{}
-\lipsum[8-9]
+  \fbox{\includegraphics[height=8cm]{test-image.png}}%
+}{}%
+\lipsum[5][1-8]
+This paragraph continues. If the box does not fit, insbox prints a warning
+message and inserts a black rule marker. Text should wrap around the box
+only on the same page where the box starts.
+
+%% ===================================================================
+%% Test 4: Figure BEFORE itemize (workaround approach)
+%% FAIL. Intro text wraps at w=244, but \begin{itemize} resets the \everypar hook.
+%% List items render at full width (345) — wrapping zone does NOT extend into itemize.
+%% This matches floatflt behavior: parshape wrapping applies to one paragraph only.
+%% ===================================================================
+\section*{Test 4: \texttt{\textbackslash InsertBoxR} before itemize}
+
+\InsertBoxR{0}{%
+  \fbox{\includegraphics[width=3cm]{test-image.png}}%
+}{}%
+The following list items should wrap around the figure on the right.
+\begin{itemize}
+  \item First item — this should wrap if text is long enough to reach the image zone.
+  \item Second item — continues wrapping alongside the image.
+  \item Third item — may or may not wrap depending on remaining image height.
+  \item Fourth item — likely at full width if wrapping zone has ended.
+  \item Fifth item — at full width.
+\end{itemize}
+\MoveBelowBox
+Text after \texttt{\textbackslash MoveBelowBox} is at full width.
+
+%% ===================================================================
+%% Test 5: Figure INSIDE itemize
+%% PASS. Image at (402,230)-(473,284). Text inside \item wraps at w=275 (narrower than 359).
+%% insbox's \everypar survives within an existing itemize. No \item conflicts.
+%% ===================================================================
+\section*{Test 5: \texttt{\textbackslash InsertBoxR} INSIDE itemize}
+
+\begin{itemize}
+  \item Normal item before the figure.
+  \item Item with figure:
+\InsertBoxR{0}{%
+  \fbox{\includegraphics[width=2.5cm]{test-image.png}}%
+}{}%
+This text should wrap around the figure on the right side. It continues
+for several lines to test whether the wrapping works inside an itemize
+environment where insbox has redefined \textbackslash par.
+  \item Another item after the figure zone.
+  \item Final item to confirm itemize continues normally.
+\end{itemize}
+
+%% ===================================================================
+%% Test 6: Centered insertion — \InsertBoxC{} (used INSIDE paragraph)
+%% N/A (different feature). InsertBoxC uses \vadjust for a vertical drop — it does NOT
+%% create side-wrapping. Text before appears above the box, text after continues below.
+%% Image centered at (255,415)-(340,479). This is an inset, not a text-wrapping cutout.
+%% ===================================================================
+\section*{Test 6: \texttt{\textbackslash InsertBoxC} (centered)}
+
+\lipsum[6][1-4]\InsertBoxC{\fbox{\includegraphics[width=3cm]{test-image.png}}}%
+The \texttt{\textbackslash InsertBoxC} macro was placed in the middle of this
+sentence. The image should appear below that line, centered in the text column.
+Text before the insertion appears above the box, and text after continues below.
+\lipsum[6][5-8]
 
 \end{document}

@@ -78,7 +78,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 52 | **TEST**: floatflt (v1.34) — Programmer: write a test .tex with a floatflt figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
 | 53 | **TEST**: cutwin (v0.2, rectangular + arbitrary-shaped cutouts) — Programmer: write a test .tex with a cutwin figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
 | 54 | **TEST**: picinpar (v1.3a, paragraph windows) — Programmer: write a test .tex with a picinpar figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
-| 55 | **TEST**: insbox (v2.2, generic parshape wrapper) — Programmer: write a test .tex with an insbox figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
+| 55 | **TEST**: insbox (v2.2, generic parshape wrapper) — Programmer: write a test .tex with an insbox figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
 | 56 | **TEST**: figflow (plain TeX \parshape approach) — Programmer: write a test .tex with a figflow figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
 | 57 | **TEST**: shapepar (\cutout for rectangular cutouts) — Programmer: write a test .tex with a shapepar cutout near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
 | 58 | **TEST**: paracol (v1.37, parallel columns) — Programmer: write a test .tex using paracol to simulate text wrapping (figure in one column, text in other). Test near page break. Compile and report results. | Programmer | pending | 2026-05-15 |
@@ -95,10 +95,25 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 68 | **QA**: Verify Programmer's cutwin test (task #53) — compile `src/test-wrapfig/test-cutwin.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right-side image; (2) Test 2 text wraps right of left-side image; (3) Test 4 itemize items wrap within cutout; (4) Test 6 centered text wraps both sides. Note: cutwin parameter order is {numtop}{leftwidth}{rightwidth}{numcut} where leftwidth/rightwidth are TEXT widths, not margins. | QA | pending | 2026-05-16 |
 | 67 | **QA**: Verify Programmer's floatflt test (task #52) — compile `src/test-wrapfig/test-floatflt.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping in Tests 1-4 (right, left, page break, figure before itemize). Check Test 5 produces the expected error. Note: floatflt uses `\everypar` hooks which may behave differently in LuaLaTeX. Verify the "colliding figures" warning. | QA | **done** (FAIL) | 2026-05-16 |
 | 70 | **FIX**: floatflt test (task #52) — QA found two issues: (1) Test 3 (tall figure near page break) is rated PASS but the figure does NOT actually span a page break. The 8cm figure sits entirely on page 3 — the `\vspace` pushes the floatingfigure to the next page, so no page-break crossing occurs. Re-rate as N/A (design limitation, same as cutwin). (2) Test 4 (figure before itemize) is rated PASS but the figure is invisible — "Floating figures 4 and 5 colliding" warning causes the figure to not render. Only 1 lipsum line wraps at reduced width (234pt), and ALL 5 itemize items are at full width (342pt) with no wrapping. Re-rate as FAIL. Fix the comm log for tasks #52 to accurately describe both issues. Also consider adding `\end{floatingfigure}` or a paragraph break before Test 5 to avoid the collision. | Programmer | pending | 2026-05-16 |
+| 71 | **QA**: Verify Programmer's insbox test (task #55) — compile `src/test-wrapfig/test-insbox.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right image; (2) Test 2 text wraps right of left image with 2 leading full-width lines; (3) Test 4 list items do NOT wrap (full width); (4) Test 5 text wraps inside itemize. Note: insbox uses `\input{insbox}` inside `\makeatletter` (plain TeX macro, not a LaTeX package). | QA | pending | 2026-05-16 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-16 07:00 UTC+8
+> **Task #55 done — PARTIAL**: Tested insbox (v2.2, generic parshape wrapper).
+> Installed via `tlmgr install insbox`. Key API: `\InsertBoxR{n}{box}[correction]` and `\InsertBoxL{n}{box}[correction]` for left/right insertion (n = leading full-width lines before box starts); `\InsertBoxC{box}` for centered vertical drop (via `\vadjust`); `\MoveBelowBox` to end wrapping early. CRITICAL: must use `\makeatletter/\input{insbox}/\makeatother` (plain TeX macro, not a LaTeX package). The `[correction]` arg is optional and parsed via `\futurelet` — if the next token after `}` starts with `[`, it's consumed as correction. Always append `{}` after the box arg to prevent this.
+> 6 tests:
+> - Test 1: Basic right insertion — PASS. Image at (388,311)-(473,375) right. Text wraps left at w=244-261 (full width is 359). Text resumes full width at y=396.
+> - Test 2: Left insertion with 2 leading lines — PASS. First 2 lines at full width (342-359). Image at (121,519)-(206,582) left. Wrapped text at x=215 w=261.
+> - Test 3: Near page break — N/A (design limitation). insbox warns "box will not fit" and inserts a black rule. 8cm image placed on next page. Cannot span page breaks (parshape-based).
+> - Test 4: Figure BEFORE itemize — FAIL. Intro text wraps at w=244, but `\begin{itemize}` resets insbox's `\everypar` hook. All list items render at full width (345). Wrapping zone does NOT extend into list environments.
+> - Test 5: Figure INSIDE itemize — PASS. `\InsertBoxR` inside `\item` works. Image at (402,230)-(473,284). Text wraps at w=275. Subsequent items at w=181-250 (narrower — residual parshape effect).
+> - Test 6: `\InsertBoxC` (centered) — N/A (different feature). Uses `\vadjust` for vertical drop — text appears above and below the centered box, but NO side-wrapping. This is an inset mechanism, not a text-wrapping cutout.
+> Compiled with pdfLaTeX (4 pages, 88KB) and LuaLaTeX (4 pages, 32KB): zero `!` errors, 2 passes each. Mild overfull hbox warnings in Test 3 (narrow text wrapping around large image).
+> Key limitations: (1) single-page constraint (parshape-based); (2) wrapping doesn't extend into list environments when placed before them; (3) `[correction]` parameter is tricky to use safely; (4) `\InsertBoxC` is NOT side-wrapping.
+> Created QA review task #71.
 
 ### Programmer — 2026-05-16 06:00 UTC+8
 > **Task #54 done — PARTIAL**: Tested picinpar (v1.3a, paragraph windows via parshape).
