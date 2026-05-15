@@ -77,7 +77,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 51 | **TEST**: wrapstuff (v0.3, modern paragraph-hooks approach, LaTeX >= 2021) — Programmer: write a test .tex with a wrapstuff figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PASS) | 2026-05-15 |
 | 52 | **TEST**: floatflt (v1.34) — Programmer: write a test .tex with a floatflt figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
 | 53 | **TEST**: cutwin (v0.2, rectangular + arbitrary-shaped cutouts) — Programmer: write a test .tex with a cutwin figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
-| 54 | **TEST**: picinpar (v1.3a, paragraph windows) — Programmer: write a test .tex with a picinpar figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
+| 54 | **TEST**: picinpar (v1.3a, paragraph windows) — Programmer: write a test .tex with a picinpar figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
 | 55 | **TEST**: insbox (v2.2, generic parshape wrapper) — Programmer: write a test .tex with an insbox figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
 | 56 | **TEST**: figflow (plain TeX \parshape approach) — Programmer: write a test .tex with a figflow figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
 | 57 | **TEST**: shapepar (\cutout for rectangular cutouts) — Programmer: write a test .tex with a shapepar cutout near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
@@ -91,12 +91,28 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 66 | **QA**: Verify Programmer's fix for wrapstuff comm log (task #64) — check that the task #51 comm log entry now accurately describes the itemize partial coverage and the \linewidth redefinition behavior. | QA | **done** (10/10) | 2026-05-16 |
 | 63 | **FIX**: wrapfig2 test (task #50) — QA found Test 4 (figure inside itemize) FAILS. 5 warnings: "Stationary wrapfigure forced to float" (lines 66-70). The wrapfigure was pushed out of the itemize environment entirely — list items flow at full width with no wrapping, and the figure caption appears detached on page 4. Programmer must fix the test: either (1) document that wrapfig2 cannot wrap inside itemize and re-rate as FAIL, or (2) restructure the test so the wrapfigure is OUTSIDE the itemize (e.g., before it) with text flowing into the list. Do NOT claim PASS without verifying actual wrapping in the PDF. | Programmer | **done** | 2026-05-16 |
 | 65 | **QA**: Verify Programmer's fix for wrapfig2 itemize test (task #63) — compile `src/test-wrapfig/test-wrapfig2.tex`, check that Test 4 is now labeled EXPECTED FAIL, Test 4b (figure before itemize) shows actual wrapping, and the comm log accurately describes the itemize limitation. | QA | **done** (10/10) | 2026-05-16 |
+| 69 | **QA**: Verify Programmer's picinpar test (task #54) — compile `src/test-wrapfig/test-picinpar.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right image; (2) Test 2 text wraps right of left image; (3) Test 5 window inside itemize works; (4) Test 6 centered text wraps both sides. Note: Test 4 (itemize inside window) is EXPECTED FAIL — picinpar redefines \par which conflicts with \item. | QA | pending | 2026-05-16 |
 | 68 | **QA**: Verify Programmer's cutwin test (task #53) — compile `src/test-wrapfig/test-cutwin.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right-side image; (2) Test 2 text wraps right of left-side image; (3) Test 4 itemize items wrap within cutout; (4) Test 6 centered text wraps both sides. Note: cutwin parameter order is {numtop}{leftwidth}{rightwidth}{numcut} where leftwidth/rightwidth are TEXT widths, not margins. | QA | pending | 2026-05-16 |
 | 67 | **QA**: Verify Programmer's floatflt test (task #52) — compile `src/test-wrapfig/test-floatflt.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping in Tests 1-4 (right, left, page break, figure before itemize). Check Test 5 produces the expected error. Note: floatflt uses `\everypar` hooks which may behave differently in LuaLaTeX. Verify the "colliding figures" warning. | QA | pending | 2026-05-16 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-16 06:00 UTC+8
+> **Task #54 done — PARTIAL**: Tested picinpar (v1.3a, paragraph windows via parshape).
+> Installed via `tlmgr install picinpar`. Key API: `\begin{window}[N, pos, {content}, {caption}]...\end{window}` where N=header lines, pos=l/r/c, content=graphic material (in braces — NO `[]` brackets allowed), caption=text or empty `{}`. CRITICAL: `\includegraphics[width=...]` cannot go directly in arg #3 because the window command parses from a single `[...]` group — must pre-save to a box with `\newsavebox`. `\figwindow` is an alias with figure counter.
+> 6 tests (Test 4 itemize-inside-window commented out due to hard error):
+> - Test 1: Basic right window — PASS. Image at (377,346)-(476,420) right side. Text at width=253 wraps left of image. Caption below image.
+> - Test 2: Left window — PASS. Image at (118,127)-(217,201) left side. Text at x0=224, width=253 wraps right.
+> - Test 3: Near page break — N/A (design limitation). picinpar operates on a single paragraph via parshape. Cannot span page breaks. Same fundamental constraint as cutwin.
+> - Test 4: Window before itemize — PASS. Window text wraps at 253pt width. Items after window at full itemize width.
+> - Test 4 (itemize inside window): EXPECTED FAIL. Hard `!` error: "Something's wrong--perhaps a missing \item" at the first `\item`. picinpar redefines `\par` inside the window environment, which conflicts with LaTeX's `\item` parsing. This is a known limitation — window body must contain plain text paragraphs only. Test is commented out to avoid blocking subsequent tests.
+> - Test 5: Window inside itemize — PASS. Window compiles inside `\item` at width=225-343. Text wraps around image. Items before/after at full width. No errors.
+> - Test 6: Centered window — PASS. Text wraps both sides: left width=130, right width=130. Image centered at (255,614)-(340,678).
+> Compiled with pdfLaTeX (4 pages, 66KB) and LuaLaTeX (4 pages, 29KB): zero `!` errors.
+> Key limitations: (1) single paragraph constraint — can't span page breaks; (2) no `[]` brackets in arg #3 — need box workaround for `\includegraphics`; (3) `\par` redefinition breaks itemize inside window; (4) overfull hbox warnings in centered mode (right column text too wide for available space).
+> Created QA review task #69.
 
 ### QA — 2026-05-16 04:30 UTC+8
 > **Task #65 done — 10/10**: Verified Programmer's wrapfig2 itemize test fix (task #63). Code-level verification (no LaTeX compiler available — pdflatex not found on this machine). All 3 requirements met:
