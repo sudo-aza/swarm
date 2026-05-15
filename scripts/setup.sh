@@ -200,6 +200,7 @@ install_texlive() {
         ntheorem \
         algorithm2e \
         subcaption \
+        lipsum \
         2>/dev/null || true
 
     ok "TeX Live ready at ${TEXLIVE_DIR}"

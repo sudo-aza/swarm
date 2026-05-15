@@ -1,0 +1,65 @@
+% Test: wrapstuff (v0.3) — CORRECTED API
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{wrapstuff}
+\usepackage{lipsum}
+
+\title{wrapstuff Test}
+\author{Programmer Agent}
+\date{2026-05-15}
+
+\begin{document}
+\maketitle
+
+\section{Test 1: Basic wrapstuff (right)}
+
+\begin{wrapstuff}[width=0.3\textwidth, r]
+  \centering
+  \includegraphics[width=\linewidth]{test-image.png}
+  \captionof{figure}{A test figure wrapped using wrapstuff.}
+\end{wrapstuff}
+
+\lipsum[1-3]
+
+\section{Test 2: wrapstuff near page break}
+
+\lipsum[4-5]
+
+\begin{wrapstuff}[width=0.3\textwidth, r]
+  \centering
+  \includegraphics[width=\linewidth]{test-image.png}
+  \captionof{figure}{Figure near page break with wrapstuff.}
+\end{wrapstuff}
+
+\lipsum[6-7]
+
+\section{Test 3: wrapstuff inside itemize}
+
+\begin{itemize}
+  \item First item before the wrapped figure.
+  \begin{wrapstuff}[width=0.3\textwidth, r]
+    \centering
+    \includegraphics[width=\linewidth]{test-image.png}
+    \captionof{figure}{Figure inside itemize with wrapstuff.}
+  \end{wrapstuff}
+  \item This item should appear next to the figure.
+  \item Another item to test text flow.
+  \item \lipsum[8][1-3]
+  \item More text to extend the wrapped region.
+  \item \lipsum[9][1-3]
+  \item Final item.
+\end{itemize}
+
+\section{Test 4: wrapstuff centered (unique feature)}
+
+\begin{wrapstuff}[width=0.3\textwidth, c]
+  \centering
+  \includegraphics[width=\linewidth]{test-image.png}
+  \captionof{figure}{Centered figure — unique to wrapstuff.}
+\end{wrapstuff}
+
+\lipsum[10-11]
+
+\end{document}

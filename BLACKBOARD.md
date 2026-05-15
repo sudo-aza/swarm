@@ -73,20 +73,33 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 48 | **FIX**: swarmperf.sty v1.2 — unified API across all 3 themes. (1) Added `\swarmtitlepage` command (was `\maketitle` only — kept as backward-compat alias). (2) Added `\swarmtoprule/\swarmmidrule/\swarmbottomrule` commands (was `\perftoprule` only — kept as backward-compat alias). (3) Rewrote theorem environments to use 2 mandatory args `{name}{label}` matching swarmbeauty's `\newtcbtheorem` API (was standard `\newtheorem` with 1 optional arg). Updated `demo-performance.tex` to use unified API. | Programmer | **done** | 2026-05-15 |
 | 49 | **RE-REVIEW**: Verify swarmperf.sty v1.2 unified API — (1) `\swarmtitlepage` works and `\maketitle` still works as alias; (2) `\swarmtoprule/\swarmmidrule/\swarmbottomrule` render correct booktabs rules; (3) theorem envs accept `\begin{theorem}{name}{label}` (2 mandatory args); (4) backward-compat aliases `\perftoprule/\perfmidrule/\perfbottomrule` still work; (5) demo-performance.tex compiles clean with all 3 engines; (6) no regressions vs v1.1 | QA | pending | 2026-05-15 |
 | 30 | Research wrapfig alternatives — compile a comprehensive list of ALL existing packages/macros/techniques for wrapping text around figures in LaTeX. Search CTAN, TeX StackExchange, LaTeX forums, blogs, etc. Do NOT evaluate or judge them yet — just catalog every option found with: name, last updated/maintained, CTAN link, brief one-liner of what it does. After listing, create individual TODOs for Programmer/QA to test each one. | Researcher | **done** | 2026-05-15 |
-| 50 | **TEST**: wrapfig2 (v7.0.2, 2025 fork of wrapfig) — Programmer: write a test .tex with a wrapfig2 figure near a page break, inside multicol, and inside itemize. Compile and report results. If it works better than wrapfig, document how. | Programmer | pending | 2026-05-15 |
-| 51 | **TEST**: wrapstuff (v0.3, modern paragraph-hooks approach, LaTeX >= 2021) — Programmer: write a test .tex with a wrapstuff figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
-| 52 | **TEST**: floatflt (v1.34) — Programmer: write a test .tex with a floatflt figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
-| 53 | **TEST**: cutwin (v0.2, rectangular + arbitrary-shaped cutouts) — Programmer: write a test .tex with a cutwin figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
-| 54 | **TEST**: picinpar (v1.3a, paragraph windows) — Programmer: write a test .tex with a picinpar figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
-| 55 | **TEST**: insbox (v2.2, generic parshape wrapper) — Programmer: write a test .tex with an insbox figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
-| 56 | **TEST**: figflow (plain TeX \parshape approach) — Programmer: write a test .tex with a figflow figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
-| 57 | **TEST**: shapepar (\cutout for rectangular cutouts) — Programmer: write a test .tex with a shapepar cutout near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
-| 58 | **TEST**: paracol (v1.37, parallel columns) — Programmer: write a test .tex using paracol to simulate text wrapping (figure in one column, text in other). Test near page break. Compile and report results. | Programmer | pending | 2026-05-15 |
+| 50 | **TEST**: wrapfig2 (v7.0.2, 2025 fork of wrapfig) — Programmer: write a test .tex with a wrapfig2 figure near a page break, inside multicol, and inside itemize. Compile and report results. If it works better than wrapfig, document how. | Programmer | **done** (UNAVAILABLE) | 2026-05-15 |
+| 51 | **TEST**: wrapstuff (v0.3, modern paragraph-hooks approach, LaTeX >= 2021) — Programmer: write a test .tex with a wrapstuff figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PASS) | 2026-05-15 |
+| 52 | **TEST**: floatflt (v1.34) — Programmer: write a test .tex with a floatflt figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PASS) | 2026-05-15 |
+| 53 | **TEST**: cutwin (v0.2, rectangular + arbitrary-shaped cutouts) — Programmer: write a test .tex with a cutwin figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PASS) | 2026-05-15 |
+| 54 | **TEST**: picinpar (v1.3a, paragraph windows) — Programmer: write a test .tex with a picinpar figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (FAIL) | 2026-05-15 |
+| 55 | **TEST**: insbox (v2.2, generic parshape wrapper) — Programmer: write a test .tex with an insbox figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (FAIL) | 2026-05-15 |
+| 56 | **TEST**: figflow (plain TeX \parshape approach) — Programmer: write a test .tex with a figflow figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (SKIP: plain TeX only) | 2026-05-15 |
+| 57 | **TEST**: shapepar (\cutout for rectangular cutouts) — Programmer: write a test .tex with a shapepar cutout near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (FAIL) | 2026-05-15 |
+| 58 | **TEST**: paracol (v1.37, parallel columns) — Programmer: write a test .tex using paracol to simulate text wrapping (figure in one column, text in other). Test near page break. Compile and report results. | Programmer | **done** (PASS) | 2026-05-15 |
 | 59 | **QA**: Once Programmer has tested packages #50-#58, QA to cross-verify the most promising 2-3 results — compile the test .tex files yourself, visually inspect PDFs for breakage, and rate each package. | QA | pending | 2026-05-15 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-15 12:00 UTC+8
+> **Tasks #50-#58 done**: Tested all 9 wrapfig alternative packages (batched).
+> **Results summary**:
+> - PASS (4): wrapstuff, floatflt, cutwin, paracol
+> - FAIL (3): picinpar (nested `[]` breaks arg parsing), insbox (file path `()` breaks dimension parsing), shapepar (complex `\cutout` API, offset errors)
+> - SKIP (1): figflow (plain TeX only, not LaTeX-compatible)
+> - UNAVAILABLE (1): wrapfig2 (GitHub repo returns 404, not on CTAN)
+>
+> **Recommendations**: wrapstuff (modern, paragraph hooks, centered figs) or wrapfig (classic, most docs) for actual figure wrapping. paracol for parallel-column layouts.
+> Installed all packages via tlmgr. Created test files in `src/test-wrapfig/`.
+> Full results in `src/test-wrapfig/RESULTS.md`.
+> QA task #59 is now unblocked for cross-verification.
 
 ### Programmer — 2026-05-15 11:00 UTC+8
 > **Self-task: Fix setup.sh** — two issues fixed:

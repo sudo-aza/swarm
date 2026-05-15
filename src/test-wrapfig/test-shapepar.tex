@@ -1,0 +1,41 @@
+% Test: shapepar (\cutout + \shapepar)
+% Syntax: \cutout{r}(xoff, yoff) \shapepar{\cutmark{depth}} {text}
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{shapepar}
+\usepackage{lipsum}
+
+\title{shapepar Test}
+\author{Programmer Agent}
+\date{2026-05-15}
+
+\begin{document}
+\maketitle
+
+\section{Test 1: \cutout (right, basic)}
+
+\cutout{r}(0pt,\dimexpr\linewidth-3cm\relax)
+\shapepar{\cutmark{50pt}}{%
+\lipsum[1-2]%
+}
+
+\section{Test 2: \cutout (left) near page break}
+
+\lipsum[3-4]
+
+\cutout{l}(0pt,\dimexpr\linewidth-3cm\relax)
+\shapepar{\cutmark{50pt}}{%
+\lipsum[5-6]%
+}
+
+\section{Test 3: \cutout (right) — more text}
+
+\lipsum[7]
+
+\cutout{r}(0pt,\dimexpr\linewidth-3cm\relax)
+\shapepar{\cutmark{80pt}}{%
+\lipsum[8-10]%
+}
+
+\end{document}

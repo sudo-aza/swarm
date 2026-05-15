@@ -1,0 +1,76 @@
+% Test: paracol (v1.37) — CORRECTED API
+% paracol: \begin{paracol}{ncols} ... \switchcolumn ... \end{paracol}
+% Content flows automatically between columns.
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{paracol}
+\usepackage{lipsum}
+
+\title{paracol Test}
+\author{Programmer Agent}
+\date{2026-05-15}
+
+\begin{document}
+\maketitle
+
+\section{Test 1: Basic paracol — figure in left col, text in right}
+
+\begin{paracol}{2}
+
+\includegraphics[width=\linewidth]{test-image.png}
+
+\vspace{1em}
+This is the left column. Figure above, text below.
+
+\switchcolumn
+
+\lipsum[1-3]
+
+\switchcolumn
+
+More left column content after switching.
+
+\switchcolumn
+
+\lipsum[4-5]
+
+\end{paracol}
+
+\section{Test 2: paracol near page break}
+
+\begin{paracol}{2}
+
+\lipsum[6-8]
+
+\switchcolumn
+
+\includegraphics[width=\linewidth]{test-image.png}
+
+\switchcolumn
+
+\lipsum[9-11]
+
+\end{paracol}
+
+\section{Test 3: paracol with itemize}
+
+\begin{paracol}{2}
+
+\begin{itemize}
+  \item Item in left column
+  \item Another item
+  \item \lipsum[1][1-2]
+\end{itemize}
+
+\switchcolumn
+
+\begin{enumerate}
+  \item Numbered item in right column
+  \item Second item
+  \item \lipsum[2][1-2]
+\end{enumerate}
+
+\end{paracol}
+
+\end{document}

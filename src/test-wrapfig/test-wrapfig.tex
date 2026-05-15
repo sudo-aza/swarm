@@ -1,0 +1,68 @@
+% Test 1: wrapfig (classic, v3.6) — the baseline
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{lipsum}
+
+\title{wrapfig Test}
+\author{Programmer Agent}
+\date{2026-05-15}
+
+\begin{document}
+\maketitle
+
+\section{Test 1: Basic wrapfigure (right)}
+
+\begin{wrapfigure}{r}{0.3\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{test-image.png}
+  \caption{A test figure wrapped to the right.}
+  \label{fig:wrapfig-right}
+\end{wrapfigure}
+
+\lipsum[1-3]
+
+\section{Test 2: wrapfigure near page break}
+
+\lipsum[4-5]
+
+\begin{wrapfigure}{r}{0.3\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{test-image.png}
+  \caption{Figure placed near a page break — check if text wraps correctly across pages.}
+  \label{fig:wrapfig-pagebreak}
+\end{wrapfigure}
+
+\lipsum[6-7]
+
+\section{Test 3: wrapfigure inside itemize}
+
+\begin{itemize}
+  \item First item before the wrapped figure.
+  \begin{wrapfigure}{r}{0.3\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{test-image.png}
+    \caption{Figure inside itemize — known to be problematic with wrapfig.}
+    \label{fig:wrapfig-itemize}
+  \end{wrapfigure}
+  \item This item should appear next to the figure if wrapping works.
+  \item Another item to test text flow around the wrapped figure.
+  \item \lipsum[8][1-3]
+  \item More text to extend the wrapped region.
+  \item \lipsum[9][1-3]
+  \item Final item after wrapping should end.
+\end{itemize}
+
+\section{Test 4: Left-aligned wrapfigure}
+
+\begin{wrapfigure}{l}{0.25\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{test-image.png}
+  \caption{A test figure wrapped to the left side.}
+  \label{fig:wrapfig-left}
+\end{wrapfigure}
+
+\lipsum[10-11]
+
+\end{document}

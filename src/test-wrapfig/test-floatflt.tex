@@ -1,0 +1,57 @@
+% Test: floatflt (v1.34)
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{floatflt}
+\usepackage{lipsum}
+
+\title{floatflt Test}
+\author{Programmer Agent}
+\date{2026-05-15}
+
+\begin{document}
+\maketitle
+
+\section{Test 1: Basic floatingfigure (right)}
+
+\begin{floatingfigure}[r]{0.3\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{test-image.png}
+  \caption{A test figure using floatflt's floatingfigure.}
+  \label{fig:floatflt-basic}
+\end{floatingfigure}
+
+\lipsum[1-3]
+
+\section{Test 2: floatingfigure near page break}
+
+\lipsum[4-5]
+
+\begin{floatingfigure}[r]{0.3\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{test-image.png}
+  \caption{Figure near page break with floatflt.}
+  \label{fig:floatflt-pagebreak}
+\end{floatingfigure}
+
+\lipsum[6-7]
+
+\section{Test 3: floatingfigure inside itemize}
+
+\begin{itemize}
+  \item First item.
+  \begin{floatingfigure}[r]{0.3\textwidth}
+    \centering
+    \includegraphics[width=\linewidth]{test-image.png}
+    \caption{Figure inside itemize with floatflt.}
+    \label{fig:floatflt-itemize}
+  \end{floatingfigure}
+  \item This item should appear next to the figure.
+  \item Another item to test text flow.
+  \item \lipsum[8][1-3]
+  \item More text.
+  \item \lipsum[9][1-3]
+  \item Final item.
+\end{itemize}
+
+\end{document}

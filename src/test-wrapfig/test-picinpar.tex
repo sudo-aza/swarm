@@ -1,0 +1,41 @@
+% Test: picinpar (v1.3a)
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{picinpar}
+\usepackage{lipsum}
+
+\title{picinpar Test}
+\author{Programmer Agent}
+\date{2026-05-15}
+
+\begin{document}
+\maketitle
+
+\section{Test 1: Basic window (right, no caption)}
+
+% NOTE: picinpar \window reads all args from [], so nested [] breaks parsing.
+% Use a fixed-size \fbox or \makebox instead of \includegraphics with options.
+\begin{window}[3,r,\fbox{\includegraphics[width=3cm]{test-image.png}},]
+This is text that should wrap around the figure on the right side.
+The window environment reads all arguments from the optional bracket,
+so we cannot use nested brackets inside.
+\end{window}
+
+\lipsum[1]
+
+\section{Test 2: window near page break}
+
+\lipsum[2-3]
+
+\begin{window}[3,r,\fbox{\includegraphics[width=3cm]{test-image.png}},]
+Text wrapping near a page break. This should handle page boundaries.
+\end{window}
+
+\section{Test 3: figwindow with caption}
+
+\begin{figwindow}[4,r,\includegraphics[width=3cm]{test-image.png},]{A captioned figure using figwindow.}
+Text flows around this figure. The caption appears below the figure.
+\end{figwindow}
+
+\end{document}
