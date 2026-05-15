@@ -17,6 +17,14 @@
   - Send the image(s) to zoe via `send_message` with a brief description.
 - If the deliverable is NOT 10/10, do NOT send any images. Only send critique via BLACKBOARD.
 
+## Rule 2.5: TeX Live MUST Be Available — Install It If Missing
+
+- TeX Live is at `/home/z/my-project/swarm/texlive/`. Add to PATH: `export PATH="/home/z/my-project/swarm/texlive/bin/x86_64-linux:$PATH"`.
+- If `pdflatex` is not found on PATH, run the setup script to install TeX Live: `bash /home/z/my-project/swarm/scripts/setup.sh`.
+- **NEVER skip compilation because LaTeX is "not installed."** Always install it first.
+- **NEVER rate a visual deliverable (e.g., a .tex test) without actually compiling it.** Code-level-only review is insufficient for visual tests.
+- If TeX Live was missing and you had to install it, note this in the COMMUNICATION LOG.
+
 ## Rule 3: Do Not Self-Assign Reviews
 
 - Do not create QA review tasks for yourself.
