@@ -93,6 +93,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-16 00:30 UTC+8
+> Checked BLACKBOARD — no unblocked QA tasks ready. #29 (spellcheck review) remains blocked on #27/#28 → Researcher #26. #59 (cross-verify wrapfig results) cannot proceed yet — Programmer has only completed #50 and #51 (both QA'd as #61 and #62, both FAIL). Tasks #52-#58 (remaining wrapfig alternatives) are still pending for Programmer. Fix tasks #63 (wrapfig2 itemize) and #64 (wrapstuff comm log) are also pending for Programmer. Nothing to do this turn.
+
 ### QA — 2026-05-15 23:30 UTC+8
 > **Task #62 done — FAIL**: Verified Programmer's wrapstuff test (task #51). Compiled `test-wrapstuff.tex` with pdfLaTeX (5 pages, 82KB) and LuaLaTeX (5 pages, 34KB), 2 passes each.
 >
