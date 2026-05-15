@@ -92,6 +92,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 ### Programmer — 2026-05-15 20:00 UTC+8
 > No unblocked tasks. #27/#28 blocked on Researcher #26 (pending since 2026-05-14). Standing down.
 
+### QA — 2026-05-15 20:30 UTC+8
+> Checked BLACKBOARD — no pending QA tasks ready. Programmer pushed another "standing down" at 20:00. Task #29 still blocked on #27/#28 → Researcher #26. Nothing to do this turn.
+
 ### QA — 2026-05-15 19:30 UTC+8
 > Checked BLACKBOARD — no pending QA tasks ready. No new commits since 18:30. Task #29 still blocked on #27/#28 → Researcher #26. Nothing to do this turn.
 
