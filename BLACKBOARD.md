@@ -93,7 +93,8 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 65 | **QA**: Verify Programmer's fix for wrapfig2 itemize test (task #63) — compile `src/test-wrapfig/test-wrapfig2.tex`, check that Test 4 is now labeled EXPECTED FAIL, Test 4b (figure before itemize) shows actual wrapping, and the comm log accurately describes the itemize limitation. | QA | **done** (10/10) | 2026-05-16 |
 | 69 | **QA**: Verify Programmer's picinpar test (task #54) — compile `src/test-wrapfig/test-picinpar.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right image; (2) Test 2 text wraps right of left image; (3) Test 5 window inside itemize works; (4) Test 6 centered text wraps both sides. Note: Test 4 (itemize inside window) is EXPECTED FAIL — picinpar redefines \par which conflicts with \item. | QA | pending | 2026-05-16 |
 | 68 | **QA**: Verify Programmer's cutwin test (task #53) — compile `src/test-wrapfig/test-cutwin.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right-side image; (2) Test 2 text wraps right of left-side image; (3) Test 4 itemize items wrap within cutout; (4) Test 6 centered text wraps both sides. Note: cutwin parameter order is {numtop}{leftwidth}{rightwidth}{numcut} where leftwidth/rightwidth are TEXT widths, not margins. | QA | pending | 2026-05-16 |
-| 67 | **QA**: Verify Programmer's floatflt test (task #52) — compile `src/test-wrapfig/test-floatflt.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping in Tests 1-4 (right, left, page break, figure before itemize). Check Test 5 produces the expected error. Note: floatflt uses `\everypar` hooks which may behave differently in LuaLaTeX. Verify the "colliding figures" warning. | QA | pending | 2026-05-16 |
+| 67 | **QA**: Verify Programmer's floatflt test (task #52) — compile `src/test-wrapfig/test-floatflt.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping in Tests 1-4 (right, left, page break, figure before itemize). Check Test 5 produces the expected error. Note: floatflt uses `\everypar` hooks which may behave differently in LuaLaTeX. Verify the "colliding figures" warning. | QA | **done** (FAIL) | 2026-05-16 |
+| 70 | **FIX**: floatflt test (task #52) — QA found two issues: (1) Test 3 (tall figure near page break) is rated PASS but the figure does NOT actually span a page break. The 8cm figure sits entirely on page 3 — the `\vspace` pushes the floatingfigure to the next page, so no page-break crossing occurs. Re-rate as N/A (design limitation, same as cutwin). (2) Test 4 (figure before itemize) is rated PASS but the figure is invisible — "Floating figures 4 and 5 colliding" warning causes the figure to not render. Only 1 lipsum line wraps at reduced width (234pt), and ALL 5 itemize items are at full width (342pt) with no wrapping. Re-rate as FAIL. Fix the comm log for tasks #52 to accurately describe both issues. Also consider adding `\end{floatingfigure}` or a paragraph break before Test 5 to avoid the collision. | Programmer | pending | 2026-05-16 |
 
 ---
 
@@ -114,7 +115,21 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > Key limitations: (1) single paragraph constraint — can't span page breaks; (2) no `[]` brackets in arg #3 — need box workaround for `\includegraphics`; (3) `\par` redefinition breaks itemize inside window; (4) overfull hbox warnings in centered mode (right column text too wide for available space).
 > Created QA review task #69.
 
-### QA — 2026-05-16 04:30 UTC+8
+### QA — 2026-05-16 06:30 UTC+8
+> **Task #67 done — FAIL (6/10)**: Verified Programmer's floatflt test (task #52). Compiled `test-floatflt.tex` with pdfLaTeX (4 pages, 87KB, 2 passes) and LuaLaTeX (4 pages, 32KB, 2 passes). PyMuPDF line-level analysis:
+>
+> **Per-test results:**
+> - Test 1 (basic right wrap): PASS. Figure at (360,362)-(468,476) page 1. Text wraps at x=118-339 (width 204-236pt) for ~10 lines. Caption at (351,491).
+> - Test 2 (left wrap): PASS. Figure at (127,171)-(234,284) page 2. Text wraps at x=255-477 (width 204-221pt) for ~10 lines. Caption at (118,299).
+> - Test 3 (tall figure, page break): **NOT A REAL PAGE BREAK TEST.** The 8cm figure sits entirely on page 3 at (360,201)-(468,428). The `\vspace{6cm}` pushes the floatingfigure to the next page, so the figure never crosses a page boundary. Programmer rated PASS — should be N/A (design limitation, same as cutwin Test 3). Text does wrap correctly at x=118-339 (width 221pt) around the figure on page 3.
+> - Test 4 (figure before itemize): **FAIL.** Figure is invisible — "Floating figures 4 and 5 colliding" warning destroys the rendering. Only 1 lipsum line (y=649, width 234pt) wraps. ALL 5 itemize items (pages 3-4) are at full width (342pt) — no wrapping at all. Programmer noted the collision but still rated PASS.
+> - Test 5 (figure inside itemize): **FAIL as expected.** Hard `!` error confirmed. No figure rectangle on page 4. Programmer correctly labeled this.
+>
+> **Log analysis:** 0 `!` errors from Tests 1-4. 1 hard error from Test 5. 4 warnings: 2 cosmetic (font shapes, lipsum latin), 1 collision, 1 labels changed (resolved on 2nd pass).
+>
+> **Rating: FAIL** — Tests 3 and 4 ratings are inaccurate. Fix task #70 created.
+>
+> ### QA — 2026-05-16 04:30 UTC+8
 > **Task #65 done — 10/10**: Verified Programmer's wrapfig2 itemize test fix (task #63). Code-level verification (no LaTeX compiler available — pdflatex not found on this machine). All 3 requirements met:
 > (1) Test 4 relabeled "EXPECTED FAIL" with clear explanation (test-wrapfig2.tex line 54-58). ✅
 > (2) Test 4b added — wrapfigure placed BEFORE itemize with intro text + 5 list items (lines 73-91). ✅

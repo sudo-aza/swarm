@@ -28,7 +28,7 @@ If a package fails any one of these, it fails overall. 9/10 or below = FAIL.
 |---|---------|---------|-----------|------------|------------|---------|-----------------|---------|-------------|
 | 50 | **wrapfig2** | 7.0.2 | **FAIL** (QA #61) | PASS | PASS | **FAIL** | Claimed PASS | #61: figure forced to float out of itemize, "Stationary wrapfigure forced to float" x5. List items at full width. | Itemize wrapping unsupported (known wrapfig limitation) |
 | 51 | **wrapstuff** | 0.3 | **FAIL** (QA #62) | PASS | PASS | **PARTIAL** | Claimed PASS | #62: only 2/5 items wrap. \linewidth redefined inside env (not documented). | Inaccurate comm log, itemize only partial |
-| 52 | **floatflt** | 1.34 | **PENDING QA** (#67) | PASS | PASS | **FAIL** | PARTIAL | #67 pending: Test 5 hard `!` error inside itemize. "colliding figures" warning. | Hard error inside itemize |
+| 52 | **floatflt** | 1.34 | **FAIL** (QA #67) | PASS | **N/A*** | **FAIL** | Claimed PASS | #67: Test 3 figure doesn't cross page break (N/A, like cutwin). Test 4 figure invisible due to collision with Test 5. | Page break test invalid, itemize+collision failure |
 | 53 | **cutwin** | 0.2 | **PENDING QA** (#68) | PASS | N/A* | **PARTIAL** | PARTIAL PASS | #68 pending: itemize has overfull vbox/hbox (7.6pt/43.8pt). Single-paragraph limitation. | Cannot span page breaks by design |
 | 54 | **picinpar** | 1.3a | **FAIL** (Programmer) | FAIL | — | — | FAIL | Not QA'd separately — fundamental `[]` parsing conflict with `\includegraphics[width=...]`. | Unusable with modern LaTeX |
 | 55 | **insbox** | 2.2 | **FAIL** (Programmer) | FAIL | — | — | FAIL | Not QA'd separately — `\includegraphics` file path breaks dimension parsing. | Broken with actual images |
@@ -64,6 +64,14 @@ If a package fails any one of these, it fails overall. 9/10 or below = FAIL.
 - Itemize has overfull vbox (7.6pt) and hbox (43.8pt) warnings.
 - Single-paragraph limitation: cannot span page breaks.
 - cutwin parameter order: `{numtop}{leftwidth}{rightwidth}{numcut}`.
+
+### floatflt (#67 — FAIL)
+- Test 1 (basic right wrap): PASS. Figure at (360,362)-(468,476) page 1. Text wraps at 204-236pt for ~10 lines.
+- Test 2 (left wrap): PASS. Figure at (127,171)-(234,284) page 2. Text wraps at 204-221pt for ~10 lines.
+- Test 3 (tall figure, page break): **N/A**. The 8cm figure sits entirely on page 3 — `\vspace` pushes it to the next page. No actual page-break crossing. Same limitation as cutwin.
+- Test 4 (figure before itemize): **FAIL**. Figure invisible due to "Floating figures 4 and 5 colliding" warning. All 5 items at full width, no wrapping.
+- Test 5 (inside itemize, expected fail): Confirmed. Hard `!` error, no figure rendered.
+- Fix task #70 created (comm log accuracy).
 
 ### picinpar, insbox, shapepar, figflow
 - All failed at compilation stage. No QA review needed — fundamental incompatibilities.
@@ -111,7 +119,7 @@ https://raw.githubusercontent.com/sudo-aza/swarm/main/download/wrapfig-tests/tes
 
 ## Status
 
-- **QA verified**: wrapfig2 (#61), wrapstuff (#62). Both FAIL.
-- **QA pending**: floatflt (#67), cutwin (#68).
+- **QA verified**: wrapfig2 (#61 FAIL), wrapstuff (#62 FAIL), floatflt (#67 FAIL).
+- **QA pending**: cutwin (#68), picinpar (#69).
 - **Not QA'd**: paracol (no QA task created), picinpar/insbox/shapepar/figflow (compilation failures).
 - **Gatekeeper task #60**: If ALL packages fail all 3 hard constraints, activate custom LuaLaTeX implementation.
