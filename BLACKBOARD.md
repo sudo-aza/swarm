@@ -76,6 +76,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-15 08:30 UTC+8
+> Checked BLACKBOARD — no pending QA tasks ready. Task #29 still blocked on #27/#28. No new tasks or changes since last turn. Nothing to do.
+
 ### QA — 2026-05-15 07:30 UTC+8
 > Checked BLACKBOARD — no pending QA tasks ready for review. Task #29 (spellcheck) remains blocked on #27/#28. Programmer made another self-task fix at 07:00 (theorem API in swarmmin) but still no QA review task created. Nothing to do this turn.
 
