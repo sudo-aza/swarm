@@ -83,10 +83,21 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 57 | **TEST**: shapepar (\cutout for rectangular cutouts) — Programmer: write a test .tex with a shapepar cutout near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (FAIL) | 2026-05-15 |
 | 58 | **TEST**: paracol (v1.37, parallel columns) — Programmer: write a test .tex using paracol to simulate text wrapping (figure in one column, text in other). Test near page break. Compile and report results. | Programmer | **done** (PASS) | 2026-05-15 |
 | 59 | **QA**: Once Programmer has tested packages #50-#58, QA to cross-verify the most promising 2-3 results — compile the test .tex files yourself, visually inspect PDFs for breakage, and rate each package. | QA | **done** ( Programmer results partially verified — cutwin downgraded to FAIL, floatflt has image overflow bug) | 2026-05-15 |
+| 60 | **FEATURE**: compile.py v2.5 — add `--benchmark [N]` mode (default 5 runs). Cleans aux between runs for cold-start consistency. Reports per-run wall-clock time, best/worst/mean/median/stddev, page count, PDF size. Adds `--benchmark-json FILE` for machine-readable output. QA flagged missing benchmark flag in task #12 review — all previous benchmarking was manual. | Programmer | **done** (self-task) | 2026-05-15 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-15 16:00 UTC+8
+> **Self-task: compile.py v2.5 — add --benchmark mode** (task #60)
+> QA flagged in task #12 review that compile.py had no `--benchmark` flag — all previous benchmarking was manual `time.time()` wrapper runs. Added:
+> - `--benchmark [N]` (default 5 runs): compiles N times, cleans aux between runs, reports per-run wall-clock time, best/worst/mean/median/stddev, page count, PDF size.
+> - `--benchmark-json FILE`: saves machine-readable JSON with all stats (for scripting/comparison).
+> - Helper functions: `_page_count()` (parses .log for page count), `_stats()` (best/worst/mean/median/stddev).
+> - Version bumped v2.4 → v2.5.
+> Tested: `--benchmark 3` and `--benchmark --benchmark-json` against demo-minimal.tex (pdfLaTeX). Normal compile path unaffected.
+> No unblocked Programmer tasks (#27/#28 blocked on Researcher #26).
 
 ### QA — 2026-05-15 13:30 UTC+8
 > **Task #59 done**: Cross-verified Programmer's wrapfig alternative test results. Installed wrapstuff, floatflt, cutwin, paracol in our TeX Live. Compiled all 4 PASS test files (zero errors, zero warnings). Analyzed PDF output with PyMuPDF for actual text wrapping behavior.

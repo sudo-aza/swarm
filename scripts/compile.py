@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-compile.py — Smart LaTeX compilation helper (v2.4).
+compile.py — Smart LaTeX compilation helper (v2.5).
 
 Usage:
     python3 scripts/compile.py <file.tex> [options]
@@ -20,6 +20,11 @@ Options:
     --passes {1,2,3}
         Maximum number of compilation passes (default: smart — runs only
         as many as needed based on bibliography and cross-references).
+    --benchmark [N]
+        Run N compilations (default 5) and report timing statistics.
+        Cleans aux files between runs for consistency. Reports best, worst,
+        mean, median, standard deviation, PDF size, and page count.
+        Incompatible with --watch.
     --verbose
         Show full LaTeX output instead of just warnings.
 
@@ -28,12 +33,14 @@ Features:
     - Auto-detects engine requirement (fontspec → lualatex/xelatex)
     - Auto-detects minted/tikz-externalize → enables -shell-escape
     - Smart multi-pass: skips unnecessary passes when possible
-    - Shows warnings on success, full errors on failure
+    - Benchmark mode: repeated runs with timing statistics
     - Watch mode with file extension filtering
     - Reports compilation time and output PDF size
 """
 
 import argparse
+import json
+import math
 import os
 import re
 import shutil
@@ -41,7 +48,7 @@ import subprocess
 import sys
 import time
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -508,6 +515,124 @@ def format_result(result: dict, verbose: bool) -> str:
     return "\n".join(lines)
 
 
+# ── Benchmark mode ──────────────────────────────────────────────────────────
+
+def _page_count(tex_file: Path) -> int:
+    """Count pages in compiled PDF by parsing the .log file.
+
+    Looks for 'Output written on <file> (N pages,' pattern which is
+    emitted by all major engines (pdfLaTeX, XeLaTeX, LuaLaTeX).
+    Falls back to 0 if the pattern is not found.
+    """
+    log_file = tex_file.with_suffix(".log")
+    if not log_file.exists():
+        return 0
+    log_content = log_file.read_text(errors="ignore")
+    m = re.search(r"Output written.*\((\d+) page", log_content)
+    return int(m.group(1)) if m else 0
+
+
+def _stats(values: List[float]) -> dict:
+    """Compute best, worst, mean, median, and stddev from a list of floats."""
+    if not values:
+        return {}
+    sorted_vals = sorted(values)
+    n = len(sorted_vals)
+    mean = sum(sorted_vals) / n
+    median = sorted_vals[n // 2] if n % 2 else (
+        sorted_vals[n // 2 - 1] + sorted_vals[n // 2]) / 2
+    variance = sum((v - mean) ** 2 for v in sorted_vals) / n
+    stddev = math.sqrt(variance)
+    return {
+        "best": sorted_vals[0],
+        "worst": sorted_vals[-1],
+        "mean": mean,
+        "median": median,
+        "stddev": stddev,
+        "runs": n,
+    }
+
+
+def benchmark_mode(
+    tex_file: Path,
+    engine: str,
+    bin_path: Optional[str],
+    shell_escape: bool,
+    max_passes: int,
+    num_runs: int,
+    verbose: bool,
+    json_output: Optional[str],
+) -> None:
+    """Run N compilations and print timing statistics.
+
+    Cleans auxiliary files between each run to ensure consistent cold-start
+    timing.  Reports per-run wall-clock time, best/worst/mean/median/stddev,
+    PDF size, and page count.
+    """
+    times = []
+    last_result = None
+
+    print(f"Benchmarking: {tex_file.name}  |  engine={engine}  |  "
+          f"runs={num_runs}  |  passes={'smart' if max_passes == 0 else max_passes}")
+    print("-" * 60)
+
+    for i in range(1, num_runs + 1):
+        # Clean aux before each run for cold-start consistency
+        clean_aux(tex_file)
+
+        t0 = time.time()
+        result = compile_tex(tex_file, engine, bin_path, shell_escape,
+                             max_passes, verbose)
+        elapsed = time.time() - t0
+
+        if not result["success"]:
+            print(f"  Run {i:>3}/{num_runs}: FAILED  ({elapsed:.3f}s)")
+            print(format_result(result, verbose))
+            sys.exit(1)
+
+        times.append(elapsed)
+        last_result = result
+        pages = _page_count(tex_file)
+        pdf_kb = result["pdf_size"] / 1024 if result["pdf_size"] > 0 else 0
+        print(f"  Run {i:>3}/{num_runs}: {elapsed:>8.3f}s  |  "
+              f"{pages} pages  |  {pdf_kb:.0f} KB")
+
+    stats = _stats(times)
+    print("-" * 60)
+    print(f"  Best:    {stats['best']:.3f}s")
+    print(f"  Worst:   {stats['worst']:.3f}s")
+    print(f"  Mean:    {stats['mean']:.3f}s")
+    print(f"  Median:  {stats['median']:.3f}s")
+    print(f"  StdDev:  {stats['stddev']:.3f}s")
+    if last_result:
+        pdf_kb = last_result["pdf_size"] / 1024 if last_result["pdf_size"] > 0 else 0
+        pages = _page_count(tex_file)
+        print(f"  Pages:   {pages}")
+        print(f"  PDF:     {pdf_kb:.0f} KB")
+
+    # Optional JSON output
+    if json_output:
+        import json as json_mod
+        report = {
+            "file": str(tex_file),
+            "engine": engine,
+            "shell_escape": shell_escape,
+            "passes_mode": "smart" if max_passes == 0 else max_passes,
+            "runs": stats,
+            "per_run_times_ms": [round(t * 1000, 1) for t in times],
+            "pdf_size_bytes": last_result["pdf_size"] if last_result else 0,
+            "page_count": _page_count(tex_file),
+            "passes_per_run": last_result["passes_run"] if last_result else 0,
+        }
+        out_path = Path(json_output)
+        out_path.write_text(json_mod.dumps(report, indent=2) + "\n")
+        print(f"\n  JSON saved: {out_path}")
+
+    # Finalize metrics from last run
+    if last_result and last_result["success"]:
+        finalize_metrics(tex_file)
+
+
 # ── Watch mode ──────────────────────────────────────────────────────────────
 
 def watch_mode(tex_file: Path, engine: str, bin_path: Optional[str],
@@ -574,6 +699,8 @@ Examples:
   python3 scripts/compile.py src/templates/demo-beautiful.tex
   python3 scripts/compile.py paper.tex --engine lualatex --clean
   python3 scripts/compile.py slides.tex --watch --verbose
+  python3 scripts/compile.py demo.tex --benchmark 5
+  python3 scripts/compile.py demo.tex --benchmark --engine pdflatex --benchmark-json bench.json
         """,
     )
     parser.add_argument("file", help="Path to .tex file")
@@ -615,6 +742,20 @@ Examples:
         help="Max compilation passes (default: smart — runs as many as needed, up to 3)",
     )
     parser.add_argument(
+        "--benchmark", "-b",
+        nargs="?",
+        const=5,
+        type=int,
+        metavar="N",
+        help="Run N compilations and report timing statistics (default: 5). "
+             "Cleans aux between runs. Incompatible with --watch.",
+    )
+    parser.add_argument(
+        "--benchmark-json",
+        metavar="FILE",
+        help="Save benchmark results as JSON to FILE (requires --benchmark)",
+    )
+    parser.add_argument(
         "--verbose", "-v",
         action="store_true",
         help="Show full LaTeX output",
@@ -648,9 +789,18 @@ Examples:
         else:
             print("TeX Live: system PATH")
 
+    if args.benchmark_json and not args.benchmark:
+        parser.error("--benchmark-json requires --benchmark")
+
     if args.watch:
         watch_mode(tex_file, engine, bin_path, shell_escape, args.passes,
                    args.verbose)
+    elif args.benchmark:
+        benchmark_mode(
+            tex_file, engine, bin_path, shell_escape, args.passes,
+            num_runs=args.benchmark, verbose=args.verbose,
+            json_output=args.benchmark_json,
+        )
     else:
         result = compile_tex(tex_file, engine, bin_path, shell_escape,
                              args.passes, args.verbose)
