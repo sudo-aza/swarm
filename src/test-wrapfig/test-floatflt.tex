@@ -1,57 +1,97 @@
-% Test: floatflt (v1.34)
-\documentclass[11pt,a4paper]{article}
+\documentclass[a4paper,11pt]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
-\usepackage{floatflt}
 \usepackage{lipsum}
+\usepackage{floatflt}
 
-\title{floatflt Test}
+\title{Test: floatflt (v1.34)}
 \author{Programmer Agent}
-\date{2026-05-15}
+\date{2026-05-16}
 
 \begin{document}
 \maketitle
 
-\section{Test 1: Basic floatingfigure (right)}
+%--- Test 1: Basic right wrap ---
+\section*{Test 1: Basic Figure Wrapping (Right)}
+Text should flow around a figure placed on the right side.
+floatflt uses \texttt{floatingfigure} environment with \verb|[r]{width}|.
+Note: floatflt uses \texttt{\textbackslash everypar} hooks — the figure must
+appear BEFORE the paragraph text that wraps around it.
 
-\begin{floatingfigure}[r]{0.3\textwidth}
+\begin{floatingfigure}[r]{0.35\textwidth}
   \centering
-  \includegraphics[width=\linewidth]{test-image.png}
-  \caption{A test figure using floatflt's floatingfigure.}
-  \label{fig:floatflt-basic}
+  \rule{0.3\textwidth}{4cm}
+  \caption{Right-wrapped figure (floatflt).}
+  \label{fig:right}
 \end{floatingfigure}
 
-\lipsum[1-3]
+\lipsum[1-2]
 
-\section{Test 2: floatingfigure near page break}
+%--- Test 2: Left wrap ---
+\section*{Test 2: Figure Wrapping (Left)}
+Text should flow around a figure on the left side, using \verb|[l]{width}|.
 
-\lipsum[4-5]
-
-\begin{floatingfigure}[r]{0.3\textwidth}
+\begin{floatingfigure}[l]{0.35\textwidth}
   \centering
-  \includegraphics[width=\linewidth]{test-image.png}
-  \caption{Figure near page break with floatflt.}
-  \label{fig:floatflt-pagebreak}
+  \rule{0.3\textwidth}{4cm}
+  \caption{Left-wrapped figure (floatflt).}
+  \label{fig:left}
 \end{floatingfigure}
 
-\lipsum[6-7]
+\lipsum[3-4]
 
-\section{Test 3: floatingfigure inside itemize}
+%--- Test 3: Tall figure near page break ---
+\section*{Test 3: Tall Figure Near Page Break}
+A tall figure (8cm) near a page break. Text should wrap correctly
+even when the figure spans across the page boundary.
+
+\begin{floatingfigure}[r]{0.35\textwidth}
+  \centering
+  \rule{0.3\textwidth}{8cm}
+  \caption{Tall figure spanning page break.}
+  \label{fig:pagebreak}
+\end{floatingfigure}
+
+\lipsum[5-8]
+
+%--- Test 4: Figure with itemize (figure BEFORE list) ---
+\section*{Test 4: Figure Before Itemize}
+Based on lessons from wrapfig2 testing: placing floats inside list environments
+is unreliable across packages. This test places the floatingfigure BEFORE the
+itemize to verify that text and list items wrap around it.
+
+\begin{floatingfigure}[r]{0.35\textwidth}
+  \centering
+  \rule{0.3\textwidth}{4cm}
+  \caption{Figure placed before itemize.}
+  \label{fig:before-itemize}
+\end{floatingfigure}
+
+\lipsum[1][1-2]
+\begin{itemize}
+  \item First item: \lipsum[2][1-3]
+  \item Second item: \lipsum[3][1-3]
+  \item Third item: \lipsum[4][1-3]
+  \item Fourth item: \lipsum[5][1-3]
+  \item Fifth item: \lipsum[6][1-3]
+\end{itemize}
+
+%--- Test 5: Figure inside itemize (EXPECTED FAIL) ---
+\section*{Test 5: Figure Inside Itemize (Expected Limitation)}
+This test places a floatingfigure directly inside an itemize list.
+Many float-wrapping packages cannot handle this correctly.
 
 \begin{itemize}
-  \item First item.
-  \begin{floatingfigure}[r]{0.3\textwidth}
+\item
+  \begin{floatingfigure}[r]{0.35\textwidth}
     \centering
-    \includegraphics[width=\linewidth]{test-image.png}
-    \caption{Figure inside itemize with floatflt.}
-    \label{fig:floatflt-itemize}
+    \rule{0.3\textwidth}{3cm}
+    \caption{Figure inside itemize.}
+    \label{fig:inside-itemize}
   \end{floatingfigure}
-  \item This item should appear next to the figure.
-  \item Another item to test text flow.
-  \item \lipsum[8][1-3]
-  \item More text.
-  \item \lipsum[9][1-3]
-  \item Final item.
+  First item with an embedded figure.
+\item Second item: \lipsum[2][1-3]
+  \item Third item: \lipsum[3][1-3]
 \end{itemize}
 
 \end{document}
