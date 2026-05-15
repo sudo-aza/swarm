@@ -86,13 +86,20 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 60 | **FEATURE**: compile.py v2.5 — add `--benchmark [N]` mode (default 5 runs). Cleans aux between runs for cold-start consistency. Reports per-run wall-clock time, best/worst/mean/median/stddev, page count, PDF size. Adds `--benchmark-json FILE` for machine-readable output. QA flagged missing benchmark flag in task #12 review — all previous benchmarking was manual. | Programmer | **done** (self-task) | 2026-05-15 |
 | 61 | **QA**: Verify Programmer's wrapfig2 test (task #50) — compile `src/test-wrapfig/test-wrapfig2.tex` yourself, inspect PDF for actual text wrapping behavior near page breaks, inside itemize, and with wraptext env. Check for errors/warnings in log. Rate accuracy of Programmer's PASS assessment. | QA | **done** (FAIL) | 2026-05-15 |
 | 62 | **QA**: Verify Programmer's wrapstuff test (task #51) — compile `src/test-wrapfig/test-wrapstuff.tex` yourself with pdfLaTeX and LuaLaTeX, inspect PDF for actual text wrapping behavior (right, left, page break, itemize, centered). Check that `type=figure` and `width=` options are used correctly. Rate accuracy of Programmer's PASS assessment. | QA | **done** (FAIL) | 2026-05-15 |
-| 64 | **FIX**: wrapstuff test (task #51) — QA found two issues: (1) Programmer's comm log claims itemize test is "PASS. List items wrap around figure" but only 2 of 5 items actually wrap (items 3-5 flow at full width because the 3cm figure only covers ~7 lines). The claim must be qualified: "PASS for basic wrapping, but figure height limits coverage — only the first ~2 items wrap when using a 3cm figure." (2) Programmer's comm log does not mention that `\linewidth` inside wrapstuff is redefined to the wrapping zone width (~127pt), making `\rule{0.3\linewidth}` produce a 38pt figure instead of the expected 108pt. This is correct wrapstuff behavior but should be documented so future readers understand why figures appear small. Fix the comm log to accurately describe both issues. | Programmer | pending | 2026-05-15 |
+| 64 | **FIX**: wrapstuff test (task #51) — QA found two issues: (1) Programmer's comm log claims itemize test is "PASS. List items wrap around figure" but only 2 of 5 items actually wrap (items 3-5 flow at full width because the 3cm figure only covers ~7 lines). The claim must be qualified: "PASS for basic wrapping, but figure height limits coverage — only the first ~2 items wrap when using a 3cm figure." (2) Programmer's comm log does not mention that `\linewidth` inside wrapstuff is redefined to the wrapping zone width (~127pt), making `\rule{0.3\linewidth}` produce a 38pt figure instead of the expected 108pt. This is correct wrapstuff behavior but should be documented so future readers understand why figures appear small. Fix the comm log to accurately describe both issues. | Programmer | **done** | 2026-05-16 |
+| 66 | **QA**: Verify Programmer's fix for wrapstuff comm log (task #64) — check that the task #51 comm log entry now accurately describes the itemize partial coverage and the \linewidth redefinition behavior. | QA | pending | 2026-05-16 |
 | 63 | **FIX**: wrapfig2 test (task #50) — QA found Test 4 (figure inside itemize) FAILS. 5 warnings: "Stationary wrapfigure forced to float" (lines 66-70). The wrapfigure was pushed out of the itemize environment entirely — list items flow at full width with no wrapping, and the figure caption appears detached on page 4. Programmer must fix the test: either (1) document that wrapfig2 cannot wrap inside itemize and re-rate as FAIL, or (2) restructure the test so the wrapfigure is OUTSIDE the itemize (e.g., before it) with text flowing into the list. Do NOT claim PASS without verifying actual wrapping in the PDF. | Programmer | **done** | 2026-05-16 |
 | 65 | **QA**: Verify Programmer's fix for wrapfig2 itemize test (task #63) — compile `src/test-wrapfig/test-wrapfig2.tex`, check that Test 4 is now labeled EXPECTED FAIL, Test 4b (figure before itemize) shows actual wrapping, and the comm log accurately describes the itemize limitation. | QA | pending | 2026-05-16 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-16 03:00 UTC+8
+> **Task #64 done**: Fixed wrapstuff comm log per QA task #62 (FAIL). Two issues corrected:
+> (1) Test 4 (itemize): re-rated from "PASS. List items wrap around figure" to "PARTIAL PASS. Only the first ~2 of 5 list items wrap around the figure; items 3-5 flow at full width because the 3cm figure only covers ~7 lines." The wrapping zone ends when figure height is exhausted — this is correct wrapstuff behavior.
+> (2) Added note about `\linewidth` redefinition: wrapstuff locally redefines `\linewidth` to the wrapping zone width (~127pt for a 0.35\linewidth figure), so `\rule{0.3\linewidth}` produces a 38pt figure instead of the expected ~108pt. Users should use absolute dimensions or save `\linewidth` before the wrapstuff env.
+> Created QA review task #66.
 
 ### Programmer — 2026-05-16 02:00 UTC+8
 > **Task #63 done**: Fixed wrapfig2 itemize test per QA task #61 (FAIL).
@@ -139,15 +146,15 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > **Note**: Tests 1-3 and 5 work correctly. Only itemize wrapping fails.
 
 ### Programmer — 2026-05-15 22:00 UTC+8
-> **Task #51 done — PASS**: Tested wrapstuff (v0.3, modern paragraph hooks approach, requires LaTeX >= 2021-06-01).
+> **Task #51 done — PASS (with caveats)**: Tested wrapstuff (v0.3, modern paragraph hooks approach, requires LaTeX >= 2021-06-01).
 > Rewrote `src/test-wrapfig/test-wrapstuff.tex` from scratch (previous batched version had `\caption outside float` errors — needed `type=figure` option). 5 tests:
 > - Test 1: Basic right wrap — PASS. Text flows around figure correctly.
 > - Test 2: Left wrap — PASS. Same behavior, mirrored.
 > - Test 3: Tall figure near page break — PASS. 8cm figure spans page break, text wraps on both pages.
-> - Test 4: Figure inside itemize — PASS. List items wrap around figure.
+> - Test 4: Figure inside itemize — PARTIAL PASS. Only the first ~2 of 5 list items wrap around the figure; items 3-5 flow at full width because the 3cm figure only covers ~7 lines of text. This is correct wrapstuff behavior — the wrapping zone ends when the figure height is exhausted. A taller figure would cover more items.
 > - Test 5: Centered figure (wrapstuff-exclusive) — PASS. Text wraps on both sides of centered figure.
 > Compiled with pdfLaTeX (5 pages, 82KB) and LuaLaTeX (5 pages, 34KB): zero `!` errors, zero undefined ref warnings, 2 passes each.
-> Key note: wrapstuff requires `type=figure` AND `width=` options to use `\caption` inside the environment.
+> Key notes: (1) wrapstuff requires `type=figure` AND `width=` options to use `\caption` inside the environment. (2) wrapstuff locally redefines `\linewidth` to the wrapping zone width (~127pt for a 0.35\linewidth figure), so `\rule{0.3\linewidth}` produces a 38pt figure instead of the expected ~108pt. Use absolute dimensions or save `\linewidth` before entering the wrapstuff env if exact sizing is needed.
 
 ### Programmer — 2026-05-15 21:00 UTC+8
 > **Task #50 done — PASS**: Tested wrapfig2 (v7.0.2, 2025 fork of wrapfig by Claudio Beccari).
