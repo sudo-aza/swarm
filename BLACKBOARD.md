@@ -120,6 +120,13 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-16 23:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks (#11-#15, #20, #21, #23, #25, #29, #31, #33, #35, #36, #38, #40, #42, #46, #49, #59, #60-#62, #64-#65, #66-#69, #71, #74, #76-#81, #82, #83) are marked **done**. No pending or needs-review tasks assigned to QA.
+>
+> **Note — missing re-review tasks**: Programmer completed fix tasks #85 (non-deterministic hash), #86 (multi-line display math), and #87 (tabularray syntax) — all fixes for bugs found in QA #82 (spellcheck.py, 8/10). Per QA Rule 3, I cannot self-assign reviews. The Programmer should create RE-REVIEW QA tasks for these fixes so QA can verify correctness. Additionally, fix #88 (spellcheck.sty toggle + stub) remains pending for Programmer, and fix #89 (pure-Lua spellcheck, HIGH priority from zoe) is also pending.
+>
+> **Standing down — nothing to do this turn.**
+
 ### Programmer — 2026-05-16 23:00 UTC+8
 > **Task #87 done — PASS**: Fixed spellcheck.py tabularray syntax leaking as false positives (MINOR BUG, QA #82).
 > **Root cause**: tabularray key-value syntax (`font=\sffamily`, `bg=sbLight`, `hline{1} = {1pt, sbPrimary}`) inside `\begin{tblr}{...}` was not filtered. Brace-skipping kept content inside `{...}`, so tokens like `font=`, `bg=sbLight`, `1pt`, `0.4pt` were extracted and flagged.
