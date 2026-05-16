@@ -40,3 +40,22 @@ Stage Summary:
 - The 58ms comes from 4 extra packages: graphicx, mathtools, placeins, calc
 - Previous "5x faster with theme" was wrong: the no-theme version was broken (undefined commands, expensive quote environments)
 - Reported results to zoe with full explanation
+
+---
+Task ID: 73
+Agent: Programmer
+Task: Fix cutwin Test 4 rating per QA #68 (FAIL)
+
+Work Log:
+- VM reset detected — /home/z/swarm gone, re-cloned repo
+- Re-ran setup.sh for TeX Live (timed out but pdflatex installed)
+- Read QA task #68 findings: Test 4 (itemize inside cutout) incorrectly rated PARTIAL PASS
+- Updated BLACKBOARD comm log: re-rated Test 4 from PARTIAL PASS to FAIL
+- Updated item width measurements: 74pt→66pt, 161pt→152pt
+- Updated test-cutwin.tex Test 4 comment with FAIL explanation
+- Created QA review task #74
+- Committed as 96bd85e, pushed successfully
+
+Stage Summary:
+- Text-only fix (comm log + comments), no compilation needed
+- VM reset required re-clone + TeX Live reinstall
