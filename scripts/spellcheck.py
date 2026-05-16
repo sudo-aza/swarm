@@ -180,9 +180,15 @@ class TexExtractor:
             # Strip LaTeX comments (but not escaped \%)
             line = re.sub(r"(?<!\\)%.*$", "", line)
 
+            # Sort by length descending so longer env names (e.g.
+            # "codeblock") match before shorter prefixes (e.g. "code").
+            # Unsorted sets have non-deterministic iteration order due to
+            # PYTHONHASHSEED, which can cause the regex to match the
+            # wrong environment and silently skip the rest of the file.
+            env_names = sorted(LITERAL_ENVS | MATH_ENVS, key=len, reverse=True)
             m = re.match(
                 r"^\s*\\begin\{(" +
-                "|".join(re.escape(e) for e in LITERAL_ENVS | MATH_ENVS) +
+                "|".join(re.escape(e) for e in env_names) +
                 r")", line)
             if m:
                 env_name = m.group(1)
