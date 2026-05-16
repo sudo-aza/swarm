@@ -83,6 +83,7 @@ LITERAL_ENVS = {
     "verbatim", "verbatim*", "lstlisting", "minted", "mint",
     "program", "programlisting", "console", "terminal",
     "codeblock", "code",  # swarmbeauty/swarmperf custom envs
+    "tblr", "tblr*",     # tabularray — specs contain key-value syntax, not natural language
 }
 
 # Math environments whose content must NOT be spell-checked.
@@ -854,7 +855,7 @@ DEFAULT_DICT_WORDS = {
     "workflow", "workflows", "toolkit", "toolkits",
     "reproducible", "reproducibility", "benchmarking",
     "autodetection", "auto-detect", "auto-detected",
-    "usecases", "usecase", "underlines",
+    "usecases", "usecase", "underlines", "metadata",
     # Tabularray / table syntax terms
     "colspec", "hline", "vlines", "rowsep", "colsep",
     # Swarm theme color names
