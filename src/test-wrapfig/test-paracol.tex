@@ -1,75 +1,212 @@
-% Test: paracol (v1.37) — CORRECTED API
-% paracol: \begin{paracol}{ncols} ... \switchcolumn ... \end{paracol}
-% Content flows automatically between columns.
+% test-paracol.tex — paracol (v1.37) test
+% paracol API:
+%   \usepackage{paracol}
+%   \begin{paracol}{ncols} ... \end{paracol}
+%   \switchcolumn — switch to next column (wraps around)
+%   \switchcolumn[n] — switch to column n (zero-indexed)
+%   \switchcolumn*[<span>] — sync all columns + optional spanning text
+%   \columnratio{0.45} — left column 45%, right 55%
+%   \setcolumnwidth{5cm/1cm, \fill} — precise widths + gaps
+%   \begin{leftcolumn}...\end{leftcolumn} — shorthand for column 0
+%   \begin{rightcolumn}...\end{rightcolumn} — shorthand for column 1
+%   \flushpage — flush all columns, start fresh page
+%   \globalcounter{figure} — share figure counter across columns
+% Limitations:
+%   - Cannot nest paracol environments
+%   - Not compatible with multicol (different approaches)
+%   - Keep column page difference <= ~10 to avoid buffer overflow
+%   - After \switchcolumn*, no top floats on that page
+%   - Single-column floats stay in their column (never cross)
+% Strengths:
+%   - Automatic page-break handling across columns
+%   - Columns typeset independently
+%   - Can start/end at any vertical position on a page
+%   - Compatible with itemize/enumerate inside columns
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{paracol}
 \usepackage{lipsum}
+\usepackage{multicol}
 
-\title{paracol Test}
+\title{paracol (v1.37) Test}
 \author{Programmer Agent}
-\date{2026-05-15}
+\date{2026-05-16}
+
+% Share figure counter across columns
+\globalcounter{figure}
 
 \begin{document}
 \maketitle
 
-\section{Test 1: Basic paracol — figure in left col, text in right}
+% ============================================================
+% Test 1: Basic figure-in-column simulation
+% Left column: figure + caption. Right column: flowing text.
+% This is paracol's primary use case for simulating text
+% wrapping around a figure — the figure occupies the left
+% column while text flows naturally in the right column.
+% ============================================================
+\section{Test 1: Basic figure-in-column}
 
+\columnratio{0.4}
 \begin{paracol}{2}
 
-\includegraphics[width=\linewidth]{test-image.png}
-
-\vspace{1em}
-This is the left column. Figure above, text below.
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{test-image.png}
+  \caption{Figure in left column}
+\end{figure}
+Some annotation text below the figure in the left column.
+This column is narrower (40\% of text width) to give more
+space to the text column on the right.
 
 \switchcolumn
 
 \lipsum[1-3]
 
+\switchcolumn*
+
+\lipsum[4]
+
 \switchcolumn
 
-More left column content after switching.
-
-\switchcolumn
-
-\lipsum[4-5]
+\lipsum[5]
 
 \end{paracol}
 
-\section{Test 2: paracol near page break}
+% ============================================================
+% Test 2: Tall figure spanning page break
+% paracol handles page breaks across columns automatically.
+% The figure stays in its column and the text continues in
+% the other column. If a column overflows, it breaks to the
+% next page. This is paracol's key advantage over parshape-
+% based packages (cutwin, picinpar, insbox) which cannot
+% span page breaks.
+% ============================================================
+\section{Test 2: Tall figure near page break}
 
+\columnratio{0.35}
 \begin{paracol}{2}
 
-\lipsum[6-8]
+\vspace{4cm}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{test-image.png}\\[4pt]
+  \includegraphics[width=\columnwidth]{test-image.png}\\[4pt]
+  \includegraphics[width=\columnwidth]{test-image.png}
+  \caption{Three stacked images — tall figure}
+\end{figure}
+Left column content after the tall figure.
 
 \switchcolumn
 
-\includegraphics[width=\linewidth]{test-image.png}
+\lipsum[1-2]
+
+The right column text continues flowing naturally. If the
+left column's tall figure causes a page break, paracol
+handles it automatically — the text in this column also
+moves to the next page as needed. \lipsum[3-5]
+
+\switchcolumn*
+
+More left column content after sync.
 
 \switchcolumn
 
-\lipsum[9-11]
+\lipsum[6-7]
 
 \end{paracol}
 
-\section{Test 3: paracol with itemize}
+% ============================================================
+% Test 3: Itemize in columns
+% paracol is compatible with list environments inside
+% columns. We test itemize in both columns simultaneously.
+% ============================================================
+\section{Test 3: Itemize in columns}
 
+\columnratio{0.5}
 \begin{paracol}{2}
 
 \begin{itemize}
-  \item Item in left column
-  \item Another item
-  \item \lipsum[1][1-2]
+  \item First item in the left column.
+  \item Second item with more text to demonstrate wrapping
+    within the narrow column width.
+  \item Third item. \lipsum[1][1-2]
+  \item Fourth item.
+  \item Fifth item.
 \end{itemize}
 
 \switchcolumn
 
 \begin{enumerate}
-  \item Numbered item in right column
-  \item Second item
-  \item \lipsum[2][1-2]
+  \item Numbered item in the right column.
+  \item Second numbered item with additional text to show
+    how enumerate handles the column width constraint.
+  \item Third item. \lipsum[2][1-2]
+  \item Fourth item.
+  \item Fifth item.
 \end{enumerate}
+
+\end{paracol}
+
+% ============================================================
+% Test 4: multicol compatibility (stress test)
+% paracol is NOT compatible with multicol — they solve
+% different problems (paracol = independent parallel columns,
+% multicol = balanced sequential columns). We test nesting
+% multicol inside paracol to document the interaction.
+% ============================================================
+\section{Test 4: multicol inside paracol}
+
+\columnratio{0.5}
+\begin{paracol}{2}
+
+Left column with standard text before multicol.
+
+\begin{multicols}{2}
+\lipsum[3-4]
+\end{multicols}
+
+Left column text after multicol.
+
+\switchcolumn
+
+Right column text.
+\lipsum[5]
+
+\end{paracol}
+
+% ============================================================
+% Test 5: Figure before itemize (column flow)
+% Test whether a figure in one column and itemize in the
+% other column interact correctly. The figure stays in its
+% column and the itemize flows independently.
+% ============================================================
+\section{Test 5: Figure with itemize in other column}
+
+\columnratio{0.4}
+\begin{paracol}{2}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{test-image.png}
+  \caption{Figure alongside itemize}
+\end{figure}
+Left column text below the figure.
+
+\switchcolumn
+
+\begin{itemize}
+  \item First item — this list is in the right column while
+    the figure is in the left column.
+  \item Second item. paracol typesets columns independently,
+    so the list is not affected by the figure placement.
+  \item Third item with more text to demonstrate wrapping.
+  \item Fourth item.
+  \item Fifth item.
+\end{itemize}
+
+Trailing text after the itemize.
 
 \end{paracol}
 
