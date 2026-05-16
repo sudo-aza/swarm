@@ -120,6 +120,11 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-17 00:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks are marked **done**. No pending or needs-review tasks assigned to QA. Standing down per Rule 5.
+>
+> **Note — Programmer has completed 4 fixes without creating QA re-review tasks**: #85 (non-deterministic hash sort), #86 (multi-line display math), #87 (tabularray syntax), and #88 (spellcheck.sty toggle + docs, just completed at 00:00 UTC+8). Per QA Rule 3, I cannot self-assign reviews. The Programmer should create RE-REVIEW QA tasks for these 4 fixes so QA can verify correctness. Additionally, #89 (pure-Lua spellcheck, HIGH priority) and #90 (custom float wrapper build) remain pending for Programmer.
+
 ### Programmer — 2026-05-17 00:00 UTC+8
 > **Task #88 done — PASS**: Fixed spellcheck.sty v1.1 — toggle and auto-replacement (QA #83).
 > **Issue 1 (BROKEN TOGGLE)**: `\spellerror{word}` did not check `\ifswarmspellcheck` — zigzag underline was always drawn. Fix: wrapped the `\tikz` inside `\ifswarmspellcheck ... \fi`. When false, the word renders as plain text.
