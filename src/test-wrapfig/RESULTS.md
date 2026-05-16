@@ -34,7 +34,7 @@ If a package fails any one of these, it fails overall. 9/10 or below = FAIL.
 | 55 | **insbox** | 2.2 | **FAIL** (QA #71) | PASS | N/A* | **FAIL** | PARTIAL | #71: Tests 1-2,5-6 PASS, Test 3 N/A, Test 4 FAIL. Comm log has warning attributed to wrong test and width range off by ~9pt. | Comm log inaccuracies (warning misattributed) |
 | 56 | **figflow** | — | **SKIP** | — | — | — | SKIP | Plain TeX only. "Does not work with LaTeX" per CTAN. | Not LaTeX compatible |
 | 57 | **shapepar** | 2.2 | **FAIL** (QA #80) | FAIL* | N/A* | PARTIAL* | PASS | #80: Tests 1-3,6-7 PASS (cutout/diamond/multicol work). Test 4 N/A (page break, design limitation). Test 5 PARTIAL PASS (itemize widths unreliable). Not designed for figure wrapping — no images inside shaped paragraphs (vertical material forbidden). Decorative text shapes only. | Cannot wrap actual figures — text-only decorative shapes |
-| 58 | **paracol** | 1.37 | **NOT TESTED** (no QA task) | N/A | N/A | N/A | PASS (old) | Old batched run only. No QA task created for independent verification. | Different approach — parallel columns, not wrapping |
+| 58 | **paracol** | 1.37 | **FAIL** (QA #81) | PASS | PASS | PASS | PASS* | #81: Tests 1-3,5 PASS. Test 4 PARTIAL — multicols inside paracol causes content loss ("Left column text after multicol." silently dropped from PDF). Column page difference exceeds paracol's buffer (77.6pt overfull vbox). Not text wrapping — uses parallel independent columns. | Content loss in multicol nesting |
 
 ## Detailed QA Findings
 
@@ -106,6 +106,14 @@ If a package fails any one of these, it fails overall. 9/10 or below = FAIL.
 - **Overall FAIL**: shapepar cannot include images (vertical material forbidden). Only suitable for decorative text shapes.
 - QA rating: 10/10 for test quality and accuracy.
 
+### paracol (#81 — FAIL, Test 4 content loss)
+- Test 1 (figure-in-column): PASS. Figure at (117.8,302.1)-(257.3,406.8), w=139.5pt. Right column text at x=267.3, w=209.2pt. 2-column layout correct across pages 1-2.
+- Test 2 (tall figure, page break): PASS. 3 stacked images on page 3, w=122pt each. Columns break across pages 2-4 without corruption.
+- Test 3 (itemize/enumerate): PASS. 5 itemize items (x=134.2, w=150pt) and 5 enumerate items (x=315.5, w=161pt) in separate columns.
+- Test 4 (multicol inside paracol): **PARTIAL PASS**. multicols{2} produces two sub-columns (x=117.8-200 and x=210-292 on page 5). However, "Left column text after multicol." is **missing from rendered PDF** — not on any of 7 pages. Overfull vbox (77.6pt) confirms column sync overflow.
+- Test 5 (figure with itemize): PASS. Figure at (117.8,321.2)-(257.3,425.8). 5 itemize items at x=283.7-476.5. Columns independent.
+- **QA rating**: 9/10 — Test 4 comm log inaccuracy (content loss not documented).
+
 ### paracol
 - Old batched run only. No independent QA task created.
 - Different approach entirely (parallel columns vs text wrapping).
@@ -145,6 +153,6 @@ https://raw.githubusercontent.com/sudo-aza/swarm/main/download/wrapfig-tests/tes
 
 ## Status
 
-- **QA verified**: wrapfig2 (#61 FAIL), wrapstuff (#62 FAIL), floatflt (#67 FAIL), picinpar (#69 FAIL — test quality, not package), cutwin (#68 FAIL — itemize overflow), insbox (#71 FAIL — comm log inaccuracies), figflow (#79 PASS — plain TeX only), shapepar (#80 FAIL — no images allowed, but test quality 10/10).
+- **QA verified**: wrapfig2 (#61 FAIL), wrapstuff (#62 FAIL), floatflt (#67 FAIL), picinpar (#69 FAIL — test quality, not package), cutwin (#68 FAIL — itemize overflow), insbox (#71 FAIL — comm log inaccuracies), figflow (#79 PASS — plain TeX only), shapepar (#80 FAIL — no images allowed, but test quality 10/10), paracol (#81 FAIL — content loss in multicol nesting).
 - **QA pending**: cutwin fix #74.
 - **Gatekeeper task #60**: If ALL packages fail all 3 hard constraints, activate custom LuaLaTeX implementation.
