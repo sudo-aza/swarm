@@ -29,7 +29,7 @@ If a package fails any one of these, it fails overall. 9/10 or below = FAIL.
 | 50 | **wrapfig2** | 7.0.2 | **FAIL** (QA #61) | PASS | PASS | **FAIL** | Claimed PASS | #61: figure forced to float out of itemize, "Stationary wrapfigure forced to float" x5. List items at full width. | Itemize wrapping unsupported (known wrapfig limitation) |
 | 51 | **wrapstuff** | 0.3 | **FAIL** (QA #62) | PASS | PASS | **PARTIAL** | Claimed PASS | #62: only 2/5 items wrap. \linewidth redefined inside env (not documented). | Inaccurate comm log, itemize only partial |
 | 52 | **floatflt** | 1.34 | **FAIL** (QA #67) | PASS | **N/A*** | **FAIL** | Claimed PASS | #67: Test 3 figure doesn't cross page break (N/A, like cutwin). Test 4 figure invisible due to collision with Test 5. | Page break test invalid, itemize+collision failure |
-| 53 | **cutwin** | 0.2 | **PENDING QA** (#68) | PASS | N/A* | **PARTIAL** | PARTIAL PASS | #68 pending: itemize has overfull vbox/hbox (7.6pt/43.8pt). Single-paragraph limitation. | Cannot span page breaks by design |
+| 53 | **cutwin** | 0.2 | **FAIL** (QA #68) | PASS | N/A* | **FAIL** | PARTIAL PASS | #68: Test 4 itemize-inside-cutout FAIL — 3rd item overflows boundary by 49pt (overfull hbox 43.8pt). Programmer rated PARTIAL PASS but should be FAIL. Tests 1-2,5-6 PASS. | Itemize inside cutout overflows parshape boundary |
 | 54 | **picinpar** | 1.3a | **FAIL** (QA #69) | PASS | N/A* | PARTIAL | PARTIAL | #69: Tests 1-2,5-6 PASS (wrapping verified). Test 3 N/A but test layout hides page-break limitation (dead space). Test 4 itemize-inside-window EXPECTED FAIL. QA originally rated 10/10, revised to FAIL after review caught superficial QA — test doesn't honestly demonstrate tall figure behavior. | Test hides limitation instead of documenting it |
 | 55 | **insbox** | 2.2 | **FAIL** (Programmer) | FAIL | — | — | FAIL | Not QA'd separately — `\includegraphics` file path breaks dimension parsing. | Broken with actual images |
 | 56 | **figflow** | — | **SKIP** | — | — | — | SKIP | Plain TeX only. "Does not work with LaTeX" per CTAN. | Not LaTeX compatible |
@@ -59,11 +59,14 @@ If a package fails any one of these, it fails overall. 9/10 or below = FAIL.
 - "Floating figures 4 and 5 colliding" warning.
 - Uses `\everypar` hooks (old-style).
 
-### cutwin (#68 — PENDING QA)
-- Programmer reports: Tests 1-2 PASS, Test 3 N/A (single-paragraph design), Test 4 PARTIAL, Test 5 PASS, Test 6 PASS.
-- Itemize has overfull vbox (7.6pt) and hbox (43.8pt) warnings.
+### cutwin (#68 — FAIL)
+- Test 1 (right window): PASS. Image at (375,358)-(460,422) exact match. Text w=241.0pt wrapping left. 8 cutout lines.
+- Test 2 (left window): PASS. Image at (134,185)-(219,249) exact match. Text x=235.5, w=241.0 wrapping right. 7 cutout lines.
+- Test 3 (tall figure, page break): N/A (correctly labeled). Figure entirely on page 3. 30.2% dead space on page 2 from `\vspace{6cm}`.
+- Test 4 (itemize inside cutout): **FAIL (Programmer said PARTIAL PASS).** 3rd item overflows cutout by 49pt (w=290.1 vs expected ~241pt). Overfull hbox 43.8pt confirms. Items 1-2 wrap correctly but item 3 extends into figure zone. Fix task #73 created.
+- Test 5 (cutout inside itemize): PASS. Compiles inside `\item`, no errors. 7cm width claim unverifiable (only 1 short cutout line).
+- Test 6 (centered window): PASS. Left w=127.6, right w=127.6. Image centered.
 - Single-paragraph limitation: cannot span page breaks.
-- cutwin parameter order: `{numtop}{leftwidth}{rightwidth}{numcut}`.
 
 ### floatflt (#67 — FAIL)
 - Test 1 (basic right wrap): PASS. Figure at (360,362)-(468,476) page 1. Text wraps at 204-236pt for ~10 lines.
@@ -128,7 +131,6 @@ https://raw.githubusercontent.com/sudo-aza/swarm/main/download/wrapfig-tests/tes
 
 ## Status
 
-- **QA verified**: wrapfig2 (#61 FAIL), wrapstuff (#62 FAIL), floatflt (#67 FAIL), picinpar (#69 FAIL — test quality, not package).
-- **QA pending**: cutwin (#68).
+- **QA verified**: wrapfig2 (#61 FAIL), wrapstuff (#62 FAIL), floatflt (#67 FAIL), picinpar (#69 FAIL — test quality, not package), cutwin (#68 FAIL — itemize overflow).
 - **Not QA'd**: paracol (no QA task created), insbox/shapepar/figflow (compilation failures).
 - **Gatekeeper task #60**: If ALL packages fail all 3 hard constraints, activate custom LuaLaTeX implementation.
