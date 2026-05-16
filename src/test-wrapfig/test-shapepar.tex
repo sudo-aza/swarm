@@ -1,41 +1,221 @@
-% Test: shapepar (\cutout + \shapepar)
-% Syntax: \cutout{r}(xoff, yoff) \shapepar{\cutmark{depth}} {text}
+% test-shapepar.tex — shapepar (v2.2) test
+% shapepar API:
+%   \usepackage{shapepar}
+%   \shapepar[<scale>]{<shape_spec>} Paragraph text \par
+%     Scale auto-computed if omitted. Shape applied via \parshape.
+%   \Shapepar[<scale>]{<shape_spec>} Paragraph text \par
+%     Boxed version (no centering, for float contexts).
+%   \cutout{r|l}(h_off, v_off)
+%     Precedes \shapepar. Following paragraphs wrap around the shape
+%     with \cutoutsep gap (default 12pt).
+%   Predefined shapes + convenience macros:
+%     \squareshape / \squarepar{text}
+%     \circleshape / \circlepar{text}
+%     \diamondshape / \diamondpar{text}
+%     \heartshape / \heartpar{text}
+%     \starshape / \starpar{text}
+%     \nutshape / \nutpar{text}
+%     \hexagonshape / \hexagonpar{text}
+%   \rectangleshape{height}{width} — generates rectangle shape spec
+%     NOTE: height/width must be plain numbers (shape units, not cm/pt)
+%           or use with explicit scale parameter.
+% Limitations (CRITICAL):
+%   - parshape-based: CANNOT span page breaks
+%   - NO \\ line breaks inside shaped paragraph
+%   - NO \vspace, \centering, or any vertical material inside shaped par
+%   - NO displayed math inside shaped paragraph
+%   - NO list environments (itemize/enumerate) inside shaped paragraph
+%   - \cutout only supports {l} or {r} — no centered cutout
+%   - shaped paragraph is ONE paragraph (delimited by \par)
+%   - \Shapepar requires text as argument (braces), \shapepar takes
+%     text after the shape spec up to \par
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{shapepar}
 \usepackage{lipsum}
+\usepackage{multicol}
 
-\title{shapepar Test}
+\title{shapepar (v2.2) Test}
 \author{Programmer Agent}
-\date{2026-05-15}
+\date{2026-05-16}
+
+\setlength{\cutoutsep}{10pt}
 
 \begin{document}
 \maketitle
 
-\section{Test 1: \cutout (right, basic)}
+% ============================================================
+% Test 1: Basic right-side cutout with \squarepar
+% \cutout{r} places the shaped paragraph on the right margin.
+% \squarepar is a convenience macro: \shapepar\squareshape{text}\par
+% The text inside the shape flows in a square. Following paragraphs
+% wrap around the square with \cutoutsep gap.
+% NOTE: \vspace and \\ are FORBIDDEN inside shaped paragraphs.
+% We cannot put images inside the shaped paragraph because
+% \includegraphics requires vertical material handling that
+% conflicts with shapepar's parshape mechanism.
+% ============================================================
+\section{Test 1: Basic right-side cutout}
 
-\cutout{r}(0pt,\dimexpr\linewidth-3cm\relax)
-\shapepar{\cutmark{50pt}}{%
-\lipsum[1-2]%
+\cutout{r}(0pt,0pt)\squarepar{%
+  This is text flowing inside a square shape on the right side
+  of the page. shapepar uses \texttt{\textbackslash parshape}
+  to control line widths. The shape auto-scales to fit the text.
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+  Sed do eiusmod tempor incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis nostrud exercitation.%
+}\par
+
+This is the first paragraph after the cutout. The text should wrap
+around the square shape on the right side. The cutout mechanism
+computes an exclusion zone around the shape and applies parshape
+to subsequent paragraphs. \lipsum[1]
+
+This is the second paragraph. Once the cutout zone ends, text
+returns to full width. The cutout height equals the square's
+vertical extent. \lipsum[2]
+
+% ============================================================
+% Test 2: Left-side cutout
+% \cutout{l} places the shaped paragraph on the left margin.
+% ============================================================
+\section{Test 2: Left-side cutout}
+
+\cutout{l}(0pt,0pt)\squarepar{%
+  Text flowing inside a square on the left margin. The cutout
+  mechanism adjusts subsequent paragraphs to avoid this zone.
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit sed
+  do eiusmod tempor incididunt ut labore et dolore magna aliqua
+  ut enim ad minim veniam quis nostrud exercitation ullamco.%
+}\par
+
+This paragraph should wrap around the square shape on the left
+side. \lipsum[3]
+
+Another paragraph that may still be in the cutout zone. \lipsum[4]
+
+% ============================================================
+% Test 3: Diamond shape with cutout
+% Test different predefined shapes to verify they work with
+% the cutout mechanism.
+% ============================================================
+\section{Test 3: Diamond shape cutout}
+
+\cutout{r}(0pt,0pt)\diamondpar{%
+  Text flowing inside a diamond shape on the right. The diamond
+  tapers at top and bottom, so the cutout zone is narrower
+  there. Lorem ipsum dolor sit amet, consectetur adipiscing
+  elit sed do eiusmod tempor incididunt ut labore.%
+}\par
+
+This paragraph wraps around the diamond. The cutout zone follows
+the diamond's contour, not a simple rectangle. \lipsum[5]
+
+\newpage
+
+% ============================================================
+% Test 4: Tall shape near page break
+% shapepar is parshape-based and CANNOT span page breaks.
+% When a shaped paragraph is near a page boundary, inter-line
+% penalties discourage but do not prevent breaks. If the shape
+% does break, rendering is corrupted. We test with a long
+% shaped paragraph to see behavior near page bottom.
+% EXPECTED: N/A (design limitation — same as cutwin/picinpar).
+% The shape will either fit entirely on one page or corrupt.
+% ============================================================
+\section{Test 4: Shape near page break}
+
+\lipsum[6]
+
+\vspace{4cm}
+
+\cutout{r}(0pt,0pt)\squarepar{%
+  This is a longer shaped paragraph near the page break. If there
+  is insufficient room on the current page, the shape may be pushed
+  to the next page entirely (best case) or may break across pages
+  causing rendering corruption (worst case). Lorem ipsum dolor sit
+  amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt
+  ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
+  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+  consequat. Duis aute irure dolor in reprehenderit.%
+}\par
+
+This paragraph follows the shaped cutout. If the shape was pushed
+to the next page, this text renders at full width. \lipsum[7]
+
+\newpage
+
+% ============================================================
+% Test 5: Itemize after cutout
+% The cutout zone applies to ALL subsequent paragraphs via
+% parshape. itemize uses its own list machinery. We test
+% whether list items respect the parshape constraint.
+% NOTE: itemize INSIDE the shaped paragraph is impossible.
+% ============================================================
+\section{Test 5: Itemize after cutout}
+
+\cutout{r}(0pt,0pt)\squarepar{%
+  Square shape with text. Lorem ipsum dolor sit amet,
+  consectetur adipiscing elit sed do eiusmod tempor.%
+}\par
+
+\begin{itemize}
+  \item First item after the cutout zone. If parshape is still
+    active, this text should wrap around the shape on the right.
+  \item Second item, also potentially wrapped.
+  \item Third item, may have returned to full width.
+  \item Fourth item, likely at full width.
+  \item Fifth item, definitely at full width.
+\end{itemize}
+
+Trailing text after the itemize environment.
+
+% ============================================================
+% Test 6: multicol with cutout
+% shapepar uses parshape which applies to the enclosing
+% column's \hsize. Inside multicols the column width is
+% narrower. This is a stress test — behavior may vary.
+% ============================================================
+\section{Test 6: multicol with cutout}
+
+\begin{multicols}{2}
+
+\cutout{r}(0pt,0pt)\squarepar{%
+  Small square inside multicols. Lorem ipsum dolor sit amet.%
+}\par
+
+Text in the first column after the cutout. Since parshape uses
+\texttt{\textbackslash hsize}, the cutout should adapt to the
+narrower column. \lipsum[8]
+
+More text. \lipsum[9]
+
+\lipsum[10-11]
+
+\end{multicols}
+
+% ============================================================
+% Test 7: Decorative diamond shape (package's intended use case)
+% shapepar's primary design goal is decorative paragraph shapes,
+% NOT figure wrapping. This test demonstrates the intended
+% functionality: text flowing into interesting shapes.
+% NOTE: \circlepar causes arithmetic overflow in some contexts;
+% we use \diamondpar instead which is more numerically stable.
+% ============================================================
+\section{Test 7: Decorative diamond shape}
+
+\diamondpar{%
+  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+  Sed do eiusmod tempor incididunt ut labore et dolore magna
+  aliqua. Ut enim ad minim veniam, quis nostrud exercitation
+  ullamco laboris nisi ut aliquip ex ea commodo consequat.
+  Duis aute irure dolor in reprehenderit in voluptate velit
+  esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
+  occaecat cupidatat non proident, sunt in culpa qui officia
+  deserunt mollit anim id est laborum.%
 }
 
-\section{Test 2: \cutout (left) near page break}
-
-\lipsum[3-4]
-
-\cutout{l}(0pt,\dimexpr\linewidth-3cm\relax)
-\shapepar{\cutmark{50pt}}{%
-\lipsum[5-6]%
-}
-
-\section{Test 3: \cutout (right) — more text}
-
-\lipsum[7]
-
-\cutout{r}(0pt,\dimexpr\linewidth-3cm\relax)
-\shapepar{\cutmark{80pt}}{%
-\lipsum[8-10]%
-}
+\lipsum[12]
 
 \end{document}

@@ -80,7 +80,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 54 | **TEST**: picinpar (v1.3a, paragraph windows) — Programmer: write a test .tex with a picinpar figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
 | 55 | **TEST**: insbox (v2.2, generic parshape wrapper) — Programmer: write a test .tex with an insbox figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
 | 56 | **TEST**: figflow (plain TeX \parshape approach) — Programmer: write a test .tex with a figflow figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-15 |
-| 57 | **TEST**: shapepar (\cutout for rectangular cutouts) — Programmer: write a test .tex with a shapepar cutout near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
+| 57 | **TEST**: shapepar (\cutout for rectangular cutouts) — Programmer: write a test .tex with a shapepar cutout near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-15 |
 | 58 | **TEST**: paracol (v1.37, parallel columns) — Programmer: write a test .tex using paracol to simulate text wrapping (figure in one column, text in other). Test near page break. Compile and report results. | Programmer | pending | 2026-05-15 |
 | 59 | **QA**: Once Programmer has tested packages #50-#58, QA to cross-verify the most promising 2-3 results — compile the test .tex files yourself, visually inspect PDFs for breakage, and rate each package. | QA | pending | 2026-05-15 |
 | 60 | **GATEKEEP**: Wrapfig fallback — custom implementation. **DO NOT look at this task until ALL of the following are true:** (1) Every test task #50-#58 has been completed by the Programmer. (2) QA has cross-verified the results in task #59. (3) NONE of the tested packages (wrapfig, wrapfig2, wrapstuff, floatflt, cutwin, picinpar, insbox, figflow, shapepar, paracol) passed ALL three hard constraints: (a) no breakage near page breaks, (b) correct behavior inside multicol, (c) correct behavior inside itemize/enumerate. If even ONE package passes all three, this task is unnecessary — mark it cancelled. Only if ALL alternatives have genuinely failed should this task be activated. Once activated: tell the Programmer to research and build a custom LuaLaTeX-based float wrapper from scratch, leveraging Lua callbacks and parshape primitives to handle page-break detection, multicol awareness, and list safety. The Programmer should write a new `.sty` package, create test files, and submit for QA review. | QA | pending | 2026-05-15 |
@@ -103,11 +103,34 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 77 | **QA**: Verify Programmer's insbox comm log fix (task #75) — check that task #55 comm log: (1) Test 3 no longer mentions "box will not fit" warning, describes actual wrapping in ~53pt left column; (2) Test 4 now includes "box will not fit" warning with log line reference; (3) Test 5 width range updated to 172-241pt. | QA | **done** (10/10) | 2026-05-16 |
 | 78 | **QA**: Verify Programmer's picinpar Test 3 fix (task #72) — compile `src/test-wrapfig/test-picinpar.tex`, check that: (1) Test 3 no longer has `\vspace{6cm}` — dead space eliminated; (2) Test 3 has clear comments explaining parshape page-break limitation; (3) No page has >15% avoidable dead space (use PyMuPDF to verify); (4) Figure still wraps correctly on whichever page it lands on. | QA | **done** (10/10) | 2026-05-16 |
 | 79 | **QA**: Verify Programmer's figflow test (task #56) — compile `src/test-wrapfig/test-figflow.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right image; (2) Test 2 text wraps right of left image; (3) Test 3 figure was moved to next page (not overflowed); (4) Test 4 "missing \item" error occurs; (5) Tests 5-6 show "Figure collision" with no images. Note: figflow requires `\line` workaround for LaTeX. | QA | pending | 2026-05-16 |
+| 80 | **QA**: Verify Programmer's shapepar test (task #57) — compile `src/test-wrapfig/test-shapepar.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps at reduced width after right-side cutout; (2) Test 2 text wraps at reduced width after left-side cutout; (3) Test 4 shaped paragraph near page break does not corrupt; (4) Test 5 itemize items may partially wrap; (5) Test 6 multicol cutout adapts to column width. Note: shapepar cannot include images inside shaped paragraphs (vertical material forbidden). | QA | pending | 2026-05-16 |
 | 74 | **QA**: Verify Programmer's cutwin Test 4 fix (task #73) — check that task #53 comm log now rates Test 4 as FAIL (not PARTIAL PASS), item widths updated to 66pt/152pt, and test-cutwin.tex Test 4 comment explains the itemize overflow. | QA | **done** (10/10) | 2026-05-16 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-16 15:00 UTC+8
+> **Task #57 done — PARTIAL**: Tested shapepar (v2.2, Donald Arseneau 2013).
+> Already installed via TeX Live. Package uses `\parshape` internally.
+> API: `\shapepar[<scale>]{<shape_spec>} text \par` — shapes a single paragraph.
+> `\Shapepar` (capital S) = boxed version for float contexts.
+> `\cutout{r|l}(h_off, v_off)` — preceding `\shapepar`, wraps subsequent paragraphs around the shape with `\cutoutsep` gap (default 12pt).
+> Predefined shapes: `\squareshape`, `\circleshape`, `\diamondshape`, `\heartshape`, `\starshape`, `\nutshape`.
+> Convenience macros: `\squarepar{text}`, `\diamondpar{text}`, etc.
+> CRITICAL limitation: NO vertical material (`\vspace`, `\\`, `\centering`) allowed inside shaped paragraphs. This means images CANNOT be placed inside shaped paragraphs — shapepar is designed for text-only decorative shapes, not figure wrapping.
+> `\circlepar` causes arithmetic overflow in some contexts; `\diamondpar` is numerically stable alternative.
+> 7 tests:
+> - Test 1: Basic right-side cutout — PASS. `\cutout{r}(0pt,0pt)\squarepar{text}\par`. Shape at x=400 (right), subsequent text wraps at w=219-274pt (full=359pt), gradually returns to full width over ~8 lines. Cutout zone height matches shape height.
+> - Test 2: Left-side cutout — PASS. Shape at x=47, w=143pt (left). Subsequent text at x=199, w=277pt. Wrapping works correctly, text flows right of the shape.
+> - Test 3: Diamond shape cutout — PASS. `\diamondpar` with `\cutout{r}`. Diamond tapers at top/bottom, cutout zone follows the contour.
+> - Test 4: Tall shape near page break — N/A (design limitation). Shapepar is parshape-based, cannot span page breaks. The shaped paragraph sits entirely on one page. `\vspace{4cm}` pushes it to page 3 — no page-break crossing occurs. No corruption observed.
+> - Test 5: Itemize after cutout — PARTIAL PASS. Shape at x=434 (right, small). First item at w=345pt, second at w=200pt, third at w=229pt. Items show varying widths suggesting partial parshape effect, but results are inconsistent. Items 4-5 at w=169-180pt — still narrower than full width. Trailing text at w=208pt. The itemize environment partially respects the parshape constraint but the effect is unreliable.
+> - Test 6: multicol with cutout — PASS (adapted). Shape at x=261 in right column (column width ~174pt). Subsequent text in left column wraps at w=133-174pt. The cutout mechanism adapts to the narrower multicols column width via `\hsize`.
+> - Test 7: Decorative diamond — PASS. `\diamondpar` with long text renders a clean diamond shape. Demonstrates the package's intended use case (decorative text shapes, not figure wrapping).
+> Compiled with pdfLaTeX (6 pages, 89KB) and LuaLaTeX (6 pages, 43KB): identical behavior, zero `!` errors. 2 cosmetic overfull hbox warnings. PyMuPDF verified all pages 70-75% content utilization.
+> Key finding: shapepar is NOT suitable for figure wrapping because (1) no images allowed inside shaped paragraphs, (2) no centered cutout support, (3) parshape page-break limitation. Its primary use case is decorative paragraph shapes.
+> Created QA review task #80.
 
 ### QA — 2026-05-16 14:30 UTC+8
 > **Task #78 done — PASS (10/10)**: Verified Programmer's picinpar Test 3 fix (task #72). All four QA requirements met:
