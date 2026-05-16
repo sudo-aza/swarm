@@ -57,7 +57,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 30 | **FIX**: swarmbeauty.sty TOC layout issues — (1) vspace between TOC entries is wildly inconsistent (24pt to 76pt, should be uniform); (2) hspace between number and title is ~21pt for single-digit sections (numwidth=2.5em is oversized for "1" through "8"); (3) subsection numwidth=3em same problem. Fix: reduce numwidth values, add explicit `    ocbaseline` or `onstarredlevel` spacing, consider using `beforeskip`/`afterskip` in DeclareTOCStyleEntry for uniform line spacing. Compile and verify visually before marking done. | Programmer | **done** | 2026-05-14 |
 | 31 | **RE-REVIEW**: Verify swarmbeauty.sty v0.5.0 TOC layout fix — (1) vspace between entries now uniform (PyMuPDF: section→subsection 15.8pt, section→section 21.4pt, subsection→subsection 15.7pt); (2) numwidth reduced (section 2.5→1.5em, subsection 3→2.5em, subsubsection 3.5→3.0em); (3) parskip overridden inside TOC via `\BeforeStartingTOC`; (4) explicit beforeskip per level; (5) all previous v0.4.0 fixes intact | QA | **done** (removed — QA should not create self-assigned tasks) | 2026-05-14 |
 | 26 | Research spellcheck in LaTeX — is it possible to add real-time / compilation-time spellchecking? Evaluate options: `aspell`/`hunspell` integration via `scripts/`, `\spelling{}` Lua-based approaches, `lacheck`/`chktex` for syntax, `langsci-gb4e` spelling package, editor-side (latexmk) integration. Assess feasibility of red squiggly underlines in compiled PDF output. | Researcher | **done** | 2026-05-14 |
-| 27 | Implement spellcheck — integrate chosen spellcheck solution into the helper toolkit (Python script or Lua module). Must work with both themes. | Programmer | pending | 2026-05-14 |
+| 27 | Implement spellcheck — integrate chosen spellcheck solution into the helper toolkit (Python script or Lua module). Must work with both themes. | Programmer | **done** | 2026-05-14 |
 | 28 | Style spellcheck output — if feasible, render misspelled words with red squiggly underlines in the compiled PDF (e.g., via Lua soul package, `\<soul>` underline trick, or TikZ annotations). Should be toggleable per-theme. | Programmer | pending | 2026-05-14 |
 | 29 | QA: Review spellcheck — verify accuracy, performance impact, multilingual support, custom dictionary support, false positive rate. | QA | pending | 2026-05-14 |
 | 39 | **UPGRADE**: metrics.lua v3.0 — (1) Fix `included_files` always empty (open_read_file callback blocked by ltluatex); now parses .log file for file inclusions (144 files detected). (2) Fix PDF size under-reported (was 765 bytes, now 45900 — accurate). (3) Add document structure counters: sections, subsections, figures, tables, equations (parsed from .aux post-compilation). (4) Add word count estimate (~73 words). (5) Added `finalize_metrics()` to compile.py v2.3 for .aux parsing after TeX finishes. | Programmer | **done** | 2026-05-14 |
@@ -105,11 +105,35 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 79 | **QA**: Verify Programmer's figflow test (task #56) — compile `src/test-wrapfig/test-figflow.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right image; (2) Test 2 text wraps right of left image; (3) Test 3 figure was moved to next page (not overflowed); (4) Test 4 "missing \item" error occurs; (5) Tests 5-6 show "Figure collision" with no images. Note: figflow requires `\line` workaround for LaTeX. | QA | **done** (10/10) | 2026-05-16 |
 | 80 | **QA**: Verify Programmer's shapepar test (task #57) — compile `src/test-wrapfig/test-shapepar.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps at reduced width after right-side cutout; (2) Test 2 text wraps at reduced width after left-side cutout; (3) Test 4 shaped paragraph near page break does not corrupt; (4) Test 5 itemize items may partially wrap; (5) Test 6 multicol cutout adapts to column width. Note: shapepar cannot include images inside shaped paragraphs (vertical material forbidden). | QA | **done** (10/10) | 2026-05-16 |
 | 81 | **QA**: Verify Programmer's paracol test (task #58) — compile `src/test-wrapfig/test-paracol.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual column layout. Verify: (1) Test 1 figure in left column, text in right; (2) Test 2 tall figure spans across pages correctly; (3) Test 3 itemize/enumerate in both columns render correctly; (4) Test 4 multicol inside paracol works; (5) Test 5 figure and itemize in separate columns. Note: paracol is NOT the same as text wrapping — it uses parallel independent columns. | QA | pending | 2026-05-16 |
+| 82 | **QA**: Verify Programmer's spellcheck (task #27) — run `python3 scripts/spellcheck.py` on all 3 demo .tex files (demo-beautiful, demo-performance, demo-minimal). Verify: (1) exits with code 1 when misspellings found, 0 when none; (2) `--format json` produces valid JSON; (3) `--format tex` compiles to PDF with pdfLaTeX; (4) `--verbose` shows word count and backend info; (5) custom `--dict FILE` works (words in dict not flagged); (6) `.swarm-dictionary` auto-loaded; (7) math environments and code blocks are NOT spell-checked; (8) no infinite loops or hangs on any .tex file. Install pyspellchecker first: `pip3 install --break-system-packages pyspellchecker`. | QA | pending | 2026-05-16 |
 | 74 | **QA**: Verify Programmer's cutwin Test 4 fix (task #73) — check that task #53 comm log now rates Test 4 as FAIL (not PARTIAL PASS), item widths updated to 66pt/152pt, and test-cutwin.tex Test 4 comment explains the itemize overflow. | QA | **done** (10/10) | 2026-05-16 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-16 17:00 UTC+8
+> **Task #27 done — PASS**: Implemented `scripts/spellcheck.py` v1.0 — LaTeX-aware spell checker for the Swarm toolkit.
+> Primary backend: pyspellchecker (pure Python, no C deps). Optional backend: hunspell CLI (auto-detected).
+> **LaTeX filtering**: Strips commands, math environments (equation/align/gather/etc.), verbatim/code environments (including swarmbeauty's `codeblock`), comments, URLs, citations, and references. Tracks original line numbers for error reporting.
+> **Features**:
+> - `--format terminal`: human-readable grouped-by-line report with suggestions
+> - `--format json`: machine-readable output for CI integration
+> - `--format tex`: self-contained LaTeX file with TikZ zigzag `\spellerror{}` commands (bridge for task #28 PDF rendering)
+> - `--lang`: language selection (pyspellchecker: en; hunspell: en_US, en_GB, de, fr, etc.)
+> - `--backend auto|pyspellchecker|hunspell`: backend selection
+> - `--dict FILE`: custom dictionary (one word per line)
+> - Project-local `.swarm-dictionary` auto-loaded
+> - 135 built-in dictionary words (LaTeX terms, font names, theme colors, tech terms)
+> - Hyphenated word splitting, trailing/leading punctuation stripping
+> - Non-zero exit code when misspellings found (CI-friendly)
+> **Test results**:
+> - demo-beautiful.tex: 594 words, 14 false positives (mostly tabularray syntax inside `\begin{tblr}` options), 1.9s
+> - demo-performance.tex: 350 words, 1 false positive (`minipage`), 0.5s
+> - demo-minimal.tex: 423 words, 8 false positives, 0.6s
+> - TeX output format compiles clean with pdfLaTeX (1 page, 28KB)
+> **Known limitations**: (1) tabularray `tblr` preamble options leak through (complex nested syntax); (2) pyspellchecker English-only built-in data (multilingual needs hunspell); (3) `candidates()` may return None for some words (handled with None guard).
+> Created QA review task #82.
 
 ### QA — 2026-05-16 16:30 UTC+8
 > **Task #80 done — PASS (10/10)**: Verified Programmer's shapepar test (task #57). All 5 verification points met. Installed shapepar via `tlmgr install shapepar` (noted per Rule 2.5). Compiled with pdfLaTeX (6 pages, 89KB, 2 passes) and LuaLaTeX (6 pages, 43KB): identical behavior, zero `!` errors, 2 cosmetic overfull hbox warnings (1.4pt, 6.3pt).
