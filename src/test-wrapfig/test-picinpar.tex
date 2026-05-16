@@ -58,19 +58,29 @@
 \end{window}
 
 % ============================================================
-% Test 3: Tall figure near page break
+% Test 3: Tall figure near page break — N/A (design limitation)
+%
+% picinpar is parshape-based: the wrapping zone is defined by a
+% \parshape list that applies to a single paragraph. The figure
+% CANNOT span a page break — it always ends up entirely on one page.
+% If the figure does not fit on the current page, it is pushed to the
+% next page with the text wrapping beside it there.
+%
+% This test places an 8cm tall figure after enough lipsum text to
+% approach the natural page boundary. The figure will either wrap on
+% the current page or get pushed to the next page — either way, it
+% does NOT cross the page break.
 % ============================================================
 \section{Test 3: Tall figure near page break}
 
-\lipsum[4]
+\lipsum[4-5]
 
-\vspace{6cm}
-
-\begin{window}[2,r,{\usebox{\tallimager}},{Tall figure near page break.}]
-  \lipsum[5-6]
+\begin{window}[0,r,{\usebox{\tallimager}},{Tall figure near page break.}]
+  This text wraps beside the figure on whichever page has room.
+  Since picinpar uses parshape, the wrapping zone is confined to
+  a single page and cannot span a page break.
+  \lipsum[6-7]
 \end{window}
-
-\newpage
 
 % ============================================================
 % Test 4: Window before itemize (workaround)
