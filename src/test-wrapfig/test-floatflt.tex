@@ -41,9 +41,11 @@ Text should flow around a figure on the left side, using \verb|[l]{width}|.
 \lipsum[3-4]
 
 %--- Test 3: Tall figure near page break ---
+% N/A (design limitation). floatflt uses \everypar hooks — the 8cm figure
+% is pushed entirely to page 3 by TeX's page-break algorithm. It does NOT
+% actually span a page break. Text wraps at reduced width on page 3.
+% Same parshape-based limitation as cutwin, picinpar, insbox.
 \section*{Test 3: Tall Figure Near Page Break}
-A tall figure (8cm) near a page break. Text should wrap correctly
-even when the figure spans across the page boundary.
 
 \begin{floatingfigure}[r]{0.35\textwidth}
   \centering
@@ -55,10 +57,11 @@ even when the figure spans across the page boundary.
 \lipsum[5-8]
 
 %--- Test 4: Figure with itemize (figure BEFORE list) ---
+% FAIL. The floatingfigure collides with Test 5's floatingfigure due to
+% floatflt's internal tracking. "Floating figures 4 and 5 colliding" warning
+% causes the figure to not render at all. Only 1 lipsum line wraps at reduced
+% width (234pt), and ALL 5 itemize items are at full width (342pt).
 \section*{Test 4: Figure Before Itemize}
-Based on lessons from wrapfig2 testing: placing floats inside list environments
-is unreliable across packages. This test places the floatingfigure BEFORE the
-itemize to verify that text and list items wrap around it.
 
 \begin{floatingfigure}[r]{0.35\textwidth}
   \centering
@@ -75,6 +78,8 @@ itemize to verify that text and list items wrap around it.
   \item Fourth item: \lipsum[5][1-3]
   \item Fifth item: \lipsum[6][1-3]
 \end{itemize}
+
+\newpage
 
 %--- Test 5: Figure inside itemize (EXPECTED FAIL) ---
 \section*{Test 5: Figure Inside Itemize (Expected Limitation)}
