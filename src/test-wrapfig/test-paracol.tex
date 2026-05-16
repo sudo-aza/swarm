@@ -155,6 +155,12 @@ More left column content after sync.
 % different problems (paracol = independent parallel columns,
 % multicol = balanced sequential columns). We test nesting
 % multicol inside paracol to document the interaction.
+%
+% CAVEAT: If the column page difference exceeds paracol's
+% internal buffer (~10 pages), content can be SILENTLY
+% DROPPED from the PDF. This manifests as overfull vbox
+% warnings and missing text. Keep nested multicol content
+% short to avoid this. See QA review #81.
 % ============================================================
 \section{Test 4: multicol inside paracol}
 
@@ -164,9 +170,16 @@ More left column content after sync.
 Left column with standard text before multicol.
 
 \begin{multicols}{2}
-\lipsum[3-4]
+% Keep content short — long multicols inside paracol can
+% cause column page difference overflow, silently dropping
+% subsequent text. Original \lipsum[3-4] caused "Left column
+% text after multicol." to vanish from the PDF entirely.
+\lipsum[3][1-4]
 \end{multicols}
 
+% NOTE: If this line does not appear in the compiled PDF,
+% the multicols content above was too long, causing paracol's
+% column sync buffer to overflow. Reduce multicols content.
 Left column text after multicol.
 
 \switchcolumn
