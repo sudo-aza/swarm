@@ -59,7 +59,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 26 | Research spellcheck in LaTeX — is it possible to add real-time / compilation-time spellchecking? Evaluate options: `aspell`/`hunspell` integration via `scripts/`, `\spelling{}` Lua-based approaches, `lacheck`/`chktex` for syntax, `langsci-gb4e` spelling package, editor-side (latexmk) integration. Assess feasibility of red squiggly underlines in compiled PDF output. | Researcher | **done** | 2026-05-14 |
 | 27 | Implement spellcheck — integrate chosen spellcheck solution into the helper toolkit (Python script or Lua module). Must work with both themes. | Programmer | **done** | 2026-05-14 |
 | 28 | Style spellcheck output — if feasible, render misspelled words with red squiggly underlines in the compiled PDF (e.g., via Lua soul package, `\<soul>` underline trick, or TikZ annotations). Should be toggleable per-theme. | Programmer | **done** | 2026-05-14 |
-| 29 | QA: Review spellcheck — verify accuracy, performance impact, multilingual support, custom dictionary support, false positive rate. | QA | pending | 2026-05-14 |
+| 29 | QA: Review spellcheck — verify accuracy, performance impact, multilingual support, custom dictionary support, false positive rate. | QA | **done** (superseded by #82, #83) | 2026-05-14 |
 | 39 | **UPGRADE**: metrics.lua v3.0 — (1) Fix `included_files` always empty (open_read_file callback blocked by ltluatex); now parses .log file for file inclusions (144 files detected). (2) Fix PDF size under-reported (was 765 bytes, now 45900 — accurate). (3) Add document structure counters: sections, subsections, figures, tables, equations (parsed from .aux post-compilation). (4) Add word count estimate (~73 words). (5) Added `finalize_metrics()` to compile.py v2.3 for .aux parsing after TeX finishes. | Programmer | **done** | 2026-05-14 |
 | 40 | **QA**: Review metrics.lua v3.0 — verify: (1) included_files populated (not empty); (2) PDF size accurate (matches actual file); (3) structure counters correct (sections/figures/tables/equations); (4) word count reasonable; (5) no regression in beautiful/performance demos; (6) compile.py v2.3 finalize_metrics works | QA | **done** (8/10) | 2026-05-14 |
 | 41 | **FIX**: compile.py v2.3 finalize_metrics() — (1) `finalize_metrics()` blindly processes any existing `metrics-output.json` even when the current compilation did NOT use metrics.lua. Reproduced: compile metrics-test.tex (creates JSON), then compile demo-beautiful.tex (no metrics.lua) — finalize_metrics() corrupts the JSON by updating pdf_size with demo-beautiful.pdf's size while job_name still says "metrics-test". Fix: check that `job_name` in the JSON matches `tex_file.stem` before modifying, OR have metrics.lua write a sentinel/flag that finalize_metrics() checks, OR pass a flag from main() indicating whether metrics.lua was detected. (2) Remove ~55 lines of dead code: `parse_aux_for_structure()` in metrics.lua (lines 229-283) is defined but never called — structure counting was moved to compile.py's finalize_metrics(). (3) Duplicate `"end"` key in `LOG_SKIP_EXTENSIONS` table (lines 165 and 167). | Programmer | **done** | 2026-05-14 |
@@ -118,6 +118,11 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-16 21:30 UTC+8
+> **Task #29 done — superseded**: Original generic spellcheck review task (created 2026-05-14). Scope fully covered by more specific QA tasks: #82 (spellcheck.py review, 8/10, 3 bugs found) and #83 (spellcheck.sty review, 8/10, 2 bugs found). Fix tasks #85 (done), #86, #87, #88 remain open. Additionally, task #89 (pure-Lua spellcheck research, HIGH priority from zoe) is pending for Programmer. No new QA work needed for #29.
+>
+> **Remaining pending QA tasks**: #59 (cross-verify wrapfig results — effectively done via individual tasks #61-#81), #60 (gatekeeper — all conditions met, should be activated).
 
 ### Programmer — 2026-05-16 21:00 UTC+8
 > **Task #85 done — PASS**: Fixed spellcheck.py non-deterministic word extraction (CRITICAL BUG, QA #82).
