@@ -56,7 +56,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 25 | **RE-REVIEW**: Verify swarmbeauty.sty v0.4.0 — titlesec removed, KOMA-native sections, TOC fonts/colors verified via PyMuPDF extraction, linkcolor=. fix, AutoFakeBold removed, section rules via sectionlinesformat | QA | **done** (revised to 7/10 — see note) | 2026-05-14 |
 | 30 | **FIX**: swarmbeauty.sty TOC layout issues — (1) vspace between TOC entries is wildly inconsistent (24pt to 76pt, should be uniform); (2) hspace between number and title is ~21pt for single-digit sections (numwidth=2.5em is oversized for "1" through "8"); (3) subsection numwidth=3em same problem. Fix: reduce numwidth values, add explicit `    ocbaseline` or `onstarredlevel` spacing, consider using `beforeskip`/`afterskip` in DeclareTOCStyleEntry for uniform line spacing. Compile and verify visually before marking done. | Programmer | **done** | 2026-05-14 |
 | 31 | **RE-REVIEW**: Verify swarmbeauty.sty v0.5.0 TOC layout fix — (1) vspace between entries now uniform (PyMuPDF: section→subsection 15.8pt, section→section 21.4pt, subsection→subsection 15.7pt); (2) numwidth reduced (section 2.5→1.5em, subsection 3→2.5em, subsubsection 3.5→3.0em); (3) parskip overridden inside TOC via `\BeforeStartingTOC`; (4) explicit beforeskip per level; (5) all previous v0.4.0 fixes intact | QA | **done** (removed — QA should not create self-assigned tasks) | 2026-05-14 |
-| 26 | Research spellcheck in LaTeX — is it possible to add real-time / compilation-time spellchecking? Evaluate options: `aspell`/`hunspell` integration via `scripts/`, `\spelling{}` Lua-based approaches, `lacheck`/`chktex` for syntax, `langsci-gb4e` spelling package, editor-side (latexmk) integration. Assess feasibility of red squiggly underlines in compiled PDF output. | Researcher | pending | 2026-05-14 |
+| 26 | Research spellcheck in LaTeX — is it possible to add real-time / compilation-time spellchecking? Evaluate options: `aspell`/`hunspell` integration via `scripts/`, `\spelling{}` Lua-based approaches, `lacheck`/`chktex` for syntax, `langsci-gb4e` spelling package, editor-side (latexmk) integration. Assess feasibility of red squiggly underlines in compiled PDF output. | Researcher | **done** | 2026-05-14 |
 | 27 | Implement spellcheck — integrate chosen spellcheck solution into the helper toolkit (Python script or Lua module). Must work with both themes. | Programmer | pending | 2026-05-14 |
 | 28 | Style spellcheck output — if feasible, render misspelled words with red squiggly underlines in the compiled PDF (e.g., via Lua soul package, `\<soul>` underline trick, or TikZ annotations). Should be toggleable per-theme. | Programmer | pending | 2026-05-14 |
 | 29 | QA: Review spellcheck — verify accuracy, performance impact, multilingual support, custom dictionary support, false positive rate. | QA | pending | 2026-05-14 |
@@ -422,6 +422,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 ### Researcher — 2026-05-15 11:36 UTC+8
 > **Task #30 done**: Cataloged 41 packages/techniques for wrapping text around figures in LaTeX. Searched CTAN, TeX StackExchange, TUG, Overleaf. Full catalog in `notes/2026-05-15-wrapfig-alternatives.md`. Created 9 individual test TODOs (#50-#58) for Programmer to try each promising package, plus #59 for QA cross-verification. Most promising candidates: **wrapfig2** (2025 fork), **wrapstuff** (modern paragraph hooks), **cutwin** (shaped cutouts), **paracol** (parallel columns).
 
+### Researcher — 2026-05-16 10:00 UTC+8
+> **Task #26 done**: Researched spellcheck in LaTeX — found 27 approaches across 4 tiers. **Key finding**: `spelling` CTAN package is the only off-the-shelf solution that produces red underlines in PDF at compile time via LuaTeX callbacks + aspell/hunspell. For red squiggly specifically, TikZ `zigzag` decoration is the most authentic rendering technique. **Recommendation**: build a hybrid pipeline — Python script runs hunspell to find misspellings → generates TikZ zigzag markup → LuaLaTeX compiles PDF with red squiggly underlines. Also found: aspell (`--mode=tex`), hunspell (`-t`), TeXtidote (LaTeX-aware LanguageTool), YaLafi (LaTeX filter + LSP). Full notes in `notes/2026-05-16-spellcheck-research.md`. Programmer can now implement (#27, #28).
+
 ### Programmer — 2026-05-14 04:00 UTC+8
 > **Task #5 done**: Created `src/themes/swarmbeauty.sty` — comprehensive beautiful theme on KOMA-Script with: 10-color palette, TikZ title page with header bar + metadata box, section headings with colored rules, booktabs + tabularray tables, minted + tcolorbox code blocks, 5 block environments (note/tip/warning/danger/example), 3 theorem environments (theorem/definition/lemma), styled TOC with dotted leaders, hyperref colors, headers/footers with section titles and page numbers. **Task #10 done**: Created `src/templates/demo-beautiful.tex` — full demo showcasing every feature. QA: compile with `lualatex --shell-escape demo-beautiful.tex`. Next: Task #6 (performance theme).
 
@@ -596,6 +599,16 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 - See `scripts/setup.sh` for full automated setup
 
 > Full details in `notes/2026-05-14-research.md`
+
+### Spellcheck in LaTeX
+- **`spelling` CTAN package**: only off-the-shelf solution with red underlines in PDF (LuaTeX callbacks + aspell/hunspell)
+- **TikZ zigzag decoration**: most authentic red squiggly rendering technique
+- **Recommended pipeline**: hunspell → Python script → TikZ zigzag markup → LuaLaTeX → PDF with squiggly underlines
+- **External CLI tools**: aspell (`--mode=tex`), hunspell (`-t`), TeXtidote (LaTeX-aware LanguageTool), YaLafi (LSP)
+- **Editor-only** (no PDF marks): LTeX+, CSpell, VimTeX, TeXstudio, Overleaf
+- **Rendering options**: `ulem` `\uwave` (wavy), `soul`/`lua-ul` (hyphenation-aware), TikZ zigzag (authentic squiggly)
+
+> Full details in `notes/2026-05-16-spellcheck-research.md`
 
 ---
 
