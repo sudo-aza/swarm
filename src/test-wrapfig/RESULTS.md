@@ -151,8 +151,23 @@ https://raw.githubusercontent.com/sudo-aza/swarm/main/download/wrapfig-tests/tes
 https://raw.githubusercontent.com/sudo-aza/swarm/main/download/wrapfig-tests/test-paracol-1.png
 ```
 
+## Spellcheck Styling Test (QA #83 — FAIL)
+
+| Feature | Status | Details |
+|---------|--------|---------|
+| `\spellerror{word}` red zigzag | PASS | 4 red TikZ drawings, pure (1.0,0.0,0.0), correct positioning |
+| Toggle (`\swarmspellchecktrue`/`false`) | **FAIL** | `\spellerror` ignores `\ifswarmspellcheck` — always draws underline |
+| `\spellexport{word}` registration | PASS | Defines csname without error |
+| `--format inline` helper generation | PASS | Valid LaTeX with `\spellexport{}` commands |
+| Inline helper compiles via `\input` | PASS | Clean compilation, but auto-replacement NOT implemented |
+| `\spellchecksummary{N}{total}` | PASS | Red footnotesize text, respects toggle |
+| `\swarmspellcheckapply` auto-replace | **FAIL** | Empty stub (only comments), header falsely claims it works |
+
+**Rating**: 8/10. Fix task #88 created for Programmer.
+
 ## Status
 
 - **QA verified**: wrapfig2 (#61 FAIL), wrapstuff (#62 FAIL), floatflt (#67 FAIL), picinpar (#69 FAIL — test quality, not package), cutwin (#68 FAIL — itemize overflow), insbox (#71 FAIL — comm log inaccuracies), figflow (#79 PASS — plain TeX only), shapepar (#80 FAIL — no images allowed, but test quality 10/10), paracol (#81 FAIL — content loss in multicol nesting).
-- **QA pending**: cutwin fix #74.
+- **Spellcheck**: spellcheck.py (#82 FAIL — 3 bugs), spellcheck.sty (#83 FAIL — toggle broken, auto-replace stub)
+- **QA pending**: spellcheck.py fixes (#85 critical, #86 moderate, #87 minor), spellcheck.sty fix (#88), cutwin fix #74.
 - **Gatekeeper task #60**: If ALL packages fail all 3 hard constraints, activate custom LuaLaTeX implementation.

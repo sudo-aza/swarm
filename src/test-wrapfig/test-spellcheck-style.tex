@@ -1,0 +1,84 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{spellcheck}
+
+\title{Spellcheck.sty QA Test}
+\author{QA Agent}
+\date{2026-05-16}
+
+\begin{document}
+
+\maketitle
+
+%% =========================================================
+%% TEST 1: \spellerror{word} renders red zigzag underline
+%% =========================================================
+\section*{Test 1: \textbackslash spellerror renders red zigzag underline}
+
+This word is misspeled and should have a red zigzag underline: \spellerror{misspeled}.
+
+Another example: \spellerror{teh} quick brown fox jumps over the \spellerror{lazzy} dog.
+
+Longer word: \spellerror{accomodation} should also work correctly.
+
+\newpage
+
+%% =========================================================
+%% TEST 2: \swarmspellchecktrue / \swarmspellcheckfalse toggle
+%% =========================================================
+\section*{Test 2: Toggle \textbackslash swarmspellchecktrue / false}
+
+\swarmspellcheckfalse
+This \spellerror{misspeled} word should NOT have a zigzag underline (toggle OFF).
+
+\swarmspellchecktrue
+This \spellerror{misspeled} word SHOULD have a red zigzag underline (toggle ON).
+
+\newpage
+
+%% =========================================================
+%% TEST 3: \spellexport{word} registers correctly
+%% =========================================================
+\section*{Test 3: \textbackslash spellexport\{word\} registers}
+
+\spellexport{misspeled}
+\spellexport{teh}
+\spellexport{lazzy}
+\spellexport{accomodation}
+
+The words above have been registered via \textbackslash spellexport.  Note:
+\textbackslash spellexport only defines a csname — it does NOT automatically
+replace in-text occurrences.  This test verifies no errors are raised.
+
+Registered: \spellexport{recieve}
+Registered: \spellexport{definately}
+
+\newpage
+
+%% =========================================================
+%% TEST 5: Inline helper from spellcheck.py compiles
+%% =========================================================
+\section*{Test 5: Inline helper (\textbackslash input)}
+
+A misspeled word appears here to trigger the spellchecker.
+
+Another teh example with definately wrong spelling.
+
+\newpage
+
+%% =========================================================
+%% TEST 6: \spellchecksummary{N}{total} renders correctly
+%% =========================================================
+\section*{Test 6: \textbackslash spellchecksummary}
+
+Summary in header area: \spellchecksummary{3}{150}
+
+After disabling: 
+\swarmspellcheckfalse
+\spellchecksummary{3}{150}
+
+Re-enabled:
+\swarmspellchecktrue
+\spellchecksummary{5}{200}
+
+\end{document}
