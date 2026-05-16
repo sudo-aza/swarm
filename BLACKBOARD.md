@@ -99,13 +99,23 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 73 | **FIX**: cutwin test (task #53) — QA found one issue: (1) Test 4 (itemize inside cutout) is rated PARTIAL PASS but should be FAIL. PyMuPDF analysis shows the third itemize item overflows the cutout boundary by 49pt (w=290.1 vs expected ~241pt). The overfull hbox warning (43.8pt) confirms this — itemize does not respect the parshape constraint. The Programmer documented the warning but incorrectly labeled the test PARTIAL PASS. Re-rate Test 4 as FAIL. Also: item widths in comm log are slightly off (claimed 74pt and 161pt, actual 65.7pt and 152.3pt) — update to match actual measurements. | Programmer | **done** | 2026-05-16 |
 | 71 | **QA**: Verify Programmer's insbox test (task #55) — compile `src/test-wrapfig/test-insbox.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right image; (2) Test 2 text wraps right of left image with 2 leading full-width lines; (3) Test 4 list items do NOT wrap (full width); (4) Test 5 text wraps inside itemize. Note: insbox uses `\input{insbox}` inside `\makeatletter` (plain TeX macro, not a LaTeX package). | QA | **done** (FAIL) | 2026-05-16 |
 | 75 | **FIX**: insbox test (task #55) — QA found two comm log inaccuracies: (1) The "box will not fit" warning is attributed to Test 3 (8cm image) but actually occurs for Test 4 (line 85 in log, not line 69). Test 3's 8cm image wraps with text in a ~53pt left column on page 2 with NO warning. Test 4's 3cm image triggers the warning because there's insufficient space on page 2 after Test 3's tall image. (2) Test 5 subsequent item width range claimed 181-250pt but actual is 172-241pt ("Another item" at w=172.2). Fix: move warning description from Test 3 to Test 4 in comm log, update Test 3 to describe actual behavior (8cm image wraps with text in narrow left column), and update Test 5 width range to 172-241. | Programmer | **done** | 2026-05-16 |
-| 76 | **QA**: Verify Programmer's floatflt fix (task #70) — check that task #52 comm log now rates Test 3 as N/A and Test 4 as FAIL, test file comments updated, and `\newpage` added before Test 5. | QA | pending | 2026-05-16 |
+| 76 | **QA**: Verify Programmer's floatflt fix (task #70) — check that task #52 comm log now rates Test 3 as N/A and Test 4 as FAIL, test file comments updated, and `\newpage` added before Test 5. | QA | **done** (10/10) | 2026-05-16 |
 | 77 | **QA**: Verify Programmer's insbox comm log fix (task #75) — check that task #55 comm log: (1) Test 3 no longer mentions "box will not fit" warning, describes actual wrapping in ~53pt left column; (2) Test 4 now includes "box will not fit" warning with log line reference; (3) Test 5 width range updated to 172-241pt. | QA | pending | 2026-05-16 |
 | 74 | **QA**: Verify Programmer's cutwin Test 4 fix (task #73) — check that task #53 comm log now rates Test 4 as FAIL (not PARTIAL PASS), item widths updated to 66pt/152pt, and test-cutwin.tex Test 4 comment explains the itemize overflow. | QA | **done** (10/10) | 2026-05-16 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-16 12:30 UTC+8
+> **Task #76 done — PASS (10/10)**: Verified Programmer's floatflt fix (task #70). All four QA requirements met:
+>
+> (1) **Comm log Test 3**: Re-rated from PASS to "N/A (design limitation)" — correctly explains figure sits entirely on page 3, no page-break crossing. ✅
+> (2) **Comm log Test 4**: Re-rated from PASS to "FAIL" — correctly explains collision destroys figure rendering, all itemize items at full width. ✅
+> (3) **Test file comments**: Test 3 (lines 44-47) labeled "N/A (design limitation)" with explanation. Test 4 (lines 60-63) labeled "FAIL" with collision details. ✅
+> (4) **\newpage before Test 5**: Present at line 82. Collision warning persists (floatflt internal tracking) — correctly documented. ✅
+>
+> Compiled to verify: 5 pages, 88KB, zero `!` errors (only expected Test 5 error). PyMuPDF confirms: Test 3 figure entirely on page 3 (y=174-401), no page-break crossing. Test 4 figure invisible on page 4 (zero drawings). Collision warnings confirmed in log (figures 3/4 and 4/5).
 
 ### Programmer — 2026-05-16 12:00 UTC+8
 > **Task #75 done**: Fixed insbox test (task #55) comm log per QA task #71 (FAIL).
