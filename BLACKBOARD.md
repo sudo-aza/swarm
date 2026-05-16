@@ -118,7 +118,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 91 | **RE-REVIEW**: Verify Programmer's spellcheck.py fix #85 (non-deterministic hash sort) — run `PYTHONHASHSEED=0 python3 scripts/spellcheck.py demo-beautiful.tex` and `PYTHONHASHSEED=42 python3 scripts/spellcheck.py demo-beautiful.tex` and confirm identical word counts. Also verify the sorted alternation in `_preprocess()` (line ~189) uses `key=len, reverse=True`. Check that demo-beautiful gives 533 words, demo-performance gives 350 words, demo-minimal gives 419 words regardless of hash seed. | QA | **done** (10/10) | 2026-05-17 |
 | 92 | **RE-REVIEW**: Verify Programmer's spellcheck.py fix #86 (multi-line display math filtering) — create a test .tex with `\[\n  e^{i\\pi} + 1 = 0\n\]` spanning 3 lines and run `python3 scripts/spellcheck.py test.tex --verbose`. Confirm that math content (e^{, pi, etc.) is NOT extracted as words. Also verify single-line `$...$` and `\(...\)` still work. Check word counts: demo-beautiful 533, demo-minimal 419 (both reduced by 4 from math filtering). | QA | **done** (10/10) | 2026-05-17 |
 | 93 | **RE-REVIEW**: Verify Programmer's spellcheck.py fix #87 (tabularray syntax filtering) — run `python3 scripts/spellcheck.py demo-beautiful.tex --verbose` and confirm only 2 misspellings remain (down from 14 before the fix). Verify `tblr` and `tblr*` are in `LITERAL_ENVS` (line ~86). Run `python3 scripts/spellcheck.py demo-performance.tex` and confirm 0 misspellings. | QA | **done** (10/10) | 2026-05-17 |
-| 94 | **RE-REVIEW**: Verify Programmer's spellcheck.sty fix #88 (toggle + honest docs) — compile a test .tex with `spellcheck.sty` that has `\swarmspellcheckfalse` followed by `\spellerror{test}` followed by `\swarmspellchecktrue` followed by `\spellerror{test}`. Verify with PyMuPDF: page should have exactly 1 red drawing (only the second word underlined). Also verify the .sty header (lines 17-19) no longer claims auto-replacement is implemented. | QA | pending | 2026-05-17 |
+| 94 | **RE-REVIEW**: Verify Programmer's spellcheck.sty fix #88 (toggle + honest docs) — compile a test .tex with `spellcheck.sty` that has `\swarmspellcheckfalse` followed by `\spellerror{test}` followed by `\swarmspellchecktrue` followed by `\spellerror{test}`. Verify with PyMuPDF: page should have exactly 1 red drawing (only the second word underlined). Also verify the .sty header (lines 17-19) no longer claims auto-replacement is implemented. | QA | **done** (10/10) | 2026-05-17 |
 | 95 | **QA**: Verify swarmwrap.sty v1.0 (task #90) — compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Test 1 (right wrap) — text narrowed to ~262pt (full width ~359pt), figure renders in right gap; (2) Test 2 (left wrap) — text indented from left (x0 ≈ 215pt), figure renders in left gap; (3) Test 3 (tall figure) — wraps only on starting page (N/A for page break); (4) Test 4-5 (before itemize) — wrapping works for paragraph, list items at full width; (5) Test 6 (multicol) — wrapping applies within column (known limitation); (6) Zero `!` errors in log; (7) PDF has 6 pages. Run `TEXINPUTS=src/themes: lualatex test-customwrap.tex` from `src/test-wrapfig/`. | QA | pending | 2026-05-17 |
 
 ---
@@ -173,6 +173,16 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > **Full analysis**: `notes/task-89-lua-spellcheck-research.md`
 >
 > **Also created QA re-review tasks**: #91 (verify #85 hash sort), #92 (verify #86 math filtering), #93 (verify #87 tabularray), #94 (verify #88 toggle). Per QA Rule 3, QA cannot self-assign — these are now on the board for the QA agent.
+
+### QA — 2026-05-17 07:30 UTC+8
+> **Task #94 done — PASS (10/10)**: Verified Programmer's spellcheck.sty fix #88 (toggle + honest docs, QA #83).
+> **Verification**:
+> 1. **Toggle fix**: Created exact test per task spec (`\swarmspellcheckfalse` + `\spellerror{test}` + `\swarmspellchecktrue` + `\spellerror{test}`). PyMuPDF confirms exactly **1 red drawing** on page (only the toggle-ON word). Toggle-OFF word renders as plain text with no underline.
+> 2. **Header docs honest**: Lines 17-19 now describe `\spellexport` as "register misspellings at load time" and instruct users to "call `\swarmspellcheckapply`" — does NOT claim auto-replacement. Lines 85-93 explicitly state "does NOT automatically search-and-replace words" and explain why (would require Lua callbacks).
+> 3. **Extended test**: Created 3-test suite — (a) toggle OFF/ON/default, (b) exact spec test, (c) spellexport registration + spellerror rendering. All pass.
+> 4. **Compilation**: pdfLaTeX compiles clean (1 page, zero `!` errors, 36KB PDF). Also tested LuaLaTeX (1 page, 11KB). Both produce correct visual output.
+> 5. **`\spellexport` and `\swarmspellcheckapply`**: `\spellexport{word}` registers words without errors. `\swarmspellcheckapply` body is still a stub (only checks toggle) but docs are now honest about this limitation.
+> Images sent to zoe via send_message.
 
 ### QA — 2026-05-17 05:30 UTC+8
 > **Task #93 done — PASS (10/10)**: Verified Programmer's spellcheck.py fix #87 (tabularray syntax filtering, QA #82 minor bug).
