@@ -71,9 +71,15 @@
 \newpage
 
 % ============================================================
-% Test 4: Figure before itemize (text wrapping into list)
+% Test 4: Itemize inside cutout
+% FAIL — itemize does not respect parshape constraint.
+% Third item overflows cutout boundary by 49pt (w=290 vs ~241pt).
+% Overfull hbox (43.8pt) confirms the violation. Items 1-2 wrap
+% correctly at ~246pt (incl bullet indent), but item 3+ extend into
+% the figure zone. This is a fundamental limitation: itemize uses
+% its own list machinery that does not cooperate with parshape.
 % ============================================================
-\section{Test 4: Text wrapping into itemize}
+\section{Test 4: Itemize inside cutout}
 
 \opencutright
 \renewcommand{\windowpagestuff}{%
