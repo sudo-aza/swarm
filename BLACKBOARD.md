@@ -79,7 +79,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 53 | **TEST**: cutwin (v0.2, rectangular + arbitrary-shaped cutouts) — Programmer: write a test .tex with a cutwin figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
 | 54 | **TEST**: picinpar (v1.3a, paragraph windows) — Programmer: write a test .tex with a picinpar figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
 | 55 | **TEST**: insbox (v2.2, generic parshape wrapper) — Programmer: write a test .tex with an insbox figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-16 |
-| 56 | **TEST**: figflow (plain TeX \parshape approach) — Programmer: write a test .tex with a figflow figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
+| 56 | **TEST**: figflow (plain TeX \parshape approach) — Programmer: write a test .tex with a figflow figure near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | **done** (PARTIAL) | 2026-05-15 |
 | 57 | **TEST**: shapepar (\cutout for rectangular cutouts) — Programmer: write a test .tex with a shapepar cutout near a page break, inside multicol, and inside itemize. Compile and report results. | Programmer | pending | 2026-05-15 |
 | 58 | **TEST**: paracol (v1.37, parallel columns) — Programmer: write a test .tex using paracol to simulate text wrapping (figure in one column, text in other). Test near page break. Compile and report results. | Programmer | pending | 2026-05-15 |
 | 59 | **QA**: Once Programmer has tested packages #50-#58, QA to cross-verify the most promising 2-3 results — compile the test .tex files yourself, visually inspect PDFs for breakage, and rate each package. | QA | pending | 2026-05-15 |
@@ -102,11 +102,26 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 76 | **QA**: Verify Programmer's floatflt fix (task #70) — check that task #52 comm log now rates Test 3 as N/A and Test 4 as FAIL, test file comments updated, and `\newpage` added before Test 5. | QA | **done** (10/10) | 2026-05-16 |
 | 77 | **QA**: Verify Programmer's insbox comm log fix (task #75) — check that task #55 comm log: (1) Test 3 no longer mentions "box will not fit" warning, describes actual wrapping in ~53pt left column; (2) Test 4 now includes "box will not fit" warning with log line reference; (3) Test 5 width range updated to 172-241pt. | QA | **done** (10/10) | 2026-05-16 |
 | 78 | **QA**: Verify Programmer's picinpar Test 3 fix (task #72) — compile `src/test-wrapfig/test-picinpar.tex`, check that: (1) Test 3 no longer has `\vspace{6cm}` — dead space eliminated; (2) Test 3 has clear comments explaining parshape page-break limitation; (3) No page has >15% avoidable dead space (use PyMuPDF to verify); (4) Figure still wraps correctly on whichever page it lands on. | QA | pending | 2026-05-16 |
+| 79 | **QA**: Verify Programmer's figflow test (task #56) — compile `src/test-wrapfig/test-figflow.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right image; (2) Test 2 text wraps right of left image; (3) Test 3 figure was moved to next page (not overflowed); (4) Test 4 "missing \item" error occurs; (5) Tests 5-6 show "Figure collision" with no images. Note: figflow requires `\line` workaround for LaTeX. | QA | pending | 2026-05-16 |
 | 74 | **QA**: Verify Programmer's cutwin Test 4 fix (task #73) — check that task #53 comm log now rates Test 4 as FAIL (not PARTIAL PASS), item widths updated to 66pt/152pt, and test-cutwin.tex Test 4 comment explains the itemize overflow. | QA | **done** (10/10) | 2026-05-16 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-16 14:00 UTC+8
+> **Task #56 done — PARTIAL**: Tested figflow (plain TeX, Ian Hutchinson 1995).
+> Installed via `tlmgr install figflow`. CRITICAL: source says "Does not work for Latex" — `\line` conflicts with LaTeX's picture mode. Workaround: `\let\LaTeXline\line \def\line{\hbox to\hsize}`. Must use `\input{figflow}` (plain TeX macro, not LaTeX package). API: `\figflow{width}{height}{content}` — negative width = right, positive = left. Height includes caption. Auto-ends when `\prevgraf > \figlines`. Do NOT call `\endflow` manually — double `\endgroup` corrupts `\par`. Uses `\hangindent`/`\hangafter` (not parshape). Checks `\pageremains` — moves figure to next page if insufficient room.
+> 6 tests:
+> - Test 1: Basic right insertion — PASS. Image at (386,320)-(471,384). Text wraps at w=242-259pt (full=359pt). Caption at (384,416). "Moving figure..." — figflow deferred placement.
+> - Test 2: Basic left insertion — PASS. Image at (120,225)-(205,289). Text wraps at x=217, w=181-259pt.
+> - Test 3: Tall figure near page break — PASS (page-break handled). figflow detected insufficient room ("Moving figure...") and moved 8cm figure to page 3. Image at (386,167)-(471,365). Text wraps at w=243-259pt. Unlike parshape packages, figflow gracefully defers instead of overflowing.
+> - Test 4: Figure before itemize — PARTIAL PASS. Image at (386,477)-(471,540). Text wraps at w=243-259pt. Items at full width. But "missing \item" error at transition — figflow's `\par` still active. Auto-end tracked only 7/9 lines (incomplete), causing `\begingroup` leak.
+> - Test 5: Figure inside itemize — FAIL. "Figure collision" — Test 4's auto-end didn't complete (`\flevel` still >0). Figure skipped entirely. No image rendered.
+> - Test 6: multicol — FAIL. "Figure collision" from leaked `\flevel`. Figure skipped. "(\end occurred inside a group at level 1)" — `\begingroup` from Test 4 leaked to document end.
+> Compiled with pdfLaTeX (4 pages, 88KB) and LuaLaTeX (4 pages, 32KB): identical behavior. One non-fatal `!` error ("missing \item" in Test 4), "Figure collision" warnings for Tests 5-6, group leak warning.
+> Key limitations: (1) requires `\line` workaround for LaTeX; (2) auto-end mechanism unreliable — if insufficient paragraphs before next `\figflow`, `\flevel` leaks causing "Figure collision"; (3) `\begingroup` can leak if auto-end doesn't complete; (4) `\par` redefinition conflicts with itemize; (5) no manual `\endflow` possible (corrupts `\par`).
+> Created QA review task #79.
 
 ### QA — 2026-05-16 13:30 UTC+8
 > **Task #77 done — PASS (10/10)**: Verified Programmer's insbox comm log fix (task #75). All three QA requirements met:

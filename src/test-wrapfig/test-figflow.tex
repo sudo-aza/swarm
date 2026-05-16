@@ -1,27 +1,148 @@
-% Test: figflow (plain TeX parshape approach)
+% test-figflow.tex — figflow (plain TeX) test
+% figflow API: \figflow{width}{height}{content}
+%   width  = figure width (negative = right, positive = left)
+%   height = total figure height including caption
+%   content = figure material + optional \vfill caption text
+%
+% figflow auto-ends when enough text has wrapped (\prevgraf > \figlines).
+% Do NOT call \endflow manually — it corrupts \par (double \endgroup).
+% The source says "Does not work for Latex" because \line conflicts with
+% LaTeX's picture mode. Workaround: redefine \line to \hbox to\hsize.
+%
+% figflow uses \hangindent/\hangafter (not parshape) and redefines \par.
+% It checks \pageremains — if the figure won't fit, it moves to the next page.
+%
+% CRITICAL: Must use \input{figflow} (plain TeX macro, not a LaTeX package).
 \documentclass[11pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
-\usepackage{figflow}
 \usepackage{lipsum}
+\usepackage{multicol}
 
-\title{figflow Test}
+% figflow is a plain TeX macro — load and fix \line conflict
+\makeatletter
+\input{figflow}
+\let\LaTeXline\line
+\def\line{\hbox to\hsize}
+\makeatother
+
+\title{figflow (plain TeX) Test}
 \author{Programmer Agent}
-\date{2026-05-15}
+\date{2026-05-16}
 
 \begin{document}
 \maketitle
 
-\section{Test 1: Basic figflow}
+% ============================================================
+% Test 1: Basic right-side figure (negative width)
+% RESULT: PASS. Image at (386,320)-(471,384) right. Text wraps at
+% w=242-259pt (full width 359pt). Caption at (384,416). "Moving figure..."
+% message printed — figflow deferred placement until enough room.
+% ============================================================
+\section{Test 1: Basic right-side figure}
 
-\figflow{test-image.png}
-\lipsum[1-3]
+\figflow{-3.5cm}{4cm}{%
+  \vbox to 3.5cm{\vfil\centering\includegraphics[width=3cm]{test-image.png}\vfil}%
+  \vfill\noindent Figure 1: Right side.%
+}
+\lipsum[1-2]
 
-\section{Test 2: figflow near page break}
+% ============================================================
+% Test 2: Basic left-side figure (positive width)
+% RESULT: PASS. Image at (120,225)-(205,289) left. Caption at (118,321).
+% Text wraps at x=217, w=181-259pt. Text resumes full width at y=335.
+% ============================================================
+\section{Test 2: Basic left-side figure}
+
+\figflow{3.5cm}{4cm}{%
+  \vbox to 3.5cm{\vfil\centering\includegraphics[width=3cm]{test-image.png}\vfil}%
+  \vfill\noindent Figure 2: Left side.%
+}
+\lipsum[3-4]
+
+% ============================================================
+% Test 3: Tall figure near page break
+% RESULT: PASS (page-break handled). figflow detected insufficient room on
+% page 2 ("Moving figure...") and moved 8cm figure to page 3.
+% Image at (386,167)-(471,365) on page 3. Text wraps at w=243-259pt.
+% Unlike parshape packages, figflow gracefully defers — no overflow.
+% ============================================================
+\section{Test 3: Tall figure near page break}
 
 \lipsum[4-5]
 
-\figflow{test-image.png}
+\figflow{-3.5cm}{8cm}{%
+  \vbox to 7cm{\vfil\centering\includegraphics[width=3cm,height=7cm,keepaspectratio=false]{test-image.png}\vfil}%
+  \vfill\noindent Figure 3: Tall figure.%
+}
+This text should flow beside the figure. Since figflow checks available
+space via \texttt{\textbackslash pageremains}, the figure should be placed
+on whichever page has enough room.
 \lipsum[6-7]
+
+% ============================================================
+% Test 4: Figure before itemize
+% RESULT: PARTIAL PASS. Image at (386,477)-(471,540) right. Text wraps at
+% w=243-259pt. Itemize items at full width (w=128-288pt). However:
+% "missing \item" error at first \item (figflow's \par still active
+% during transition). Auto-end tracked only 7 of 9 lines — incomplete.
+% ============================================================
+\section{Test 4: Figure before itemize}
+
+\figflow{-3.5cm}{4cm}{%
+  \vbox to 3.5cm{\vfil\centering\includegraphics[width=3cm]{test-image.png}\vfil}%
+  \vfill\noindent Figure 4: Before itemize.%
+}
+Here is introductory text that should wrap around the figure on the right.
+The itemize list should appear below the figure.
+\lipsum[8][1-3]
+
+\begin{itemize}
+  \item First item after wrapping ends --- should be at full width.
+  \item Second item at full width.
+  \item Third item at full width.
+\end{itemize}
+
+% ============================================================
+% Test 5: Figure INSIDE itemize — EXPECTED FAIL
+% RESULT: FAIL. "Figure collision" — Test 4's auto-end didn't complete
+% (only 7/9 lines), so \flevel was still >0. Figure was skipped entirely.
+% Text renders but no figure visible. Additionally, figflow's \par
+% redefinition fundamentally conflicts with \item.
+% ============================================================
+\section{Test 5: Figure inside itemize (EXPECTED FAIL)}
+
+\begin{itemize}
+  \item First item before figure.
+
+  \figflow{-3.5cm}{4cm}{%
+    \vbox to 3.5cm{\vfil\centering\includegraphics[width=3cm]{test-image.png}\vfil}%
+    \vfill\noindent Figure 5: Inside itemize.%
+  }
+  This text is inside the itemize, wrapping around the figure.
+  \lipsum[9][1-3]
+
+  \item Second item after figure.
+  \item Third item at full width.
+\end{itemize}
+
+% ============================================================
+% Test 6: figflow inside multicol
+% RESULT: FAIL. "Figure collision" — \flevel still >0 from Test 4/5.
+% Figure skipped. Text renders in two columns but no wrapping occurs.
+% Also: "(\end occurred inside a group at level 1)" — figflow's
+% \begingroup from Test 4 (line 85) leaked into document end.
+% ============================================================
+\section{Test 6: figflow inside multicol}
+
+\begin{multicols}{2}
+\figflow{-2.5cm}{4cm}{%
+  \vbox to 3.5cm{\vfil\centering\includegraphics[width=2cm]{test-image.png}\vfil}%
+  \vfill\noindent Fig 6.%
+}
+Text inside a two-column layout. figflow should adapt to the narrower
+column width via \texttt{\textbackslash hsize}.
+\lipsum[10][1-4]
+\end{multicols}
 
 \end{document}
