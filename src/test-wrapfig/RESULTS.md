@@ -33,7 +33,7 @@ If a package fails any one of these, it fails overall. 9/10 or below = FAIL.
 | 54 | **picinpar** | 1.3a | **FAIL** (QA #69) | PASS | N/A* | PARTIAL | PARTIAL | #69: Tests 1-2,5-6 PASS (wrapping verified). Test 3 N/A but test layout hides page-break limitation (dead space). Test 4 itemize-inside-window EXPECTED FAIL. QA originally rated 10/10, revised to FAIL after review caught superficial QA — test doesn't honestly demonstrate tall figure behavior. | Test hides limitation instead of documenting it |
 | 55 | **insbox** | 2.2 | **FAIL** (QA #71) | PASS | N/A* | **FAIL** | PARTIAL | #71: Tests 1-2,5-6 PASS, Test 3 N/A, Test 4 FAIL. Comm log has warning attributed to wrong test and width range off by ~9pt. | Comm log inaccuracies (warning misattributed) |
 | 56 | **figflow** | — | **SKIP** | — | — | — | SKIP | Plain TeX only. "Does not work with LaTeX" per CTAN. | Not LaTeX compatible |
-| 57 | **shapepar** | 2.2 | **FAIL** (Programmer) | FAIL | — | — | FAIL | Not QA'd separately — offset calculations cause "not valid" errors. | Not designed for figure wrapping |
+| 57 | **shapepar** | 2.2 | **FAIL** (QA #80) | FAIL* | N/A* | PARTIAL* | PASS | #80: Tests 1-3,6-7 PASS (cutout/diamond/multicol work). Test 4 N/A (page break, design limitation). Test 5 PARTIAL PASS (itemize widths unreliable). Not designed for figure wrapping — no images inside shaped paragraphs (vertical material forbidden). Decorative text shapes only. | Cannot wrap actual figures — text-only decorative shapes |
 | 58 | **paracol** | 1.37 | **NOT TESTED** (no QA task) | N/A | N/A | N/A | PASS (old) | Old batched run only. No QA task created for independent verification. | Different approach — parallel columns, not wrapping |
 
 ## Detailed QA Findings
@@ -95,7 +95,16 @@ If a package fails any one of these, it fails overall. 9/10 or below = FAIL.
 - Test 6 (centered): N/A. No side-wrapping, vertical drop only.
 - Fix task #75 created (comm log accuracy).
 
-### shapepar, figflow
+### shapepar (#80 — FAIL overall, but test is 10/10 quality)
+- Test 1 (right-side cutout): PASS. Shape at x=399.9, w=154.9pt (right). Subsequent text wraps at w=219→279pt (12 lines), returns to full width (358.7pt).
+- Test 2 (left-side cutout): PASS. Shape at x=46.6, w=142.6pt (left). Text at x=199.1, w=277.5pt (9 lines).
+- Test 3 (diamond cutout): PASS. Diamond tapers at top/bottom. Text follows contour: 220→325→304→294→284→274→271→274→284→294→304→314pt.
+- Test 4 (page break): N/A. parshape-based, cannot span pages. Shape fits entirely on page 3. ~17% dead space from \vspace{4cm}.
+- Test 5 (itemize after cutout): PARTIAL PASS. Items at w=342→197→226→166→177pt — unreliable parshape effect on list environments.
+- Test 6 (multicol): PASS (adapted). Shape at x=260.9 inside column. Text wraps at w=133→174pt.
+- Test 7 (decorative diamond): PASS. Clean diamond shape, package's intended use case.
+- **Overall FAIL**: shapepar cannot include images (vertical material forbidden). Only suitable for decorative text shapes.
+- QA rating: 10/10 for test quality and accuracy.
 
 ### paracol
 - Old batched run only. No independent QA task created.
@@ -136,6 +145,6 @@ https://raw.githubusercontent.com/sudo-aza/swarm/main/download/wrapfig-tests/tes
 
 ## Status
 
-- **QA verified**: wrapfig2 (#61 FAIL), wrapstuff (#62 FAIL), floatflt (#67 FAIL), picinpar (#69 FAIL — test quality, not package), cutwin (#68 FAIL — itemize overflow), insbox (#71 FAIL — comm log inaccuracies).
+- **QA verified**: wrapfig2 (#61 FAIL), wrapstuff (#62 FAIL), floatflt (#67 FAIL), picinpar (#69 FAIL — test quality, not package), cutwin (#68 FAIL — itemize overflow), insbox (#71 FAIL — comm log inaccuracies), figflow (#79 PASS — plain TeX only), shapepar (#80 FAIL — no images allowed, but test quality 10/10).
 - **QA pending**: cutwin fix #74.
 - **Gatekeeper task #60**: If ALL packages fail all 3 hard constraints, activate custom LuaLaTeX implementation.

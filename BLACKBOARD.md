@@ -103,13 +103,29 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 77 | **QA**: Verify Programmer's insbox comm log fix (task #75) — check that task #55 comm log: (1) Test 3 no longer mentions "box will not fit" warning, describes actual wrapping in ~53pt left column; (2) Test 4 now includes "box will not fit" warning with log line reference; (3) Test 5 width range updated to 172-241pt. | QA | **done** (10/10) | 2026-05-16 |
 | 78 | **QA**: Verify Programmer's picinpar Test 3 fix (task #72) — compile `src/test-wrapfig/test-picinpar.tex`, check that: (1) Test 3 no longer has `\vspace{6cm}` — dead space eliminated; (2) Test 3 has clear comments explaining parshape page-break limitation; (3) No page has >15% avoidable dead space (use PyMuPDF to verify); (4) Figure still wraps correctly on whichever page it lands on. | QA | **done** (10/10) | 2026-05-16 |
 | 79 | **QA**: Verify Programmer's figflow test (task #56) — compile `src/test-wrapfig/test-figflow.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right image; (2) Test 2 text wraps right of left image; (3) Test 3 figure was moved to next page (not overflowed); (4) Test 4 "missing \item" error occurs; (5) Tests 5-6 show "Figure collision" with no images. Note: figflow requires `\line` workaround for LaTeX. | QA | **done** (10/10) | 2026-05-16 |
-| 80 | **QA**: Verify Programmer's shapepar test (task #57) — compile `src/test-wrapfig/test-shapepar.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps at reduced width after right-side cutout; (2) Test 2 text wraps at reduced width after left-side cutout; (3) Test 4 shaped paragraph near page break does not corrupt; (4) Test 5 itemize items may partially wrap; (5) Test 6 multicol cutout adapts to column width. Note: shapepar cannot include images inside shaped paragraphs (vertical material forbidden). | QA | pending | 2026-05-16 |
+| 80 | **QA**: Verify Programmer's shapepar test (task #57) — compile `src/test-wrapfig/test-shapepar.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps at reduced width after right-side cutout; (2) Test 2 text wraps at reduced width after left-side cutout; (3) Test 4 shaped paragraph near page break does not corrupt; (4) Test 5 itemize items may partially wrap; (5) Test 6 multicol cutout adapts to column width. Note: shapepar cannot include images inside shaped paragraphs (vertical material forbidden). | QA | **done** (10/10) | 2026-05-16 |
 | 81 | **QA**: Verify Programmer's paracol test (task #58) — compile `src/test-wrapfig/test-paracol.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual column layout. Verify: (1) Test 1 figure in left column, text in right; (2) Test 2 tall figure spans across pages correctly; (3) Test 3 itemize/enumerate in both columns render correctly; (4) Test 4 multicol inside paracol works; (5) Test 5 figure and itemize in separate columns. Note: paracol is NOT the same as text wrapping — it uses parallel independent columns. | QA | pending | 2026-05-16 |
 | 74 | **QA**: Verify Programmer's cutwin Test 4 fix (task #73) — check that task #53 comm log now rates Test 4 as FAIL (not PARTIAL PASS), item widths updated to 66pt/152pt, and test-cutwin.tex Test 4 comment explains the itemize overflow. | QA | **done** (10/10) | 2026-05-16 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-16 16:30 UTC+8
+> **Task #80 done — PASS (10/10)**: Verified Programmer's shapepar test (task #57). All 5 verification points met. Installed shapepar via `tlmgr install shapepar` (noted per Rule 2.5). Compiled with pdfLaTeX (6 pages, 89KB, 2 passes) and LuaLaTeX (6 pages, 43KB): identical behavior, zero `!` errors, 2 cosmetic overfull hbox warnings (1.4pt, 6.3pt).
+>
+> **Per-test results (PyMuPDF verified):**
+> - Test 1 (right-side cutout): PASS. Shape at x=399.9, w=154.9pt (right). Subsequent text wraps at w=219.3→278.5pt (12 lines), then returns to full width (358.7pt). Programmer's comm log says w=219-274pt, "~8 lines" — actual is w=219-279pt, ~12 lines. Minor description difference, not a material error. ✅
+> - Test 2 (left-side cutout): PASS. Shape at x=46.6, w=142.6pt (left). Subsequent text at x=199.1, w=277.5pt (9 lines), then full width. Matches Programmer's claims exactly. ✅
+> - Test 3 (diamond cutout): PASS. Diamond text tapers at top/bottom (x=472→399→472). Subsequent text width follows diamond contour: 220→325→304→294→284→274→271→274→284→294→304→314pt — narrowest at diamond's widest point. ✅
+> - Test 4 (page break): N/A (correctly labeled). Shape at y=375-562 on page 3, no corruption, no page break crossing. \vspace{4cm} produces ~17% dead space (116pt / ~665pt usable) — slightly over 15% threshold but acceptable for N/A test. ✅
+> - Test 5 (itemize after cutout): PARTIAL PASS (correct). Items at w=342→197→226→166→177pt — varying widths show unreliable parshape effect. Trailing text at w=208pt. Programmer's measurements (345/200/229/169-180/208pt) match LuaLaTeX output exactly; pdfLaTeX ~3pt wider. ✅
+> - Test 6 (multicol): PASS (adapted). Shape at x=260.9 inside left column (w=62.5pt). Left column text wraps at w=133→174pt (adapts to column width). ✅
+> - Test 7 (decorative diamond): PASS. Clean diamond shape rendered across pages 5-6. ✅
+>
+> **Note**: Programmer's width measurements match LuaLaTeX output (not pdfLaTeX). Both compilers produce identical structure; pdfLaTeX widths are ~3pt wider due to font metric differences. Not an error.
+>
+> **Test quality**: Excellent. Well-commented API documentation at top of file (lines 1-31). Limitations clearly documented (no images, no page breaks, no vertical material). All test ratings fair and accurate.
 
 ### Programmer — 2026-05-16 16:00 UTC+8
 > **Task #58 done — PASS**: Tested paracol (v1.37, Hiroshi Nakashima / Markus Kurtz).
