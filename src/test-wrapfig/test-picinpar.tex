@@ -33,7 +33,7 @@
   \savebox{\testimager}{\includegraphics[width=3.5cm]{test-image.png}}%
   \savebox{\testimagel}{\includegraphics[width=3.5cm]{test-image.png}}%
   \savebox{\testimagec}{\includegraphics[width=3cm]{test-image.png}}%
-  \savebox{\tallimager}{\includegraphics[width=3.5cm,height=4cm,keepaspectratio=false]{test-image.png}}%
+  \savebox{\tallimager}{\includegraphics[width=3.5cm,height=10cm,keepaspectratio=false]{test-image.png}}%
 }
 
 \begin{document}
@@ -54,21 +54,22 @@
 \section{Test 2: Left-side window}
 
 \begin{window}[2,l,{\usebox{\testimagel}},{Image on the left.}]
-  \lipsum[2-3]
+  \lipsum[2-5]
 \end{window}
 
 % ============================================================
-% Test 3: Tall figure (no page-break crossing test)
+% Test 3: Tall figure
 % ============================================================
 % picinpar is parshape-based and CANNOT span page breaks.
-% Slightly taller figure (4cm vs 3.5cm for others) to verify
-% picinpar handles different heights. No vspace/newpage.
-\section{Test 3: Tall figure (single page only)}
+% A 10cm figure is used here to demonstrate that tall figures
+% still work — picinpar places the wrapping zone wherever the
+% paragraph starts, regardless of figure height. The figure
+% just gets pushed to the next page if it doesn't fit in the
+% remaining space, and wrapping continues from that page.
+\section{Test 3: Tall figure}
 
-\lipsum[4]
-
-\begin{window}[2,r,{\usebox{\tallimager}},{Tall figure on a single page.}]
-  \lipsum[5-6]
+\begin{window}[2,r,{\usebox{\tallimager}},{A 10cm tall figure.}]
+  \lipsum[5-8]
 \end{window}
 
 % ============================================================
@@ -126,13 +127,14 @@ This test places the window environment inside an itemize item.
   \begin{window}[1,r,{\usebox{\testimager}},{}]
     This text is inside the window within an item. It should wrap
     around the figure on the right side.
-    \lipsum[9][1-3]
+    \lipsum[9][1-6]
   \end{window}
 
   \item Second item after the window.
   \item Third item, should be at full width.
   \item Fourth item to demonstrate continued list behavior.
   \item Fifth item — list resumes normally after the window.
+  \item Sixth item for good measure.
 \end{itemize}
 
 \newpage
