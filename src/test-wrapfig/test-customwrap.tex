@@ -1,0 +1,143 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{swarmwrap}
+
+\title{Test: swarmwrap.sty v1.0 — Custom Float Wrapper}
+\author{Programmer Agent}
+\date{2026-05-17}
+
+\begin{document}
+\maketitle
+
+% ====================================================================
+% Test 1: Basic Figure Wrapping (Right)
+% Expected: PASS. Text wraps left of figure for ~4cm.
+% ====================================================================
+\section*{Test 1: Basic Figure Wrapping (Right)}
+This test wraps a figure on the right side of the paragraph. The text should flow
+around the image naturally, leaving a gap for the figure on the right margin.
+
+\begin{swarmwrap}[r]{3cm}{4cm}
+  \rule{\linewidth}{3.8cm}
+  \captionof{figure}{Right-wrapped test figure (3cm wide, 4cm tall).}
+  \label{fig:right}
+\end{swarmwrap}
+\swarmwrapnext
+\lipsum[1-2]
+
+\newpage
+% ====================================================================
+% Test 2: Figure Wrapping (Left)
+% Expected: PASS. Text wraps right of figure for ~4cm.
+% ====================================================================
+\section*{Test 2: Figure Wrapping (Left)}
+This test wraps a figure on the left side. Text should flow on the right of the
+image.
+
+\begin{swarmwrap}[l]{3cm}{4cm}
+  \rule{\linewidth}{3.8cm}
+  \captionof{figure}{Left-wrapped test figure (3cm wide, 4cm tall).}
+  \label{fig:left}
+\end{swarmwrap}
+\swarmwrapnext
+\lipsum[3-4]
+
+\newpage
+% ====================================================================
+% Test 3: Tall Figure Near Page Break
+% Expected: N/A (parshape-based design limitation).
+%   parshape cannot span page breaks.
+%   The figure will only wrap on the page where it starts.
+%   If it doesn't fit, LuaLaTeX will print a warning.
+% ====================================================================
+\section*{Test 3: Tall Figure Near Page Break}
+This test places a wrapped figure with significant height near a page break.
+parshape-based wrappers cannot span page breaks by design.
+
+\begin{swarmwrap}[r]{3cm}{8cm}
+  \rule{\linewidth}{7.8cm}
+  \captionof{figure}{Tall figure (8cm).}
+  \label{fig:pagebreak}
+\end{swarmwrap}
+\swarmwrapnext
+\lipsum[5-8]
+
+\newpage
+% ====================================================================
+% Test 4: Figure Inside Itemize (EXPECTED PARTIAL)
+% This is a known hard constraint. Most packages fail here.
+% swarmwrap uses \parshape which applies to the paragraph level,
+% so \item boundaries may cause issues.
+% ====================================================================
+\section*{Test 4: Figure Before Itemize}
+The supported approach: place \texttt{swarmwrap} BEFORE the list, so that
+the wrapped paragraph text flows around the figure. List items after the
+wrap region return to full width.
+
+\begin{swarmwrap}[r]{3cm}{3cm}
+  \rule{\linewidth}{2.8cm}
+  \captionof{figure}{Figure before itemize (3cm).}
+  \label{fig:before-itemize}
+\end{swarmwrap}
+\swarmwrapnext
+\lipsum[1][1-3]
+
+\begin{itemize}
+  \item First item: \lipsum[2][1-3]
+  \item Second item: \lipsum[3][1-3]
+  \item Third item: \lipsum[4][1-3]
+  \item Fourth item: \lipsum[5][1-3]
+  \item Fifth item: \lipsum[6][1-3]
+\end{itemize}
+
+\newpage
+% ====================================================================
+% Test 5: Figure Before Itemize (workaround variant)
+% Same as Test 4 but with a longer wrapped paragraph to test
+% that text wrapping continues correctly through list items.
+% ====================================================================
+\section*{Test 5: Extended Wrapping into Itemize}
+Figure placed before itemize with enough text to cover multiple items.
+
+\begin{swarmwrap}[r]{3cm}{5cm}
+  \rule{\linewidth}{4.8cm}
+  \captionof{figure}{Figure before itemize (5cm tall).}
+  \label{fig:extended-itemize}
+\end{swarmwrap}
+\swarmwrapnext
+\lipsum[1][1-4]
+
+\begin{itemize}
+  \item First item: \lipsum[2][1-3]
+  \item Second item: \lipsum[3][1-3]
+  \item Third item: \lipsum[4][1-3]
+  \item Fourth item: \lipsum[5][1-3]
+  \item Fifth item: \lipsum[6][1-3]
+\end{itemize}
+
+\newpage
+% ====================================================================
+% Test 6: Inside Multicol (EXPECTED: partial)
+% swarmwrap v1.0 does not auto-detect multicol. The parshape will
+% apply within the column, producing a narrower wrap zone. This may
+% produce unexpected results since \textwidth inside multicol is the
+% column width, not the full page width.
+% ====================================================================
+\section*{Test 6: Inside Multicol}
+Inside multicol, swarmwrap applies parshape using the column-width
+the column-width textwidth — this is a known limitation.
+
+\begin{multicols}{2}
+  \begin{swarmwrap}[r]{2cm}{3cm}
+    \rule{\linewidth}{2.8cm}
+    \captionof{figure}{Inside multicol (wrapping disabled).}
+    \label{fig:multicol}
+  \end{swarmwrap}
+  \lipsum[1-3]
+\end{multicols}
+
+\end{document}

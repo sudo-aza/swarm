@@ -1,0 +1,123 @@
+% swarmwrap.sty — Custom float wrapper for the Swarm toolkit (v1.0)
+%
+% Text wrapping using \parshape applied by \swarmwrapnext command.
+% Built from scratch after all 9 existing LaTeX wrapping packages failed QA testing.
+%
+% Usage:
+%   \usepackage{swarmwrap}
+%
+%   \begin{swarmwrap}[r]{3cm}{4cm}
+%     \includegraphics[width=\linewidth]{photo}
+%     \captionof{figure}{Caption.}
+%   \end{swarmwrap}%
+%   \swarmwrapnext
+%   Paragraph text wraps around the figure.
+%
+% Requirements: LuaLaTeX (falls back to centered figure otherwise)
+%
+% Limitations:
+%   - Cannot span page breaks (parshape limitation)
+%   - One swarmwrap per paragraph
+%   - Height argument is an estimate for line count
+
+\ProvidesPackage{swarmwrap}[2026/05/17 v1.0 Custom float wrapper]
+
+\RequirePackage{graphicx}
+\RequirePackage{ifluatex}
+
+\newsavebox{\swarmwrap@box}
+\newdimen\swarmwrap@fw       % figure width (local, computation only)
+\newdimen\swarmwrap@fh       % figure height (local, computation only)
+\newdimen\swarmwrap@tw       % text width (local, computation only)
+\newdimen\swarmwrap@ind      % indent (local, computation only)
+\newcount\swarmwrap@nl       % number of lines (local, computation only)
+\newcount\swarmwrap@loop@cnt % loop counter
+\newif\ifswarmwrap@luatex
+\newif\ifswarmwrap@right
+
+\ifluatex \swarmwrap@luatextrue \else \swarmwrap@luatexfalse \fi
+
+% Global macros to persist values across the environment group boundary.
+% Set via \xdef (global \edef) in the environment end code.
+% Read by \swarmwrapnext after the group closes.
+\newcommand{\swarmwrap@pshape}{}     % fully-expanded parshape spec
+\newcommand{\swarmwrap@tw@val}{0pt}   % text width for figure placement
+\newcommand{\swarmwrap@ind@val}{0pt}  % indent for figure placement
+
+% ── Environment: save figure into box, compute parshape ─────────────────────
+
+\newenvironment{swarmwrap}[3][r]{%
+  \swarmwrap@righttrue
+  \def\swarmwrap@tmp{#1}%
+  \def\swarmwrap@cmp@l{l}%
+  \def\swarmwrap@cmp@L{L}%
+  \ifx\swarmwrap@tmp\swarmwrap@cmp@l\global\swarmwrap@rightfalse\fi
+  \ifx\swarmwrap@tmp\swarmwrap@cmp@L\global\swarmwrap@rightfalse\fi
+  \swarmwrap@fw=#2\relax
+  \swarmwrap@fh=#3\relax
+  \ifswarmwrap@luatex
+    \begin{lrbox}{\swarmwrap@box}\begin{minipage}[t]{\swarmwrap@fw}\centering
+  \else
+    \begin{figure}[htbp]\centering
+    \PackageWarning{swarmwrap}{LuaLaTeX required for wrapping. Using float.}%
+  \fi
+}{%
+  \ifswarmwrap@luatex
+    \end{minipage}\end{lrbox}%
+    % Compute text width: \textwidth - figure width - gap
+    \swarmwrap@tw=\textwidth
+    \advance\swarmwrap@tw by -\swarmwrap@fw
+    \advance\swarmwrap@tw by -12pt
+    % Compute indent: 0pt for right wrap, fw+gap for left wrap
+    \ifswarmwrap@right
+      \swarmwrap@ind=0pt
+    \else
+      \swarmwrap@ind=\swarmwrap@fw
+      \advance\swarmwrap@ind by 12pt
+    \fi
+    % Estimate number of lines from figure height
+    \swarmwrap@nl=0
+    \dimen0=\swarmwrap@fh
+    \advance\dimen0 by 10pt
+    \loop
+      \advance\swarmwrap@nl by 1
+      \advance\dimen0 by -\baselineskip
+    \ifdim\dimen0>0pt \repeat
+    % Build fully-expanded parshape macro.
+    % CRITICAL: Use \xdef (global \edef) because the environment creates
+    % a TeX group. Local definitions are lost when the group closes.
+    % The \xdef expands all register values (\the\...) at definition time,
+    % storing the actual numbers (e.g. "10 0.0pt 262.0pt ...") as tokens.
+    \xdef\swarmwrap@pshape{\the\swarmwrap@nl\space}%
+    \swarmwrap@loop@cnt=\swarmwrap@nl
+    \loop
+      \xdef\swarmwrap@pshape{\swarmwrap@pshape\the\swarmwrap@ind\space\the\swarmwrap@tw\space}%
+      \advance\swarmwrap@loop@cnt by -1
+    \ifnum\swarmwrap@loop@cnt>0 \repeat
+    % Also store text width and indent as global macros for figure placement
+    \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
+    \xdef\swarmwrap@ind@val{\the\swarmwrap@ind}%
+  \else
+    \end{figure}%
+  \fi
+}
+
+% ── \swarmwrapnext: apply parshape + place figure ──────────────────────────
+% Must be called immediately before the paragraph to wrap.
+% Reads global macros set by the environment end code.
+
+\ifswarmwrap@luatex
+\newcommand{\swarmwrapnext}{%
+  \noindent
+  \parshape \swarmwrap@pshape\relax
+  \ifswarmwrap@right
+    \rlap{\hskip\swarmwrap@tw@val\hskip6pt\raise-2pt\copy\swarmwrap@box}%
+  \else
+    \llap{\raise-2pt\copy\swarmwrap@box\hskip6pt}%
+  \fi
+}%
+\else
+\newcommand{\swarmwrapnext}{\relax}%
+\fi
+
+\endinput
