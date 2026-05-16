@@ -202,6 +202,24 @@ class TexExtractor:
                 i += 1
                 continue
 
+            # Strip multi-line display math: \[...\] and $$...$$
+            # (single-line math is handled later by _strip_math())
+            m = re.match(r'^\s*(\\\[|\$\$)', line)
+            if m:
+                delim = m.group(1)
+                # Escape for regex: \[ -> \\\[, $$ -> \$\$
+                if delim == r'\[':
+                    end_pat = re.compile(r'^\s*\\\]')
+                else:
+                    end_pat = re.compile(r'^\s*\$\$')
+                i += 1
+                while i < len(self.lines):
+                    if end_pat.match(self.lines[i]):
+                        break
+                    i += 1
+                i += 1
+                continue
+
             result_lines.append(line)
             i += 1
 
