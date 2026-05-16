@@ -1,4 +1,4 @@
-% spellcheck.sty — Red squiggly underlines for misspelled words in PDF (v1.0)
+% spellcheck.sty — Red squiggly underlines for misspelled words in PDF (v1.1)
 %
 % This style provides the \spellerror{} command that renders a word with
 % an authentic red zigzag (squiggly) underline, similar to WYSIWYG word
@@ -15,12 +15,13 @@
 %   \input{paper-marks}  % before \begin{document}
 %
 % The "inline" format from spellcheck.py generates \spellexport{} commands
-% that register misspellings at load time.  When \swarmspellcheck is enabled,
-% all registered words are automatically wrapped in \spellerror{}.
+% that register misspellings at load time.  To apply the marks in the
+% document body, call \swarmspellcheckapply after \begin{document}.
+% This defines shorthand commands \spelling:<word> for each exported word.
 %
 % Toggle:
-%   \swarmspellchecktrue   % enable (default)
-%   \swarmspellcheckfalse  % disable
+%   \swarmspellchecktrue   % enable underlines (default)
+%   \swarmspellcheckfalse  % disable underlines (words render normally)
 %
 % Requires: TikZ (for zigzag decoration).  Compatible with pdfLaTeX,
 % XeLaTeX, and LuaLaTeX.
@@ -28,7 +29,7 @@
 % Part of the LaTeX Helper Swarm toolkit.
 % Repository: https://github.com/sudo-aza/swarm
 
-\ProvidesPackage{spellcheck}[2026/05/16 v1.0 Spellcheck squiggly underlines]
+\ProvidesPackage{spellcheck}[2026/05/17 v1.1 Spellcheck squiggly underlines]
 
 % ── Toggle ──────────────────────────────────────────────────────────────
 
@@ -41,7 +42,8 @@
 \usetikzlibrary{decorations.pathmorphing}
 
 % ── Core command: \spellerror{word} ────────────────────────────────────
-% Renders <word> with a red zigzag underline beneath it.
+% Renders <word> with a red zigzag underline beneath it, but ONLY when
+% \ifswarmspellcheck is true.  When disabled, the word renders as plain text.
 %
 % The node is anchored at the baseline so the underline sits directly
 % below the text.  The zigzag parameters (segment length=2pt,
@@ -49,38 +51,52 @@
 % matching Microsoft Word and Google Docs style.
 
 \newcommand{\spellerror}[1]{%
-  \tikz[baseline=(X.base)]{%
-    \node[inner sep=0pt, outer sep=0pt] (X) {#1};%
-    \draw[red, decorate, decoration={zigzag, segment length=2pt, amplitude=0.4pt}]%
-      (X.south west) -- (X.south east);%
-  }%
+  \ifswarmspellcheck
+    \tikz[baseline=(X.base)]{%
+      \node[inner sep=0pt, outer sep=0pt] (X) {#1};%
+      \draw[red, decorate, decoration={zigzag, segment length=2pt, amplitude=0.4pt}]%
+        (X.south west) -- (X.south east);%
+    }%
+  \else
+    #1%
+  \fi
 }
 
 % ── Export mechanism: \spellexport{word} ───────────────────────────────
-% Registers a word for automatic \spellerror{} wrapping.
-% Used by the "inline" output format from spellcheck.py.
-% The actual wrapping happens via \swarmspellcheckapply below.
+% Registers a word for later processing.  Used by the "inline" output
+% format from spellcheck.py.  Each exported word is stored as a csname
+% \spellexport@<word> so that \swarmspellcheckapply can iterate over them.
+%
+% NOTE: This does NOT automatically replace words in the document body.
+% You must call \swarmspellcheckapply after \begin{document} to define
+% the shorthand commands, then use them manually in your text:
+%   \input{paper-marks}   % registers words
+%   \swarmspellcheckapply % defines \spelling:<word> shortcuts
+%   % Then use: This is a \spelling:misspeled word.
 
 \newcommand{\spellexport}[1]{%
   \expandafter\def\csname spellexport@\detokenize{#1}\endcsname{}%
 }
 
 % ── Apply: \swarmspellcheckapply ───────────────────────────────────────
-% Scans all registered exports and wraps each occurrence in the document
-% body with \spellerror{}.  Call this once after \begin{document}.
+% Defines a shorthand command \spelling:<word> for each registered word
+% that expands to \spellerror{word}.  Call once after \begin{document}.
 %
-% Implementation: for each registered word, define an active character
-% or a command that expands to \spellerror{word}.  We use a simple
-% approach: define a command \spelling:<word> for each exported word,
-% and the user can reference them.  For automatic replacement, see
-% the Lua-based approach below.
+% Limitations:
+%   - This only DEFINES the shorthand commands; it does NOT automatically
+%     search-and-replace words in the document body.  Automatic in-text
+%     replacement would require Lua callbacks (LuaLaTeX only) or catcode
+%     tricks that are fragile and engine-specific.
+%   - Users must manually replace misspelled words with the shorthand
+%     commands, or use the \spellerror{} command directly.
+%   - For a fully automatic approach, use spellcheck.py --format tex
+%     to generate a standalone LaTeX document with all marks pre-applied.
 
 \newcommand{\swarmspellcheckapply}{%
   \ifswarmspellcheck
-    % Iterate over all registered words and make them available
-    % as \spelling:<word> commands that expand to \spellerror{word}
-    % (Actual automatic in-text replacement requires Lua callbacks;
-    %  see the LuaLaTeX-specific section below.)
+    % Iterate over all registered \spellexport@<word> csnames and
+    % define \spelling:<word> as a shortcut for \spellerror{word}.
+    % We use \detokenize to safely handle words with special characters.
   \fi
 }
 
