@@ -100,11 +100,20 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 71 | **QA**: Verify Programmer's insbox test (task #55) — compile `src/test-wrapfig/test-insbox.tex` with pdfLaTeX and LuaLaTeX, inspect PDF for actual wrapping. Verify: (1) Test 1 text wraps left of right image; (2) Test 2 text wraps right of left image with 2 leading full-width lines; (3) Test 4 list items do NOT wrap (full width); (4) Test 5 text wraps inside itemize. Note: insbox uses `\input{insbox}` inside `\makeatletter` (plain TeX macro, not a LaTeX package). | QA | **done** (FAIL) | 2026-05-16 |
 | 75 | **FIX**: insbox test (task #55) — QA found two comm log inaccuracies: (1) The "box will not fit" warning is attributed to Test 3 (8cm image) but actually occurs for Test 4 (line 85 in log, not line 69). Test 3's 8cm image wraps with text in a ~53pt left column on page 2 with NO warning. Test 4's 3cm image triggers the warning because there's insufficient space on page 2 after Test 3's tall image. (2) Test 5 subsequent item width range claimed 181-250pt but actual is 172-241pt ("Another item" at w=172.2). Fix: move warning description from Test 3 to Test 4 in comm log, update Test 3 to describe actual behavior (8cm image wraps with text in narrow left column), and update Test 5 width range to 172-241. | Programmer | pending | 2026-05-16 |
 | 76 | **QA**: Verify Programmer's floatflt fix (task #70) — check that task #52 comm log now rates Test 3 as N/A and Test 4 as FAIL, test file comments updated, and `\newpage` added before Test 5. | QA | pending | 2026-05-16 |
-| 74 | **QA**: Verify Programmer's cutwin Test 4 fix (task #73) — check that task #53 comm log now rates Test 4 as FAIL (not PARTIAL PASS), item widths updated to 66pt/152pt, and test-cutwin.tex Test 4 comment explains the itemize overflow. | QA | pending | 2026-05-16 |
+| 74 | **QA**: Verify Programmer's cutwin Test 4 fix (task #73) — check that task #53 comm log now rates Test 4 as FAIL (not PARTIAL PASS), item widths updated to 66pt/152pt, and test-cutwin.tex Test 4 comment explains the itemize overflow. | QA | **done** (10/10) | 2026-05-16 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-16 11:30 UTC+8
+> **Task #74 done — PASS (10/10)**: Verified Programmer's cutwin Test 4 fix (task #73). All three QA requirements met:
+>
+> (1) **Comm log rating**: Test 4 changed from "PARTIAL PASS" to "FAIL" in task #53 comm log. ✅
+> (2) **Item widths**: Updated from "74pt and 161pt" to "66pt and 152pt" — matches QA's PyMuPDF measurements (65.7pt/152.3pt). ✅
+> (3) **Test file comment**: Lines 75-80 of `test-cutwin.tex` now label Test 4 as FAIL with detailed explanation of the itemize overflow (49pt overfull, parshape constraint violation). ✅
+>
+> Compiled to verify no regression: 4 pages, 65KB, zero `!` errors, same 2 expected warnings. PDF output identical to previous compile. Fix is purely textual (comm log + comments) — no structural changes to the test.
 
 ### QA — 2026-05-16 10:30 UTC+8
 > **Task #71 done — FAIL (8/10)**: Verified Programmer's insbox test (task #55). Compiled `test-insbox.tex` with pdfLaTeX (4 pages, 88KB, 2 passes). Zero `!` errors. insbox package was not installed — installed via `tlmgr install insbox` (noted per Rule 2.5). 17 overfull hbox warnings (cosmetic, from narrow text wrapping around tall image in Test 3). PyMuPDF analysis:
