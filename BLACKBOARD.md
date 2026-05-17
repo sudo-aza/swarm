@@ -139,13 +139,32 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 106 | **RE-REVIEW**: Verify Programmer's Test 7 vbox fix (self-task, commit `753636d`). QA #105 (10/10) noted that Test 7's `\lipsum[1-6]` naturally overflowed to page 8, leaving ~500pt remaining — the `\newpage` code path was never triggered. Programmer replaced `\lipsum[1-6]` with a `\vbox to \dimexpr\textheight-80pt\relax` containing `\lipsum[1-3]` + `\vss`, which consumes exactly textheight-80pt, leaving ~80pt remaining (less than figure height ~137pt). Verify: (1) Test 7 filler vbox leaves <137pt remaining on page 7; (2) `\newpage` fires, wrapped block appears on page 8; (3) Figure 7 caption present; (4) 11 narrow lines alongside figure; (5) Zero overfull vbox warnings; (6) Tests 1-6 unchanged; (7) Zero `!` errors. | QA | **done** (10/10) | 2026-05-17 |
 | 107 | **QA**: Full review of swarmwrap.sty v2.2 (zoe-requested, not from BLACKBOARD). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. PyMuPDF pixel-level analysis of all 8 pages. Check: figure alignment (gap_above ≤ 5pt), interline spacing consistency, parshape trailing reset, left/right wrap, itemize interaction, multicol behavior, page break detection (Test 7), log for errors/warnings. | QA | **done** (8/10) | 2026-05-17 |
 | 108 | **FIX**: swarmwrap.sty v2.3 — multicol uses wrong width (QA #107, rated 8/10). BUG: `swarmwrap.sty` lines 103-105 use `\textwidth` (full page width, 358.6pt) instead of `\linewidth` (column width inside multicol, ~174pt). Inside `multicols{2}`, `\textwidth` is still the full page width but `\linewidth` is the column width. Result: the parshape narrows text to `\textwidth - fw - 12pt` which is ~320pt — far wider than the column. Text flows at full column width and overlaps behind the figure (56.7pt overlap confirmed by PyMuPDF on 7+ lines). FIX: Replace `\textwidth` with `\linewidth` on lines 103 and 105 (and the trailing reset line 132). Verify: after fix, inside multicol the narrowed text width should be `\linewidth - fw - 12pt` (~152pt for a 2cm figure), and no text should overlap the figure area. | Programmer | **done** | 2026-05-17 |
-| 109 | **FIX**: swarmwrap.sty v2.3 — 4pt overfull hbox on left-wrap test (QA #107, rated 8/10). MINOR: `Overfull \hbox (4.0258pt too wide) in paragraph at lines 46-48` on Test 2 (left wrap). The parshape text width calculation `\textwidth - fw - 12pt` doesn't account for the `\item` indent or list left margin that may be present on the page. Alternatively, the 12pt gap may accumulate rounding error when combined with `\linewidth` adjustments. FIX: Reduce the gap from 12pt to 10pt, OR add a small `\frenchspacing` / `\rightskip` adjustment inside the parshape region, OR use `\linewidth` consistently (which may also fix the multicol issue). Verify: zero overfull hbox warnings after fix. | Programmer | pending | 2026-05-17 |
+| 109 | **FIX**: swarmwrap.sty v2.4 — 4pt overfull hbox on left-wrap test (QA #107, rated 8/10). Added `\emergencystretch=\fontdimen6\font` (1em) before `\noindent` in `\swarmwrapnext`. Root cause: TeX's line-breaking can produce overfull hbox on narrowed parshape lines when text content doesn't break cleanly within the restricted width. `\emergencystretch` only activates when TeX cannot find a satisfactory break — normal lines are completely unaffected. Also fixed stale comments as a side effect (task #111). Verify: zero overfull hbox warnings in `test-customwrap.tex` compilation. | Programmer | **done** | 2026-05-17 |
 | 110 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v2.3 fix #108 (multicol \linewidth). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Test 6 (multicol) narrowed text width is ~106pt (not ~320pt); (2) No text overlaps figure on page 6; (3) `\linewidth` used on lines 105, 107, 135 of swarmwrap.sty; (4) Tests 1-5 produce same results as v2.2; (5) Zero `!` errors; (6) 8 pages total. | QA | **done** (9/10) | 2026-05-17 |
-| 111 | **FIX**: swarmwrap.sty v2.3 — two stale comments contradict the \linewidth fix (QA #110, rated 9/10). (1) Line 1 header says "(v2.2)" but `\ProvidesPackage` on line 46 says v2.3 — update header to match. (2) Line 130 comment says "line spec with indent=0pt and width=\textwidth" but the actual code on line 140 uses `\linewidth` — update comment to say `\linewidth`. Both comments directly relate to the fix being verified and contradict the actual code. | Programmer | pending | 2026-05-17 |
+| 111 | **FIX**: swarmwrap.sty v2.4 — two stale comments contradict the \linewidth fix (QA #110, rated 9/10). (1) Line 1 header says "(v2.2)" but `\ProvidesPackage` says v2.3 — updated to v2.4. (2) Line 130 comment says "width=\textwidth" but code uses `\linewidth` — already correct. Fixed as side effect of task #109 (v2.4 bump updated both header and comments). | Programmer | **done** | 2026-05-17 |
+| 112 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v2.4 fix #109 (overfull hbox) and incidental fix #111 (stale comments). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Zero overfull hbox warnings in compilation log; (2) `\ProvidesPackage` says v2.4 and header line 1 says v2.4 — no mismatch; (3) Line ~130 trailing parshape comment says `\linewidth` not `\textwidth`; (4) `\emergencystretch` is set in `\swarmwrapnext` before `\noindent`; (5) Tests 1-7 produce same visual results as v2.3 (gap unchanged at 12pt); (6) Zero `!` errors; (7) 8 pages total. | QA | pending | 2026-05-17 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-17 21:00 UTC+8
+> **Task #109 done — swarmwrap.sty v2.4 overfull hbox fix**
+>
+> Root cause: TeX's line-breaking algorithm can produce overfull hbox (~4pt) on narrowed parshape lines when text content doesn't break cleanly within the restricted width. The overfull is a natural TeX behavior, not a bug in the parshape computation (indent + width = linewidth, verified exact).
+>
+> Fix: Added `\emergencystretch=\fontdimen6\font` (1em) in `\swarmwrapnext`, before `\noindent`. This gives TeX additional stretch capacity when it cannot find a satisfactory line break. Only activates for problem lines — normal lines with satisfactory breaks are completely unaffected.
+>
+> Approach considered but rejected:
+> - Reducing gap (12pt→8pt): wider text helps lipsum[3-4] but produces NEW overfull on other lipsum ranges. Non-monotonic relationship between gap and overfull.
+> - `\rightskip`: only helps underfull, not overfull.
+> - `\everypar` scoping: `\noindent` triggers `\everypar` for the current paragraph, resetting `\emergencystretch` before it's used.
+>
+> Side effect: stale comments from task #111 also fixed (header v2.2→v2.4, trailing parshape comment already said \linewidth).
+>
+> Compilation: `test-customwrap.tex` — 8 pages, 43KB, zero overfull hbox warnings, zero `!` errors.
+>
+> QA task #112 created for re-review.
 
 ### QA — 2026-05-17 17:30 UTC+8
 > **Task #106 done — Test 7 vbox fix: PASS 10/10**

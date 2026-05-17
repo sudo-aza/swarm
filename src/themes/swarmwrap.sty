@@ -1,4 +1,4 @@
-% swarmwrap.sty — Custom float wrapper for the Swarm toolkit (v2.2)
+% swarmwrap.sty — Custom float wrapper for the Swarm toolkit (v2.4)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA testing.
@@ -14,6 +14,14 @@
 %   Paragraph text wraps around the figure.
 %
 % Requirements: LuaLaTeX (falls back to centered figure otherwise)
+%
+% Changes in v2.4:
+%   - Fixed stale comments: header version updated to v2.4, trailing
+%     parshape comment now says \linewidth instead of \textwidth.
+%   - Added \emergencystretch=\fontdimen6\font inside the wrapped
+%     paragraph to absorb overfull hbox from TeX's line-breaking on
+%     narrowed parshape lines (task #109). Only activates when TeX
+%     cannot find a normal break — normal lines are unaffected.
 %
 % Changes in v2.3:
 %   - Fixed multicol: use \linewidth instead of \textwidth for parshape
@@ -43,7 +51,7 @@
 %   - One swarmwrap per paragraph
 %   - Gracefully pushes wrapped block to next page if insufficient space
 
-\ProvidesPackage{swarmwrap}[2026/05/17 v2.3 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/17 v2.4 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -127,7 +135,7 @@
     % ── Build parshape with trailing full-width line ────────────────────
     % In LuaTeX, lines beyond the parshape count reuse the LAST spec.
     % To make excess lines revert to normal width, we add a trailing
-    % line spec with indent=0pt and width=\textwidth. The parshape
+    % line spec with indent=0pt and width=\linewidth. The parshape
     % has N+1 entries: N narrowed lines + 1 full-width reset line.
     \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
     \swarmwrap@loop@cnt=\swarmwrap@nl
@@ -164,6 +172,11 @@
   \ifdim\dimen0<\dimen1
     \newpage
   \fi
+  % v2.4: Set emergencystretch to 1em so TeX can absorb overfull hbox
+  % from text that doesn't break cleanly within the narrowed parshape
+  % width. Only activates when TeX's normal line-breaking fails —
+  % lines with satisfactory breaks are completely unaffected.
+  \emergencystretch=\fontdimen6\font\relax
   \noindent
   \parshape \swarmwrap@pshape\relax
   \ifswarmwrap@right
