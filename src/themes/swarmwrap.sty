@@ -1,4 +1,4 @@
-% swarmwrap.sty — Custom float wrapper for the Swarm toolkit (v1.1)
+% swarmwrap.sty — Custom float wrapper for the Swarm toolkit (v2.0)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA testing.
@@ -6,7 +6,7 @@
 % Usage:
 %   \usepackage{swarmwrap}
 %
-%   \begin{swarmwrap}[r]{3cm}{4cm}
+%   \begin{swarmwrap}[r]{3cm}{4cm}   % 3rd arg (height) kept for backward compat, ignored
 %     \includegraphics[width=\linewidth]{photo}
 %     \captionof{figure}{Caption.}
 %   \end{swarmwrap}%
@@ -15,12 +15,17 @@
 %
 % Requirements: LuaLaTeX (falls back to centered figure otherwise)
 %
+% Changes in v2.0:
+%   - Height auto-detected from box \dp (content below text baseline), not user-supplied
+%   - \smash around \rlap/\llap prevents figure depth from corrupting interline spacing
+%   - Trailing full-width parshape line resets excess lines to normal (LuaTeX fix)
+%   - User-supplied height arg (3rd arg) accepted but ignored for backward compat
+%
 % Limitations:
 %   - Cannot span page breaks (parshape limitation)
 %   - One swarmwrap per paragraph
-%   - Height argument is an estimate for line count
 
-\ProvidesPackage{swarmwrap}[2026/05/17 v1.1 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/17 v2.0 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -54,7 +59,8 @@
   \ifx\swarmwrap@tmp\swarmwrap@cmp@l\global\swarmwrap@rightfalse\fi
   \ifx\swarmwrap@tmp\swarmwrap@cmp@L\global\swarmwrap@rightfalse\fi
   \swarmwrap@fw=#2\relax
-  \swarmwrap@fh=#3\relax
+  % NOTE: #3 (height) is accepted for backward compatibility but IGNORED.
+  % v2.0 auto-detects height from the actual rendered box.
   \ifswarmwrap@luatex
     \begin{lrbox}{\swarmwrap@box}\begin{minipage}[t]{\swarmwrap@fw}\centering
   \else
@@ -68,6 +74,14 @@
     % \newsavebox assigns are LOCAL to the current TeX group — without \global,
     % \end{swarmwrap} closes the group and the box reverts to empty.
     \global\setbox\swarmwrap@box=\box\swarmwrap@box
+    % ── Auto-detect height from actual box ──────────────────────────────
+    % v2.0: Use only \dp (depth below reference point) for line count.
+    % The [t]-aligned minipage reference point is at the rule bottom (baseline
+    % of the first content). \ht is the rule extending ABOVE the text start —
+    % it does not need wrapping lines. \dp is the caption below the text start
+    % — this is the content that actually needs narrowed text alongside it.
+    \swarmwrap@fh=\dp\swarmwrap@box
+    \advance\swarmwrap@fh by \baselineskip  % one extra line for visual breathing room
     % Compute text width: \textwidth - figure width - gap
     \swarmwrap@tw=\textwidth
     \advance\swarmwrap@tw by -\swarmwrap@fw
@@ -79,25 +93,26 @@
       \swarmwrap@ind=\swarmwrap@fw
       \advance\swarmwrap@ind by 12pt
     \fi
-    % Estimate number of lines from figure height
+    % Calculate number of lines from actual box height
     \swarmwrap@nl=0
     \dimen0=\swarmwrap@fh
-    \advance\dimen0 by 10pt
     \loop
       \advance\swarmwrap@nl by 1
       \advance\dimen0 by -\baselineskip
     \ifdim\dimen0>0pt \repeat
-    % Build fully-expanded parshape macro.
-    % CRITICAL: Use \xdef (global \edef) because the environment creates
-    % a TeX group. Local definitions are lost when the group closes.
-    % The \xdef expands all register values (\the\...) at definition time,
-    % storing the actual numbers (e.g. "10 0.0pt 262.0pt ...") as tokens.
-    \xdef\swarmwrap@pshape{\the\swarmwrap@nl\space}%
+    % ── Build parshape with trailing full-width line ────────────────────
+    % In LuaTeX, lines beyond the parshape count reuse the LAST spec.
+    % To make excess lines revert to normal width, we add a trailing
+    % line spec with indent=0pt and width=\textwidth. The parshape
+    % has N+1 entries: N narrowed lines + 1 full-width reset line.
+    \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
     \swarmwrap@loop@cnt=\swarmwrap@nl
     \loop
       \xdef\swarmwrap@pshape{\swarmwrap@pshape\the\swarmwrap@ind\space\the\swarmwrap@tw\space}%
       \advance\swarmwrap@loop@cnt by -1
     \ifnum\swarmwrap@loop@cnt>0 \repeat
+    % Trailing line: full width, no indent — resets excess lines to normal
+    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\textwidth\space}%
     % Also store text width and indent as global macros for figure placement
     \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
     \xdef\swarmwrap@ind@val{\the\swarmwrap@ind}%
@@ -116,12 +131,14 @@
   \parshape \swarmwrap@pshape\relax
   \ifswarmwrap@right
     % Right wrap: overlay figure after the narrowed text area.
-    % \rlap produces a zero-width box at the current position (left margin).
-    % Inside, \hskip moves right by indent+textwidth+gap to reach figure area.
-    \rlap{\hskip\swarmwrap@ind@val\hskip\swarmwrap@tw@val\hskip6pt\raise-2pt\hbox{\copy\swarmwrap@box}}%
+    % \smash{\rlap{...}} makes the figure overlay completely invisible to
+    % TeX's line layout: zero width (\rlap), zero height and depth (\smash).
+    % Without \smash, the figure box's depth (caption below baseline) would
+    % corrupt interline spacing, adding ~75pt gap between lines 1 and 2.
+    \smash{\rlap{\hskip\swarmwrap@ind@val\hskip\swarmwrap@tw@val\hskip6pt\raise-2pt\hbox{\copy\swarmwrap@box}}}%
   \else
     % Left wrap: overlay figure at the left indent position.
-    \llap{\hskip\swarmwrap@ind@val\raise-2pt\hbox{\copy\swarmwrap@box}\hskip-6pt}%
+    \smash{\llap{\hskip\swarmwrap@ind@val\raise-2pt\hbox{\copy\swarmwrap@box}\hskip-6pt}}%
   \fi
 }%
 \else
