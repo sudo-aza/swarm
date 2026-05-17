@@ -137,6 +137,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 104 | **RE-REVIEW**: Verify Programmer's fix for test-customwrap.tex (task #103, QA #102). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify with PyMuPDF: (1) Test 3 uses single merged paragraph (`\lipsum[1]\lipsum[2]\lipsum[3]` with no blank lines), produces ≥19 narrow lines alongside the 8cm figure; (2) Tests 4-5 use `\lipsum[1]` (full paragraph), not truncated `\lipsum[1][1-3]`/`\lipsum[1][1-4]`; (3) Gap between last wrapped line and figure bottom is ≤20pt on ALL pages (previously 96-133pt on pages 3-5); (4) No literal `\lipsum` command leaking in comment text; (5) Zero `!` errors; (6) All 6 figure captions present. | QA | **done** (10/10) | 2026-05-17 |
 | 105 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v2.2 page break handling (task #99). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Test 7 fills page with filler text, wrapped block appears on next page with figure + narrow lines; (2) Zero overfull vbox warnings in log; (3) `\swarmwrapnext` checks `\pagegoal - \pagetotal` before `\parshape`; (4) `\newpage` inserted when remaining space < figure height; (5) `\swarmwrap@fh@val` stored via `\xdef`; (6) Tests 1-6 unchanged; (7) Zero `!` errors. | QA | **done** (10/10) | 2026-05-17 |
 | 106 | **RE-REVIEW**: Verify Programmer's Test 7 vbox fix (self-task, commit `753636d`). QA #105 (10/10) noted that Test 7's `\lipsum[1-6]` naturally overflowed to page 8, leaving ~500pt remaining — the `\newpage` code path was never triggered. Programmer replaced `\lipsum[1-6]` with a `\vbox to \dimexpr\textheight-80pt\relax` containing `\lipsum[1-3]` + `\vss`, which consumes exactly textheight-80pt, leaving ~80pt remaining (less than figure height ~137pt). Verify: (1) Test 7 filler vbox leaves <137pt remaining on page 7; (2) `\newpage` fires, wrapped block appears on page 8; (3) Figure 7 caption present; (4) 11 narrow lines alongside figure; (5) Zero overfull vbox warnings; (6) Tests 1-6 unchanged; (7) Zero `!` errors. | QA | **done** (10/10) | 2026-05-17 |
+| 107 | **QA**: Full review of swarmwrap.sty v2.2 (zoe-requested, not from BLACKBOARD). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. PyMuPDF pixel-level analysis of all 8 pages. Check: figure alignment (gap_above ≤ 5pt), interline spacing consistency, parshape trailing reset, left/right wrap, itemize interaction, multicol behavior, page break detection (Test 7), log for errors/warnings. | QA | **done** (8/10) | 2026-05-17 |
+| 108 | **FIX**: swarmwrap.sty v2.3 — multicol uses wrong width (QA #107, rated 8/10). BUG: `swarmwrap.sty` lines 103-105 use `\textwidth` (full page width, 358.6pt) instead of `\linewidth` (column width inside multicol, ~174pt). Inside `multicols{2}`, `\textwidth` is still the full page width but `\linewidth` is the column width. Result: the parshape narrows text to `\textwidth - fw - 12pt` which is ~320pt — far wider than the column. Text flows at full column width and overlaps behind the figure (56.7pt overlap confirmed by PyMuPDF on 7+ lines). FIX: Replace `\textwidth` with `\linewidth` on lines 103 and 105 (and the trailing reset line 132). Verify: after fix, inside multicol the narrowed text width should be `\linewidth - fw - 12pt` (~152pt for a 2cm figure), and no text should overlap the figure area. | Programmer | pending | 2026-05-17 |
+| 109 | **FIX**: swarmwrap.sty v2.3 — 4pt overfull hbox on left-wrap test (QA #107, rated 8/10). MINOR: `Overfull \hbox (4.0258pt too wide) in paragraph at lines 46-48` on Test 2 (left wrap). The parshape text width calculation `\textwidth - fw - 12pt` doesn't account for the `\item` indent or list left margin that may be present on the page. Alternatively, the 12pt gap may accumulate rounding error when combined with `\linewidth` adjustments. FIX: Reduce the gap from 12pt to 10pt, OR add a small `\frenchspacing` / `\rightskip` adjustment inside the parshape region, OR use `\linewidth` consistently (which may also fix the multicol issue). Verify: zero overfull hbox warnings after fix. | Programmer | pending | 2026-05-17 |
 
 ---
 
@@ -155,6 +158,19 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > 7. Zero `!` errors, 8 pages, 43KB
 >
 > Interline spacing on page 7: consistent 13.5-13.6pt (no `\vss` compression — lipsum content fits naturally within vbox). The `\vss` provides ~50pt of stretch between last content (y=635) and vbox bottom (~y=687), then ~40pt remaining space before page bottom — well under the 137pt threshold.
+
+### QA — 2026-05-17 19:47 UTC+8
+> **Task #107 done — swarmwrap.sty v2.2 full QA: 8/10** (zoe-requested)
+>
+> PyMuPDF pixel-level analysis of all 8 pages. Core wrapping solid: gap_above = 2.8pt on all right-wrap tests, 2.8pt on left-wrap, consistent 13.5-13.6pt interline spacing, zero `!` errors, all 7 captions present, parshape trailing reset works correctly on all pages.
+>
+> **Make-or-break parshape white space issue: RESOLVED.** The trailing reset line (v2.0, line 132) correctly reverts excess lines to full width. No 252-345pt dead zones found on any page.
+>
+> **Two issues found (both fixable):**
+> 1. **Multicol broken** (Task #108): `\textwidth` used instead of `\linewidth` → text overlaps figure (56.7pt overlap on 7+ lines in Test 6)
+> 2. **4pt overfull hbox** (Task #109): left-wrap test line 46-48, likely rounding in gap calculation
+>
+> Created fix tasks #108 and #109 for Programmer.
 
 ### QA — 2026-05-17 19:30 UTC+8
 > **No pending QA tasks**: Checked BLACKBOARD — all QA tasks (#91-#94, #97, #100, #102, #104, #105, #106) are marked **done**. No pending or needs-review tasks assigned to QA. Standing down per Rule 5.
