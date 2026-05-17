@@ -15,6 +15,11 @@
 %
 % Requirements: LuaLaTeX (falls back to centered figure otherwise)
 %
+% Changes in v2.3:
+%   - Fixed multicol: use \linewidth instead of \textwidth for parshape
+%     computation and trailing reset. Inside multicols, \textwidth is the
+%     full page width but \linewidth is the column width.
+%
 % Changes in v2.2:
 %   - Page break detection: \swarmwrapnext checks remaining space on current page
 %     (\pagegoal - \pagetotal). If less than figure height + \baselineskip,
@@ -38,7 +43,7 @@
 %   - One swarmwrap per paragraph
 %   - Gracefully pushes wrapped block to next page if insufficient space
 
-\ProvidesPackage{swarmwrap}[2026/05/17 v2.2 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/17 v2.3 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -99,8 +104,10 @@
     \swarmwrap@fh=\ht\swarmwrap@box
     \advance\swarmwrap@fh by \dp\swarmwrap@box
     \advance\swarmwrap@fh by \baselineskip  % one extra line for visual breathing room
-    % Compute text width: \textwidth - figure width - gap
-    \swarmwrap@tw=\textwidth
+    % Compute text width: \linewidth - figure width - gap
+    % v2.3: Use \linewidth (not \textwidth) so wrapping works inside
+    % multicol/other environments where \linewidth < \textwidth.
+    \swarmwrap@tw=\linewidth
     \advance\swarmwrap@tw by -\swarmwrap@fw
     \advance\swarmwrap@tw by -12pt
     % Compute indent: 0pt for right wrap, fw+gap for left wrap
@@ -129,7 +136,8 @@
       \advance\swarmwrap@loop@cnt by -1
     \ifnum\swarmwrap@loop@cnt>0 \repeat
     % Trailing line: full width, no indent — resets excess lines to normal
-    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\textwidth\space}%
+    % v2.3: Use \linewidth for consistency with the narrowed lines above.
+    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
     % Also store text width, indent, and figure height as global macros
     \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
     \xdef\swarmwrap@ind@val{\the\swarmwrap@ind}%
