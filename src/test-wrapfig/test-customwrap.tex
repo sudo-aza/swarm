@@ -152,16 +152,19 @@ Inside multicol, swarmwrap applies parshape using the column width
 
 \newpage
 % ====================================================================
-% Test 6: Page Break Detection (v2.2 feature)
+% Test 6: Page Break Fallback (v3.1 feature)
 % Expected: PASS. A vbox fills exactly (textheight - 80pt), leaving
 %   ~80pt remaining. The figure needs more space than that, so
-%   \swarmwrapnext should insert \newpage, pushing the wrapped
-%   block to the next page. No overfull vbox warnings.
+%   \swarmwrapnext triggers the page break FALLBACK: the lipsum
+%   text fills the remaining 80pt at FULL width (no wrapping),
+%   and the figure appears centered at the top of the next page
+%   via \afterpage. No wasted whitespace on the current page.
 % ====================================================================
-\section*{Test 6: Page Break Detection}
+\section*{Test 6: Page Break Fallback}
 This test verifies that swarmwrap.sty detects insufficient remaining
-page space and inserts \texttt{\textbackslash newpage} before the
-wrapped block.
+page space and triggers the v3.1 fallback: text fills the rest of the
+current page at full width, and the figure is placed centered at the
+top of the next page via \texttt{\textbackslash afterpage}.
 
 % Fill exactly enough space to leave ~80pt remaining on this page.
 \newdimen\swtestsixht

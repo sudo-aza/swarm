@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.24.0 (TeX Live 2026)  (format=lualatex 2026.5.17)  17 MAY 2026 14:06
+This is LuaHBTeX, Version 1.24.0 (TeX Live 2026)  (format=lualatex 2026.5.17)  17 MAY 2026 22:08
  system commands enabled.
 **src/templates/demo-beautiful.tex
 (./src/templates/demo-beautiful.tex
@@ -1725,7 +1725,7 @@ Package scrbase Warning: Usage of deprecated command `\ifstr'.
 \pydata@fh@0=\write7
 
 \openout7 = _70DA7F4D3211AD43B32746DC63D0DCAD.data.minted
-runsystem(latexminted config  --timestamp 20260517140620Z 70DA7F4D3211AD43B32746
+runsystem(latexminted config  --timestamp 20260517220858Z 70DA7F4D3211AD43B32746
 DC63D0DCAD)...failed. 
 
 ! Package minted Error: minted v3+ executable is not installed or is not added 
@@ -1825,14 +1825,14 @@ LaTeX Font Warning: Some font shapes were not available, defaults substituted.
 )
 
 Here is how much of LuaTeX's memory you used:
- 45137 strings out of 475892
+ 45136 strings out of 475892
  100000,1977958 words of node,token memory allocated
  573 words of node memory still in use:
    6 hlist, 2 vlist, 2 rule, 2 glue, 4 kern, 1 glyph, 10 attribute, 66 glue_spec
 , 10 attribute_list, 2 write nodes
    avail lists: 1:5,2:3230,3:1278,4:646,5:426,6:158,7:4926,8:20,9:1832,10:9,11:3
 49,12:1
- 66840 multiletter control sequences out of 65536+600000
+ 66839 multiletter control sequences out of 65536+600000
  85 fonts using 8645359 bytes
  125i,20n,129p,11230b,1109s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </home/z/swarm/texlive/texmf-dist/fonts/opentype/public/lm/lmmono10-italic.otf><
