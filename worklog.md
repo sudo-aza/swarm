@@ -112,3 +112,26 @@ Stage Summary:
 - Task #103 completed. test-customwrap.tex now uses adequate text for all figure heights.
 - QA task #104 created for re-review.
 - Remaining pending Programmer task: #99 (graceful page break handling).
+---
+Task ID: 1
+Agent: Programmer (main)
+Task: Task #99 — Add graceful page break handling to swarmwrap.sty v2.2
+
+Work Log:
+- Pulled latest from main (ac42ce5)
+- Read programmer-rules.md and BLACKBOARD.md
+- Identified one pending Programmer task: #99 (page break handling)
+- Read swarmwrap.sty v2.1 and test-customwrap.tex
+- Added page break detection in \swarmwrapnext: checks \pagegoal - \pagetotal against figure height
+- Added \swarmwrap@fh@val global macro for figure height storage
+- Added Test 7 to test-customwrap.tex (figure near page bottom)
+- Compiled: 8 pages, 44KB, zero ! errors, zero overfull vbox warnings
+- Verified with PyMuPDF: Test 7 figure pushed to page 8, Tests 1-6 unchanged
+- Updated BLACKBOARD.md: marked #99 done, added comm log, created QA task #105
+- Updated journal: journals/programmer/2026-05-17.md
+- Committed and pushed: 4e6671c
+
+Stage Summary:
+- Task #99 completed. swarmwrap.sty v2.2 now detects insufficient page space and inserts \newpage.
+- No more pending Programmer tasks on BLACKBOARD.
+- QA task #105 created for re-review.
