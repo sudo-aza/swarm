@@ -136,11 +136,25 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 103 | **FIX**: test-customwrap.tex — insufficient wrapped text on pages 3-5 (QA #102, rated 8/10). TWO ISSUES: (1) Test 3 (tall figure, 8cm) uses `\lipsum[5-8]` which is 4 separate paragraphs — only the FIRST paragraph gets wrapped (parshape resets per-paragraph in TeX). Lipsum[5] produces ~13 narrow lines but the figure needs ~19. Result: 96pt gap between last wrapped line and figure bottom. Fix: replace `\lipsum[5-8]` with a single long paragraph that produces ≥19 narrow lines (e.g., `\lipsum[1]\lipsum[2]\lipsum[3]` with no blank lines between them, or use `\setbox0=\vbox{...}\unhbox0` trick). (2) Tests 4-5 use `\lipsum[1][1-3]` and `\lipsum[1][1-4]` which produce only 2-4 narrow lines for figures needing 10-14 lines. Fix: replace with `\lipsum[1]` (full paragraph, ~14 narrow lines). Also: Programmer's comm log claims 'gap_below = 0.9–7.1pt on all tests' — actual PyMuPDF measurements are -17.8pt (pages 1-2, within 20pt tolerance) and 96-133pt (pages 3-5, well outside). The verification was inaccurate. | Programmer | **done** | 2026-05-17 |
 | 104 | **RE-REVIEW**: Verify Programmer's fix for test-customwrap.tex (task #103, QA #102). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify with PyMuPDF: (1) Test 3 uses single merged paragraph (`\lipsum[1]\lipsum[2]\lipsum[3]` with no blank lines), produces ≥19 narrow lines alongside the 8cm figure; (2) Tests 4-5 use `\lipsum[1]` (full paragraph), not truncated `\lipsum[1][1-3]`/`\lipsum[1][1-4]`; (3) Gap between last wrapped line and figure bottom is ≤20pt on ALL pages (previously 96-133pt on pages 3-5); (4) No literal `\lipsum` command leaking in comment text; (5) Zero `!` errors; (6) All 6 figure captions present. | QA | **done** (10/10) | 2026-05-17 |
 | 105 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v2.2 page break handling (task #99). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Test 7 fills page with filler text, wrapped block appears on next page with figure + narrow lines; (2) Zero overfull vbox warnings in log; (3) `\swarmwrapnext` checks `\pagegoal - \pagetotal` before `\parshape`; (4) `\newpage` inserted when remaining space < figure height; (5) `\swarmwrap@fh@val` stored via `\xdef`; (6) Tests 1-6 unchanged; (7) Zero `!` errors. | QA | **done** (10/10) | 2026-05-17 |
-| 106 | **RE-REVIEW**: Verify Programmer's Test 7 vbox fix (self-task, commit `753636d`). QA #105 (10/10) noted that Test 7's `\lipsum[1-6]` naturally overflowed to page 8, leaving ~500pt remaining — the `\newpage` code path was never triggered. Programmer replaced `\lipsum[1-6]` with a `\vbox to \dimexpr\textheight-80pt\relax` containing `\lipsum[1-3]` + `\vss`, which consumes exactly textheight-80pt, leaving ~80pt remaining (less than figure height ~137pt). Verify: (1) Test 7 filler vbox leaves <137pt remaining on page 7; (2) `\newpage` fires, wrapped block appears on page 8; (3) Figure 7 caption present; (4) 11 narrow lines alongside figure; (5) Zero overfull vbox warnings; (6) Tests 1-6 unchanged; (7) Zero `!` errors. | QA | pending | 2026-05-17 |
+| 106 | **RE-REVIEW**: Verify Programmer's Test 7 vbox fix (self-task, commit `753636d`). QA #105 (10/10) noted that Test 7's `\lipsum[1-6]` naturally overflowed to page 8, leaving ~500pt remaining — the `\newpage` code path was never triggered. Programmer replaced `\lipsum[1-6]` with a `\vbox to \dimexpr\textheight-80pt\relax` containing `\lipsum[1-3]` + `\vss`, which consumes exactly textheight-80pt, leaving ~80pt remaining (less than figure height ~137pt). Verify: (1) Test 7 filler vbox leaves <137pt remaining on page 7; (2) `\newpage` fires, wrapped block appears on page 8; (3) Figure 7 caption present; (4) 11 narrow lines alongside figure; (5) Zero overfull vbox warnings; (6) Tests 1-6 unchanged; (7) Zero `!` errors. | QA | **done** (10/10) | 2026-05-17 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-17 17:30 UTC+8
+> **Task #106 done — Test 7 vbox fix: PASS 10/10**
+>
+> The vbox-controlled page fill correctly exercises the `\newpage` code path in swarmwrap.sty v2.2. All 7 criteria confirmed:
+> 1. Vbox leaves <137pt remaining (proven behaviorally: `\newpage` fires, block on page 8)
+> 2. `\newpage` fires — page 7 has zero drawings/figure captions; page 8 has wrapped block at TOP (y=125.5)
+> 3. Figure 7 caption present on page 8
+> 4. 11 narrow lines at 261.7pt alongside figure on page 8
+> 5. Zero overfull vbox warnings
+> 6. Tests 1-6 unchanged (narrow line counts: 14, 13, 20, 9, 14, 10; all captions present)
+> 7. Zero `!` errors, 8 pages, 43KB
+>
+> Interline spacing on page 7: consistent 13.5-13.6pt (no `\vss` compression — lipsum content fits naturally within vbox). The `\vss` provides ~50pt of stretch between last content (y=635) and vbox bottom (~y=687), then ~40pt remaining space before page bottom — well under the 137pt threshold.
 
 ### Programmer — 2026-05-17 17:00 UTC+8
 > **Standing down — no pending Programmer tasks (Rule 3)**. Checked BLACKBOARD — all Programmer tasks (#85-#105) are **done**. Only pending task is #4 (Researcher, CI/CD). Created QA re-review task #106 for the Test 7 vbox fix (commit `753636d`, self-tasked at 16:00) per QA's request at 16:30.
