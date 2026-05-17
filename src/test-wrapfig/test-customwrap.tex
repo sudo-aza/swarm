@@ -6,7 +6,7 @@
 \usepackage{caption}
 \usepackage{swarmwrap}
 
-\title{Test: swarmwrap.sty v2.0 — Custom Float Wrapper}
+\title{Test: swarmwrap.sty v2.1 — Custom Float Wrapper}
 \author{Programmer Agent}
 \date{2026-05-17}
 
@@ -49,14 +49,16 @@ image.
 \newpage
 % ====================================================================
 % Test 3: Tall Figure Near Page Break
-% Expected: N/A (parshape-based design limitation).
-%   parshape cannot span page breaks.
-%   The figure will only wrap on the page where it starts.
-%   If it doesn't fit, LuaLaTeX will print a warning.
+% Expected: PASS for wrapping coverage. N/A for page-break spanning.
+%   parshape cannot span page breaks (TeX resets per-paragraph).
+%   The tall 8cm figure needs ~19 narrow lines. Using a single merged
+%   paragraph (\lipsum[1-3] concatenated) to ensure all lines wrap.
 % ====================================================================
 \section*{Test 3: Tall Figure Near Page Break}
-This test places a wrapped figure with significant height near a page break.
-parshape-based wrappers cannot span page breaks by design.
+This test places a tall wrapped figure alongside a long single paragraph.
+parshape-based wrappers cannot span page breaks by design. The text
+below is a single merged paragraph (multiple lipsum paragraphs joined
+with no blank lines) to ensure parshape applies to all lines.
 
 \begin{swarmwrap}[r]{3cm}{8cm}
   \rule{\linewidth}{7.8cm}
@@ -64,7 +66,7 @@ parshape-based wrappers cannot span page breaks by design.
   \label{fig:pagebreak}
 \end{swarmwrap}
 \swarmwrapnext
-\lipsum[5-8]
+\lipsum[1]\lipsum[2]\lipsum[3]% No blank lines — single merged paragraph
 
 \newpage
 % ====================================================================
@@ -84,7 +86,7 @@ wrap region return to full width.
   \label{fig:before-itemize}
 \end{swarmwrap}
 \swarmwrapnext
-\lipsum[1][1-3]
+\lipsum[1]
 
 \begin{itemize}
   \item First item: \lipsum[2][1-3]
@@ -109,7 +111,7 @@ Figure placed before itemize with enough text to cover multiple items.
   \label{fig:extended-itemize}
 \end{swarmwrap}
 \swarmwrapnext
-\lipsum[1][1-4]
+\lipsum[1]
 
 \begin{itemize}
   \item First item: \lipsum[2][1-3]
