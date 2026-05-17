@@ -142,11 +142,25 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 109 | **FIX**: swarmwrap.sty v2.4 — 4pt overfull hbox on left-wrap test (QA #107, rated 8/10). Added `\emergencystretch=\fontdimen6\font` (1em) before `\noindent` in `\swarmwrapnext`. Root cause: TeX's line-breaking can produce overfull hbox on narrowed parshape lines when text content doesn't break cleanly within the restricted width. `\emergencystretch` only activates when TeX cannot find a satisfactory break — normal lines are completely unaffected. Also fixed stale comments as a side effect (task #111). Verify: zero overfull hbox warnings in `test-customwrap.tex` compilation. | Programmer | **done** | 2026-05-17 |
 | 110 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v2.3 fix #108 (multicol \linewidth). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Test 6 (multicol) narrowed text width is ~106pt (not ~320pt); (2) No text overlaps figure on page 6; (3) `\linewidth` used on lines 105, 107, 135 of swarmwrap.sty; (4) Tests 1-5 produce same results as v2.2; (5) Zero `!` errors; (6) 8 pages total. | QA | **done** (9/10) | 2026-05-17 |
 | 111 | **FIX**: swarmwrap.sty v2.4 — two stale comments contradict the \linewidth fix (QA #110, rated 9/10). (1) Line 1 header says "(v2.2)" but `\ProvidesPackage` says v2.3 — updated to v2.4. (2) Line 130 comment says "width=\textwidth" but code uses `\linewidth` — already correct. Fixed as side effect of task #109 (v2.4 bump updated both header and comments). | Programmer | **done** | 2026-05-17 |
-| 112 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v2.4 fix #109 (overfull hbox) and incidental fix #111 (stale comments). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Zero overfull hbox warnings in compilation log; (2) `\ProvidesPackage` says v2.4 and header line 1 says v2.4 — no mismatch; (3) Line ~130 trailing parshape comment says `\linewidth` not `\textwidth`; (4) `\emergencystretch` is set in `\swarmwrapnext` before `\noindent`; (5) Tests 1-7 produce same visual results as v2.3 (gap unchanged at 12pt); (6) Zero `!` errors; (7) 8 pages total. | QA | pending | 2026-05-17 |
+| 112 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v2.4 fix #109 (overfull hbox) and incidental fix #111 (stale comments). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Zero overfull hbox warnings in compilation log; (2) `\ProvidesPackage` says v2.4 and header line 1 says v2.4 — no mismatch; (3) Line ~130 trailing parshape comment says `\linewidth` not `\textwidth`; (4) `\emergencystretch` is set in `\swarmwrapnext` before `\noindent`; (5) Tests 1-7 produce same visual results as v2.3 (gap unchanged at 12pt); (6) Zero `!` errors; (7) 8 pages total. | QA | **done** (10/10) | 2026-05-17 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-17 22:30 UTC+8
+> **Task #112 done — swarmwrap.sty v2.4 overfull hbox + stale comments: PASS 10/10**
+>
+> All 7 criteria confirmed:
+> 1. Zero overfull hbox warnings (was 4pt on Test 2, now eliminated)
+> 2. `\ProvidesPackage` v2.4 matches header line 1 "(v2.4)" — no mismatch
+> 3. Line 138 trailing parshape comment says `\linewidth` — correct
+> 4. `\emergencystretch=\fontdimen6\font\relax` on line 179, before `\noindent` on line 180
+> 5. Tests 1-7 visual regression: same text widths, same figure positions, interline spacing ~14.1pt (consistent with v2.3)
+> 6. Zero `!` errors
+> 7. 8 pages, all 7 figure captions present
+>
+> swarmwrap.sty is now at v2.4 — all issues from QA #107 (8/10) have been resolved across tasks #108-#112. No remaining QA tasks on BLACKBOARD.
 
 ### Programmer — 2026-05-17 21:00 UTC+8
 > **Task #109 done — swarmwrap.sty v2.4 overfull hbox fix**
