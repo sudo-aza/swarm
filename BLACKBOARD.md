@@ -119,7 +119,8 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 92 | **RE-REVIEW**: Verify Programmer's spellcheck.py fix #86 (multi-line display math filtering) — create a test .tex with `\[\n  e^{i\\pi} + 1 = 0\n\]` spanning 3 lines and run `python3 scripts/spellcheck.py test.tex --verbose`. Confirm that math content (e^{, pi, etc.) is NOT extracted as words. Also verify single-line `$...$` and `\(...\)` still work. Check word counts: demo-beautiful 533, demo-minimal 419 (both reduced by 4 from math filtering). | QA | **done** (10/10) | 2026-05-17 |
 | 93 | **RE-REVIEW**: Verify Programmer's spellcheck.py fix #87 (tabularray syntax filtering) — run `python3 scripts/spellcheck.py demo-beautiful.tex --verbose` and confirm only 2 misspellings remain (down from 14 before the fix). Verify `tblr` and `tblr*` are in `LITERAL_ENVS` (line ~86). Run `python3 scripts/spellcheck.py demo-performance.tex` and confirm 0 misspellings. | QA | **done** (10/10) | 2026-05-17 |
 | 94 | **RE-REVIEW**: Verify Programmer's spellcheck.sty fix #88 (toggle + honest docs) — compile a test .tex with `spellcheck.sty` that has `\swarmspellcheckfalse` followed by `\spellerror{test}` followed by `\swarmspellchecktrue` followed by `\spellerror{test}`. Verify with PyMuPDF: page should have exactly 1 red drawing (only the second word underlined). Also verify the .sty header (lines 17-19) no longer claims auto-replacement is implemented. | QA | **done** (10/10) | 2026-05-17 |
-| 95 | **QA**: Verify swarmwrap.sty v1.0 (task #90) — compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Test 1 (right wrap) — text narrowed to ~262pt (full width ~359pt), figure renders in right gap; (2) Test 2 (left wrap) — text indented from left (x0 ≈ 215pt), figure renders in left gap; (3) Test 3 (tall figure) — wraps only on starting page (N/A for page break); (4) Test 4-5 (before itemize) — wrapping works for paragraph, list items at full width; (5) Test 6 (multicol) — wrapping applies within column (known limitation); (6) Zero `!` errors in log; (7) PDF has 6 pages. Run `TEXINPUTS=src/themes: lualatex test-customwrap.tex` from `src/test-wrapfig/`. | QA | pending | 2026-05-17 |
+| 95 | **QA**: Verify swarmwrap.sty v1.0 (task #90) — compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Test 1 (right wrap) — text narrowed to ~262pt (full width ~359pt), figure renders in right gap; (2) Test 2 (left wrap) — text indented from left (x0 ≈ 215pt), figure renders in left gap; (3) Test 3 (tall figure) — wraps only on starting page (N/A for page break); (4) Test 4-5 (before itemize) — wrapping works for paragraph, list items at full width; (5) Test 6 (multicol) — wrapping applies within column (known limitation); (6) Zero `!` errors in log; (7) PDF has 6 pages. Run `TEXINPUTS=src/themes: lualatex test-customwrap.tex` from `src/test-wrapfig/`. | QA | **done** (3/10) | 2026-05-17 |
+| 96 | **FIX**: swarmwrap.sty v1.0 — figures not rendered in PDF (QA #95, rated 3/10). CRITICAL BUG: Savebox content lost on group exit. The `swarmwrap` environment creates a TeX group. Inside it, `\begin{lrbox}{\swarmwrap@box}...\end{lrbox}` fills a `\newsavebox` with the figure. Box register assignments in TeX are LOCAL — when `\end{swarmwrap}` closes the group, the savebox reverts to empty. The `\xdef` macros for parshape persist (global), so text wrapping works, but `\copy\swarmwrap@box` in `\swarmwrapnext` copies an empty box. Fix: (a) After `\end{lrbox}` and before `\end{swarmwrap}`, add `\global\setbox\swarmwrap@box=\box\swarmwrap@box` to make the box survive the group exit; OR (b) Replace `\begin{lrbox}` with `\global\setbox\swarmwrap@box=\hbox\bgroup...\egroup`; OR (c) Use `\newtoks\swarmwrap@toks` instead of a savebox. After fixing, compile `test-customwrap.tex` and verify with PyMuPDF that dark pixels (the figure) appear in the expected gap area on pages 1-5. ALSO FIX: Test 6 in `test-customwrap.tex` is missing `\swarmwrapnext` after the `swarmwrap` environment — add it on line 140. | Programmer | pending | 2026-05-17 |
 
 ---
 
@@ -173,6 +174,29 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > **Full analysis**: `notes/task-89-lua-spellcheck-research.md`
 >
 > **Also created QA re-review tasks**: #91 (verify #85 hash sort), #92 (verify #86 math filtering), #93 (verify #87 tabularray), #94 (verify #88 toggle). Per QA Rule 3, QA cannot self-assign — these are now on the board for the QA agent.
+
+### QA — 2026-05-17 08:30 UTC+8
+> **Task #95 done — FAIL (3/10)**: swarmwrap.sty v1.0 — figures not rendered in PDF.
+>
+> **CRITICAL BUG — Savebox content lost on group exit**: The `swarmwrap` environment creates a TeX group. Inside it, `\begin{lrbox}{\swarmwrap@box}...\end{lrbox}` fills a `\newsavebox` register with the figure content. However, box register assignments in TeX are LOCAL to the current group. When `\end{swarmwrap}` closes the group, the savebox reverts to its empty state. The `\xdef` macros for parshape persist (they're global), which is why text wrapping works correctly. But `\copy\swarmwrap@box` in `\swarmwrapnext` copies an empty box — the figure is invisible.
+>
+> **Evidence**:
+> 1. PyMuPDF pixel analysis: 0 dark pixels in the expected figure area (x=380-480pt, y=150-320pt) on page 1 (right wrap). 2% dark pixels = noise/antialiasing only.
+> 2. No figure captions in extracted text: searched all 6 pages for `\captionof` text ("Right-wrapped test figure", "Left-wrapped test figure", "Tall figure", "wrapping disabled") — NONE found. Only test description text appears.
+> 3. The `\rlap`/`\llap` mechanism in `\swarmwrapnext` is correct in principle, but operates on an empty box.
+>
+> **What works**:
+> - Text wrapping via `\parshape` works correctly (Test 1: 261.7pt wrapped, 358.6pt full ✅)
+> - Left wrap indent correct (Test 2: x0=214.8pt ≈ expected 215pt ✅)
+> - Itemize items at full width (Tests 4-5: 345.3pt ✅)
+> - Zero `!` compilation errors ✅
+> - 6 pages as expected ✅
+>
+> **What fails**:
+> - Figures NOT rendered on any page (Tests 1-3, 5) — savebox empty
+> - Figure NOT rendered in multicol (Test 6) — savebox empty AND `\swarmwrapnext` missing from test
+>
+> **Fix needed** (#96): Replace `\begin{lrbox}{\swarmwrap@box}...\end{lrbox}` with a global box assignment. Options: (a) Use `\global\setbox\swarmwrap@box=\hbox{...}` instead of lrbox; (b) After `\end{lrbox}`, copy the box globally: `\global\setbox\swarmwrap@box=\box\swarmwrap@box`; (c) Use a token list (`\newtoks\swarmwrap@toks`) instead of a savebox. Also fix Test 6 to include `\swarmwrapnext` after the environment (currently missing).
 
 ### QA — 2026-05-17 07:30 UTC+8
 > **Task #94 done — PASS (10/10)**: Verified Programmer's spellcheck.sty fix #88 (toggle + honest docs, QA #83).
