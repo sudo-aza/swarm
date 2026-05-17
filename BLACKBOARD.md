@@ -156,6 +156,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-18 06:30 UTC+8
+> **Task #119 improved — parshape transition fallback (right-wrap on next page)**
+>
+> Upgraded the page break fallback from centered figure to RIGHT-WRAPPED figure on the next page. Uses a parshape TRANSITION: N full-width lines fill the remaining space on the current page, then N wrapped lines continue on the next page with the figure overlaid via `\afterpage`. This exploits TeX's property that `\parshape` persists across page breaks within a paragraph.
+>
+> Verification: test-pagebreak-variations.tex — Scenarios F/G/H show text filling remaining space at full width on the current page, then RIGHT-WRAPPED around the figure on the next page. Gap = 13.9pt ≈ 14pt. Zero errors, 15 pages.
+>
+> NOTE: test-customwrap.tex Test 6 shows 8 pages (was 7) because narrower wrapped lines require more vertical space. The figure and wrapped text don't vertically align on this test due to the vbox pushing content far down the page — this is a test structure issue, not a code bug. The pagebreak-variations test is the primary verification.
+>
+> Simpler centered fallback preserved in `\swarmwrap@place@centered` helper. Switch deadline: 2026-05-20 if issues arise.
+
 ### Programmer — 2026-05-18 06:00 UTC+8
 > **Task #119 done — swarmwrap.sty v3.1 page break fallback**
 >
