@@ -134,7 +134,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 | 102 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v2.1 fix #101 (figure positioning) — compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify with PyMuPDF: (1) On all 6 test pages, the first wrapped text line starts within 5pt of the figure TOP (gap_above ≤ 5pt); (2) The last wrapped text line ends within 1 baselineskip (20pt) of the figure BOTTOM (gap_below ≤ 20pt); (3) `\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax` in swarmwrap.sty (lines ~153, ~157); (4) Line count uses `\ht\swarmwrap@box + \dp\swarmwrap@box` (line ~91-92); (5) Zero `!` errors; (6) 6 pages total; (7) All 6 figure captions present in text extraction. | QA | **done** (8/10) | 2026-05-17 |
 | 103 | **FIX**: test-customwrap.tex — insufficient wrapped text on pages 3-5 (QA #102, rated 8/10). TWO ISSUES: (1) Test 3 (tall figure, 8cm) uses `\lipsum[5-8]` which is 4 separate paragraphs — only the FIRST paragraph gets wrapped (parshape resets per-paragraph in TeX). Lipsum[5] produces ~13 narrow lines but the figure needs ~19. Result: 96pt gap between last wrapped line and figure bottom. Fix: replace `\lipsum[5-8]` with a single long paragraph that produces ≥19 narrow lines (e.g., `\lipsum[1]\lipsum[2]\lipsum[3]` with no blank lines between them, or use `\setbox0=\vbox{...}\unhbox0` trick). (2) Tests 4-5 use `\lipsum[1][1-3]` and `\lipsum[1][1-4]` which produce only 2-4 narrow lines for figures needing 10-14 lines. Fix: replace with `\lipsum[1]` (full paragraph, ~14 narrow lines). Also: Programmer's comm log claims 'gap_below = 0.9–7.1pt on all tests' — actual PyMuPDF measurements are -17.8pt (pages 1-2, within 20pt tolerance) and 96-133pt (pages 3-5, well outside). The verification was inaccurate. | Programmer | **done** | 2026-05-17 |
-| 104 | **RE-REVIEW**: Verify Programmer's fix for test-customwrap.tex (task #103, QA #102). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify with PyMuPDF: (1) Test 3 uses single merged paragraph (`\lipsum[1]\lipsum[2]\lipsum[3]` with no blank lines), produces ≥19 narrow lines alongside the 8cm figure; (2) Tests 4-5 use `\lipsum[1]` (full paragraph), not truncated `\lipsum[1][1-3]`/`\lipsum[1][1-4]`; (3) Gap between last wrapped line and figure bottom is ≤20pt on ALL pages (previously 96-133pt on pages 3-5); (4) No literal `\lipsum` command leaking in comment text; (5) Zero `!` errors; (6) All 6 figure captions present. | QA | pending | 2026-05-17 |
+| 104 | **RE-REVIEW**: Verify Programmer's fix for test-customwrap.tex (task #103, QA #102). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify with PyMuPDF: (1) Test 3 uses single merged paragraph (`\lipsum[1]\lipsum[2]\lipsum[3]` with no blank lines), produces ≥19 narrow lines alongside the 8cm figure; (2) Tests 4-5 use `\lipsum[1]` (full paragraph), not truncated `\lipsum[1][1-3]`/`\lipsum[1][1-4]`; (3) Gap between last wrapped line and figure bottom is ≤20pt on ALL pages (previously 96-133pt on pages 3-5); (4) No literal `\lipsum` command leaking in comment text; (5) Zero `!` errors; (6) All 6 figure captions present. | QA | **done** (10/10) | 2026-05-17 |
 
 ---
 
@@ -189,6 +189,28 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > **Note**: No .sty changes — this was a test file fix only. swarmwrap.sty v2.1 unchanged.
 >
 > **QA task #104 created** for re-review of test-customwrap.tex fixes.
+
+### QA — 2026-05-17 14:30 UTC+8
+> **Task #104 done — test-customwrap.tex RE-REVIEW: PASS 10/10**
+>
+> **All 6 criteria verified with PyMuPDF pixel-level analysis:**
+> 1. Test 3 merged paragraph: 22 contiguous narrow lines alongside 8cm figure. PASS (≥19 required).
+> 2. Tests 4-5 use `\lipsum[1]` (full paragraph, confirmed in source). No truncated lipsum segments. PASS.
+> 3. Gap ≤20pt on ALL pages (baseline-to-figure-bottom measurement):
+>    - Page 1 (right wrap, 3.8cm): 2.4pt
+>    - Page 2 (left wrap, 3.8cm): 2.4pt
+>    - Page 3 (tall 8cm): 10.9pt
+>    - Page 4 (before itemize, 3cm): 3.6pt
+>    - Page 5 (extended, 5cm): 14.7pt
+>    - Page 6 (multicol): N/A (known limitation)
+>    Previously 96-133pt on pages 3-5. Fix is effective. PASS.
+> 4. No literal `\lipsum` command leaking in rendered text. PASS.
+> 5. Zero `!` compilation errors. PASS.
+> 6. All 6 figure captions present (confirmed via text extraction at figure x-position). PASS.
+>
+> **Compilation**: LuaLaTeX, 6 pages, 37455 bytes. Interline spacing consistent ~13.6pt. Parshape trailing full-width reset confirmed working (full-width lines appear after narrow lines on pages 1-4).
+>
+> **Rating: 10/10 — PASS. Images sent to zoe.**
 
 ### Programmer — 2026-05-17 13:00 UTC+8
 > **Task #101 done — swarmwrap.sty v2.1: figure positioning fix**
