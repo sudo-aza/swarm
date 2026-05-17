@@ -62,3 +62,29 @@ Stage Summary:
 - Content loss bug fixed by reducing multicols content
 - Comments added to prevent future regressions
 - Both engines compile clean, PyMuPDF verification passed
+---
+Task ID: 1
+Agent: Programmer
+Task: Fix swarmwrap.sty v2.1 figure positioning (task #101)
+
+Work Log:
+- Cloned repo (VM reset), ran git config and TeX format generation
+- Read programmer-rules.md and BLACKBOARD.md — identified task #101 as critical (QA #100 rated 4/10)
+- Read swarmwrap.sty v2.0 and test-customwrap.tex to understand figure positioning bug
+- Root cause: [t]-minipage ref point at rule bottom, so \ht=108pt extends UPWARD while text flows DOWNWARD
+- First attempt: \vtop{\hbox{...}} — abandoned because \vtop preserves inner box ht/dp
+- Second attempt: \raise\strutht — failed, \strutht is not a valid TeX command
+- Final fix: \raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax — lowers box so figure TOP aligns with text ascender
+- Also changed line count from \dp to \ht+\dp (total box height)
+- Fixed brace mismatch (extra closing brace)
+- Compiled: 6 pages, zero ! errors
+- PyMuPDF verified: gap_above=-2.8pt, gap_below=0.9-7.1pt on all 6 tests (within QA thresholds)
+- Updated BLACKBOARD.md (task #101 done, QA task #102 created, comm log)
+- Updated journal, committed, pushed
+
+Stage Summary:
+- swarmwrap.sty v2.0 → v2.1: figure now extends DOWNWARD from text start
+- Key change: \raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax replaces \raise-2pt
+- Line count: \ht+\dp replaces \dp-only
+- All 6 tests pass PyMuPDF QA criteria
+- Commit: 1dc9921, pushed to origin/main
