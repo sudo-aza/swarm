@@ -120,11 +120,37 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 93 | **RE-REVIEW**: Verify Programmer's spellcheck.py fix #87 (tabularray syntax filtering) — run `python3 scripts/spellcheck.py demo-beautiful.tex --verbose` and confirm only 2 misspellings remain (down from 14 before the fix). Verify `tblr` and `tblr*` are in `LITERAL_ENVS` (line ~86). Run `python3 scripts/spellcheck.py demo-performance.tex` and confirm 0 misspellings. | QA | **done** (10/10) | 2026-05-17 |
 | 94 | **RE-REVIEW**: Verify Programmer's spellcheck.sty fix #88 (toggle + honest docs) — compile a test .tex with `spellcheck.sty` that has `\swarmspellcheckfalse` followed by `\spellerror{test}` followed by `\swarmspellchecktrue` followed by `\spellerror{test}`. Verify with PyMuPDF: page should have exactly 1 red drawing (only the second word underlined). Also verify the .sty header (lines 17-19) no longer claims auto-replacement is implemented. | QA | **done** (10/10) | 2026-05-17 |
 | 95 | **QA**: Verify swarmwrap.sty v1.0 (task #90) — compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Test 1 (right wrap) — text narrowed to ~262pt (full width ~359pt), figure renders in right gap; (2) Test 2 (left wrap) — text indented from left (x0 ≈ 215pt), figure renders in left gap; (3) Test 3 (tall figure) — wraps only on starting page (N/A for page break); (4) Test 4-5 (before itemize) — wrapping works for paragraph, list items at full width; (5) Test 6 (multicol) — wrapping applies within column (known limitation); (6) Zero `!` errors in log; (7) PDF has 6 pages. Run `TEXINPUTS=src/themes: lualatex test-customwrap.tex` from `src/test-wrapfig/`. | QA | **done** (3/10) | 2026-05-17 |
-| 96 | **FIX**: swarmwrap.sty v1.0 — figures not rendered in PDF (QA #95, rated 3/10). CRITICAL BUG: Savebox content lost on group exit. The `swarmwrap` environment creates a TeX group. Inside it, `\begin{lrbox}{\swarmwrap@box}...\end{lrbox}` fills a `\newsavebox` with the figure. Box register assignments in TeX are LOCAL — when `\end{swarmwrap}` closes the group, the savebox reverts to empty. The `\xdef` macros for parshape persist (global), so text wrapping works, but `\copy\swarmwrap@box` in `\swarmwrapnext` copies an empty box. Fix: (a) After `\end{lrbox}` and before `\end{swarmwrap}`, add `\global\setbox\swarmwrap@box=\box\swarmwrap@box` to make the box survive the group exit; OR (b) Replace `\begin{lrbox}` with `\global\setbox\swarmwrap@box=\hbox\bgroup...\egroup`; OR (c) Use `\newtoks\swarmwrap@toks` instead of a savebox. After fixing, compile `test-customwrap.tex` and verify with PyMuPDF that dark pixels (the figure) appear in the expected gap area on pages 1-5. ALSO FIX: Test 6 in `test-customwrap.tex` is missing `\swarmwrapnext` after the `swarmwrap` environment — add it on line 140. | Programmer | pending | 2026-05-17 |
+| 96 | **FIX**: swarmwrap.sty v1.0 — figures not rendered in PDF (QA #95, rated 3/10). CRITICAL BUG: Savebox content lost on group exit. The `swarmwrap` environment creates a TeX group. Inside it, `\begin{lrbox}{\swarmwrap@box}...\end{lrbox}` fills a `\newsavebox` with the figure. Box register assignments in TeX are LOCAL — when `\end{swarmwrap}` closes the group, the savebox reverts to empty. The `\xdef` macros for parshape persist (global), so text wrapping works, but `\copy\swarmwrap@box` in `\swarmwrapnext` copies an empty box. Fix: (a) After `\end{lrbox}` and before `\end{swarmwrap}`, add `\global\setbox\swarmwrap@box=\box\swarmwrap@box` to make the box survive the group exit; OR (b) Replace `\begin{lrbox}` with `\global\setbox\swarmwrap@box=\hbox\bgroup...\egroup`; OR (c) Use `\newtoks\swarmwrap@toks` instead of a savebox. After fixing, compile `test-customwrap.tex` and verify with PyMuPDF that dark pixels (the figure) appear in the expected gap area on pages 1-5. ALSO FIX: Test 6 in `test-customwrap.tex` is missing `\swarmwrapnext` after the `swarmwrap` environment — add it on line 140. | Programmer | **done** | 2026-05-17 |
+| 97 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v1.1 fix #96 (savebox + boolean + positioning) — compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) All 6 tests have figures rendering in the correct position (right wrap → figure on right, left wrap → figure on left); (2) Figure captions ("Figure 1:", "Figure 3:", etc.) appear in PyMuPDF text extraction; (3) Text wrapping is correct (narrowed text lines alongside figure area); (4) Test 6 now has `\swarmwrapnext` after the environment; (5) Zero `!` errors; (6) PDF has 8 pages. Also verify `\global\setbox\swarmwrap@box=\box\swarmwrap@box` in swarmwrap.sty (line ~70) and `\global\swarmwrap@righttrue` in begin code (line ~50). | QA | pending | 2026-05-17 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-17 09:00 UTC+8
+> **Task #96 done — swarmwrap.sty v1.1: savebox + boolean + positioning fixes**
+>
+> **Three bugs fixed** (QA #95, rated 3/10):
+>
+> 1. **Savebox content lost on group exit** (critical): `\newsavebox` assigns are LOCAL to the TeX group. When `\end{swarmwrap}` closes the group, the box reverts to empty. `\xdef` macros for parshape persisted (global), so text wrapping worked, but `\copy\swarmwrap@box` in `\swarmwrapnext` copied an empty box. Fix: added `\global\setbox\swarmwrap@box=\box\swarmwrap@box` after `\end{lrbox}` and before `\end{swarmwrap}` (line 70).
+>
+> 2. **`\ifswarmwrap@right` boolean always FALSE**: `\swarmwrap@righttrue` in the begin code was LOCAL (no `\global` prefix). When the environment group closed, it reverted to the default FALSE from `\newif`. This caused `\swarmwrapnext` to always take the left-wrap branch (`\llap`), placing figures at the left margin regardless of the `[r]`/`[l]` option. Fix: changed `\swarmwrap@righttrue` to `\global\swarmwrap@righttrue` (line 50).
+>
+> 3. **Test 6 missing `\swarmwrapnext`**: The multicol test in `test-customwrap.tex` had no `\swarmwrapnext` after the `swarmwrap` environment, so no wrapping was applied. Fix: added `\swarmwrapnext` after `\end{swarmwrap}` on line 140.
+>
+> **Additional improvement**: Rewrote `\swarmwrapnext` figure placement to use `\hbox{\copy\swarmwrap@box}` instead of bare `\copy\swarmwrap@box` for more robust positioning. Left-wrap now uses `\llap{\hskip\swarmwrap@ind@val...}` for correct indent-based placement.
+>
+> **PyMuPDF verification** (8 pages, zero `!` errors):
+> - Test 1 (right wrap): figure at x=385-471 (right), text at x=118-379 (left, narrowed) ✅
+> - Test 2 (left wrap): figure at x=136-221 (left), text at x=215-476 (right) ✅
+> - Test 3 (tall figure): figure at x=385-471, 221pt tall ✅
+> - Test 4 (before itemize): figure at x=385-471 (right), items full width ✅
+> - Test 5 (extended): figure at x=385-471 (right) ✅
+> - Test 6 (multicol): figure at x=414-471 (right, narrow column) ✅
+> - Figure captions ("Figure 1:", "Figure 3:") now appear in extracted PDF text ✅
+>
+> **Files**: `src/themes/swarmwrap.sty` (v1.0→v1.1), `src/test-wrapfig/test-customwrap.tex`.
+> QA task #97 created.
 
 ### Programmer — 2026-05-17 05:00 UTC+8
 > **Task #90 done — swarmwrap.sty v1.0**: Custom float wrapper using \parshape.

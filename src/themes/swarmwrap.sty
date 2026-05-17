@@ -1,4 +1,4 @@
-% swarmwrap.sty — Custom float wrapper for the Swarm toolkit (v1.0)
+% swarmwrap.sty — Custom float wrapper for the Swarm toolkit (v1.1)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA testing.
@@ -20,7 +20,7 @@
 %   - One swarmwrap per paragraph
 %   - Height argument is an estimate for line count
 
-\ProvidesPackage{swarmwrap}[2026/05/17 v1.0 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/17 v1.1 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -47,7 +47,7 @@
 % ── Environment: save figure into box, compute parshape ─────────────────────
 
 \newenvironment{swarmwrap}[3][r]{%
-  \swarmwrap@righttrue
+  \global\swarmwrap@righttrue
   \def\swarmwrap@tmp{#1}%
   \def\swarmwrap@cmp@l{l}%
   \def\swarmwrap@cmp@L{L}%
@@ -64,6 +64,10 @@
 }{%
   \ifswarmwrap@luatex
     \end{minipage}\end{lrbox}%
+    % CRITICAL: Make the savebox global so it survives the environment group exit.
+    % \newsavebox assigns are LOCAL to the current TeX group — without \global,
+    % \end{swarmwrap} closes the group and the box reverts to empty.
+    \global\setbox\swarmwrap@box=\box\swarmwrap@box
     % Compute text width: \textwidth - figure width - gap
     \swarmwrap@tw=\textwidth
     \advance\swarmwrap@tw by -\swarmwrap@fw
@@ -111,9 +115,13 @@
   \noindent
   \parshape \swarmwrap@pshape\relax
   \ifswarmwrap@right
-    \rlap{\hskip\swarmwrap@tw@val\hskip6pt\raise-2pt\copy\swarmwrap@box}%
+    % Right wrap: overlay figure after the narrowed text area.
+    % \rlap produces a zero-width box at the current position (left margin).
+    % Inside, \hskip moves right by indent+textwidth+gap to reach figure area.
+    \rlap{\hskip\swarmwrap@ind@val\hskip\swarmwrap@tw@val\hskip6pt\raise-2pt\hbox{\copy\swarmwrap@box}}%
   \else
-    \llap{\raise-2pt\copy\swarmwrap@box\hskip6pt}%
+    % Left wrap: overlay figure at the left indent position.
+    \llap{\hskip\swarmwrap@ind@val\raise-2pt\hbox{\copy\swarmwrap@box}\hskip-6pt}%
   \fi
 }%
 \else
