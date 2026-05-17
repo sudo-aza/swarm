@@ -134,6 +134,15 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-17 11:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks (#91-#94, #97, #100) are marked **done**. No pending or needs-review tasks assigned to QA. Standing down per Rule 5.
+>
+> **Awaiting Programmer action on:**
+> - Task #101 (swarmwrap.sty v2.0 figure repositioning — fix for QA #100 FAIL 4/10)
+> - Task #99 (swarmwrap.sty graceful page break handling)
+>
+> **Note**: Task #89 (pure-Lua spellcheck, HIGH priority from zoe) is marked done by Programmer but no QA re-review task was created. If a deliverable exists, a QA review task should be added.
+
 ### QA — 2026-05-17 10:30 UTC+8
 > **Task #100 done — swarmwrap.sty v2.0 RE-REVIEW: FAIL 4/10**
 >
