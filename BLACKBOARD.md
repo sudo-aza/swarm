@@ -140,7 +140,8 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 107 | **QA**: Full review of swarmwrap.sty v2.2 (zoe-requested, not from BLACKBOARD). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. PyMuPDF pixel-level analysis of all 8 pages. Check: figure alignment (gap_above ≤ 5pt), interline spacing consistency, parshape trailing reset, left/right wrap, itemize interaction, multicol behavior, page break detection (Test 7), log for errors/warnings. | QA | **done** (8/10) | 2026-05-17 |
 | 108 | **FIX**: swarmwrap.sty v2.3 — multicol uses wrong width (QA #107, rated 8/10). BUG: `swarmwrap.sty` lines 103-105 use `\textwidth` (full page width, 358.6pt) instead of `\linewidth` (column width inside multicol, ~174pt). Inside `multicols{2}`, `\textwidth` is still the full page width but `\linewidth` is the column width. Result: the parshape narrows text to `\textwidth - fw - 12pt` which is ~320pt — far wider than the column. Text flows at full column width and overlaps behind the figure (56.7pt overlap confirmed by PyMuPDF on 7+ lines). FIX: Replace `\textwidth` with `\linewidth` on lines 103 and 105 (and the trailing reset line 132). Verify: after fix, inside multicol the narrowed text width should be `\linewidth - fw - 12pt` (~152pt for a 2cm figure), and no text should overlap the figure area. | Programmer | **done** | 2026-05-17 |
 | 109 | **FIX**: swarmwrap.sty v2.3 — 4pt overfull hbox on left-wrap test (QA #107, rated 8/10). MINOR: `Overfull \hbox (4.0258pt too wide) in paragraph at lines 46-48` on Test 2 (left wrap). The parshape text width calculation `\textwidth - fw - 12pt` doesn't account for the `\item` indent or list left margin that may be present on the page. Alternatively, the 12pt gap may accumulate rounding error when combined with `\linewidth` adjustments. FIX: Reduce the gap from 12pt to 10pt, OR add a small `\frenchspacing` / `\rightskip` adjustment inside the parshape region, OR use `\linewidth` consistently (which may also fix the multicol issue). Verify: zero overfull hbox warnings after fix. | Programmer | pending | 2026-05-17 |
-| 110 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v2.3 fix #108 (multicol \linewidth). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Test 6 (multicol) narrowed text width is ~106pt (not ~320pt); (2) No text overlaps figure on page 6; (3) `\linewidth` used on lines 105, 107, 135 of swarmwrap.sty; (4) Tests 1-5 produce same results as v2.2; (5) Zero `!` errors; (6) 8 pages total. | QA | pending | 2026-05-17 |
+| 110 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v2.3 fix #108 (multicol \linewidth). Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX. Verify: (1) Test 6 (multicol) narrowed text width is ~106pt (not ~320pt); (2) No text overlaps figure on page 6; (3) `\linewidth` used on lines 105, 107, 135 of swarmwrap.sty; (4) Tests 1-5 produce same results as v2.2; (5) Zero `!` errors; (6) 8 pages total. | QA | **done** (9/10) | 2026-05-17 |
+| 111 | **FIX**: swarmwrap.sty v2.3 — two stale comments contradict the \linewidth fix (QA #110, rated 9/10). (1) Line 1 header says "(v2.2)" but `\ProvidesPackage` on line 46 says v2.3 — update header to match. (2) Line 130 comment says "line spec with indent=0pt and width=\textwidth" but the actual code on line 140 uses `\linewidth` — update comment to say `\linewidth`. Both comments directly relate to the fix being verified and contradict the actual code. | Programmer | pending | 2026-05-17 |
 
 ---
 
@@ -172,6 +173,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > 2. **4pt overfull hbox** (Task #109): left-wrap test line 46-48, likely rounding in gap calculation
 >
 > Created fix tasks #108 and #109 for Programmer.
+
+### QA — 2026-05-17 20:30 UTC+8
+> **Task #110 done — swarmwrap.sty v2.3 multicol \linewidth fix: 9/10**
+>
+> Functional fix verified correct. `\linewidth` used on lines 110 and 140 of swarmwrap.sty. PyMuPDF analysis of Test 6 (multicol): narrowed text width = 105.7pt (expected: linewidth 174.3 - figwidth 56.9 - gap 12 = 105.4pt). No text overlap — max narrowed x1 = 223.5pt, figure starts at x ≈ 229.5pt. All 7 figure captions present, 8 pages, zero `!` errors, Tests 1-5 unchanged. Pre-existing 4pt overfull hbox on Test 2 (task #109) confirmed unchanged.
+>
+> **Two stale comments found (Task #111 created):**
+> 1. Line 1 header says "(v2.2)" but `\ProvidesPackage` says v2.3
+> 2. Line 130 comment says "width=\textwidth" but code on line 140 uses `\linewidth`
+>
+> Both directly contradict the fix and could mislead future readers. Rated 9/10 (FAIL) per Rule 1.
 
 ### QA — 2026-05-17 19:30 UTC+8
 > **No pending QA tasks**: Checked BLACKBOARD — all QA tasks (#91-#94, #97, #100, #102, #104, #105, #106) are marked **done**. No pending or needs-review tasks assigned to QA. Standing down per Rule 5.
