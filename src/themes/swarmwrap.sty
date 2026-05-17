@@ -1,4 +1,4 @@
-% swarmwrap.sty — Custom float wrapper for the Swarm toolkit (v2.0)
+% swarmwrap.sty — Custom float wrapper for the Swarm toolkit (v2.1)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA testing.
@@ -15,8 +15,14 @@
 %
 % Requirements: LuaLaTeX (falls back to centered figure otherwise)
 %
+% Changes in v2.1:
+%   - Figure now extends DOWNWARD from text start (\raise adjusted by box \ht)
+%     instead of upward from reference point (v2.0 bug)
+%   - Line count uses \ht+\dp (total box height) not just \dp
+%   - Figure top aligns with text ascender height for correct overlap
+%
 % Changes in v2.0:
-%   - Height auto-detected from box \dp (content below text baseline), not user-supplied
+%   - Height auto-detected from actual box dimensions
 %   - \smash around \rlap/\llap prevents figure depth from corrupting interline spacing
 %   - Trailing full-width parshape line resets excess lines to normal (LuaTeX fix)
 %   - User-supplied height arg (3rd arg) accepted but ignored for backward compat
@@ -25,7 +31,7 @@
 %   - Cannot span page breaks (parshape limitation)
 %   - One swarmwrap per paragraph
 
-\ProvidesPackage{swarmwrap}[2026/05/17 v2.0 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/17 v2.1 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -75,12 +81,15 @@
     % \end{swarmwrap} closes the group and the box reverts to empty.
     \global\setbox\swarmwrap@box=\box\swarmwrap@box
     % ── Auto-detect height from actual box ──────────────────────────────
-    % v2.0: Use only \dp (depth below reference point) for line count.
-    % The [t]-aligned minipage reference point is at the rule bottom (baseline
-    % of the first content). \ht is the rule extending ABOVE the text start —
-    % it does not need wrapping lines. \dp is the caption below the text start
-    % — this is the content that actually needs narrowed text alongside it.
-    \swarmwrap@fh=\dp\swarmwrap@box
+    % v2.1: Use \ht + \dp (total box height) for line count.
+    % The [t]-minipage puts the reference point at the first baseline. For a
+    % \rule, the baseline is at the rule BOTTOM, so \ht = figure height (extends
+    % ABOVE reference point) and \dp = caption depth (extends BELOW).
+    % We need BOTH for the total height the figure occupies. The figure is placed
+    % using \vtop which moves the reference point to the box TOP, so it extends
+    % downward alongside the text.
+    \swarmwrap@fh=\ht\swarmwrap@box
+    \advance\swarmwrap@fh by \dp\swarmwrap@box
     \advance\swarmwrap@fh by \baselineskip  % one extra line for visual breathing room
     % Compute text width: \textwidth - figure width - gap
     \swarmwrap@tw=\textwidth
@@ -135,10 +144,17 @@
     % TeX's line layout: zero width (\rlap), zero height and depth (\smash).
     % Without \smash, the figure box's depth (caption below baseline) would
     % corrupt interline spacing, adding ~75pt gap between lines 1 and 2.
-    \smash{\rlap{\hskip\swarmwrap@ind@val\hskip\swarmwrap@tw@val\hskip6pt\raise-2pt\hbox{\copy\swarmwrap@box}}}%
+    %
+    % v2.1: The [t]-minipage puts the figure reference point at the rule BOTTOM.
+    % So \ht = figure height (extends UP), \dp = caption depth (extends DOWN).
+    % To make the figure extend DOWNWARD alongside text, we lower the box so the
+    % figure TOP (= refpoint + \ht) aligns with the text ascender (= \ht\strutbox).
+    % \raise dim = \ht\strutbox - \ht\swarmwrap@box (negative = lower the box).
+    \smash{\rlap{\hskip\swarmwrap@ind@val\hskip\swarmwrap@tw@val\hskip6pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
   \else
     % Left wrap: overlay figure at the left indent position.
-    \smash{\llap{\hskip\swarmwrap@ind@val\raise-2pt\hbox{\copy\swarmwrap@box}\hskip-6pt}}%
+    % Same \raise adjustment for downward figure placement.
+    \smash{\llap{\hskip\swarmwrap@ind@val\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}\hskip-6pt}}%
   \fi
 }%
 \else
