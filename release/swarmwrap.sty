@@ -1,0 +1,142 @@
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.0)
+%
+% Text wrapping using \parshape applied by \swarmwrapnext command.
+% Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
+%
+% Usage:
+%   \usepackage{swarmwrap}
+%
+%   % Simple figure (single content box):
+%   \begin{swarmwrap}%
+%     \includegraphics[width=3cm]{photo}%
+%   \end{swarmwrap}%
+%   \swarmwrapnext
+%   Paragraph text wraps around the figure.
+%
+%   % Multi-line content (figure + caption):
+%   \begin{swarmwrap}%
+%     \begin{minipage}[t]{3cm}
+%       \centering
+%       \includegraphics[width=\linewidth]{photo}
+%       \captionof{figure}{Caption.}
+%     \end{minipage}%
+%   \end{swarmwrap}%
+%   \swarmwrapnext
+%   Paragraph text wraps around the figure.
+%
+% Zero arguments. Width and height are auto-detected from the rendered
+% content box. The user controls the content width explicitly (e.g.,
+% \includegraphics[width=3cm] or \begin{minipage}[t]{3cm}).
+% Right-side wrapping only. Left-wrap removed in v3.0 (scope reduction).
+%
+% Requirements: LuaLaTeX (falls back to centered figure otherwise)
+%
+% Changes in v3.0:
+%   - Zero-argument API: both width and height auto-detected from content
+%   - Removed mandatory width argument and fixed-width minipage
+%   - lrbox-only capture: content sets its natural width
+%   - Right-side wrapping only (left-wrap code removed)
+%   - Gap increased to 14pt (0.5cm)
+%   - Page break detection (from v2.2)
+%   - Trailing full-width parshape line (from v2.0)
+%   - emergencystretch (from v2.4)
+
+\ProvidesPackage{swarmwrap}[2026/05/18 v3.0 Custom float wrapper]
+
+\RequirePackage{graphicx}
+\RequirePackage{ifluatex}
+
+\newsavebox{\swarmwrap@box}
+\newdimen\swarmwrap@fw       % figure width (auto-detected from box)
+\newdimen\swarmwrap@fh       % figure height (auto-detected from box)
+\newdimen\swarmwrap@tw       % text width (computed for parshape)
+\newcount\swarmwrap@nl       % number of parshape lines
+\newcount\swarmwrap@loop@cnt % loop counter
+\newif\ifswarmwrap@luatex
+
+\ifluatex \swarmwrap@luatextrue \else \swarmwrap@luatexfalse \fi
+
+% Global macros to persist values across the environment group boundary.
+\newcommand{\swarmwrap@fw@val}{0pt}  % figure width for parshape
+\newcommand{\swarmwrap@fh@val}{0pt}  % figure height for page break
+
+% ── Environment: capture content into a savebox (zero args) ────────────
+% Content sets its natural width via explicit sizing:
+%   - \includegraphics[width=3cm]{photo}  → box width = 3cm
+%   - \begin{minipage}[t]{3cm}...        → box width = 3cm
+% Width and height are measured from the rendered box after closing.
+
+\newenvironment{swarmwrap}{%
+  \ifswarmwrap@luatex
+    \begin{lrbox}{\swarmwrap@box}%
+  \else
+    \begin{figure}[htbp]\centering
+    \PackageWarning{swarmwrap}{LuaLaTeX required for wrapping. Using float.}%
+  \fi
+}{%
+  \ifswarmwrap@luatex
+    \end{lrbox}%
+    % CRITICAL: Make the savebox global so it survives the group exit.
+    \global\setbox\swarmwrap@box=\box\swarmwrap@box
+    % Auto-detect width from rendered box
+    \swarmwrap@fw=\wd\swarmwrap@box
+    \xdef\swarmwrap@fw@val{\the\swarmwrap@fw}%
+    % Auto-detect height from rendered box (+ baselineskip for spacing)
+    \swarmwrap@fh=\ht\swarmwrap@box
+    \advance\swarmwrap@fh by \dp\swarmwrap@box
+    \advance\swarmwrap@fh by \baselineskip
+    \xdef\swarmwrap@fh@val{\the\swarmwrap@fh}%
+  \else
+    \end{figure}%
+  \fi
+}
+
+% ── \swarmwrapnext: compute parshape and place figure ──────────────────
+% All computation happens here so \linewidth is captured at the
+% correct location (inside multicol, itemize, etc.).
+
+\ifswarmwrap@luatex
+\newcommand{\swarmwrapnext}{%
+  % ── Compute parshape ──────────────────────────────────────────────
+  % Text width = \linewidth - figure width - 14pt gap
+  \swarmwrap@fw=\swarmwrap@fw@val\relax
+  \swarmwrap@tw=\linewidth
+  \advance\swarmwrap@tw by -\swarmwrap@fw
+  \advance\swarmwrap@tw by -14pt
+  % Line count from figure height
+  \swarmwrap@nl=0
+  \swarmwrap@fh=\swarmwrap@fh@val\relax
+  \dimen0=\swarmwrap@fh
+  \loop
+    \advance\swarmwrap@nl by 1
+    \advance\dimen0 by -\baselineskip
+  \ifdim\dimen0>0pt \repeat
+  % Build parshape: N narrowed lines + 1 full-width reset
+  \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
+  \swarmwrap@loop@cnt=\swarmwrap@nl
+  \loop
+    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+    \advance\swarmwrap@loop@cnt by -1
+  \ifnum\swarmwrap@loop@cnt>0 \repeat
+  \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
+  \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
+  \wlog{swarmwrap next: tw=\the\swarmwrap@tw, fw=\the\swarmwrap@fw, nl=\the\swarmwrap@nl, lw=\the\linewidth}%
+  % ── Page break detection ────────────────────────────────────────
+  \dimen0=\pagegoal
+  \advance\dimen0 by -\pagetotal
+  \dimen1=\swarmwrap@fh@val\relax
+  \ifdim\dimen0<\dimen1
+    \newpage
+  \fi
+  % emergencystretch absorbs overfull hbox on narrowed parshape lines
+  \emergencystretch=\fontdimen6\font\relax
+  \noindent
+  \parshape \swarmwrap@pshape\relax
+  % Right wrap: overlay figure after the narrowed text area.
+  \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+}%
+\else
+\newcommand{\swarmwrapnext}{\relax}%
+\fi
+
+\endinput
