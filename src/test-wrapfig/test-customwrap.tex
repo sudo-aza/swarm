@@ -145,20 +145,34 @@ the column-width textwidth — this is a known limitation.
 
 \newpage
 % ====================================================================
-% Test 7: Figure Near Page Bottom (page break detection)
-% Expected: PASS. The figure + wrapped paragraph should be pushed to
-%   the next page automatically because there is not enough space
-%   remaining on the current page. No overfull vbox warnings.
-%   The preceding text fills most of the page, leaving insufficient
-%   room for the 4cm figure.
+% Test 7: Page Break Detection (v2.2 feature)
+% Expected: PASS. A vbox fills exactly (textheight - 80pt), leaving
+%   ~80pt remaining. The figure needs ~137pt (3.8cm rule + caption +
+%   baselineskip). Since 80pt < 137pt, \swarmwrapnext should insert
+%   \newpage, pushing the wrapped block to the next page. No overfull
+%   vbox warnings should appear on ANY page.
 % ====================================================================
-\section*{Test 7: Figure Near Page Bottom}
-This test fills most of the current page with text, then places a
-swarmwrap figure. Since the remaining space is insufficient, the
-wrapped block should be pushed to the next page automatically.
-No overfull vbox warnings should appear.
+\section*{Test 7: Page Break Detection}
+This test verifies that swarmwrap.sty v2.2 detects insufficient
+remaining page space and inserts \texttt{\textbackslash newpage}
+before the wrapped block.
 
-\lipsum[1-6]
+% Fill exactly enough space to leave ~80pt remaining on this page.
+\newdimen\swtestsevenht
+\swtestsevenht=\textheight
+\advance\swtestsevenht by -80pt
+
+\vbox to\swtestsevenht{%
+  This paragraph and the following text fill most of the page,
+  leaving approximately 80pt of remaining space. The swarmwrap
+  figure requires about 137pt (3.8cm rule + caption +
+  baselineskip), which exceeds the remaining space. Therefore,
+  the page break detection in \texttt{\textbackslash swarmwrapnext}
+  should insert \texttt{\textbackslash newpage} before the
+  wrapped block, pushing it cleanly to the next page.%
+  \lipsum[1-3]%
+  \vss
+}%
 
 \begin{swarmwrap}[r]{3cm}{4cm}
   \rule{\linewidth}{3.8cm}
@@ -166,6 +180,6 @@ No overfull vbox warnings should appear.
   \label{fig:near-bottom}
 \end{swarmwrap}
 \swarmwrapnext
-\lipsum[1-2]
+\lipsum[1]
 
 \end{document}

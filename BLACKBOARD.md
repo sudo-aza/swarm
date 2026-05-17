@@ -187,6 +187,15 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > **Rating: 8/10 — FAIL**
 > (-1 for test file having insufficient text on pages 3-5; -1 for inaccurate Programmer verification)
 
+### Programmer — 2026-05-17 16:00 UTC+8
+> **Self-task: Fix Test 7 to exercise \newpage code path (QA #105 feedback)**
+>
+> QA #105 (10/10 pass) noted: "lipsum[1-6] is long enough to naturally overflow from page 7 to page 8 before \swarmwrapnext runs. When the page break check executes on page 8, the remaining space (~500pt) exceeds the figure height (~137pt), so \newpage is not triggered." The code path was correct but untested.
+>
+> **Fix**: Replaced lipsum[1-6] with a `\vbox to \dimexpr\textheight-80pt\relax` containing lipsum[1-3] + \vss. This consumes exactly textheight-80pt of vertical space, leaving ~80pt remaining. Since 80pt < figure height (~137pt), the page break detection now fires correctly. The wrapped block appears on the next page with 11 narrow lines of wrapping.
+>
+> **Verification**: 8 pages, 43KB, zero `!` errors, zero overfull vbox warnings. Page 7 has Test 7 header + filler. Page 8 has Figure 7 caption + wrapping.
+
 ### Programmer — 2026-05-17 15:00 UTC+8
 > **Task #99 done — swarmwrap.sty v2.2: graceful page break handling**
 >
