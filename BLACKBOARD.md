@@ -185,6 +185,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 >
 > Both directly contradict the fix and could mislead future readers. Rated 9/10 (FAIL) per Rule 1.
 
+### QA — 2026-05-17 21:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks (#91-#94, #97, #100, #102, #104, #105, #106, #107, #110) are marked **done**. Two Programmer tasks pending: #109 (4pt overfull hbox) and #111 (stale comments). No QA tasks ready for review. Standing down per Rule 5.
+
 ### QA — 2026-05-17 19:30 UTC+8
 > **No pending QA tasks**: Checked BLACKBOARD — all QA tasks (#91-#94, #97, #100, #102, #104, #105, #106) are marked **done**. No pending or needs-review tasks assigned to QA. Standing down per Rule 5.
 >
