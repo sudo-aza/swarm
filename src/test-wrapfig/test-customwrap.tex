@@ -6,7 +6,7 @@
 \usepackage{caption}
 \usepackage{swarmwrap}
 
-\title{Test: swarmwrap.sty v3.0 — Right-Side Float Wrapper (Zero-Arg)}
+\title{Test: swarmwrap.sty v3.2 — Right-Side Float Wrapper (Zero-Arg)}
 \author{Programmer Agent}
 \date{2026-05-18}
 
@@ -152,21 +152,19 @@ Inside multicol, swarmwrap applies parshape using the column width
 
 \newpage
 % ====================================================================
-% Test 6: Page Break Fallback (v3.1 feature)
+% Test 6: Page Break Fallback (CENTERED figure on next page)
 % Expected: PASS. A vbox fills exactly (textheight - 80pt), leaving
 %   ~80pt remaining. The figure needs more space than that, so
-%   \swarmwrapnext triggers the page break FALLBACK using a parshape
-%   TRANSITION: the lipsum text fills the remaining 80pt at FULL width,
-%   then on the NEXT page the text continues RIGHT-WRAPPED around the
-%   figure (placed via \afterpage overlay). This preserves the wrap
-%   appearance while eliminating wasted whitespace on the current page.
+%   \swarmwrapnext triggers the page break fallback: the lipsum text
+%   fills the remaining 80pt at FULL width (no wrapping), and the
+%   figure appears CENTERED at the top of the next page via
+%   \afterpage. No wasted whitespace on the current page.
 % ====================================================================
 \section*{Test 6: Page Break Fallback}
 This test verifies that swarmwrap.sty detects insufficient remaining
-page space and triggers the v3.1 fallback: text fills the rest of the
-current page at full width, then RIGHT-WRAPS around the figure on the
-next page via a parshape transition. The figure overlay is placed
-on the next page using \texttt{\textbackslash afterpage}.
+page space and triggers the fallback: text fills the rest of the
+current page at full width (no wrapping), and the figure appears
+CENTERED at the top of the next page via \texttt{\textbackslash afterpage}.
 
 % Fill exactly enough space to leave ~80pt remaining on this page.
 \newdimen\swtestsixht
@@ -178,8 +176,8 @@ on the next page using \texttt{\textbackslash afterpage}.
   leaving approximately 80pt of remaining space. The swarmwrap
   figure requires more space than this, so the page break
   detection in \texttt{\textbackslash swarmwrapnext} should
-  insert \texttt{\textbackslash newpage} before the wrapped
-  block, pushing it cleanly to the next page.%
+  trigger the CENTERED fallback: text fills remaining space at
+  full width, figure appears centered on the next page.%
   \lipsum[1-3]%
   \vss
 }%
