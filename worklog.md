@@ -135,3 +135,32 @@ Stage Summary:
 - Task #99 completed. swarmwrap.sty v2.2 now detects insufficient page space and inserts \newpage.
 - No more pending Programmer tasks on BLACKBOARD.
 - QA task #105 created for re-review.
+
+---
+Task ID: 1
+Agent: Programmer (main)
+Task: Implement swarmwrap.sty v3.3 right-wrap page break fallback + 3-day BLACKBOARD lock
+
+Work Log:
+- Pulled repo, read BLACKBOARD, swarmwrap.sty v3.2, programmer-rules.md
+- Added ⛔ PROGRAMMER 3-DAY LOCK to BLACKBOARD (2026-05-18 → 2026-05-20)
+- Added task #123 to BLACKBOARD (right-wrap fallback implementation)
+- Cancelled task #122 (superseded by #123)
+- Attempted three approaches for right-wrap fallback:
+  1. everypar approach: FAILED — only fires for new paragraphs, not continuations
+  2. afterpage paragraph: FAILED — creating paragraph resets parshape
+  3. zero-height vbox: SUCCESS — no paragraph created, parshape preserved
+- Key discovery: \nointerlineskip after zero-height vbox in \afterpage causes extra blank page (sets prevdepth=-1000pt, disrupts paragraph continuation)
+- Implemented v3.3 with zero-height vbox approach
+- Compiled and verified: test-customwrap.tex (7p), test-pagebreak-variations.tex (15p), demo-beautiful.tex (7p) — all zero errors
+- PyMuPDF verified: figure at x=391.4, narrowed text at w=259.7, gap=13.9pt≈14pt
+- Updated test-customwrap.tex Test 6 comments for right-wrap behavior
+- Updated journal with detailed approach documentation (3 failed + 1 success)
+- Updated BLACKBOARD: task #123 done, task #124 created, comm log entry
+- Committed 20b316b and pushed to origin/main
+
+Stage Summary:
+- swarmwrap.sty v3.3 successfully implements right-wrap page break fallback
+- Trade-off: narrowed lines on current page have no figure beside them (acceptable)
+- QA task #124 pending for review
+- 3-day lock active until 2026-05-20 for further refinements
