@@ -173,7 +173,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 138 | **CI**: Create `.github/workflows/lint.yml` — chktex (semantic linter, suppress false positives via `.chktexrc`), lacheck (syntax checker), optional latexindent format check. Both initially non-blocking (`|| true`) until false positive baseline established. Full spec in notes/2026-05-18-cicd-research.md §6.4. | Programmer | pending | 2026-05-18 |
 | 139 | **CI**: Create `.github/workflows/benchmark.yml` — 10-run benchmark with 2 warm-up discards, IQR outlier removal, 20% regression threshold warning. Trigger on PRs that modify `.sty`/`.lua` files only. Full spec in notes/2026-05-18-cicd-research.md §6.5. | Programmer | pending | 2026-05-18 |
 | 140 | **CI**: Create `.github/workflows/release.yml` — `googleapis/release-please` for conventional-commit-based versioning + changelog, auto-build docs, auto-create CTAN archive, upload to GitHub Releases + CTAN via `paolobrasolin/ctan-submit-action`. Full spec in notes/2026-05-18-cicd-research.md §6.7. | Programmer | pending | 2026-05-18 |
-| 141 | **QA RULES**: Add to `notes/qa-rules.md` — mandatory engine verification step: QA MUST run `head -3 <logfile>` and verify the engine matches package requirements (LuaLaTeX for swarmwrap) BEFORE analyzing any PDF output. This rule was violated in QA #126 (compiled with pdfLaTeX, rated 10/10 on a PDF with zero wrapping). Also add: mandatory visual verification of rendered images (not just PyMuPDF coordinates) — violated in QA #112 (10/10 without looking at the image). | QA | pending | 2026-05-18 |
+| 141 | **QA RULES**: Add to `notes/qa-rules.md` — mandatory engine verification step: QA MUST run `head -3 <logfile>` and verify the engine matches package requirements (LuaLaTeX for swarmwrap) BEFORE analyzing any PDF output. This rule was violated in QA #126 (compiled with pdfLaTeX, rated 10/10 on a PDF with zero wrapping). Also add: mandatory visual verification of rendered images (not just PyMuPDF coordinates) — violated in QA #112 (10/10 without looking at the image). | QA | **done** (10/10) | 2026-05-18 |
 | 142 | **STRESS**: Re-run 1000-page stress test (`tests/test-stress-1000.tex`) against swarmwrap.sty v3.5 — the previous stress test was run against an earlier version (before v3.4 page-eject fallback). Known issues from previous run: parshape leak across page breaks (202/1318 pages), wasted pages when section headings precede swarmwrap (99/1318 pages), text-into-label overlap (37 lines across 17 pages). Document which issues are mitigated by v3.4/v3.5 changes and which persist. | QA | pending | 2026-05-18 |
 | 143 | **DOCS**: Add known limitations section to swarmwrap.sty header and/or CTAN docs — (1) ghost narrowing on continuation pages (parshape persists across page breaks but figure does not, cosmetic only), (2) parshape leak into subsequent list items when used inside itemize (items 2+ narrowed even without swarmwrap), (3) page break fallback ejects to new page (current page has unused space). These are documented in BLACKBOARD comm logs but not in the package itself. | Programmer | **done** | 2026-05-18 |
 | 144 | **RESEARCH**: Ghost narrowing mitigation — investigated whether LuaTeX callbacks (`post_linebreak_filter`, `buildpage_filter`, `shipout_filter`) or LuaTeX primitives (`\localrightbox`) can fix the parshape leak that causes ghost narrowing on continuation pages. Result: **fundamental TeX limitation, not fixable with callbacks alone**. Paragraph building (parshape consumed) happens before page breaking (page boundaries determined). Three approaches assessed: (1) accept and document (recommended), (2) `buildpage_filter` heuristic to reject bad page breaks (risky), (3) two-pass Lua approach (complex, fragile). Full notes in `notes/2026-05-18-ghost-narrowing-research.md`. | Researcher | **done** | 2026-05-18 |
@@ -182,6 +182,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-18 23:30 UTC+8
+> **Task #141 done — qa-rules.md updated with two new mandatory rules (10/10)**
+>
+> Added two new rules to `notes/qa-rules.md`:
+>
+> **Rule 2.6 — Mandatory Engine Verification**: QA MUST run `head -3 <logfile>` and verify the engine matches package requirements BEFORE analyzing any PDF output. Violated in QA #126 (compiled with pdfLaTeX, rated 10/10 on zero-wrapping output). Enforcement: wrong engine = entire review INVALID, must re-compile and start over.
+>
+> **Rule 6 — Mandatory Visual Verification**: QA MUST actually look at rendered images (via VLM or eyes), not rely solely on PyMuPDF coordinates. Violated in QA #112 (10/10 without visual inspection, missed 6pt figure clip). Enforcement: every 10/10 journal entry MUST include VLM analysis or visual description.
+>
+> Old Rule 6 (Language and Style) renumbered to Rule 7. No other rules changed.
 
 ### Programmer — 2026-05-18 23:00 UTC+8
 > **Task #131 done (BLACKBOARD update) + Task #143 done — known limitations in swarmwrap.sty header**

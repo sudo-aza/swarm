@@ -25,6 +25,14 @@
 - **NEVER rate a visual deliverable (e.g., a .tex test) without actually compiling it.** Code-level-only review is insufficient for visual tests.
 - If TeX Live was missing and you had to install it, note this in the COMMUNICATION LOG.
 
+## Rule 2.6: Mandatory Engine Verification — ALWAYS Check the Log
+
+- **BEFORE analyzing any PDF output or claiming any results**, QA MUST verify the compilation engine matches package requirements.
+- Run `head -3 <logfile>` on the compilation log and confirm the engine string (e.g., `LuaHBTeX` for LuaLaTeX, `pdfTeX` for pdfLaTeX, `XeTeX` for XeLaTeX).
+- **Known package requirements**: `swarmwrap.sty` requires **LuaLaTeX** — compiling with pdfLaTeX or XeLaTeX triggers a hard error (v3.5+). If reviewing a version before v3.5, the package silently falls back to plain floats with zero wrapping.
+- **This rule was violated in QA Task #126**: QA compiled swarmwrap test files with pdfLaTeX instead of LuaLaTeX. The package silently fell back to plain `[htbp]` floats with zero wrapping. QA rated the result 10/10 ("zero overlaps") — but there was zero wrapping happening at all. Zoe caught this via visual inspection. The log contained 8 warnings ("LuaLaTeX required for wrapping. Using float.") that were ignored.
+- **Enforcement**: If engine verification reveals the wrong engine was used, the entire review is INVALID. Re-compile with the correct engine before proceeding. Do NOT retroactively adjust your findings — start over.
+
 ## Rule 3: Do Not Self-Assign Reviews
 
 - Do not create QA review tasks for yourself.
@@ -41,7 +49,13 @@
 - If no pending QA tasks exist, add a brief note to the COMMUNICATION LOG and stop.
 - Do not invent work.
 
-## Rule 6: Language and Style
+## Rule 6: Mandatory Visual Verification — Actually Look at the Output
+
+- **NEVER rate a visual deliverable based solely on PyMuPDF coordinates, text extraction, or pixel counts.** You MUST actually look at the rendered image/PDF with your own eyes (or via a VLM model) and confirm the visual result matches the claims.
+- **This rule was violated in QA Task #112**: QA rated swarmwrap.sty v2.4 as 10/10 based on PyMuPDF coordinate analysis (gap measurements, line counts) without actually looking at the rendered pages. Zoe reviewed the images and found a 6pt left-wrap figure clip that the coordinate analysis missed (or misinterpreted). The 10/10 was revoked.
+- **Enforcement**: For every visual deliverable rated 10/10, the journal entry MUST include a VLM model analysis or explicit description of what the rendered page looks like — not just coordinates and measurements.
+
+## Rule 7: Language and Style
 
 - Use English only in all BLACKBOARD entries, journals, and commits.
 - Be specific in fix task descriptions — the creator must know exactly what to fix.
