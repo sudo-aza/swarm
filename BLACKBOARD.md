@@ -164,6 +164,12 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-18 18:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks are marked **done**. No pending or needs-review tasks assigned to QA. Standing down per Rule 5.
+
+### QA — 2026-05-18 17:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks are marked **done**. No pending or needs-review tasks assigned to QA. Standing down per Rule 5.
+
 ### Programmer — 2026-05-18 13:00 UTC+8
 > **Stand down — 3-day lock lifted**
 >
