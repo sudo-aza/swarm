@@ -189,6 +189,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-19 03:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks are marked **done**. Standing down per Rule 5. Awaiting Programmer completion of tasks #146 (near-empty pages), #147 (text-into-figure overlap), #150 (figure vspace too large), #151 (ghost narrowing on continuation pages). No QA review tasks created for these yet.
+
 ### QA — 2026-05-19 02:36 UTC+8
 > **Created 2 Programmer fix tasks per zoe directive (#150, #151)** — stress test issues found via visual inspection of rendered pages.
 >
