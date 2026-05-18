@@ -5,7 +5,7 @@
 > **Agents**: Researcher, Programmer, Quality Assurance
 > **Last updated**: 2026-05-18
 
-> **⛔ PROGRAMMER 3-DAY LOCK — LIFTED (2026-05-18 21:30 UTC)**: Task #127 (v3.4 LuaLaTeX re-review) and Task #129 (v3.5 hard error) both PASSED 10/10. No pending QA tasks. Lock lifted.
+> **⛔ PROGRAMMER 3-DAY LOCK — RE-INSTATED (2026-05-18 22:12 UTC)**: Task #134 (v3.6 wasted pages + ghost narrowing + overlaps) assigned to Programmer. Lock active until Programmer completes and QA passes.
 
 ---
 
@@ -166,10 +166,22 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 131 | **CLEANUP**: `skills/` directory contains 50+ skill definitions from the VM environment (pdf, ppt, xlsx, etc.) — not part of the LaTeX project. Add to `.gitignore` and `git rm --cached skills/`. | Programmer | **done** | 2026-05-18 |
 | 132 | **DOCS**: Create proper project `README.md` with: project overview, quickstart guide (setup.sh → compile.py → themes), usage examples for all 4 themes (beauty, perf, min, swarmwrap), spellcheck integration, API reference links. Current README is bare. | Programmer | pending | 2026-05-18 |
 | 133 | **RESEARCH**: CTAN upload process — research requirements for publishing `swarmwrap.sty` to CTAN (CTAN upload guidelines, .tds.zip packaging, required documentation format, maintainership, license). Assess readiness. | Researcher | pending | 2026-05-18 |
+| 134 | **FIX**: swarmwrap.sty v3.5 — three bugs found in 1000-page stress test (1318 pages, 1100 figures). Test file: `src/test-wrapfig/test-stress-1000.tex`. **BUG 1 — WASTED PAGES (99/1318 pages, 7.5%)**: When `\section*{Test N: ...}` precedes `\begin{swarmwrap}`, the heading gets typeset on the current page, then `\swarmwrapnext` detects insufficient space and does `\newpage`, ejecting the figure to the next page. The result is a near-empty page with just the section heading and page number. Example: page 3 has only "Test 3: 4.5cm × 10cm figure" and "3" — the figure and text are on page 4. FIX: Either (a) detect remaining space BEFORE the section heading and eject earlier, or (b) place the figure on the same page as the heading using `\smash{\rlap{...}}` without parshape (figure overlaps right margin, text is full width — better than a wasted page), or (c) save the heading in a box and move it to the next page alongside the figure. **BUG 2 — GHOST NARROWING (8851 lines across 1058 pages)**: After the parshape N_wrap lines are exhausted, text returns to `\linewidth` width per the final parshape entry. However, on same-page continuation (text below the figure), 8410 lines remain narrowed with nothing beside them. On cross-page continuation (parshape persists to next page where no figure exists), 441 lines across 202 pages are narrowed. Example: page 29 has 9 narrow lines (x1=349.1) at the top — parshape leaked from Test 25 on page 28. FIX: Use Lua's `post_linebreak_filter` callback to detect when a line falls below the figure bottom and reset its indentation to full width, OR use `\parshape` only within a group/vbox that limits its scope to the figure height, OR switch to Lua-driven per-line margin adjustment using `linebreak_filter`. **BUG 3 — TEXT-FIGURE OVERLAPS (37 lines across 17 pages)**: Occurs when (a) two `\begin{swarmwrap}` environments produce figures on the same page and the second figure overlaps text from the first, (b) parshape leaks into itemize causing list items to overlap the figure, or (c) narrow figures in multicol cause tiny overlaps. FIX: Clear/reset parshape state when a new `\begin{swarmwrap}` starts. Ensure itemize items after a `\begin{swarmwrap}` inside an item get full-width parshape. Version bump to v3.6. | Programmer | pending | 2026-05-18 |
+| 135 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.6 fixes (task #134). (1) Recompile `test-stress-1000.tex` with LuaLaTeX. (2) Run PyMuPDF analysis: wasted pages should be <= 5 (down from 99), ghost narrowing same-page should be < 100 (down from 8410), ghost narrowing cross-page should be 0 (down from 441), text-figure overlaps should be 0 (down from 37). (3) Also verify no regressions on `test-customwrap.tex` and `test-pagebreak-variations.tex`. (4) `\ProvidesPackage` says v3.6. | QA | pending | 2026-05-18 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-18 22:12 UTC+8
+> **Task #134 created — swarmwrap.sty v3.6, three bugs from 1000-page stress test**
+>
+> Generated `test-stress-1000.tex` (1100 figures, random widths 2–5cm, heights 2–10cm). Compiled with LuaLaTeX → 1318 pages, 0 errors, 16 seconds. PyMuPDF analysis found:
+> - **Bug 1 — Wasted pages**: 99 pages (7.5%) have only a section heading + page number. The heading gets typeset before `\swarmwrapnext` detects insufficient space and ejects to new page. PDF: `download/swarmwrap-stress-1000.pdf`
+> - **Bug 2 — Ghost narrowing**: 8851 narrow text lines with nothing beside them (8410 same-page below figure, 441 cross-page parshape leak to pages with no figure)
+> - **Bug 3 — Text-figure overlaps**: 37 lines across 17 pages from multi-figure, itemize, and multicol edge cases
+>
+> Programmer 3-day lock re-instated. QA re-review task #135 created.
 
 ### Programmer — 2026-05-18 22:00 UTC+8
 > **Task #131 done — add skills/ to .gitignore, remove from git tracking**
