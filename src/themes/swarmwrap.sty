@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.4)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.5)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -31,37 +31,35 @@
 %
 % Requirements: LuaLaTeX (errors out on pdfLaTeX/XeLaTeX)
 %
-% Changes in v3.5:
-%   - Non-LuaLaTeX compilation now produces a hard error instead of silently
-%     falling back to plain floats. This prevents QA/user confusion where
-%     a PDF compiles but has zero wrapping because swarmwrap was loaded
-%     under pdfLaTeX.
-%   - \swarmwrapnext produces a clear error on non-LuaLaTeX instead of
-%     silently doing nothing (was \relax).
+% ── Known Limitations ─────────────────────────────────────────────────
 %
-% Changes in v3.4:
-%   - Page break fallback now uses PAGE EJECT: when the figure doesn't
-%     fit on the current page, \newpage ejects to a fresh page, then
-%     standard wrapping (parshape + \smash{\rlap{...}}) applies on the
-%     new page. This eliminates the text-overlap bug from v3.3, where
-%     parshape continuation lines on the next page ran out before the
-%     figure height was covered, leaving full-width text on top of the
-%     figure placed by \afterpage.
-%   - Trade-off: the remaining space at the bottom of the current page
-%     is unused (no text fills it). This is the same space that the
-%     centered fallback (v3.2) would have wasted, but now the next page
-%     has proper right-wrapping instead of a centered figure.
-%   - The v3.3 zero-height vbox approach was abandoned because TeX
-%     distributes parshape lines between pages unpredictably — the
-%     number of narrow lines available on the continuation page depends
-%     on how many fit on the current page, which varies with glue
-%     stretch, penalties, and font metrics.
-%   - \afterpage package dependency removed (no longer needed).
-%   - Ghost narrowing on continuation pages in the NORMAL path is a
-%     known limitation: if the wrapped paragraph is long enough to
-%     span a page break, continuation lines on the next page retain the
-%     narrow shape but have no figure beside them. This is cosmetic
-%     only (no overlap) and affects only very long paragraphs.
+% 1. Ghost narrowing on continuation pages:
+%    When the wrapped paragraph spans a page break, TeX's parshape
+%    persists across the page boundary but the figure does not (it is
+%    placed via \smash{\rlap{...}} which is page-local). Continuation
+%    lines on the next page remain narrowed even though no figure is
+%    beside them. This is cosmetic only — no text overlaps the figure.
+%    Affects only very long paragraphs that span page breaks.
+%
+% 2. Parshape leak into list items:
+%    If \swarmwrapnext is used inside a list item (\item), the parshape
+%    leaks into subsequent \item paragraphs within the same list
+%    environment. Items 2+ will be narrowed even without swarmwrap.
+%    Workaround: use swarmwrap BEFORE the list, not inside it.
+%
+% 3. Page break fallback ejects to new page:
+%    When the figure doesn't fit on the current page, \newpage ejects
+%    to a fresh page. The remaining space at the bottom of the current
+%    page is unused. This is by design — the alternative (centering
+%    the figure) would provide zero wrapping on the next page.
+%
+% ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.5: Non-LuaLaTeX compilation produces hard error (was silent fallback).
+%   \swarmwrapnext errors on non-LuaLaTeX (was \relax).
+%
+% v3.4: Page-eject fallback replaces zero-height vbox. No more text-
+%   figure overlap on page breaks. afterpage dependency removed.
 
 \ProvidesPackage{swarmwrap}[2026/05/18 v3.5 Custom float wrapper]
 
