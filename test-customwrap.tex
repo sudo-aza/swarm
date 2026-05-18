@@ -1,0 +1,205 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{swarmwrap}
+
+\title{Test: swarmwrap.sty v3.3 — Right-Side Float Wrapper (Zero-Arg)}
+\author{Programmer Agent}
+\date{2026-05-18}
+
+\begin{document}
+\maketitle
+
+% ====================================================================
+% Test 1: Basic Figure Wrapping (Right)
+% Expected: PASS. Text wraps left of figure for ~4cm.
+% v3.0: zero-arg API — content wrapped in a 3cm minipage,
+%   width auto-detected from \wd of the captured box.
+% ====================================================================
+\section*{Test 1: Basic Figure Wrapping (Right)}
+This test wraps a figure on the right side of the paragraph. The text should flow
+around the image naturally, leaving a gap for the figure on the right margin.
+In v3.0, no width argument is passed to swarmwrap — the minipage inside
+sets the natural content width.
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3.8cm}
+    \captionof{figure}{Right-wrapped test figure (3cm wide, 4cm tall).}
+    \label{fig:right}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+\newpage
+% ====================================================================
+% Test 2: Tall Figure — Full Height Coverage
+% Expected: PASS. An 8cm figure requires ~19 narrow lines of text.
+%   This tests that parshape correctly computes enough lines for a
+%   tall figure and that wrapped text covers the full figure height.
+%   Uses a single merged paragraph (no blank lines between lipsum
+%   calls) so parshape applies to all lines continuously.
+%   Note: parshape cannot span page breaks (TeX resets per-paragraph).
+%   Page break detection is tested separately in Test 6.
+% ====================================================================
+\section*{Test 2: Tall Figure — Full Height Coverage}
+This test verifies that a tall figure (8cm) gets enough narrowed parshape
+lines for wrapped text to cover the full figure height. The paragraph below
+is a single merged block (no blank lines) so that \texttt{\textbackslash parshape}
+applies to all lines without resetting at paragraph boundaries.
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{7.8cm}
+    \captionof{figure}{Tall figure (8cm).}
+    \label{fig:tall}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]\lipsum[2]\lipsum[3]% No blank lines — single merged paragraph
+
+\newpage
+% ====================================================================
+% Test 3: Figure Before Itemize
+% Expected: PASS. Place swarmwrap BEFORE the list, so that the
+%   wrapped paragraph text flows around the figure. List items
+%   after the wrap region return to full width.
+% ====================================================================
+\section*{Test 3: Figure Before Itemize}
+The supported approach: place \texttt{swarmwrap} BEFORE the list, so that
+the wrapped paragraph text flows around the figure. List items after the
+wrap region return to full width.
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2.8cm}
+    \captionof{figure}{Figure before itemize (3cm).}
+    \label{fig:before-itemize}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+\begin{itemize}
+  \item First item: \lipsum[2][1-3]
+  \item Second item: \lipsum[3][1-3]
+  \item Third item: \lipsum[4][1-3]
+  \item Fourth item: \lipsum[5][1-3]
+  \item Fifth item: \lipsum[6][1-3]
+\end{itemize}
+
+\newpage
+% ====================================================================
+% Test 4: Wrapping Inside a List Item (PARTIAL)
+% This tests whether parshape wrapping works when \swarmwrapnext
+% is placed INSIDE an \item. parshape applies to the current
+% paragraph, so wrapping the first \item's paragraph SHOULD work.
+%
+% Finding (v2.5): parshape LEAKS into subsequent \item paragraphs
+% within the same itemize environment. Items 2-5 are also narrowed.
+% ====================================================================
+\section*{Test 4: Wrapping Inside a List Item}
+This test places \texttt{\textbackslash swarmwrapnext} inside the first
+\texttt{\textbackslash item} to test whether wrapping applies within a
+list item's paragraph. Finding: parshape leaks into subsequent items
+within the same list environment — items 2-5 are also narrowed.
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3.8cm}
+    \captionof{figure}{Figure inside list item (3cm).}
+    \label{fig:inside-itemize}
+  \end{minipage}%
+\end{swarmwrap}
+\begin{itemize}
+  \item \swarmwrapnext\lipsum[1]
+  \item Second item: \lipsum[2][1-3]
+  \item Third item: \lipsum[3][1-3]
+  \item Fourth item: \lipsum[4][1-3]
+  \item Fifth item: \lipsum[5][1-3]
+\end{itemize}
+
+\newpage
+% ====================================================================
+% Test 5: Inside Multicol
+% swarmwrap applies parshape using \linewidth, which inside
+% multicols is the column width, not the full page width.
+% ====================================================================
+\section*{Test 5: Inside Multicol}
+Inside multicol, swarmwrap applies parshape using the column width
+(\texttt{\textbackslash linewidth}) for correct behavior.
+
+\begin{multicols}{2}
+  \begin{swarmwrap}%
+    \begin{minipage}[t]{2cm}
+      \centering
+      \rule{\linewidth}{2.8cm}
+      \captionof{figure}{Inside multicol (2cm).}
+      \label{fig:multicol}
+    \end{minipage}%
+  \end{swarmwrap}%
+  \swarmwrapnext
+  \lipsum[1-3]
+\end{multicols}
+
+\newpage
+% ====================================================================
+% Test 6: Page Break Fallback (RIGHT-WRAP on next page)
+% Expected: PASS. A vbox fills exactly (textheight - 80pt), leaving
+%   ~80pt remaining. The figure needs more space than that, so
+%   \swarmwrapnext triggers the page break fallback: parshape is
+%   applied to the current paragraph. Text on the current page is
+%   narrowed (no figure beside it — figure doesn't fit). On the next
+%   page, the figure is placed at the top-right via \afterpage (using
+%   a zero-height vbox that doesn't reset parshape). Continuation
+%   text on the next page is also narrowed by parshape (which persists
+%   across page breaks). The figure and text are aligned with ~14pt gap.
+%   After the parshape lines are exhausted, text returns to full width.
+%   Trade-off: narrowed lines on the current page have no figure beside
+%   them (wasted horizontal space). This is far better than the v3.2
+%   centered fallback which had zero wrapping on either page.
+% ====================================================================
+\section*{Test 6: Page Break Fallback}
+This test verifies that swarmwrap.sty detects insufficient remaining
+page space and triggers the RIGHT-WRAP fallback: parshape is applied
+to the paragraph (persisting across page breaks). On the current page,
+text is narrowed with no figure beside it. On the next page, the figure
+is placed at the top-right and continuation text wraps around it.
+
+% Fill exactly enough space to leave ~80pt remaining on this page.
+\newdimen\swtestsixht
+\swtestsixht=\textheight
+\advance\swtestsixht by -80pt
+
+\vbox to\swtestsixht{%
+  This paragraph and the following text fill most of the page,
+  leaving approximately 80pt of remaining space. The swarmwrap
+  figure requires more space than this, so the page break
+  detection in \texttt{\textbackslash swarmwrapnext} should
+  trigger the RIGHT-WRAP fallback: parshape narrows text on this
+  page (no figure beside it), and on the next page the figure
+  appears at the top-right with continuation text wrapping around it.%
+  \lipsum[1-3]%
+  \vss
+}%
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3.8cm}
+    \captionof{figure}{Near-bottom figure (3cm wide, 4cm tall).}
+    \label{fig:near-bottom}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+\end{document}
