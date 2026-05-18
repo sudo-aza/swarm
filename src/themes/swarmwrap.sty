@@ -252,8 +252,7 @@
   \dimen1=\swarmwrap@fh@val\relax
   \ifdim\dimen0<\dimen1
     % Figure doesn't fit — defer to top of next page via afterpage.
-    % Use a zero-height vbox to avoid starting a paragraph (no parskip).
-    % The figure will appear beside the ghost-narrowed continuation text.
+    % The deferred figure appears beside the ghost-narrowed continuation text.
     \afterpage{\noindent\smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}}%
     \wlog{swarmwrap next: DEFERRED — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
