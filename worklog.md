@@ -187,3 +187,22 @@ Stage Summary:
 - Task #127 rated 10/10 — page-eject fallback works correctly
 - Task #129 rated 10/10 — hard error on non-LuaLaTeX works
 - 3-day lock lifted, no pending QA tasks, standing down per Rule 5
+---
+Task ID: 1
+Agent: zai-2 (QA)
+Task: Respond to Zoe about customwrap-page-8.png being "still broken"
+
+Work Log:
+- Zoe reported https://raw.githubusercontent.com/sudo-aza/swarm/main/download/customwrap-page-8.png is "still broken" and asked me to recompile with lualatex
+- Confirmed the existing image was from Task #126 review (pdfLaTeX, wrong engine)
+- Recompiled test-customwrap.tex with LuaLaTeX: `TEXINPUTS=".:../../src/themes:" lualatex test-customwrap.tex` → 8 pages, 0 errors
+- Verified engine: LuaHBTeX in log
+- PyMuPDF analysis: zero text-figure overlaps on all 8 pages
+- Page 8 specifically: figure at x=391.4-476.5, y=128.3-236.0; narrow text at x1=377.5 (14pt gap); 14 narrow parshape lines; ghost narrowing on 8 lines below figure
+- Rendered all 8 pages at 300dpi and pushed to GitHub
+- Sent Zoe the corrected image links
+
+Stage Summary:
+- The "broken" image was from wrong-engine (pdfLaTeX) compilation — replaced with correct LuaLaTeX version
+- PyMuPDF confirms zero overlaps in v3.5 LuaLaTeX compilation
+- Ghost narrowing present on pages 1-5, 8 (known cosmetic issue)
