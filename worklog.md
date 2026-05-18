@@ -215,3 +215,24 @@ Stage Summary:
 - Task #146 done: adaptive fallback prevents orphaned section headings
 - swarmwrap.sty v3.8: 231 pages (down from 236), 270 figures now use adjusted wrapping
 - Remaining task: #151 (ghost narrowing on continuation pages)
+
+---
+Task ID: 1
+Agent: Programmer (cron turn 07:00 UTC+8)
+Task: Fix deferred figure overlap and ghost narrowing (task #151, swarmwrap.sty v3.11)
+
+Work Log:
+- Read programmer rules and BLACKBOARD, identified task #151 as the one pending Programmer task
+- Compiled test-customwrap.tex and test-pagebreak-variations.tex to verify v3.10 baseline
+- Ran analyze-wrapping.py: found 4 overlaps on pages 2/9 of pagebreak-variations, ghost narrowing in both tests
+- Investigated overlap: v3.10 overlaid deferred figure via afterpage caused full-width continuation text to collide with figure
+- Implemented v3.11: restructured deferred branch to skip parshape (no ghost narrowing) and use centered fallback instead of overlay
+- Fixed centering: replaced begin{center} with explicit hbox centering (begin{center} broken inside afterpage)
+- Compiled both tests: 0 errors, 0 overlaps, deferred figures properly centered
+
+Stage Summary:
+- swarmwrap.sty v3.11 committed and pushed
+- Task #151 marked done in BLACKBOARD.md
+- Zero text-figure overlaps in both standard test files
+- Ghost narrowing eliminated in deferred case (no parshape applied)
+- Remaining: ghost narrowing in NORMAL case (fundamental TeX limitation, mitigated by penalty)

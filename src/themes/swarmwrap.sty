@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.10)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.11)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -54,19 +54,22 @@
 %
 % 3. Deferred figure placement:
 %    When the figure doesn't fit on the current page, it is deferred to
-%    the top of the next page via \afterpage. Text stays in place with
-%    full parshape. On the next page, the deferred figure appears beside
-%    the continuation (narrowed) text, turning ghost narrowing into real
-%    wrapping. Detection uses \pagegoal - \pagetotal.
+%    the top of the next page via \afterpage as a centered figure.
+%    Text on the current page flows at full width (no parshape applied).
+%    This avoids both overlap and ghost narrowing in the deferred case.
+%    Detection uses \pagegoal - \pagetotal.
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
-% v3.10: Deferred figure placement. When the figure doesn't fit on the
-%   current page (\pagegoal - \pagetotal < figure height), it is placed
-%   at the top of the next page via \afterpage instead of being clipped.
-%   Text always stays in place with full parshape. On the next page, the
-%   figure appears beside the ghost-narrowed continuation text, turning
-%   ghost narrowing into real wrapping. Re-added afterpage dependency.
+% v3.11: Fixed deferred figure placement. v3.10's overlaid deferred
+%   figure caused text-figure overlap on the next page (full-width text
+%   after parshape expiration collided with the overlaid figure). Now
+%   when the figure doesn't fit, parshape is NOT applied (text flows at
+%   full width) and the figure is deferred as a centered block via
+%   \afterpage. Eliminates overlap, ghost narrowing, and clipping.
+%
+% v3.10: Deferred figure placement (overlaid via \afterpage). Re-added
+%   afterpage dependency.
 %
 % v3.7: Reduced figure height padding from \baselineskip (13.6pt) to 4pt.
 %   Eliminates 1 extra narrowed line below each figure that had no
@@ -83,7 +86,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.10 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.11 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -195,25 +198,29 @@
   \fi
 }
 
-% ── Helper: place figure centered (v3.2 fallback, kept as reserve) ────
+% ── Helper: place figure centered (used for deferred placement) ──────
+% Uses explicit \hbox centering instead of \begin{center} because the
+% latter doesn't work reliably inside \afterpage (which expands in a
+% special vertical mode context where \centering may not take effect).
 \newcommand{\swarmwrap@place@centered}{%
-  \begin{center}%
-    \copy\swarmwrap@box%
-  \end{center}%
-  \vspace{-\parskip}%
+  \par\vspace{\medskipamount}%
+  \noindent\hb@xt@\linewidth{\hss\copy\swarmwrap@box\hss}%
+  \par\vspace{\medskipamount}%
 }
 
 % ── \swarmwrapnext: compute parshape and place figure ──────────────────
 % All computation happens here so \linewidth is captured at the
 % correct location (inside multicol, itemize, etc.).
 %
-% Figure placement strategy (v3.10):
+% Figure placement strategy (v3.11):
 %   1. Compute parshape from full figure height (text always stays).
 %   2. Check if figure fits: \pagegoal - \pagetotal >= figure height.
 %   3. If fits → place inline with \smash{\rlap{}}.
-%   4. If doesn't fit → defer to top of next page via \afterpage.
-%      The deferred figure appears beside the continuation text on the
-%      next page, turning ghost narrowing into real wrapping.
+%   4. If doesn't fit → NO parshape (text at full width), defer
+%      centered figure to top of next page via \afterpage.
+%      This avoids overlap (overlaid figure on next page would collide
+%      with full-width continuation text after parshape expires) and
+%      ghost narrowing (no parshape = no leak across page break).
 
 \ifswarmwrap@luatex
 \newcommand{\swarmwrapnext}{%
@@ -240,23 +247,25 @@
     \advance\swarmwrap@loop@cnt by -1
   \ifnum\swarmwrap@loop@cnt>0 \repeat
   \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
-  % ── Apply standard wrapping ────────────────────────────────────
-  % emergencystretch absorbs overfull hbox on narrowed parshape lines
-  \emergencystretch=\fontdimen6\font\relax
-  \noindent
-  \parshape \swarmwrap@pshape\relax
   % ── Figure placement: inline or deferred ───────────────────────
   % Check remaining space on current page.
   \dimen0=\pagegoal
   \advance\dimen0 by -\pagetotal
   \dimen1=\swarmwrap@fh@val\relax
   \ifdim\dimen0<\dimen1
-    % Figure doesn't fit — defer to top of next page via afterpage.
-    % The deferred figure appears beside the ghost-narrowed continuation text.
-    \afterpage{\noindent\smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}}%
-    \wlog{swarmwrap next: DEFERRED — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
+    % Figure doesn't fit — NO wrapping, defer centered figure to next page.
+    % Don't apply parshape: text flows at full width on current page.
+    % Disable penalty callback (no narrow lines to find).
+    \global\swarmwrap@tw@lua=0pt\relax
+    \noindent
+    \afterpage{\swarmwrap@place@centered}%
+    \wlog{swarmwrap next: DEFERRED CENTERED — remaining=\the\dimen0, fh=\the\dimen1, nl=\the\swarmwrap@nl}%
   \else
-    % Figure fits — place inline.
+    % Figure fits — apply parshape and place inline overlay.
+    % emergencystretch absorbs overfull hbox on narrowed parshape lines
+    \emergencystretch=\fontdimen6\font\relax
+    \noindent
+    \parshape \swarmwrap@pshape\relax
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
     \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
   \fi
