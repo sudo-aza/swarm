@@ -184,11 +184,24 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 149 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.6 — \swarmwrappenalty{N} feature (task #145). (1) Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX — should be 8 pages, zero errors. (2) Compile `src/test-wrapfig/test-pagebreak-variations.tex` — should be 15 pages, zero errors. (3) Verify `\ProvidesPackage` says v3.6. (4) Verify `\swarmwrappenalty{0}` compiles without error (penalty disabled). (5) Check that the Lua `post_linebreak_filter` callback is registered: look for "swarmwrap: penalty at parshape boundary" in the log. (6) PyMuPDF: no new overlaps or regressions vs v3.5. (7) Check that `\newcount\swarmwrap@penalty` and `\newdimen\swarmwrap@tw@lua` are allocated (in log: `\swarmwrap@penalty=\count...` and `\swarmwrap@tw@lua=\dimen...`). | QA | **done** (10/10) | 2026-05-19 |
 | 150 | **FIX**: swarmwrap.sty — all figures have 1 line too much vspace. Root cause: line 180 in swarmwrap.sty: `\advance\swarmwrap@fh by \baselineskip` adds a full extra baselineskip (~12pt) to every figure's measured height. This causes the parshape to narrow for 1 extra line beyond where the figure actually ends, producing a visible strip of empty space alongside the narrowed text below each figure. Example: stress test page 4 (Test 4) shows 6 narrow text lines below the figure bottom (y=412) that have no figure beside them. Fix: remove or significantly reduce the `\baselineskip` addition. A small gap (e.g., `\parskip` or `2pt`) between figure bottom and full-width text is acceptable, but a full baselineskip is too much. After fixing, recompile the stress test and verify zero extra vspace lines below figures. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** | 2026-05-19 |
 | 151 | **FIX**: swarmwrap.sty — ghost narrowing on continuation pages. When a wrapped paragraph spans a page break, the parshape narrowing persists to the continuation page but the figure does not. Example: stress test page 29 has a 149pt gap (12.4 baselines) of narrowed text with no figure, caused by a figure on page 28 (y=417-672, 255pt tall) whose parshape leaked across the page boundary. The `\swarmwrappenalty{N}` feature (v3.6) was supposed to mitigate this but is insufficient — the penalty discourages breaks at the boundary but does not eliminate them when TeX has no other choice (long paragraphs). Possible fixes: (1) use Lua `pre_linebreak_filter` to detect impending page breaks and reset parshape mid-paragraph, (2) track the remaining figure height and force parshape to full-width when page break is about to occur within the wrapped zone, (3) use `everypar` to detect new pages and reset. After fixing, recompile the stress test and verify zero ghost narrowing on continuation pages. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-05-19 |
-| 152 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.7 — vspace fix (task #150). (1) Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX — should be 8 pages, zero errors. (2) Compile `src/test-wrapfig/test-pagebreak-variations.tex` — should be 15 pages, zero errors. (3) Verify `\ProvidesPackage` says v3.7. (4) Check log: line counts (nl) should be exactly 1 less than v3.6 for each figure (e.g., Test 1: nl=13 not 14, Test 2: nl=20 not 21). (5) PyMuPDF: verify that the first narrow text line below each figure starts within ~15pt of the figure bottom (was ~25pt before the fix). (6) No new overlaps or regressions. | QA | pending | 2026-05-19 |
+| 152 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.7 — vspace fix (task #150). (1) Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX — should be 8 pages, zero errors. (2) Compile `src/test-wrapfig/test-pagebreak-variations.tex` — should be 15 pages, zero errors. (3) Verify `\ProvidesPackage` says v3.7. (4) Check log: line counts (nl) should be exactly 1 less than v3.6 for each figure (e.g., Test 1: nl=13 not 14, Test 2: nl=20 not 21). (5) PyMuPDF: verify that the first narrow text line below each figure starts within ~15pt of the figure bottom (was ~25pt before the fix). (6) No new overlaps or regressions. | QA | **done** (10/10) | 2026-05-19 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-19 04:30 UTC+8
+> **Task #152 done — swarmwrap.sty v3.7 vspace fix review (10/10 PASS)**
+>
+> Verified all 6 criteria:
+> 1. test-customwrap.tex: 8 pages, 0 errors (LuaHBTeX per Rule 2.6)
+> 2. test-pagebreak-variations.tex: 15 pages, 0 errors
+> 3. \ProvidesPackage says v3.7 confirmed
+> 4. nl values exactly 1 less than v3.6: 13/20/10/12/10 vs 14/21/11/13/11
+> 5. All figure gaps OK (<18pt) — vspace reduced from baselineskip (13.6pt) to 4pt
+> 6. 0 text-figure overlaps, no regressions. All pages at 89% fullness.
+>
+> Fix is correct: `\advance\swarmwrap@fh by 4pt` (line 184) replaces `\advance\swarmwrap@fh by \baselineskip`. Eliminates the 1 extra narrowed line below each figure.
 
 ### Programmer — 2026-05-19 04:00 UTC+8
 > **Task #150 done — reduced figure height padding from \baselineskip to 4pt (swarmwrap.sty v3.7)**
