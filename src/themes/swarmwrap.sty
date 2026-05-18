@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.6)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.7)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -60,6 +60,10 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.7: Reduced figure height padding from \baselineskip (13.6pt) to 4pt.
+%   Eliminates 1 extra narrowed line below each figure that had no
+%   figure beside it (visible empty strip).
+%
 % v3.6: Added \swarmwrappenalty{N} option (default 10000). Uses
 %   LuaTeX post_linebreak_filter to insert a penalty at the boundary
 %   between the last narrowed line and the first full-width line,
@@ -71,7 +75,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks. afterpage dependency removed.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.6 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.7 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -174,10 +178,10 @@
     % Auto-detect width from rendered box
     \swarmwrap@fw=\wd\swarmwrap@box
     \xdef\swarmwrap@fw@val{\the\swarmwrap@fw}%
-    % Auto-detect height from rendered box (+ baselineskip for spacing)
+    % Auto-detect height from rendered box (+ small gap for visual spacing)
     \swarmwrap@fh=\ht\swarmwrap@box
     \advance\swarmwrap@fh by \dp\swarmwrap@box
-    \advance\swarmwrap@fh by \baselineskip
+    \advance\swarmwrap@fh by 4pt
     \xdef\swarmwrap@fh@val{\the\swarmwrap@fh}%
   \fi
 }
