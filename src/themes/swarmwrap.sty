@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.8)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.9)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -52,20 +52,21 @@
 %    environment. Items 2+ will be narrowed even without swarmwrap.
 %    Workaround: use swarmwrap BEFORE the list, not inside it.
 %
-% 3. Page break adaptive fallback:
-%    When the figure doesn't fit on the current page, the parshape line
-%    count is adjusted to match the remaining space (v3.8). This prevents
-%    orphaned section headings on near-empty pages. The figure overlay is
-%    clipped at the page boundary. Only when remaining space is less than
-%    2 baselines is a full page eject used.
+% 3. Page-bottom clipping:
+%    When the figure extends past the page bottom, the \smash{\rlap{}}
+%    overlay is clipped at the page boundary. Text wrapping (parshape)
+%    continues for the full figure height on the current page, and any
+%    overflow lines continue on the next page (ghost narrowing, mitigated
+%    by \swarmwrappenalty). No page eject or nl adjustment is performed —
+%    text always stays in place.
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
-% v3.8: Adaptive fallback for near-page-bottom figures. Instead of
-%   unconditionally ejecting to a new page when the figure doesn't fit,
-%   the parshape line count is adjusted to match the remaining page space.
-%   This prevents orphaned section headings on near-empty pages.
-%   Only ejects when remaining space is less than 2 baselines.
+% v3.9: Removed broken page-break detection. Text always stays in
+%   place with full parshape (nl computed from figure height). No eject,
+%   no nl adjustment. If figure overflows the page, the smash/rlap
+%   overlay clips naturally at the page boundary. Ghost narrowing on
+%   continuation pages is mitigated by the penalty feature (v3.6).
 %
 % v3.7: Reduced figure height padding from \baselineskip (13.6pt) to 4pt.
 %   Eliminates 1 extra narrowed line below each figure that had no
@@ -82,7 +83,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks. afterpage dependency removed.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.8 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.9 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -205,11 +206,10 @@
 % All computation happens here so \linewidth is captured at the
 % correct location (inside multicol, itemize, etc.).
 %
-% Fallback strategy (v3.8): When the figure doesn't fit on the current
-% page, the parshape line count is adjusted to match the remaining space.
-% The figure overlay is clipped at the page boundary. This prevents
-% orphaned section headings on near-empty pages. Only when remaining
-% space is less than 2 baselines is a full page eject used.
+% No page-break detection. Parshape is always computed from the full
+% figure height. Text stays in place. If the figure overflows the page,
+% the \smash{\rlap{}} overlay clips at the boundary. Ghost narrowing
+% on continuation pages is mitigated by \swarmwrappenalty (v3.6).
 
 \ifswarmwrap@luatex
 \newcommand{\swarmwrapnext}{%
@@ -228,42 +228,6 @@
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
   % Set Lua-readable dimension for post_linebreak_filter callback
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
-  % ── Page break detection and nl adjustment ─────────────────────
-  % When the figure doesn't fit on the current page, instead of
-  % unconditionally ejecting (which orphans preceding content like
-  % section headings on near-empty pages), adjust nl to fit the
-  % remaining space. The figure overlay is clipped at the page
-  % boundary. Only eject when remaining space is very small.
-  \dimen0=\pagegoal
-  \advance\dimen0 by -\pagetotal
-  \dimen1=\swarmwrap@fh@val\relax
-  \ifdim\dimen0<\dimen1
-    % Figure doesn't fully fit. Count available lines on current page.
-    \swarmwrap@nl=0
-    \dimen2=\pagegoal
-    \advance\dimen2 by -\pagetotal
-    \loop
-      \advance\swarmwrap@nl by 1
-      \advance\dimen2 by -\baselineskip
-    \ifdim\dimen2>0pt \repeat
-    \ifnum\swarmwrap@nl<2
-      % Very little room — eject to new page and use original nl
-      \swarmwrap@nl=0
-      \dimen2=\swarmwrap@fh@val\relax
-      \loop
-        \advance\swarmwrap@nl by 1
-        \advance\dimen2 by -\baselineskip
-      \ifdim\dimen2>0pt \repeat
-      \newpage
-      \wlog{swarmwrap next: PAGE-EJECT — remaining=\the\dimen0, nl=\the\swarmwrap@nl}%
-    \else
-      % Enough room — adjust nl to fit remaining space.
-      % Avoids orphaned section headings on near-empty pages.
-      \wlog{swarmwrap next: ADJUSTED — remaining=\the\dimen0, nl=\the\swarmwrap@nl (fit to page)}%
-    \fi
-  \else
-    \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fw=\the\swarmwrap@fw, nl=\the\swarmwrap@nl, lw=\the\linewidth}%
-  \fi
   % ── Build parshape string ──────────────────────────────────────
   \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@nl
