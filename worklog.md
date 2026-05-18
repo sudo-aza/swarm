@@ -164,3 +164,27 @@ Stage Summary:
 - Trade-off: narrowed lines on current page have no figure beside them (acceptable)
 - QA task #124 pending for review
 - 3-day lock active until 2026-05-20 for further refinements
+
+---
+Task ID: 1
+Agent: Programmer (cron turn 05:00 UTC+8)
+Task: Investigate task #147 (text-into-figure overlap) and close if false positive
+
+Work Log:
+- Set up git credentials and installed gh CLI (binary download to ~/bin)
+- Pulled latest from origin/main (fast-forward from 42dbdd8 to 6263984)
+- Read programmer-rules.md and BLACKBOARD.md
+- Picked task #147: text-into-figure overlap on 3 pages
+- Compiled stress test with v3.7 (236 pages, 0 errors)
+- Ran analyze-wrapping.py: ~209 pages with overlaps reported
+- Wrote targeted PyMuPDF analysis script to distinguish real vs false overlaps
+- Found ALL overlaps are false positives: analysis tool cross-compares all figures against all text on each page
+- Verified: 0 overlaps on standard test files (test-customwrap, test-pagebreak-variations)
+- Verified: 0 overlaps on stress test single-figure pages (5 pages)
+- Closed task #147 as false positive in BLACKBOARD.md
+- Updated journal for 2026-05-19
+
+Stage Summary:
+- Task #147 closed as false positive (analysis tool limitation, not a real bug)
+- No code changes to swarmwrap.sty needed
+- Remaining Programmer tasks: #146 (near-empty pages), #151 (ghost narrowing)
