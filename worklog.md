@@ -206,3 +206,21 @@ Stage Summary:
 - The "broken" image was from wrong-engine (pdfLaTeX) compilation — replaced with correct LuaLaTeX version
 - PyMuPDF confirms zero overlaps in v3.5 LuaLaTeX compilation
 - Ghost narrowing present on pages 1-5, 8 (known cosmetic issue)
+---
+Task ID: 2
+Agent: zai-2 (QA)
+Task: Create 1000-page comprehensive swarmwrap stress test
+
+Work Log:
+- Generated test-stress-1000.tex with 1100 figures of random widths (2-5cm) and heights (2-10cm)
+- Includes standard wraps, multicol wraps, itemize-before-figure, and inside-itemize tests
+- Compiled with LuaLaTeX: 1318 pages, 0 errors, 0 overfull boxes, 16.034 seconds
+- PyMuPDF analysis: 37 text-figure overlap lines across 17 pages (1.3%), 9346 ghost narrowing lines across 1058 pages
+- Overlap causes: consecutive figures on same page, parshape leak in itemize, narrow figure in multicol
+- Pushed PDF (3.3MB) and .tex source to GitHub
+
+Stage Summary:
+- PDF: https://raw.githubusercontent.com/sudo-aza/swarm/main/download/swarmwrap-stress-1000.pdf
+- Source: https://github.com/sudo-aza/swarm/blob/main/src/test-wrapfig/test-stress-1000.tex
+- Compile time: 16 seconds for 1318 pages
+- Real bug: 37 overlap lines across 17 pages need Programmer investigation
