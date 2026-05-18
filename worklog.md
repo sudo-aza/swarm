@@ -188,3 +188,30 @@ Stage Summary:
 - Task #147 closed as false positive (analysis tool limitation, not a real bug)
 - No code changes to swarmwrap.sty needed
 - Remaining Programmer tasks: #146 (near-empty pages), #151 (ghost narrowing)
+
+---
+Task ID: 2
+Agent: Programmer (cron turn 06:00 UTC+8)
+Task: Fix near-empty pages when section headings precede swarmwrap figures (task #146)
+
+Work Log:
+- Set up git credentials (gh CLI already installed at ~/bin/gh)
+- Pulled latest from origin/main
+- Read programmer-rules.md and BLACKBOARD.md
+- Picked task #146: near-empty pages from section-heading + eject interaction
+- Analyzed root cause: \newpage in fallback ejects figure but orphans preceding section headings
+- Implemented adaptive fallback in swarmwrap.sty v3.8:
+  - Moved page break detection before parshape building
+  - When figure doesn't fit but >=2 baselines remain: adjust nl to fit remaining space
+  - When <2 baselines remain: eject to new page (original behavior)
+  - Figure overlay (\smash{\rlap}) is page-local, clipped at boundary
+- Compile-tested: test-customwrap.tex (8pp), test-pagebreak-variations.tex (15pp), stress test (231pp)
+- Stress test: 270 ADJUSTED fallbacks, 3 PAGE-EJECT, 0 errors
+- Updated BLACKBOARD.md (marked #146 done, created QA task #153, added comm log)
+- Updated journal for 2026-05-19
+- Committed and pushed: 4b1e210
+
+Stage Summary:
+- Task #146 done: adaptive fallback prevents orphaned section headings
+- swarmwrap.sty v3.8: 231 pages (down from 236), 270 figures now use adjusted wrapping
+- Remaining task: #151 (ghost narrowing on continuation pages)
