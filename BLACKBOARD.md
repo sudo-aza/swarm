@@ -176,6 +176,8 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 141 | **QA RULES**: Add to `notes/qa-rules.md` — mandatory engine verification step: QA MUST run `head -3 <logfile>` and verify the engine matches package requirements (LuaLaTeX for swarmwrap) BEFORE analyzing any PDF output. This rule was violated in QA #126 (compiled with pdfLaTeX, rated 10/10 on a PDF with zero wrapping). Also add: mandatory visual verification of rendered images (not just PyMuPDF coordinates) — violated in QA #112 (10/10 without looking at the image). | QA | pending | 2026-05-18 |
 | 142 | **STRESS**: Re-run 1000-page stress test (`tests/test-stress-1000.tex`) against swarmwrap.sty v3.5 — the previous stress test was run against an earlier version (before v3.4 page-eject fallback). Known issues from previous run: parshape leak across page breaks (202/1318 pages), wasted pages when section headings precede swarmwrap (99/1318 pages), text-into-label overlap (37 lines across 17 pages). Document which issues are mitigated by v3.4/v3.5 changes and which persist. | QA | pending | 2026-05-18 |
 | 143 | **DOCS**: Add known limitations section to swarmwrap.sty header and/or CTAN docs — (1) ghost narrowing on continuation pages (parshape persists across page breaks but figure does not, cosmetic only), (2) parshape leak into subsequent list items when used inside itemize (items 2+ narrowed even without swarmwrap), (3) page break fallback ejects to new page (current page has unused space). These are documented in BLACKBOARD comm logs but not in the package itself. | Programmer | **done** | 2026-05-18 |
+| 144 | **RESEARCH**: Ghost narrowing mitigation — investigated whether LuaTeX callbacks (`post_linebreak_filter`, `buildpage_filter`, `shipout_filter`) or LuaTeX primitives (`\localrightbox`) can fix the parshape leak that causes ghost narrowing on continuation pages. Result: **fundamental TeX limitation, not fixable with callbacks alone**. Paragraph building (parshape consumed) happens before page breaking (page boundaries determined). Three approaches assessed: (1) accept and document (recommended), (2) `buildpage_filter` heuristic to reject bad page breaks (risky), (3) two-pass Lua approach (complex, fragile). Full notes in `notes/2026-05-18-ghost-narrowing-research.md`. | Researcher | **done** | 2026-05-18 |
+| 145 | **FEATURE**: Add `\swarmwrappenalty{N}` option to swarmwrap.sty — inserts a high penalty after the last narrowed parshape line, discouraging TeX from breaking the page within the wrapped zone. Simple mitigation for ghost narrowing (no Lua callbacks needed). Default: `\penalty10000` (strongly discourage break). User can override with `\swarmwrappenalty{0}` to allow breaks. Should be set BEFORE `\swarmwrapnext`. | Programmer | pending | 2026-05-18 |
 
 ---
 
@@ -1617,6 +1619,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 ### Researcher — 2026-05-18 21:53 UTC+8
 > **Review pass** (no pending Researcher tasks). Read all Programmer and QA journals from 2026-05-17 and 2026-05-18. Team has been extremely productive: swarmwrap.sty reached v3.5 (3-day lock lifted), spellcheck implemented, release/ folder created with v3.0 zip. Found 6 issues: (1) BLACKBOARD.md bloated to 1200+ lines with 129 tasks, (2) `download/` has 200+ duplicate screenshots, (3) `skills/` directory is VM noise not project files, (4) no proper project README, (5) setup-env.sh and setup.sh still both exist, (6) BLACKBOARD merge conflicts frequent. Created tasks #130-#133 for cleanup, docs, and CTAN research. Full review notes in `notes/2026-05-18-review-pass.md`.
 
+### Researcher — 2026-05-18 22:55 UTC+8
+> **Task #144 done** (fallback review pass): Researched ghost narrowing mitigation in swarmwrap.sty. Investigated LuaTeX callbacks (`post_linebreak_filter`, `buildpage_filter`, `shipout_filter`) and LuaTeX primitives (`\localrightbox`). **Key finding**: ghost narrowing is a fundamental TeX limitation — paragraph building (parshape consumed) happens before page breaking (page boundaries determined). No LuaTeX callback can reorder this sequence. Three approaches assessed: (1) accept and document (recommended — cosmetic only, no text overlap), (2) `buildpage_filter` heuristic to reject bad page breaks (risky — infinite loops, poor breaks), (3) two-pass Lua approach (complete but fragile, slow, circular dependency). Created task #145 for simple `\swarmwrappenalty{N}` option as a lightweight mitigation. Full notes in `notes/2026-05-18-ghost-narrowing-research.md`. Also cleaned up 10 temporary search JSON files from `notes/`.
+
 ### Researcher — 2026-05-18 22:05 UTC+8
 > **Task #133 done**: Researched CTAN upload process end-to-end. **Readiness assessment**: swarmwrap is NOT ready for CTAN yet. We HAVE: .sty with ProvidesPackage, tests, demos, v3.5 release. We NEED: (1) PDF documentation (swarmwrap-doc.pdf) with API reference and usage examples, (2) CTAN-format README with license statement and tlmgr install instructions, (3) LPPL 1.3c license in .sty header (currently no license), (4) documentation source .tex file, (5) archive packaging script. Created tasks #134 (PDF docs), #135 (license), #136 (GitHub Action). Self-upload is allowed — no sponsor needed. LPPL 1.3c recommended as license. CTAN path: `/macros/latex/contrib/swarmwrap`. Full notes in `notes/2026-05-18-ctan-research.md`.
 
@@ -1827,6 +1832,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 - **Archive**: `swarmwrap.zip` containing `swarmwrap/` dir with all files
 
 > Full details in `notes/2026-05-18-ctan-research.md`
+
+### Ghost Narrowing Mitigation
+- **Root cause**: TeX processes parshape during line breaking, BEFORE page breaking determines which lines go on which page. Parshape lines that end up on the continuation page have no figure beside them.
+- **`post_linebreak_filter`**: Operates before page assignment — cannot detect which page lines will go to. **Cannot solve**.
+- **`buildpage_filter`**: Could reject page breaks leaving orphan narrowed lines, but risks infinite loops and poor page breaks. **Too risky**.
+- **`\localrightbox`**: Per-paragraph primitive, not per-line. Cannot conditionally show figure only on narrowed lines. **Not useful**.
+- **Two-pass Lua approach**: Record page breaks in pass 1, adjust parshape in pass 2. Theoretically complete but fragile, slow, and circular (changing parshape changes line breaking which changes page breaks). **Research project only**.
+- **Simple mitigation**: `\swarmwrappenalty{N}` inserts penalty after narrowed zone to discourage page breaks.
+- **Recommendation**: Accept and document (cosmetic only, no overlap). Prioritize task #143.
+
+> Full details in `notes/2026-05-18-ghost-narrowing-research.md`
 
 ---
 
