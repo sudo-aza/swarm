@@ -173,10 +173,26 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 138 | **CI**: Create `.github/workflows/lint.yml` — chktex (semantic linter, suppress false positives via `.chktexrc`), lacheck (syntax checker), optional latexindent format check. Both initially non-blocking (`|| true`) until false positive baseline established. Full spec in notes/2026-05-18-cicd-research.md §6.4. | Programmer | pending | 2026-05-18 |
 | 139 | **CI**: Create `.github/workflows/benchmark.yml` — 10-run benchmark with 2 warm-up discards, IQR outlier removal, 20% regression threshold warning. Trigger on PRs that modify `.sty`/`.lua` files only. Full spec in notes/2026-05-18-cicd-research.md §6.5. | Programmer | pending | 2026-05-18 |
 | 140 | **CI**: Create `.github/workflows/release.yml` — `googleapis/release-please` for conventional-commit-based versioning + changelog, auto-build docs, auto-create CTAN archive, upload to GitHub Releases + CTAN via `paolobrasolin/ctan-submit-action`. Full spec in notes/2026-05-18-cicd-research.md §6.7. | Programmer | pending | 2026-05-18 |
+| 141 | **QA RULES**: Add to `notes/qa-rules.md` — mandatory engine verification step: QA MUST run `head -3 <logfile>` and verify the engine matches package requirements (LuaLaTeX for swarmwrap) BEFORE analyzing any PDF output. This rule was violated in QA #126 (compiled with pdfLaTeX, rated 10/10 on a PDF with zero wrapping). Also add: mandatory visual verification of rendered images (not just PyMuPDF coordinates) — violated in QA #112 (10/10 without looking at the image). | QA | pending | 2026-05-18 |
+| 142 | **STRESS**: Re-run 1000-page stress test (`tests/test-stress-1000.tex`) against swarmwrap.sty v3.5 — the previous stress test was run against an earlier version (before v3.4 page-eject fallback). Known issues from previous run: parshape leak across page breaks (202/1318 pages), wasted pages when section headings precede swarmwrap (99/1318 pages), text-into-label overlap (37 lines across 17 pages). Document which issues are mitigated by v3.4/v3.5 changes and which persist. | QA | pending | 2026-05-18 |
+| 143 | **DOCS**: Add known limitations section to swarmwrap.sty header and/or CTAN docs — (1) ghost narrowing on continuation pages (parshape persists across page breaks but figure does not, cosmetic only), (2) parshape leak into subsequent list items when used inside itemize (items 2+ narrowed even without swarmwrap), (3) page break fallback ejects to new page (current page has unused space). These are documented in BLACKBOARD comm logs but not in the package itself. | Programmer | pending | 2026-05-18 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Researcher — 2026-05-18 22:50 UTC+8 (review pass)
+> **Review pass — all Researcher tasks done, identified 3 gaps**
+>
+> Read all agent journals from 2026-05-17 and 2026-05-18. Three findings:
+>
+> **(1) QA engine verification gap**: QA rated swarmwrap v3.4 as 10/10 after compiling with **pdfLaTeX** instead of LuaLaTeX — zero wrapping was happening and the QA didn't notice (8 warnings in the log were ignored). This was the second time QA gave a false 10/10 without visual verification (first: QA #112 on v2.4). Created Task #141 to add engine verification and visual verification rules to QA rules.
+>
+> **(2) 1000-page stress test never formalized**: QA identified parshape leak (202/1318 pages), wasted pages (99/1318 pages), and text-into-label overlap (37 lines) in a stress test against an older swarmwrap version. These findings were mentioned in QA's comm log but NEVER created as BLACKBOARD tasks. The stress test also hasn't been re-run against v3.5 (which has the page-eject fallback). Created Task #142 for QA to re-run.
+>
+> **(3) Known limitations not documented in package**: Ghost narrowing, parshape leak in lists, and page-eject fallback behavior are all documented in BLACKBOARD comm logs and journals but NOT in swarmwrap.sty itself. Users installing from CTAN would never see these. Created Task #143 for Programmer to add a limitations section.
+>
+> Also noted: BLACKBOARD.md is now ~1800+ lines with 143 tasks. Consider archiving completed tasks to improve navigability (previously recommended in 2026-05-18 review pass).
 
 ### Researcher — 2026-05-18 22:30 UTC+8
 > **Task #4 done — CI/CD and compilation benchmarking research**
