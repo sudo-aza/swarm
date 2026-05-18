@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.5)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.6)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -24,6 +24,9 @@
 %   \swarmwrapnext
 %   Paragraph text wraps around the figure.
 %
+%   % Custom page-break penalty (discourage breaks in wrapped zone):
+%   \swarmwrappenalty{500}  % default is 10000 (very discouraged)
+%
 % Zero arguments. Width and height are auto-detected from the rendered
 % content box. The user controls the content width explicitly (e.g.,
 % \includegraphics[width=3cm] or \begin{minipage}[t]{3cm}).
@@ -39,6 +42,8 @@
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
 %    lines on the next page remain narrowed even though no figure is
 %    beside them. This is cosmetic only — no text overlaps the figure.
+%    Mitigation: \swarmwrappenalty{N} inserts a penalty at the
+%    boundary to discourage TeX from breaking there (default: 10000).
 %    Affects only very long paragraphs that span page breaks.
 %
 % 2. Parshape leak into list items:
@@ -55,13 +60,18 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.6: Added \swarmwrappenalty{N} option (default 10000). Uses
+%   LuaTeX post_linebreak_filter to insert a penalty at the boundary
+%   between the last narrowed line and the first full-width line,
+%   discouraging page breaks that cause ghost narrowing.
+%
 % v3.5: Non-LuaLaTeX compilation produces hard error (was silent fallback).
 %   \swarmwrapnext errors on non-LuaLaTeX (was \relax).
 %
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks. afterpage dependency removed.
 
-\ProvidesPackage{swarmwrap}[2026/05/18 v3.5 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.6 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -79,6 +89,70 @@
 % Global macros to persist values across the environment group boundary.
 \newcommand{\swarmwrap@fw@val}{0pt}  % figure width for parshape
 \newcommand{\swarmwrap@fh@val}{0pt}  % figure height for page break
+
+% ── Penalty control ──────────────────────────────────────────────────
+% \swarmwrappenalty{N}: set the penalty inserted at the boundary between
+% the last narrowed parshape line and the first full-width line.
+% Default: 10000 (strongly discourage page break at boundary).
+% Set to 0 to allow breaks (no penalty). Set to -10000 to force a break.
+\newcount\swarmwrap@penalty
+\swarmwrap@penalty=10000
+
+\newcommand{\swarmwrappenalty}[1]{%
+  \swarmwrap@penalty=#1\relax
+}
+
+% Lua-readable register for the current wrapped text width.
+% Set by \swarmwrapnext; read by the post_linebreak_filter callback.
+\newdimen\swarmwrap@tw@lua
+\swarmwrap@tw@lua=0pt
+
+% ── Lua callback: post_linebreak_filter ───────────────────────────────
+% When a paragraph is broken into lines, this callback checks whether
+% a parshape narrowing is active (swarmwrap@tw@lua > 0). If so, it
+% identifies the boundary between the last narrowed line and the first
+% full-width line, and inserts a penalty node there. This discourages
+% TeX from breaking the page at the transition point, which would cause
+% ghost narrowing on the continuation page.
+
+\ifswarmwrap@luatex
+\directlua{
+  function swarmwrap_post_lb(head, groupcode)
+    local tw_sp = tex.dimen["swarmwrap@tw@lua"]
+    if tw_sp <= 0 then
+      return head
+    end
+    local penalty_val = tex.count["swarmwrap@penalty"]
+    if penalty_val == 0 then
+      return head
+    end
+    -- Convert skip to scaled points for comparison
+    local tw_val = tw_sp / 65536.0
+    local tol = 3.0  -- pt tolerance
+    local narrow_width_max = tw_val + tol
+    -- Walk the node list to find the last narrowed hlist
+    local last_narrow = nil
+    local current = head
+    while current do
+      if current.id == 0 then  -- hlist node (a broken line)
+        local lw = current.width / 65536.0
+        if lw <= narrow_width_max and lw > 0 then
+          last_narrow = current
+        end
+      end
+      current = current.next
+    end
+    if last_narrow then
+      local p = node.new(node.id("penalty"))
+      p.penalty = penalty_val
+      node.insert_after(head, last_narrow, p)
+    end
+    return head
+  end
+  luatexbase.add_to_callback("post_linebreak_filter",
+    swarmwrap_post_lb, "swarmwrap: penalty at parshape boundary")
+}
+\fi
 
 % ── Environment: capture content into a savebox (zero args) ────────────
 % Content sets its natural width via explicit sizing:
@@ -141,6 +215,8 @@
     \advance\dimen0 by -\baselineskip
   \ifdim\dimen0>0pt \repeat
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
+  % Set Lua-readable dimension for post_linebreak_filter callback
+  \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
   % ── Build parshape string ──────────────────────────────────────
   \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@nl
