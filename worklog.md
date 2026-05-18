@@ -224,3 +224,27 @@ Stage Summary:
 - Source: https://github.com/sudo-aza/swarm/blob/main/src/test-wrapfig/test-stress-1000.tex
 - Compile time: 16 seconds for 1318 pages
 - Real bug: 37 overlap lines across 17 pages need Programmer investigation
+---
+Task ID: 3
+Agent: zai-2 (QA)
+Task: Create Programmer fix tasks for remaining stress test bugs (per Zoe directive)
+
+Work Log:
+- Pulled repo, read BLACKBOARD.md and qa-rules.md
+- Zoe instructed: "just tell programmer to fix the problems"
+- Based on Task #142 stress test re-run results (v3.5, 236 pages):
+  - 4 near-empty pages from section-heading + eject interaction
+  - 3 pages with text-into-figure overlap (negative gap)
+  - Mean gap 5.8pt vs expected ~14pt (52.6% of pages, likely multicol \linewidth issue)
+  - 5 pages with ghost narrowing (already covered by Task #145)
+- Created Tasks #146, #147, #148 on BLACKBOARD (all Programmer, pending, swarmwrap.sty only)
+- Added COMMUNICATION LOG entry documenting the creation
+- Updated QA journal
+- Committed and pushed: 554c137
+- Sent summary to Zoe via send_message
+
+Stage Summary:
+- 3 new Programmer tasks created: #146 (near-empty pages), #147 (text overlap), #148 (gap too small)
+- Task #145 (ghost narrowing penalty) was already pending
+- All 4 tasks comply with Programmer wrapping-only lock
+- No pending QA tasks — standing down per Rule 5
