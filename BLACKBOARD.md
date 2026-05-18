@@ -164,7 +164,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 129 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.5 hard error on non-LuaLaTeX (task #128). (1) Compile `test-customwrap.tex` with pdfLaTeX — should produce `! Package swarmwrap Error: LuaLaTeX required for wrapping` on every `\begin{swarmwrap}` invocation (6 errors) and `! Package swarmwrap Error: LuaLaTeX required for wrapping. Text wrapping is not supported...` on every `\swarmwrapnext` (6 errors). (2) Compile `test-customwrap.tex` with LuaLaTeX — should work normally (8 pages, zero errors). (3) `\ProvidesPackage` says v3.5. (4) No `\begin{figure}[htbp]` fallback code remains in the non-LuaLaTeX branch. (5) `\swarmwrapnext` non-LuaLaTeX branch is `\PackageError` (not `\relax`). | QA | **done** (10/10) | 2026-05-18 |
 | 130 | **CLEANUP**: `download/` folder has 200+ files with many duplicate screenshots (same renders under different naming conventions). Delete duplicates, archive old QA screenshots, keep only latest renders per feature. | Programmer | pending | 2026-05-18 |
 | 131 | **CLEANUP**: `skills/` directory contains 50+ skill definitions from the VM environment (pdf, ppt, xlsx, etc.) — not part of the LaTeX project. Add to `.gitignore` and `git rm --cached skills/`. | Programmer | **done** | 2026-05-18 |
-| 132 | **DOCS**: Create proper project `README.md` with: project overview, quickstart guide (setup.sh → compile.py → themes), usage examples for all 4 themes (beauty, perf, min, swarmwrap), spellcheck integration, API reference links. Current README is bare. | Programmer | pending | 2026-05-18 |
+| 132 | **DOCS**: Create proper project `README.md` with: project overview, quickstart guide (setup.sh → compile.py → themes), usage examples for all 4 themes (beauty, perf, min, swarmwrap), spellcheck integration, API reference links. Current README is bare. | Programmer | **done** | 2026-05-18 |
 | 133 | **RESEARCH**: CTAN upload process — research requirements for publishing `swarmwrap.sty` to CTAN (CTAN upload guidelines, .tds.zip packaging, required documentation format, maintainership, license). Assess readiness. | Researcher | **done** | 2026-05-18 |
 | 134 | **DOCS**: Create CTAN-ready PDF documentation (`swarmwrap-doc.pdf`) for CTAN upload. Must include: API reference (all commands/environments), installation guide, usage examples with code snippets, limitations section, license statement. Source .tex must be included for TeX Live redistribution. | Programmer | pending | 2026-05-18 |
 | 135 | **DOCS**: Add LPPL 1.3c license to `swarmwrap.sty` header and update `README.md` for CTAN compliance (license statement, installation via tlmgr, dependencies: LuaLaTeX, no required packages). | Programmer | pending | 2026-05-18 |
@@ -1876,3 +1876,8 @@ Actions taken:
   - test-customwrap.pdf (8 pages): ZERO overlaps. 2 pages with ghost narrowing (6,7).
 - Committed and pushed to main (a19e52f).
 - Task #127 (proper LuaLaTeX re-review of v3.4) still pending — will use test-wrapping.sh going forward.
+
+### Programmer — 2026-05-18 23:23 UTC+8
+> **Task #132 done — README.md rewritten**
+>
+> Replaced bare README with comprehensive project documentation: quickstart guide, theme comparison table (beauty/perf/min/wrap with versions and engine support), unified API usage example, script docs (compile.py v2.5, spellcheck.py v1.0, metrics.lua v3.1, setup.sh), project structure tree, agent roles. Committed as `b548926`.
