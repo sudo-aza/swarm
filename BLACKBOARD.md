@@ -178,10 +178,26 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 143 | **DOCS**: Add known limitations section to swarmwrap.sty header and/or CTAN docs — (1) ghost narrowing on continuation pages (parshape persists across page breaks but figure does not, cosmetic only), (2) parshape leak into subsequent list items when used inside itemize (items 2+ narrowed even without swarmwrap), (3) page break fallback ejects to new page (current page has unused space). These are documented in BLACKBOARD comm logs but not in the package itself. | Programmer | **done** | 2026-05-18 |
 | 144 | **RESEARCH**: Ghost narrowing mitigation — investigated whether LuaTeX callbacks (`post_linebreak_filter`, `buildpage_filter`, `shipout_filter`) or LuaTeX primitives (`\localrightbox`) can fix the parshape leak that causes ghost narrowing on continuation pages. Result: **fundamental TeX limitation, not fixable with callbacks alone**. Paragraph building (parshape consumed) happens before page breaking (page boundaries determined). Three approaches assessed: (1) accept and document (recommended), (2) `buildpage_filter` heuristic to reject bad page breaks (risky), (3) two-pass Lua approach (complex, fragile). Full notes in `notes/2026-05-18-ghost-narrowing-research.md`. | Researcher | **done** | 2026-05-18 |
 | 145 | **FEATURE**: Add `\swarmwrappenalty{N}` option to swarmwrap.sty — inserts a high penalty after the last narrowed parshape line, discouraging TeX from breaking the page within the wrapped zone. Simple mitigation for ghost narrowing (no Lua callbacks needed). Default: `\penalty10000` (strongly discourage break). User can override with `\swarmwrappenalty{0}` to allow breaks. Should be set BEFORE `\swarmwrapnext`. | Programmer | pending | 2026-05-18 |
+| 146 | **FIX**: swarmwrap.sty — near-empty pages when section headings precede swarmwrap figure. Stress test (v3.5, 236 pages) shows 4 near-empty pages caused by the interaction between `\section{}` (or similar heading commands) and the page-eject fallback. When a section heading appears right before a swarmwrap figure that triggers the fallback, the heading lands on one page with almost no body text, then the figure ejects to the next page leaving the first page mostly empty. Expected behavior: section heading should flow onto the same page as the wrapped figure, OR the eject should pull the heading along. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-05-19 |
+| 147 | **FIX**: swarmwrap.sty — text-into-figure overlap on 3 pages. Stress test (v3.5) shows 3 pages where body text extends into the figure rectangle (negative gap detected by analyze-wrapping.py). This means the parshape narrowing is insufficient or the figure overlay x-position is misaligned with the text boundary. Debug: compile the stress test PDF (`tests/test-stress-1000.tex`), identify which pages have negative gaps, render those pages, and check if (a) the figure is placed too far left, or (b) the parshape doesn't narrow enough, or (c) a race condition in the fallback path. Fix the root cause and re-compile to verify zero overlaps. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-05-19 |
+| 148 | **FIX**: swarmwrap.sty — mean gap too small (5.8pt vs expected ~14pt) on 52.6% of pages. Stress test (v3.5) shows that the majority of figure pages have a gap of 0-5pt between the narrowed text and the figure right edge, when the expected gap should be ~14pt (based on `\wrapfigsep` / manual spacing). Likely cause: inside `multicol` environments, `\linewidth` is redefined to the column width, which changes the parshape calculation and reduces the gap. Verify: (1) check whether the gap issue only occurs inside multicol columns, (2) check if the parshape width calculation uses `\linewidth` (which changes in multicol) instead of `\textwidth` or a saved width. If confirmed, fix by capturing the intended wrap width at `\begin{swarmwrap}` time rather than relying on the current `\linewidth` at paragraph-breaking time. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-05-19 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-19 00:40 UTC+8
+> **Created 3 Programmer fix tasks for remaining stress test bugs (#146, #147, #148)**
+>
+> Per zoe's directive. Based on Task #142 stress test findings (v3.5, 236 pages):
+> - **Task #146**: Near-empty pages from section-heading + eject interaction (4 pages)
+> - **Task #147**: Text-into-figure overlap (3 pages with negative gap)
+> - **Task #148**: Mean gap too small — 5.8pt vs expected ~14pt (52.6% of pages, likely multicol `\linewidth` issue)
+>
+> Note: Task #145 (ghost narrowing penalty) was already pending from Researcher's earlier recommendation. All 4 tasks comply with the Programmer wrapping-only lock (swarmwrap.sty modifications only).
+
+### QA — 2026-05-19 00:38 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks are marked **done**. Standing down per Rule 5. Pushed stress test images and test file at Zoe's request.
 
 ### QA — 2026-05-19 00:30 UTC+8
 > **Task #142 done — 1000-page stress test re-run against swarmwrap.sty v3.5 (10/10)**
