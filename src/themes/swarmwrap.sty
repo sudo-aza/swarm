@@ -29,7 +29,15 @@
 % \includegraphics[width=3cm] or \begin{minipage}[t]{3cm}).
 % Right-side wrapping only. Left-wrap removed in v3.0 (scope reduction).
 %
-% Requirements: LuaLaTeX (falls back to centered figure otherwise)
+% Requirements: LuaLaTeX (errors out on pdfLaTeX/XeLaTeX)
+%
+% Changes in v3.5:
+%   - Non-LuaLaTeX compilation now produces a hard error instead of silently
+%     falling back to plain floats. This prevents QA/user confusion where
+%     a PDF compiles but has zero wrapping because swarmwrap was loaded
+%     under pdfLaTeX.
+%   - \swarmwrapnext produces a clear error on non-LuaLaTeX instead of
+%     silently doing nothing (was \relax).
 %
 % Changes in v3.4:
 %   - Page break fallback now uses PAGE EJECT: when the figure doesn't
@@ -55,7 +63,7 @@
 %     narrow shape but have no figure beside them. This is cosmetic
 %     only (no overlap) and affects only very long paragraphs.
 
-\ProvidesPackage{swarmwrap}[2026/05/18 v3.4 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/18 v3.5 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -84,8 +92,7 @@
   \ifswarmwrap@luatex
     \begin{lrbox}{\swarmwrap@box}%
   \else
-    \begin{figure}[htbp]\centering
-    \PackageWarning{swarmwrap}{LuaLaTeX required for wrapping. Using float.}%
+    \PackageError{swarmwrap}{LuaLaTeX required for wrapping}{}%
   \fi
 }{%
   \ifswarmwrap@luatex
@@ -100,8 +107,6 @@
     \advance\swarmwrap@fh by \dp\swarmwrap@box
     \advance\swarmwrap@fh by \baselineskip
     \xdef\swarmwrap@fh@val{\the\swarmwrap@fh}%
-  \else
-    \end{figure}%
   \fi
 }
 
@@ -166,7 +171,9 @@
   \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
 }%
 \else
-\newcommand{\swarmwrapnext}{\relax}%
+\newcommand{\swarmwrapnext}{%
+  \PackageError{swarmwrap}{LuaLaTeX required for wrapping. Text wrapping is not supported on pdfLaTeX/XeLaTeX. Either compile with lualatex, or remove swarmwrap.}{}%
+}%
 \fi
 
 \endinput
