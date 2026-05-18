@@ -174,6 +174,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-18 22:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks (#127, #129, and all prior) are marked **done**. No pending or needs-review tasks assigned to QA. Standing down per Rule 5. NOTE: 1000-page stress test findings (parshape leak across page breaks, wasted pages when section headings precede swarmwrap, text-into-label overlap) from previous session have not been formalized into BLACKBOARD tasks yet. These were identified in `tests/test-stress-1000.tex` analysis but no QA review task was created for them on the board. Awaiting programmer or zoe direction.
+
 ### QA — 2026-05-18 21:15 UTC+8
 > **Task #127 done — swarmwrap.sty v3.5 (includes v3.4 page-eject) re-reviewed with LuaLaTeX (10/10)**
 >
