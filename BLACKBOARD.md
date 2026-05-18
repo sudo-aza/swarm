@@ -28,7 +28,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 1 | Research best-in-class LaTeX themes (Beamer, article, book) and their defaults | Researcher | **done** | 2026-05-14 |
 | 2 | Research LuaLaTeX performance measurement libraries and techniques | Researcher | **done** | 2026-05-14 |
 | 3 | Research portable LaTeX distributions (TeX Live, MiKTeX portable) | Researcher | **done** | 2026-05-14 |
-| 4 | Research CI/CD and compilation benchmarking approaches | Researcher | pending | 2026-05-14 |
+| 4 | Research CI/CD and compilation benchmarking approaches | Researcher | **done** | 2026-05-14 |
 | 5 | Design the "beautiful" theme — title page, typography, colors, tables | Programmer | **done** | 2026-05-14 |
 | 6 | Design the "performance" theme — minimal, fast compilation | Programmer | **done** | 2026-05-14 |
 | 7 | Write Python helper scripts (compile, stats, auto-compile, dep checker) | Programmer | **done** | 2026-05-14 |
@@ -169,10 +169,25 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 134 | **DOCS**: Create CTAN-ready PDF documentation (`swarmwrap-doc.pdf`) for CTAN upload. Must include: API reference (all commands/environments), installation guide, usage examples with code snippets, limitations section, license statement. Source .tex must be included for TeX Live redistribution. | Programmer | pending | 2026-05-18 |
 | 135 | **DOCS**: Add LPPL 1.3c license to `swarmwrap.sty` header and update `README.md` for CTAN compliance (license statement, installation via tlmgr, dependencies: LuaLaTeX, no required packages). | Programmer | pending | 2026-05-18 |
 | 136 | **DOCS**: Set up `paolobrasolin/ctan-submit-action` GitHub Action — triggers on version tags, auto-validates and uploads `swarmwrap.zip` to CTAN. Create proper archive packaging script. | Programmer | pending | 2026-05-18 |
+| 137 | **CI**: Create `.github/workflows/ci.yml` — compile matrix (3 engines × 3 themes), LuaLaTeX-only swarmwrap test, Python smoke tests (compile.py --help, spellcheck.py), spellcheck. Use `zauguin/install-texlive@v4` for TeX Live with caching. Full spec in notes/2026-05-18-cicd-research.md §6.3. | Programmer | pending | 2026-05-18 |
+| 138 | **CI**: Create `.github/workflows/lint.yml` — chktex (semantic linter, suppress false positives via `.chktexrc`), lacheck (syntax checker), optional latexindent format check. Both initially non-blocking (`|| true`) until false positive baseline established. Full spec in notes/2026-05-18-cicd-research.md §6.4. | Programmer | pending | 2026-05-18 |
+| 139 | **CI**: Create `.github/workflows/benchmark.yml` — 10-run benchmark with 2 warm-up discards, IQR outlier removal, 20% regression threshold warning. Trigger on PRs that modify `.sty`/`.lua` files only. Full spec in notes/2026-05-18-cicd-research.md §6.5. | Programmer | pending | 2026-05-18 |
+| 140 | **CI**: Create `.github/workflows/release.yml` — `googleapis/release-please` for conventional-commit-based versioning + changelog, auto-build docs, auto-create CTAN archive, upload to GitHub Releases + CTAN via `paolobrasolin/ctan-submit-action`. Full spec in notes/2026-05-18-cicd-research.md §6.7. | Programmer | pending | 2026-05-18 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Researcher — 2026-05-18 22:30 UTC+8
+> **Task #4 done — CI/CD and compilation benchmarking research**
+>
+> Researched 6 areas: (1) TeX Live in CI — `zauguin/install-texlive@v4` is the gold standard (used by latex3/latex2e, Witiko/markdown). Auto-caching, first run 2-5min, cache hit <30s. (2) Linting — dual-tool strategy: chktex (semantic, moderate false positives → suppress via `.chktexrc`) + lacheck (syntax, near-zero false positives). (3) Benchmarking — `time.perf_counter()` with 10 runs, 2 warmup, IQR outlier removal, 20% regression threshold. (4) CTAN integration — `paolobrasolin/ctan-submit-action` for validate+upload, pre-upload checklist. (5) Release automation — `googleapis/release-please` with conventional commits, pairs with ctan-submit-action. (6) Recommended 5-workflow structure: ci.yml (compile matrix), lint.yml (chktex+lacheck), benchmark.yml (regression detection), ctan-validate.yml, release.yml.
+>
+> Full 1200-line report: `notes/2026-05-18-cicd-research.md` with complete YAML examples, tool comparisons, and 25+ reference URLs.
+>
+> Created 4 follow-up tasks: #137 (CI compile matrix), #138 (lint workflow), #139 (benchmark workflow), #140 (release automation). All assigned to Programmer.
+>
+> **All Researcher tasks are now done.** (#1-#4, #26, #30, #133)
 
 ### QA — 2026-05-18 22:30 UTC+8
 > **No pending QA tasks**: Checked BLACKBOARD — all QA tasks (#127, #129, and all prior) are marked **done**. No pending or needs-review tasks assigned to QA. Standing down per Rule 5. NOTE: 1000-page stress test findings (parshape leak across page breaks, wasted pages when section headings precede swarmwrap, text-into-label overlap) from previous session have not been formalized into BLACKBOARD tasks yet. These were identified in `tests/test-stress-1000.tex` analysis but no QA review task was created for them on the board. Awaiting programmer or zoe direction.
@@ -1756,6 +1771,16 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 - See `scripts/setup.sh` for full automated setup
 
 > Full details in `notes/2026-05-14-research.md`
+
+### CI/CD and Benchmarking
+- **TeX Live in CI**: `zauguin/install-texlive@v4` (gold standard, auto-caching, used by latex3/latex2e)
+- **Linting**: chktex (semantic, suppress via `.chktexrc`) + lacheck (syntax, near-zero false positives)
+- **Benchmarking**: 10 runs, 2 warmup, IQR outlier removal, 20% regression threshold
+- **CTAN**: `paolobrasolin/ctan-submit-action` (validate + upload), pre-upload checklist
+- **Release**: `googleapis/release-please` with conventional commits
+- **Workflows**: ci.yml, lint.yml, benchmark.yml, ctan-validate.yml, release.yml
+
+> Full details in `notes/2026-05-18-cicd-research.md`
 
 ### Spellcheck in LaTeX
 - **`spelling` CTAN package**: only off-the-shelf solution with red underlines in PDF (LuaTeX callbacks + aspell/hunspell)
