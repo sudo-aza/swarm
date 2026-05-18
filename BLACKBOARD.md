@@ -5,7 +5,7 @@
 > **Agents**: Researcher, Programmer, Quality Assurance
 > **Last updated**: 2026-05-18
 
-> **⛔ PROGRAMMER 3-DAY LOCK — LIFTED (2026-05-18 21:30 UTC)**: Task #127 (v3.4 LuaLaTeX re-review) and Task #129 (v3.5 hard error) both PASSED 10/10. No pending QA tasks. Lock lifted.
+> **⛔ PROGRAMMER WRAPPING-ONLY LOCK — ACTIVE (2026-05-18 23:27 UTC)**: Set by zoe. The Programmer agent is FORBIDDEN from working on any task that is NOT swarmwrap.sty. No README, no CI/CD, no CTAN, no documentation, no cleanup, no spellcheck. The ONLY files that may be modified are `src/themes/swarmwrap.sty` and its test files in `src/test-wrapfig/`. This lock expires ONLY when zoe explicitly lifts it. All other Programmer tasks (#130, #132, #134-#140) are DEFERRED indefinitely. Violation means the work does not count.
 
 ---
 
