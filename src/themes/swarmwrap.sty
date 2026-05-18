@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.1)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.3)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -31,26 +31,23 @@
 %
 % Requirements: LuaLaTeX (falls back to centered figure otherwise)
 %
-% Changes in v3.2:
-%   - Page break fallback reverted to CENTERED figure on next page.
-%     The v3.1 parshape TRANSITION approach was abandoned after QA #120
-%     revoked: \afterpage figure overlay and parshape line count were
-%     fundamentally desynchronized (figure hidden behind text, ghost
-%     wrapping with no figure present). The centered fallback is simple
-%     and reliable: text fills remaining space at full width, figure
-%     appears centered on the next page via \afterpage.
-%
-% Changes in v3.0:
-%   - Zero-argument API: both width and height auto-detected from content
-%   - Removed mandatory width argument and fixed-width minipage
-%   - lrbox-only capture: content sets its natural width
-%   - Right-side wrapping only (left-wrap code removed)
-%   - Gap increased to 14pt (0.5cm)
-%   - Page break detection (from v2.2)
-%   - Trailing full-width parshape line (from v2.0)
-%   - emergencystretch (from v2.4)
+% Changes in v3.3:
+%   - Page break fallback now RIGHT-WRAPS on the next page instead of
+%     centering (v3.2). Strategy: set parshape on the current paragraph
+%     (persists across page breaks within the paragraph via TeX's
+%     built-in parshape continuation). Place figure via \afterpage using
+%     a ZERO-HEIGHT vbox (no paragraph created, so parshape is NOT reset).
+%     The vbox overflows its boundaries (TeX doesn't clip) so the figure
+%     is visible beside the narrowed continuation text.
+%   - Trade-off: on the current page, narrowed lines have no figure beside
+%     them (figure doesn't fit). This wastes some horizontal space but is
+%     far better than centered fallback (zero wrapping on the next page).
+%   - The \everypar approach was abandoned: it only fires for NEW
+%     paragraphs, not for continuations of split paragraphs.
+%   - The \afterpage paragraph approach was abandoned: creating a
+%     paragraph in \afterpage resets parshape for subsequent content.
 
-\ProvidesPackage{swarmwrap}[2026/05/18 v3.2 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/18 v3.3 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -101,9 +98,7 @@
   \fi
 }
 
-% ── Helper: place figure centered (page break fallback) ────────────
-% When the figure doesn't fit on the current page, this helper places
-% it centered at the top of the next page via \afterpage.
+% ── Helper: place figure centered (v3.2 fallback, kept as reserve) ────
 \newcommand{\swarmwrap@place@centered}{%
   \begin{center}%
     \copy\swarmwrap@box%
@@ -114,6 +109,13 @@
 % ── \swarmwrapnext: compute parshape and place figure ──────────────────
 % All computation happens here so \linewidth is captured at the
 % correct location (inside multicol, itemize, etc.).
+%
+% Fallback strategy (v3.3): When the figure doesn't fit on the current
+% page, parshape is applied to the current paragraph. TeX's parshape
+% persists across page breaks within a paragraph — the continuation
+% lines on the next page are also narrowed. The figure is placed via
+% \afterpage using a ZERO-HEIGHT vbox (no paragraph break, so parshape
+% is NOT reset). The vbox overflows its boundaries (TeX doesn't clip).
 
 \ifswarmwrap@luatex
 \newcommand{\swarmwrapnext}{%
@@ -130,30 +132,39 @@
     \advance\dimen0 by -\baselineskip
   \ifdim\dimen0>0pt \repeat
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
+  % ── Build parshape string (shared: normal + fallback) ──────────
+  \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
+  \swarmwrap@loop@cnt=\swarmwrap@nl
+  \loop
+    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+    \advance\swarmwrap@loop@cnt by -1
+  \ifnum\swarmwrap@loop@cnt>0 \repeat
+  \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
   % ── Page break detection ────────────────────────────────────────
   \dimen0=\pagegoal
   \advance\dimen0 by -\pagetotal
   \dimen1=\swarmwrap@fh@val\relax
   \ifdim\dimen0<\dimen1
-    % ── FALLBACK: figure doesn't fit on current page ─────────────
-    % Place the figure centered at the top of the next page.
-    % Text fills remaining space on this page at full width (no parshape).
-    % The v3.1 parshape TRANSITION approach was abandoned: \afterpage
-    % figure overlay and parshape narrowed lines were desynchronized,
-    % causing the figure to be hidden behind text and ghost wrapping
-    % (narrowed lines with no figure). See QA #120 revoked.
-    \afterpage{\swarmwrap@place@centered}%
-    \wlog{swarmwrap next: CENTERED fallback — figure on next page, fh=\the\swarmwrap@fh, remaining=\the\dimen0}%
+    % ── FALLBACK: figure doesn't fit — right-wrap on next page ────
+    % Apply parshape to the current paragraph (persists across page
+    % breaks). Place figure via \afterpage using a zero-height vbox
+    % so no paragraph is created (preserving the parshape).
+    \emergencystretch=\fontdimen6\font\relax
+    \noindent
+    \parshape \swarmwrap@pshape\relax
+    \afterpage{%
+      \vbox to 0pt{%
+        \hbox{%
+          \hskip\swarmwrap@tw@val\hskip14pt
+          \raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax
+          \hbox{\copy\swarmwrap@box}%
+        }%
+        \vss
+      }%
+    }%
+    \wlog{swarmwrap next: RIGHT-WRAP fallback — parshape + zeroht vbox, fh=\the\swarmwrap@fh, remaining=\the\dimen0, nl=\the\swarmwrap@nl}%
   \else
     % ── NORMAL: figure fits — apply standard wrapping ─────────────
-    % Build parshape: N narrowed lines + 1 full-width reset
-    \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
-    \swarmwrap@loop@cnt=\swarmwrap@nl
-    \loop
-      \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
-      \advance\swarmwrap@loop@cnt by -1
-    \ifnum\swarmwrap@loop@cnt>0 \repeat
-    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
     \wlog{swarmwrap next: tw=\the\swarmwrap@tw, fw=\the\swarmwrap@fw, nl=\the\swarmwrap@nl, lw=\the\linewidth}%
     % emergencystretch absorbs overfull hbox on narrowed parshape lines
     \emergencystretch=\fontdimen6\font\relax
