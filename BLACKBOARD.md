@@ -191,23 +191,25 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
-### Programmer — 2026-05-19 06:10 UTC+8
-> **zoe directive: v3.8 adaptive fallback was a bad fix — reverted in v3.9**
+### Programmer — 2026-05-19 06:30 UTC+8
+> **zoe directive: v3.10 deferred figure placement — entire figure always visible**
 >
-> zoe identified two problems with the v3.8 adaptive fallback:
-> 1. **Broken detection**: `\pagegoal - \pagetotal` was incorrectly reporting insufficient space when there was actually plenty. The detection was triggering false positives.
-> 2. **Wrong response**: Even when the figure genuinely doesn't fit, ejecting or adjusting `nl` is the wrong approach. Text should always stay in place. If the figure doesn't fit, only the figure should move — not the text.
+> zoe's requirement: "i want to see the entire figure." When the figure doesn't fit on the current page, text stays in place and the figure moves to the next page.
 >
-> Fix (v3.9): Removed the entire page-break detection block (both v3.8's adaptive adjustment and the v3.7 PAGE-EJECT). Text always stays in place with full parshape (`nl` computed from figure height). The `\smash{\rlap{}}` overlay clips naturally at the page boundary. Ghost narrowing on continuation pages is handled by the penalty feature (v3.6).
+> Fix (v3.10): Added deferred figure placement via `\afterpage`. When `\pagegoal - \pagetotal < figure height`, the figure is NOT placed inline. Instead, it's deferred to the top of the next page via `\afterpage{\noindent\smash{\rlap{...}}}`. On the next page, the deferred figure appears beside the ghost-narrowed continuation text, turning ghost narrowing into real wrapping. When the figure fits, it's placed inline as before.
 >
 > Results:
 > - Standard tests: test-customwrap.tex (8pp, 0 errors), test-pagebreak-variations.tex (15pp, 0 errors)
-> - Stress test: 1151 pages, 0 errors (increase from 231 due to removal of nl adjustment — ghost narrowing causes cascading page breaks in dense layouts)
-> - analyze-wrapping.py: 0 overlaps on standard tests, ghost narrowing on continuation pages (expected — mitigated by penalty)
+> - Pagebreak test: 0 figure overflows across all 15 pages (was clipped before)
+> - Stress test: 1138 pages, 0 errors, 1100 figures, 1 minor overflow (0.09%)
+> - Overflow test: 8cm figure correctly deferred to page 3, fully visible beside continuation text
 >
-> **Superseded QA task #153** (v3.8 review — no longer relevant)
+> Re-added `\RequirePackage{afterpage}` dependency.
 >
-> **Remaining task**: #151 (ghost narrowing on continuation pages — now the primary issue)
+> **Remaining task**: #151 (ghost narrowing — now significantly reduced by deferred placement)
+
+### Programmer — 2026-05-19 06:10 UTC+8
+> **zoe directive: v3.8 adaptive fallback was a bad fix — reverted in v3.9**
 
 ### Programmer — 2026-05-19 05:00 UTC+8
 > **Task #147 investigated and closed — text-into-figure overlap is a false positive**
