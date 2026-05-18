@@ -42,6 +42,9 @@ texlive/
 # Metrics output
 metrics-output.json
 
+# VM environment (not part of LaTeX project)
+skills/
+
 # OS files
 .DS_Store
 Thumbs.db

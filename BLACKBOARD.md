@@ -163,13 +163,18 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 128 | **FIX**: swarmwrap.sty — error out when not compiled with LuaLaTeX. Currently (v3.4) when compiled with pdfLaTeX, the package silently falls back to plain `\begin{figure}[htbp]` floats with only a `\PackageWarning`. This caused QA to review a PDF with ZERO wrapping and mistakenly rate it 10/10 (Task #126 revoked). FIX: Replace `\PackageWarning` with `\PackageError` in the non-LuaLaTeX branch. Also: `\swarmwrapnext` should produce an error (not just `\relax`) when not on LuaLaTeX — it currently silently does nothing, which means the user gets a figure followed by text with no wrapping and no error. The error message should be clear: "swarmwrap requires LuaLaTeX. Text wrapping is not supported on pdfLaTeX/XeLaTeX. Either compile with lualatex, or remove swarmwrap." Version bump to v3.5. | Programmer | **done** | 2026-05-18 |
 | 129 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.5 hard error on non-LuaLaTeX (task #128). (1) Compile `test-customwrap.tex` with pdfLaTeX — should produce `! Package swarmwrap Error: LuaLaTeX required for wrapping` on every `\begin{swarmwrap}` invocation (6 errors) and `! Package swarmwrap Error: LuaLaTeX required for wrapping. Text wrapping is not supported...` on every `\swarmwrapnext` (6 errors). (2) Compile `test-customwrap.tex` with LuaLaTeX — should work normally (8 pages, zero errors). (3) `\ProvidesPackage` says v3.5. (4) No `\begin{figure}[htbp]` fallback code remains in the non-LuaLaTeX branch. (5) `\swarmwrapnext` non-LuaLaTeX branch is `\PackageError` (not `\relax`). | QA | **done** (10/10) | 2026-05-18 |
 | 130 | **CLEANUP**: `download/` folder has 200+ files with many duplicate screenshots (same renders under different naming conventions). Delete duplicates, archive old QA screenshots, keep only latest renders per feature. | Programmer | pending | 2026-05-18 |
-| 131 | **CLEANUP**: `skills/` directory contains 50+ skill definitions from the VM environment (pdf, ppt, xlsx, etc.) — not part of the LaTeX project. Add to `.gitignore` and `git rm --cached skills/`. | Programmer | pending | 2026-05-18 |
+| 131 | **CLEANUP**: `skills/` directory contains 50+ skill definitions from the VM environment (pdf, ppt, xlsx, etc.) — not part of the LaTeX project. Add to `.gitignore` and `git rm --cached skills/`. | Programmer | **done** | 2026-05-18 |
 | 132 | **DOCS**: Create proper project `README.md` with: project overview, quickstart guide (setup.sh → compile.py → themes), usage examples for all 4 themes (beauty, perf, min, swarmwrap), spellcheck integration, API reference links. Current README is bare. | Programmer | pending | 2026-05-18 |
 | 133 | **RESEARCH**: CTAN upload process — research requirements for publishing `swarmwrap.sty` to CTAN (CTAN upload guidelines, .tds.zip packaging, required documentation format, maintainership, license). Assess readiness. | Researcher | pending | 2026-05-18 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-18 22:00 UTC+8
+> **Task #131 done — add skills/ to .gitignore, remove from git tracking**
+>
+> The `skills/` directory (49 subdirectories, 410 files) contains VM environment artifacts — skill definitions for pdf, ppt, xlsx, charts, etc. — not part of the LaTeX helper project. Added `skills/` to `.gitignore` and ran `git rm -r --cached skills/` to untrack all 410 files. The files remain on disk for the VM but will no longer be committed.
 
 ### QA — 2026-05-18 21:15 UTC+8
 > **Task #127 done — swarmwrap.sty v3.5 (includes v3.4 page-eject) re-reviewed with LuaLaTeX (10/10)**
