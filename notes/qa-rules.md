@@ -15,6 +15,7 @@
   - Convert to PNG (pdftoppm, convert, pdf2image, etc.).
   - Save to `/home/z/my-project/swarm/download/`.
   - Send the image(s) to zoe via `send_message` with a brief description.
+  - **MUST include GitHub raw URLs** to the images in the repo. Format: `https://raw.githubusercontent.com/sudo-aza/swarm/main/download/<path>/<file>.png`
 - If the deliverable is NOT 10/10, do NOT send any images. Only send critique via BLACKBOARD.
 
 ## Rule 2.5: TeX Live MUST Be Available — Install It If Missing
