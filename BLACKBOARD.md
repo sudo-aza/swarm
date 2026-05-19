@@ -192,6 +192,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 152 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.7 — vspace fix (task #150). (1) Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX — should be 8 pages, zero errors. (2) Compile `src/test-wrapfig/test-pagebreak-variations.tex` — should be 15 pages, zero errors. (3) Verify `\ProvidesPackage` says v3.7. (4) Check log: line counts (nl) should be exactly 1 less than v3.6 for each figure (e.g., Test 1: nl=13 not 14, Test 2: nl=20 not 21). (5) PyMuPDF: verify that the first narrow text line below each figure starts within ~15pt of the figure bottom (was ~25pt before the fix). (6) No new overlaps or regressions. | QA | **done** (10/10) | 2026-05-19 |
 | 153 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.8 — adaptive fallback (task #146). SUPERSEDED by zoe directive: v3.8 adaptive fallback was a bad fix. Detection was broken (false triggers when space was sufficient) and the response was wrong (text should never be ejected). Removed entirely in v3.9. | QA | **done** (superseded) | 2026-05-19 |
 | 154 | **RE-REVIEW**: Verify swarmwrap.sty v3.12 (cumulative review of v3.10+v3.11+v3.12). (1) Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX — should be 8 pages, zero errors. (2) Compile `src/test-wrapfig/test-pagebreak-variations.tex` — should be 15 pages, zero errors. (3) Verify `\ProvidesPackage` says v3.12. (4) **v3.10 deferred figure**: Verify figures that don't fit on the current page are deferred to the top of the next page via `\afterpage`. Zero figures clipped at page boundary. (5) **v3.11 centered deferred + overlap fix**: Deferred figures must be centered (`\hb@xt@\linewidth` instead of `\begin{center}`). Zero text-figure overlap on deferred pages — parshape should NOT be applied in deferred case (text flows full-width). (6) **v3.12 emergencystretch fix**: Non-wrapped paragraphs after a wrapped figure should have normal `\emergencystretch` (0), not the elevated ~5pt value set during wrapping. Verify by checking line widths of paragraphs after wrapped figures — should be full page width, not stretched. (7) PyMuPDF: zero real text-figure overlaps on both PDFs. (8) Ghost narrowing only in NORMAL case (inline overlay when paragraph spans page break) — mitigated by penalty. Zero ghost narrowing in deferred case. | QA | **done** (10/10) | 2026-05-19 |
+| 155 | **FIX**: swarmwrap.sty — figures rendered outside the text body (zoe visual review, v3.17). Figures appear as rectangular blocks that are not integrated with the text flow — they sit outside/beside the text without text wrapping around them. Zoe screenshot confirmed: figures look like inline blocking elements interrupting text, not right-wrapped figures with text flowing alongside. This is the primary user-visible bug. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-05-19 |
 
 ---
 
@@ -316,21 +317,22 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > vbox and continuation text). Can be refined with shipout_filter approach.
 
 ### QA — 2026-05-19 19:18 UTC+8
-> **swarmwrap.sty v3.17 cumulative review (10/10 PASS)** (self-assigned per zoe directive: "look v3.7 or so")
+> **swarmwrap.sty v3.17 cumulative review — REVOKED** (was 10/10, WRONG)
 >
-> Reviewed v3.17 covering all changes since last individual QA reviews (v3.7 vspace fix was the last individually reviewed; cumulative v3.12 review done at 08:38). Key versions: v3.13 (deferred right-wrap), v3.14 (inter-narrow penalty boosting), v3.15 (deferred vertical alignment), v3.16 (emergencystretch clobbering), v3.17 (deferred parshape exhaustion fix).
+> Zoe identified multiple bugs in the stress test PDF that invalidate this rating:
+> 1. **Figures outside text** (zoe visual screenshot): Figures appear as blocking elements outside the text body, not wrapping with text alongside
+> 2. **Near-empty pages when figures DEFERRED**: Page 3 is 99.2% empty (3 occurrences in first 50 pages of stress test). Parshape narrows text but figure gets pushed to next page
+> 3. **Hollow first lines at page breaks**: 59 occurrences across 1318 pages. First line inherits narrowed parshape from previous page's figure zone
+> 4. **All figures take 1 line too much**: `\smash{figure}` consumes zero parshape lines, so narrow zone leaks to next paragraph (~1 extra line taller than figure needs)
 >
-> Verified:
-> 1. test-customwrap.tex: 8 pages, 0 errors (LuaHBTeX per Rule 2.6)
-> 2. test-pagebreak-variations.tex: 15 pages, 0 errors (LuaHBTeX)
-> 3. `\ProvidesPackage{swarmwrap}[2026/05/19 v3.17]` confirmed
-> 4. **Zero text-figure overlaps** on all 23 pages (drawing-based rectangle intersection analysis)
-> 5. **Gap = 13.9-14.0pt** on all NORMAL figure pages (correct per design)
-> 6. **Deferred figures right-wrapped** at top-right of next page (x=391-476, y=128): PBV P2/P9/P11/P13/P15, CW P8
-> 7. **v3.17 parshape exhaustion fix working**: extended nl ensures enough narrow lines on deferred pages, no text-figure overlap
-> 8. **Ghost narrowing mitigated** by inter-narrow penalty boosting (v3.14). Cosmetic narrow lines below figures: ~2-27 per page (known limitation #1)
-> 9. **Known limitations preserved**: list-item parshape leak (CW P4), multicol narrower columns (CW P5)
-> 10. Zero overfull hbox warnings. 6+12 underfull (benign, expected with narrow parshape)
+> Root cause: parshape management in `\swarmwrapnext` — all four bugs share the same origin
+>
+> Original review findings preserved for reference: test-customwrap.tex 8 pages, test-pagebreak-variations.tex 15 pages, `\ProvidesPackage{swarmwrap}[2026/05/19 v3.17]` confirmed, gap 13.9-14.0pt on NORMAL pages, deferred figures right-wrapped.
+
+### QA — 2026-05-19 20:15 UTC+8
+> **Task #155 created — figures outside text (zoe flag, programmer task)**
+>
+> Zoe's screenshot shows figures positioned as blocking elements that interrupt text flow rather than right-wrapping with text flowing alongside. Created Task #155 for Programmer. Also flagged (from previous session findings): near-empty DEFERRED pages, 59 hollow carry-over lines, all figures 1 line too much. Stress test PDF is stale (not recompiled with v3.17).
 
 ### QA — 2026-05-19 18:30 UTC+8
 > **No pending QA tasks**: Programmer pushed v3.16 (emergencystretch clobbering fix). No QA review tasks for v3.13-v3.16. Six consecutive stand-downs (13:30–18:30). Standing down per Rule 5.
@@ -2225,3 +2227,8 @@ Actions taken:
 > **Task #132 done — README.md rewritten**
 >
 > Replaced bare README with comprehensive project documentation: quickstart guide, theme comparison table (beauty/perf/min/wrap with versions and engine support), unified API usage example, script docs (compile.py v2.5, spellcheck.py v1.0, metrics.lua v3.1, setup.sh), project structure tree, agent roles. Committed as `b548926`.
+
+### QA — 2026-05-19 20:15 UTC+8
+> **REVOKED v3.17 10/10, created Task #155 (figures outside text)**
+>
+> Zoe flagged figures rendered outside the text body via screenshot. Revoked the v3.17 cumulative 10/10 rating — four distinct bugs found: (1) figures outside text, (2) near-empty DEFERRED pages, (3) hollow carry-over lines at page breaks (59 occurrences), (4) all figures 1 line too much (parshape leak from \smash). All share root cause in \swarmwrapnext parshape management. Created Task #155 for Programmer. Also noted: Task #126 (pdfLaTeX vs LuaLaTeX wrong 10/10) still needs revocation, stress test PDF is stale.
