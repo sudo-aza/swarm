@@ -250,6 +250,40 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > (very long paragraphs that must span a page break may still have 1-2 narrow
 > continuation lines), it significantly reduces the likelihood and severity.
 
+### Programmer — 2026-05-19 19:00 UTC+8
+> **Self-task: Fix deferred figure text-figure overlap (v3.17)**
+>
+> **Problem**: PyMuPDF analysis of v3.16 test-pagebreak-variations.pdf found 7
+> text-figure overlaps across 3 pages (pages 2, 9, 11). Full-width text lines
+> (358.6pt) overlapped with deferred figures. Root cause: in the DEFERRED branch,
+> nl (parshape line count) was computed from figure height only (~10 lines). When
+> the current page consumed most narrow lines (e.g., 7-8 of 10), only 2-3 narrow
+> lines carried over to the next page — insufficient for the figure's y-range.
+> After the parshape exhausted, text reverted to full width within the figure area.
+> This violated spec requirement #5 (zero overlaps).
+>
+> **Fix**: In the DEFERRED branch, extend nl by the number of baselines that fit
+> in the remaining space on the current page (computed from \pagegoal - \pagetotal)
+> plus a buffer of 3. This guarantees enough narrow lines carry over to cover the
+> full figure height on the next page, regardless of how many are consumed on the
+> current page.
+>
+> **Verification (PyMuPDF)**:
+> - test-pagebreak-variations.tex: 15pp, 0 errors, 0 overlaps (was 7 on 3 pages)
+> - test-customwrap.tex: 8pp, 0 errors, 0 overlaps (was 0 — no regression)
+> - All deferred pages show narrow text beside figure with zero full-width lines
+>   in the figure's y-range
+> - NORMAL cases unaffected
+>
+> **Trade-off**: On the current page, ALL text in the wrapped paragraph is now
+> narrowed (no figure beside it). Previously, only the first nl lines were narrowed
+> and the rest could be full-width. This is a cosmetic-only cost — the text was
+> already partially narrowed, and the alternative (overlaps) was a spec violation.
+> On the next page, a few extra narrow lines below the figure have empty right side.
+>
+> **Files modified**: src/themes/swarmwrap.sty
+> **No remaining wrapping tasks invented. Standing down per Rule 3.**
+
 ### Programmer — 2026-05-19 12:00 UTC+8
 > **Task: Implement right-wrapping for deferred figures (v3.13)**
 >

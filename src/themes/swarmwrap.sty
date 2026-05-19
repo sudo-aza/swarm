@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.16)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.17)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -15,11 +15,13 @@
 %   - Right-side only (no left/centered wrapping needed).
 %   - Lists may break (perfect itemize/enumerate not required).
 %
-% STATUS (v3.16):
+% STATUS (v3.17):
 %   Deferred figures RIGHT-WRAP on the next page (v3.13).
 %   Ghost narrowing mitigation (v3.14): inter-narrow line penalties boosted.
 %   Deferred figure vertical alignment fixed (v3.15): figure top aligns
 %   with first text line on deferred pages (was ~10pt gap).
+%   Deferred parshape exhaustion fix (v3.17): extended nl ensures enough
+%   narrow lines on next page, eliminating text-figure overlap.
 %
 % ─────────────────────────────────────────────────────────────────────────
 %
@@ -88,6 +90,25 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.17: Fixed deferred figure text-figure overlap caused by parshape
+%   line exhaustion. In the DEFERRED branch, nl was computed from the
+%   figure height only. When the current page consumed most narrow lines,
+%   the next page had too few narrow lines left for the figure's y-range,
+%   causing full-width text to overlap the deferred figure. Fix: extend
+%   nl by the number of lines that fit in the remaining space on the
+%   current page plus a buffer of 3. This guarantees enough narrow lines
+%   carry over to cover the full figure height on the next page. Cost:
+%   all text on the current page is narrowed (was already partially
+%   narrowed), plus a few extra narrow lines below the figure on the
+%   next page (minor cosmetic). Also fixed emergencystretch clobbering
+%   (v3.16 carried forward).
+%
+% v3.16: Fixed emergencystretch clobbering. The Lua callback was
+%   unconditionally resetting emergencystretch to 0 for every
+%   non-wrapped paragraph, clobbering user-set values. Fix: save/restore
+%   via swarmwrap@saved@es register; non-wrapped paragraphs no longer
+%   touched.
+%
 % v3.15: Fixed deferred figure vertical alignment on next page. The
 %   zero-height vbox placed by \afterpage caused a ~10pt gap between
 %   the figure top and the first text line (TeX's \topskip glue).
@@ -139,7 +160,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.16 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.17 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -151,6 +172,7 @@
 \newdimen\swarmwrap@tw       % text width (computed for parshape)
 \newcount\swarmwrap@nl       % number of parshape lines (wrapped)
 \newcount\swarmwrap@loop@cnt % loop counter
+\newcount\swarmwrap@current@lines % lines on current page (deferred case)
 \newif\ifswarmwrap@luatex
 
 \ifluatex \swarmwrap@luatextrue \else \swarmwrap@luatexfalse \fi
@@ -331,10 +353,45 @@
   \advance\dimen0 by -\pagetotal
   \dimen1=\swarmwrap@fh@val\relax
   \ifdim\dimen0<\dimen1
-    % Figure doesn't fit — apply parshape, defer right-wrapped figure to next page.
-    % Text on current page is narrowed (no figure beside it — empty right side).
-    % On next page, parshape persists and continuation text wraps the figure.
-    % emergencystretch absorbs overfull hbox on narrowed parshape lines
+    % Figure doesn't fit — defer right-wrapped figure to next page.
+    %
+    % PROBLEM (v3.13-v3.16): parshape computed from figure height only.
+    % If the current page consumes most narrow lines, the next page has
+    % too few (or zero) narrow lines left, causing full-width text to
+    % overlap the deferred figure — spec violation #5 (zero overlaps).
+    %
+    % FIX (v3.17): Extend nl by the number of narrow lines that can
+    % fit in the remaining space on the current page. This guarantees
+    % enough narrow lines carry over to the next page to cover the
+    % figure height, regardless of how many are consumed here.
+    %
+    % Cost: on the current page, ALL text in the wrapped paragraph is
+    % narrowed (no figure beside it — cosmetic only). Previously only
+    % some lines were narrowed. On the next page, the first figure_lines
+    % narrow lines wrap the figure correctly; extra narrow lines below
+    % the figure have empty right side (minor cosmetic).
+    %
+    % Save original nl (figure_lines) for the log.
+    \swarmwrap@loop@cnt=\swarmwrap@nl\relax
+    % Compute lines that fit in remaining space on current page.
+    \dimen2=\dimen0  % remaining = pagegoal - pagetotal
+    \swarmwrap@current@lines=0
+    \loop
+      \advance\swarmwrap@current@lines by 1
+      \advance\dimen2 by -\baselineskip
+    \ifdim\dimen2>0pt \repeat
+    % Extend nl: figure_lines + current_page_lines + buffer(3)
+    \advance\swarmwrap@nl by \swarmwrap@current@lines
+    \advance\swarmwrap@nl by 3
+    % Rebuild parshape with extended nl.
+    \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
+    \swarmwrap@loop@cnt=\swarmwrap@nl
+    \loop
+      \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+      \advance\swarmwrap@loop@cnt by -1
+    \ifnum\swarmwrap@loop@cnt>0 \repeat
+    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
+    % Apply extended parshape.
     \emergencystretch=\fontdimen6\font\relax
     \noindent
     \parshape \swarmwrap@pshape\relax
@@ -354,7 +411,7 @@
       }%
       \kern-\topskip
     }%
-    \wlog{swarmwrap next: DEFERRED RIGHT-WRAP — remaining=\the\dimen0, fh=\the\dimen1, nl=\the\swarmwrap@nl}%
+    \wlog{swarmwrap next: DEFERRED RIGHT-WRAP — remaining=\the\dimen0, fh=\the\dimen1, fig_nl=\the\swarmwrap@current@lines, total_nl=\the\swarmwrap@nl}%
   \else
     % Figure fits — apply parshape and place inline overlay.
     % emergencystretch absorbs overfull hbox on narrowed parshape lines
