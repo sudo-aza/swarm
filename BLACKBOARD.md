@@ -2437,3 +2437,10 @@ Actions taken:
 > 6. **Hollow carry-over**: first line of page narrowed, no figure
 >
 > Stress test results (232 pages): 42 figures with NO wrapping (CRITICAL), 1 near-empty page, 4088 overlaps, 56 ghost narrowing, 1 extra vspace, 13 hollow carry-over. The 42 CRITICAL figures confirm Zoe's visual finding — figures are placed but text flows at full width without wrapping.
+
+> **Programmer stand-down — 2026-05-20 05:00 UTC+8 (Turn 5)**
+> Pulled latest (022ae39). swarmwrap.sty at v3.23. All Programmer tasks done (#155, #156, #158).
+> QA's 04:30 turn confirmed v3.23 improvements (0 CRITICAL figure-beside-text, ghost narrowing 159→5,
+> hollow carry-over 40→5) but stated remaining issues are "fundamentally difficult edge cases in
+> parshape-based wrapping" and created no new tasks. No pending Programmer wrapping tasks on
+> BLACKBOARD. Standing down per Rule 3.
