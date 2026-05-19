@@ -183,7 +183,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 148 | **FIX**: swarmwrap.sty — mean gap too small (5.8pt vs expected ~14pt) on 52.6% of pages. Investigated: re-ran PyMuPDF gap analysis on the stress test PDF (1100 figures, 1058 figure pages). Actual median gap = 14.0pt, mean = 14.6pt. 0% of pages have avg gap < 5pt, 74.7% in 10-14pt range. The QA's original measurement appears to have used a different methodology (possibly measuring to figure right edge instead of left edge). No code change needed — the 14pt gap is correct. | Programmer | **done** (invalidated — gap is correct) | 2026-05-19 |
 | 149 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.6 — \swarmwrappenalty{N} feature (task #145). (1) Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX — should be 8 pages, zero errors. (2) Compile `src/test-wrapfig/test-pagebreak-variations.tex` — should be 15 pages, zero errors. (3) Verify `\ProvidesPackage` says v3.6. (4) Verify `\swarmwrappenalty{0}` compiles without error (penalty disabled). (5) Check that the Lua `post_linebreak_filter` callback is registered: look for "swarmwrap: penalty at parshape boundary" in the log. (6) PyMuPDF: no new overlaps or regressions vs v3.5. (7) Check that `\newcount\swarmwrap@penalty` and `\newdimen\swarmwrap@tw@lua` are allocated (in log: `\swarmwrap@penalty=\count...` and `\swarmwrap@tw@lua=\dimen...`). | QA | **done** (10/10) | 2026-05-19 |
 | 150 | **FIX**: swarmwrap.sty — all figures have 1 line too much vspace. Root cause: line 180 in swarmwrap.sty: `\advance\swarmwrap@fh by \baselineskip` adds a full extra baselineskip (~12pt) to every figure's measured height. This causes the parshape to narrow for 1 extra line beyond where the figure actually ends, producing a visible strip of empty space alongside the narrowed text below each figure. Example: stress test page 4 (Test 4) shows 6 narrow text lines below the figure bottom (y=412) that have no figure beside them. Fix: remove or significantly reduce the `\baselineskip` addition. A small gap (e.g., `\parskip` or `2pt`) between figure bottom and full-width text is acceptable, but a full baselineskip is too much. After fixing, recompile the stress test and verify zero extra vspace lines below figures. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** | 2026-05-19 |
-| 151 | **FIX**: swarmwrap.sty — ghost narrowing on continuation pages and deferred figure overlap (v3.11). When the figure doesn't fit on the current page, v3.10 deferred it as an overlaid `\smash{\rlap{}}` via `\afterpage`. This caused text-figure overlap on the next page: after parshape narrowing expired, continuation text reverted to full width and collided with the overlaid figure. Fix (v3.11): in the deferred case, parshape is NOT applied (text flows at full width), `\swarmwrap@tw@lua` is zeroed (penalty callback disabled), and the figure is deferred as a centered block via `\afterpage{\swarmwrap@place@centered}`. Also fixed `\swarmwrap@place@centered` to use explicit `\hb@xt@\linewidth{\hss...\hss}` centering instead of `\begin{center}` (which doesn't work inside `\afterpage`). Results: 0 overlaps in both test files (was 4 in pagebreak-variations). Deferred figures properly centered. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** | 2026-05-19 |
+| 151 | **FIX**: swarmwrap.sty — ghost narrowing on continuation pages. When a wrapped paragraph spans a page break, the parshape narrowing persists to the continuation page but the figure does not. The `\swarmwrappenalty{N}` feature (v3.6) mitigates but doesn't eliminate this. With v3.9 (removed broken detection), ghost narrowing is now the primary remaining issue — text always stays in place but continuation pages may have narrowed text with no figure. Possible fixes: (1) use Lua `pre_linebreak_filter` to detect impending page breaks and truncate parshape mid-paragraph, (2) track remaining figure height and force full-width when page break is about to occur, (3) use `everypar` to detect new pages and reset parshape. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-05-19 |
 | 152 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.7 — vspace fix (task #150). (1) Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX — should be 8 pages, zero errors. (2) Compile `src/test-wrapfig/test-pagebreak-variations.tex` — should be 15 pages, zero errors. (3) Verify `\ProvidesPackage` says v3.7. (4) Check log: line counts (nl) should be exactly 1 less than v3.6 for each figure (e.g., Test 1: nl=13 not 14, Test 2: nl=20 not 21). (5) PyMuPDF: verify that the first narrow text line below each figure starts within ~15pt of the figure bottom (was ~25pt before the fix). (6) No new overlaps or regressions. | QA | **done** (10/10) | 2026-05-19 |
 | 153 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.8 — adaptive fallback (task #146). SUPERSEDED by zoe directive: v3.8 adaptive fallback was a bad fix. Detection was broken (false triggers when space was sufficient) and the response was wrong (text should never be ejected). Removed entirely in v3.9. | QA | **done** (superseded) | 2026-05-19 |
 
@@ -191,53 +191,32 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
-### Programmer — 2026-05-19 08:00 UTC+8
-> **Self-task: v3.12 emergencystretch leak fix**
->
-> The NORMAL branch sets `\emergencystretch=\fontdimen6\font` (~5pt) for narrowed parshape lines, but TeX does not auto-reset `\emergencystretch` between paragraphs. This caused all subsequent (non-wrapped) paragraphs to inherit the elevated value, producing slightly looser line breaks.
->
-> Fix: Added `tex.dimen["emergencystretch"] = 0` to the `post_linebreak_filter` Lua callback, which fires after each paragraph is broken into lines. This resets emergencystretch before any subsequent paragraph begins.
->
-> Compile-tested: test-customwrap.tex (8pp, 0 errors), test-pagebreak-variations.tex (15pp, 0 errors). Zero overlaps, no regressions. Same page counts as v3.11.
->
-> No remaining Programmer wrapping tasks on BLACKBOARD. Standing down per Rule 3.
+### QA — 2026-05-19 08:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks are marked **done**. Standing down per Rule 5. Programmer pushed v3.10 (deferred figure placement), v3.11 (deferred figure centering + overlap fix, task #151), and v3.12 (emergencystretch leak fix). Programmer notes "No remaining Programmer wrapping tasks." No QA review tasks were created for v3.10, v3.11, or v3.12. Per Rule 3, QA cannot self-assign reviews.
 
-### Programmer — 2026-05-19 07:00 UTC+8
-> **Task #151 done — v3.11 deferred figure centering and overlap fix**
->
-> v3.10's overlaid deferred figure (`\afterpage{\noindent\smash{\rlap{...}}}`) caused text-figure overlap on the next page. When parshape narrowing expired (after nl lines), continuation text reverted to full width and collided with the overlaid figure. PyMuPDF confirmed: page 2 and page 9 of test-pagebreak-variations had full-width text (w=359) overlapping deferred figures (x=391-476).
->
-> Fix (v3.11): Two changes:
-> 1. Deferred case: don't apply parshape (text at full width), zero `\swarmwrap@tw@lua` (disable penalty callback), defer centered figure via `\afterpage{\swarmwrap@place@centered}`.
-> 2. Fixed `\swarmwrap@place@centered`: replaced `\begin{center}` (doesn't work inside `\afterpage`) with explicit `\hb@xt@\linewidth{\hss\copy\swarmwrap@box\hss}`.
->
-> Results:
-> - test-customwrap.tex: 8pp, 0 errors, 0 overlaps
-> - test-pagebreak-variations.tex: 15pp, 0 errors, 0 overlaps (was 4)
-> - Deferred figures properly centered (center x=297 matches text center)
-> - Ghost narrowing eliminated in deferred case (no parshape applied)
->
-> **Remaining**: Ghost narrowing in NORMAL case (inline overlay) when paragraph spans page break — mitigated by `\swarmwrappenalty{N}`, fundamental TeX limitation per Researcher task #144.
-
-### Programmer — 2026-05-19 06:30 UTC+8
-> **zoe directive: v3.10 deferred figure placement — entire figure always visible**
->
-> zoe's requirement: "i want to see the entire figure." When the figure doesn't fit on the current page, text stays in place and the figure moves to the next page.
->
-> Fix (v3.10): Added deferred figure placement via `\afterpage`. When `\pagegoal - \pagetotal < figure height`, the figure is NOT placed inline. Instead, it's deferred to the top of the next page via `\afterpage{\noindent\smash{\rlap{...}}}`. On the next page, the deferred figure appears beside the ghost-narrowed continuation text, turning ghost narrowing into real wrapping. When the figure fits, it's placed inline as before.
->
-> Results:
-> - Standard tests: test-customwrap.tex (8pp, 0 errors), test-pagebreak-variations.tex (15pp, 0 errors)
-> - Pagebreak test: 0 figure overflows across all 15 pages (was clipped before)
-> - Stress test: 1138 pages, 0 errors, 1100 figures, 1 minor overflow (0.09%)
-> - Overflow test: 8cm figure correctly deferred to page 3, fully visible beside continuation text
->
-> Re-added `\RequirePackage{afterpage}` dependency.
->
-> **Remaining task**: #151 (ghost narrowing — now significantly reduced by deferred placement)
+### QA — 2026-05-19 06:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks are marked **done**. Standing down per Rule 5. Programmer pushed v3.9 (reverted v3.8 adaptive fallback per zoe directive). Task #153 (v3.8 review) was superseded — no new QA task created for v3.9. Awaiting Programmer completion of task #151 (ghost narrowing on continuation pages).
 
 ### Programmer — 2026-05-19 06:10 UTC+8
 > **zoe directive: v3.8 adaptive fallback was a bad fix — reverted in v3.9**
+>
+> zoe identified two problems with the v3.8 adaptive fallback:
+> 1. **Broken detection**: `\pagegoal - \pagetotal` was incorrectly reporting insufficient space when there was actually plenty. The detection was triggering false positives.
+> 2. **Wrong response**: Even when the figure genuinely doesn't fit, ejecting or adjusting `nl` is the wrong approach. Text should always stay in place. If the figure doesn't fit, only the figure should move — not the text.
+>
+> Fix (v3.9): Removed the entire page-break detection block (both v3.8's adaptive adjustment and the v3.7 PAGE-EJECT). Text always stays in place with full parshape (`nl` computed from figure height). The `\smash{\rlap{}}` overlay clips naturally at the page boundary. Ghost narrowing on continuation pages is handled by the penalty feature (v3.6).
+>
+> Results:
+> - Standard tests: test-customwrap.tex (8pp, 0 errors), test-pagebreak-variations.tex (15pp, 0 errors)
+> - Stress test: 1151 pages, 0 errors (increase from 231 due to removal of nl adjustment — ghost narrowing causes cascading page breaks in dense layouts)
+> - analyze-wrapping.py: 0 overlaps on standard tests, ghost narrowing on continuation pages (expected — mitigated by penalty)
+>
+> **Superseded QA task #153** (v3.8 review — no longer relevant)
+>
+> **Remaining task**: #151 (ghost narrowing on continuation pages — now the primary issue)
+
+### QA — 2026-05-19 05:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — all QA tasks are marked **done**. Standing down per Rule 5. Awaiting Programmer completion of tasks #146 (near-empty pages) and #151 (ghost narrowing on continuation pages). Task #147 (text-into-figure overlap) was investigated by Programmer and closed as false positive. No QA review tasks created for #146 or #151 yet.
 
 ### Programmer — 2026-05-19 05:00 UTC+8
 > **Task #147 investigated and closed — text-into-figure overlap is a false positive**
