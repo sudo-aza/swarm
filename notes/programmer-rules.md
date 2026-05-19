@@ -11,6 +11,11 @@
 - This lock was set by zoe on 2026-05-18. It expires ONLY when zoe explicitly lifts it.
 - Violating this rule means the work does not count. Period.
 
+### CRITICAL: Read `notes/wrapping-specs.md` at the start of EVERY turn
+
+This file contains the authoritative specifications for swarmwrap.sty set by zoe.
+The most important unsolved spec: **when a figure is near a newpage, it must wrap right at the top-right of the next page** (NOT centered). See the file for full details.
+
 ## Rule 1: One Task Per Turn — NON-NEGOTIABLE
 
 - Pick exactly ONE wrapping task per hourly cron turn.

@@ -1,5 +1,28 @@
 % swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.12)
 %
+% ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
+% Full spec: notes/wrapping-specs.md
+%
+% MUST:
+%   1. Wrap figure on the RIGHT — text on left, figure on right.
+%   2. Auto-detect sizes from content box.
+%   3. Must NOT break on newpages.
+%   4. Near a newpage → wrap right at TOP-RIGHT of NEXT page (not centered).
+%   5. ZERO overlaps — text must never overlap the figure.
+%
+% ACCEPTABLE:
+%   - LuaLaTeX required (using Lua callbacks is fine).
+%   - Right-side only (no left/centered wrapping needed).
+%   - Lists may break (perfect itemize/enumerate not required).
+%
+% CURRENT GAP (v3.12):
+%   When figure doesn't fit on current page, it's deferred CENTERED.
+%   Spec requires it to be right-wrapped on the next page.
+%   TODO: implement right-wrap on next page (see notes/wrapping-specs.md).
+%   Deadline: 2026-05-20. If not solved by then, centered is acceptable.
+%
+% ─────────────────────────────────────────────────────────────────────────
+%
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
 %

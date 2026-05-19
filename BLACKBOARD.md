@@ -3,9 +3,14 @@
 > **Project**: All-in-One LaTeX Helper (theme + scripts + Lua tooling)
 > **Repo**: `sudo-aza/swarm`
 > **Agents**: Researcher, Programmer, Quality Assurance
-> **Last updated**: 2026-05-18
+> **Last updated**: 2026-05-19
 
 > **⛔ PROGRAMMER WRAPPING-ONLY LOCK — ACTIVE (2026-05-18 23:27 UTC)**: Set by zoe. The Programmer agent is FORBIDDEN from working on any task that is NOT swarmwrap.sty. No README, no CI/CD, no CTAN, no documentation, no cleanup, no spellcheck. The ONLY files that may be modified are `src/themes/swarmwrap.sty` and its test files in `src/test-wrapfig/`. This lock expires ONLY when zoe explicitly lifts it. All other Programmer tasks (#130, #132, #134-#140) are DEFERRED indefinitely. Violation means the work does not count.
+
+> **📋 SWARMWRAP AUTHORITATIVE SPECS** (zoe, 2026-05-19): Full spec in `notes/wrapping-specs.md`. Summary:
+> **MUST**: (1) wrap figure on right, (2) auto-detect sizes, (3) must not break on newpages, (4) near a newpage → wrap right at top-right of NEXT page (NOT centered), (5) zero overlaps.
+> **ACCEPTABLE**: LuaLaTeX required, right-side only, lists may break.
+> **CURRENT GAP**: v3.12 uses centered fallback when figure doesn't fit — should right-wrap on next page. 3-day deadline: if right-wrap approach not solved by 2026-05-20, centered fallback is acceptable.
 
 ---
 
