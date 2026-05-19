@@ -202,6 +202,30 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-20 03:30 UTC+8
+> **Rule 8 continued — late-page inspection, figure merging fix, caption filter v2**
+>
+> Continued visual inspection of late pages (500-750). VLM analysis:
+> - Page 500: GHOST NARROWING confirmed (11 narrowed lines, no figure)
+> - Page 510: VLM says BAD wrapping on BOTH figures. Script was incorrectly
+>   reporting 10 narrow lines due to 42 DUPLICATE figure rects from broken
+>   merging in get_figures(). Fixed: iterative merge algorithm now produces
+>   2 figures (was 42). VLM assessment matches: 19 real body-text overlaps
+>   remain on this page.
+> - Page 530: VLM confirmed GOOD wrapping (8 narrow lines beside figure).
+>
+> Detection script improvements:
+> 1. Fixed get_figures() — iterative merge loop instead of single-pass.
+>    Page 510: 42→2 figures. Eliminates false "good wrapping" from
+>    duplicate rects inflating narrow-line counts.
+> 2. Expanded caption filter — added patterns for standalone "Figure",
+>    "Fig", figure numbers ("699", "700:"), and parenthesized dimensions.
+>    Body-text overlaps: 1931→1334 (31% reduction). Caption overlaps:
+>    405→1002 (better classification).
+>
+> Page renders saved to download/stress-page-{500,501,510,511,530,600,700,750}.png.
+> No new Programmer tasks needed — Task #158 already covers the wrapping bugs.
+
 ### QA — 2026-05-20 02:30 UTC+8
 > **Rule 8 visual inspection — stress test v3.21 still has major wrapping bugs**
 >

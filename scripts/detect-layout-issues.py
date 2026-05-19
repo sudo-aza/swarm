@@ -52,7 +52,11 @@ def parse_args():
 
 
 def get_figures(page):
-    """Get figure/image rectangles on a page (images + filled drawings)."""
+    """Get figure/image rectangles on a page (images + filled drawings).
+
+    Uses iterative merging to properly consolidate overlapping/nearby rects
+    from smash/rlap drawings into single figure regions.
+    """
     figures = []
 
     # Images placed via \includegraphics
@@ -69,21 +73,28 @@ def get_figures(page):
             if r.width > 50 and r.height > 30:
                 figures.append(r)
 
-    # Merge overlapping rects
+    # Merge overlapping/nearby rects — iterate until stable
     if not figures:
         return []
     figures.sort(key=lambda r: (r.y0, r.x0))
-    merged = [figures[0]]
-    for r in figures[1:]:
-        did_merge = False
-        for i, m in enumerate(merged):
-            if r.intersects(m) or (abs(r.y0 - m.y0) < 5 and abs(r.x0 - m.x0) < 5):
-                merged[i] = r | m
-                did_merge = True
-                break
-        if not did_merge:
-            merged.append(r)
-    return merged
+    changed = True
+    while changed:
+        changed = False
+        new_figures = [figures[0]]
+        for r in figures[1:]:
+            did_merge = False
+            for i, m in enumerate(new_figures):
+                if r.intersects(m) or (
+                    abs(r.y0 - m.y0) < 5 and abs(r.x0 - m.x0) < 5
+                ):
+                    new_figures[i] = r | m  # union
+                    did_merge = True
+                    changed = True
+                    break
+            if not did_merge:
+                new_figures.append(r)
+        figures = new_figures
+    return figures
 
 
 def get_text_lines(page):
@@ -225,10 +236,12 @@ def detect_near_empty_pages(page_num, page, text_lines, threshold):
 
 # Patterns for caption text that legitimately overlaps figure rectangles
 _CAPTION_PATTERNS = [
-    re.compile(r'\\?Figure\s+\d+', re.IGNORECASE),
-    re.compile(r'\\?Fig\.?\s+\d+'),
+    re.compile(r'\\?Figure\s*\d*', re.IGNORECASE),
+    re.compile(r'\\?Fig\.?\s*\d*'),
     re.compile(r'\(\d+cm\s*x\s*\d+cm\)'),  # (3cmx6cm)
     re.compile(r'\d+cm\s*x\s*\d+cm'),  # 3cmx6cm
+    re.compile(r'^\d{1,4}$'),  # standalone figure numbers (e.g. "699", "700")
+    re.compile(r'^\d{1,4}:$'),  # figure numbers with colon (e.g. "700:")
 ]
 
 
