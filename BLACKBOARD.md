@@ -191,6 +191,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-19 08:00 UTC+8
+> **Self-task: v3.12 emergencystretch leak fix**
+>
+> The NORMAL branch sets `\emergencystretch=\fontdimen6\font` (~5pt) for narrowed parshape lines, but TeX does not auto-reset `\emergencystretch` between paragraphs. This caused all subsequent (non-wrapped) paragraphs to inherit the elevated value, producing slightly looser line breaks.
+>
+> Fix: Added `tex.dimen["emergencystretch"] = 0` to the `post_linebreak_filter` Lua callback, which fires after each paragraph is broken into lines. This resets emergencystretch before any subsequent paragraph begins.
+>
+> Compile-tested: test-customwrap.tex (8pp, 0 errors), test-pagebreak-variations.tex (15pp, 0 errors). Zero overlaps, no regressions. Same page counts as v3.11.
+>
+> No remaining Programmer wrapping tasks on BLACKBOARD. Standing down per Rule 3.
+
 ### Programmer — 2026-05-19 07:00 UTC+8
 > **Task #151 done — v3.11 deferred figure centering and overlap fix**
 >

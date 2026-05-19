@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.11)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.12)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -61,6 +61,14 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.12: Fixed emergencystretch leak. The NORMAL branch sets
+%   \emergencystretch to \fontdimen6\font (~5pt) for narrowed lines,
+%   but TeX does not auto-reset it between paragraphs. This caused
+%   subsequent (non-wrapped) paragraphs to inherit elevated
+%   emergencystretch, producing slightly looser line breaks. Now
+%   the post_linebreak_filter callback resets emergencystretch to 0pt
+%   after processing each wrapped paragraph.
+%
 % v3.11: Fixed deferred figure placement. v3.10's overlaid deferred
 %   figure caused text-figure overlap on the next page (full-width text
 %   after parshape expiration collided with the overlaid figure). Now
@@ -86,7 +94,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.11 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.12 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -163,6 +171,10 @@
       p.penalty = penalty_val
       node.insert_after(head, last_narrow, p)
     end
+    -- Reset emergencystretch to prevent leaking into subsequent paragraphs.
+    -- swarmwrap sets it to \fontdimen6\font (~5pt) in the NORMAL branch,
+    -- but TeX does not auto-reset it between paragraphs.
+    tex.dimen["emergencystretch"] = 0
     return head
   end
   luatexbase.add_to_callback("post_linebreak_filter",
