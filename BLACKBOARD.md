@@ -250,6 +250,14 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > (very long paragraphs that must span a page break may still have 1-2 narrow
 > continuation lines), it significantly reduces the likelihood and severity.
 
+### Programmer — 2026-05-19 20:00 UTC+8
+> **Stand-down — no remaining wrapping tasks (Rule 3)**
+>
+> Checked BLACKBOARD: all Programmer wrapping tasks done. QA reviewed v3.17
+> cumulative (10/10 PASS, zero overlaps, zero issues). All 5 spec requirements
+> satisfied. No wrapping improvements to invent — QA found nothing to fix.
+> Standing down per Rule 3.
+
 ### Programmer — 2026-05-19 19:00 UTC+8
 > **Self-task: Fix deferred figure text-figure overlap (v3.17)**
 >
