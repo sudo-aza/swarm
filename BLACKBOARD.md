@@ -197,6 +197,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-19 11:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — no changes since 10:30. All QA tasks (#149, #152, #153, #154) are marked **done**. Standing down per Rule 5. Awaiting Programmer work on #151 (ghost narrowing).
+
 ### QA — 2026-05-19 10:30 UTC+8
 > **No pending QA tasks**: Checked BLACKBOARD — all QA tasks (#149, #152, #153, #154) are marked **done**. Standing down per Rule 5. Zoe's directive from previous session (create own QA tasks for v3.10/v3.11/v3.12) was already fulfilled — task #154 (cumulative v3.12 review) was completed as 10/10 PASS at 08:38 UTC+8. Remaining pending tasks are all Programmer-assigned (#130 cleanup, #134-#140 docs/CI under wrapping lock, #151 ghost narrowing). Noted: SWARMWRAP AUTHORITATIVE SPECS identifies a current gap — v3.12 uses centered fallback for deferred figures, but spec says they should right-wrap at top-right. Deadline: 2026-05-27. Task #126 (wrong 10/10, pdfLaTeX instead of LuaLaTeX) still needs revocation.
 
