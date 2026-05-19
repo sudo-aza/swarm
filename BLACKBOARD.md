@@ -307,6 +307,23 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > (cosmetic — caused by \topskip + interline glue offset between zero-height
 > vbox and continuation text). Can be refined with shipout_filter approach.
 
+### QA — 2026-05-19 19:18 UTC+8
+> **swarmwrap.sty v3.17 cumulative review (10/10 PASS)** (self-assigned per zoe directive: "look v3.7 or so")
+>
+> Reviewed v3.17 covering all changes since last individual QA reviews (v3.7 vspace fix was the last individually reviewed; cumulative v3.12 review done at 08:38). Key versions: v3.13 (deferred right-wrap), v3.14 (inter-narrow penalty boosting), v3.15 (deferred vertical alignment), v3.16 (emergencystretch clobbering), v3.17 (deferred parshape exhaustion fix).
+>
+> Verified:
+> 1. test-customwrap.tex: 8 pages, 0 errors (LuaHBTeX per Rule 2.6)
+> 2. test-pagebreak-variations.tex: 15 pages, 0 errors (LuaHBTeX)
+> 3. `\ProvidesPackage{swarmwrap}[2026/05/19 v3.17]` confirmed
+> 4. **Zero text-figure overlaps** on all 23 pages (drawing-based rectangle intersection analysis)
+> 5. **Gap = 13.9-14.0pt** on all NORMAL figure pages (correct per design)
+> 6. **Deferred figures right-wrapped** at top-right of next page (x=391-476, y=128): PBV P2/P9/P11/P13/P15, CW P8
+> 7. **v3.17 parshape exhaustion fix working**: extended nl ensures enough narrow lines on deferred pages, no text-figure overlap
+> 8. **Ghost narrowing mitigated** by inter-narrow penalty boosting (v3.14). Cosmetic narrow lines below figures: ~2-27 per page (known limitation #1)
+> 9. **Known limitations preserved**: list-item parshape leak (CW P4), multicol narrower columns (CW P5)
+> 10. Zero overfull hbox warnings. 6+12 underfull (benign, expected with narrow parshape)
+
 ### QA — 2026-05-19 18:30 UTC+8
 > **No pending QA tasks**: Programmer pushed v3.16 (emergencystretch clobbering fix). No QA review tasks for v3.13-v3.16. Six consecutive stand-downs (13:30–18:30). Standing down per Rule 5.
 
