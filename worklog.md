@@ -351,3 +351,33 @@ Stage Summary:
 - Root file: /home/z/swarm/swarmwrap.sty (v3.10, commit 5db9087, 2026-05-18 22:39 UTC)
 - Real file: src/themes/swarmwrap.sty (v3.17, commit f532002, 2026-05-19 11:17 UTC)
 - Cannot fix stale file under Rule 0 (only src/themes/swarmwrap.sty and test files may be modified)
+
+---
+Task ID: 1
+Agent: main (continuation after context loss)
+Task: Fix swarmwrap.sty v3.18 — hybrid parshape for DEFERRED case (task #155)
+
+Work Log:
+- Read previous conversation summary, identified pending task #155
+- Pulled latest code (82c5918 → aafb551)
+- Read BLACKBOARD.md, programmer-rules.md, wrapping-specs.md, src/themes/swarmwrap.sty (v3.17)
+- Compiled test-customwrap.tex and test-pagebreak-variations.tex with v3.17 to establish baseline
+- PyMuPDF analysis of v3.17 deferred pages: all narrow lines with no figure (e.g., page 1: 22 narrow/0 full with no figs)
+- Identified root cause: v3.17's all-narrow parshape in DEFERRED branch
+- Implemented v3.18 with 4 changes:
+  1. Hybrid parshape for DEFERRED: full-width on current page, narrow only beside figure on next page
+  2. nl computation: rounding instead of ceiling (subtract half baselineskip before loop)
+  3. Lua callback: boost penalties at wide→narrow boundary (not just narrow→narrow)
+  4. Fixed current_page_lines overcounting (loop incremented before checking)
+- Initial compile had 2 overlaps on page 15 (full-width text beside deferred figure)
+- Root cause: remaining=3.53pt < baselineskip but still set full_width_end=1
+- Fixed with stricter threshold: remaining > baselineskip required for full-width lines
+- Final compile: both test files 0 errors, 0 real overlaps
+- v3.17→v3.18 deferred page narrow lines: 22→11-15 (significant reduction)
+- NORMAL nl rounding: Test 2 nl=20→19, Tests 7-9 nl=10→9
+- Updated BLACKBOARD.md (task #155 done, comm log), journal, committed c72abfc, pushed
+
+Stage Summary:
+- swarmwrap.sty v3.18: hybrid parshape eliminates "figures outside text" and "near-empty DEFERRED pages"
+- Zero text-figure overlaps on both standard test files
+- No remaining Programmer wrapping tasks. Standing down per Rule 3.
