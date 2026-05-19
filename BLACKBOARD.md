@@ -186,10 +186,25 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 151 | **FIX**: swarmwrap.sty — ghost narrowing on continuation pages. When a wrapped paragraph spans a page break, the parshape narrowing persists to the continuation page but the figure does not. The `\swarmwrappenalty{N}` feature (v3.6) mitigates but doesn't eliminate this. With v3.9 (removed broken detection), ghost narrowing is now the primary remaining issue — text always stays in place but continuation pages may have narrowed text with no figure. Possible fixes: (1) use Lua `pre_linebreak_filter` to detect impending page breaks and truncate parshape mid-paragraph, (2) track remaining figure height and force full-width when page break is about to occur, (3) use `everypar` to detect new pages and reset parshape. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-05-19 |
 | 152 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.7 — vspace fix (task #150). (1) Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX — should be 8 pages, zero errors. (2) Compile `src/test-wrapfig/test-pagebreak-variations.tex` — should be 15 pages, zero errors. (3) Verify `\ProvidesPackage` says v3.7. (4) Check log: line counts (nl) should be exactly 1 less than v3.6 for each figure (e.g., Test 1: nl=13 not 14, Test 2: nl=20 not 21). (5) PyMuPDF: verify that the first narrow text line below each figure starts within ~15pt of the figure bottom (was ~25pt before the fix). (6) No new overlaps or regressions. | QA | **done** (10/10) | 2026-05-19 |
 | 153 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.8 — adaptive fallback (task #146). SUPERSEDED by zoe directive: v3.8 adaptive fallback was a bad fix. Detection was broken (false triggers when space was sufficient) and the response was wrong (text should never be ejected). Removed entirely in v3.9. | QA | **done** (superseded) | 2026-05-19 |
+| 154 | **RE-REVIEW**: Verify swarmwrap.sty v3.12 (cumulative review of v3.10+v3.11+v3.12). (1) Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX — should be 8 pages, zero errors. (2) Compile `src/test-wrapfig/test-pagebreak-variations.tex` — should be 15 pages, zero errors. (3) Verify `\ProvidesPackage` says v3.12. (4) **v3.10 deferred figure**: Verify figures that don't fit on the current page are deferred to the top of the next page via `\afterpage`. Zero figures clipped at page boundary. (5) **v3.11 centered deferred + overlap fix**: Deferred figures must be centered (`\hb@xt@\linewidth` instead of `\begin{center}`). Zero text-figure overlap on deferred pages — parshape should NOT be applied in deferred case (text flows full-width). (6) **v3.12 emergencystretch fix**: Non-wrapped paragraphs after a wrapped figure should have normal `\emergencystretch` (0), not the elevated ~5pt value set during wrapping. Verify by checking line widths of paragraphs after wrapped figures — should be full page width, not stretched. (7) PyMuPDF: zero real text-figure overlaps on both PDFs. (8) Ghost narrowing only in NORMAL case (inline overlay when paragraph spans page break) — mitigated by penalty. Zero ghost narrowing in deferred case. | QA | **done** (10/10) | 2026-05-19 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-19 08:38 UTC+8
+> **Task #154 done — swarmwrap.sty v3.12 cumulative review (10/10 PASS)** (self-assigned per zoe directive)
+>
+> Verified all 8 criteria:
+> 1. test-customwrap.tex: 8 pages, 0 errors (LuaHBTeX per Rule 2.6)
+> 2. test-pagebreak-variations.tex: 15 pages, 0 errors
+> 3. `\ProvidesPackage` says v3.12 confirmed
+> 4. **v3.10 deferred**: test-customwrap has 1 DEFERRED (Test 6, remaining=-13pt), pagebreak-variations has 5 DEFERRED. All deferred figures appear at top of next page. Zero clipped.
+> 5. **v3.11 centered deferred**: All deferred figures centered at x=297 (page center=298, offset <1pt). Zero overlap on deferred pages — text flows full-width (359pt), no parshape applied in DEFERRED branch.
+> 6. **v3.12 emergencystretch**: Post-wrapping paragraphs have consistent x1=476.5pt (right_margin_gap=59.7pt). All justified lines identical — emergencystretch properly reset to 0 after each wrapped paragraph.
+> 7. PyMuPDF: 0 text-figure overlaps on both PDFs (23 pages total).
+> 8. Ghost narrowing: ~2-5 cosmetic lines below each NORMAL figure (from 4pt padding + parshape overflow). Zero ghost narrowing on deferred pages. Known list-item parshape leak on CW Page 4 (Test 4, documented limitation #2).
+> 9. Gap = 14.0pt exact on all NORMAL figure pages.
 
 ### QA — 2026-05-19 08:30 UTC+8
 > **No pending QA tasks**: Checked BLACKBOARD — all QA tasks are marked **done**. Standing down per Rule 5. Programmer pushed v3.10 (deferred figure placement), v3.11 (deferred figure centering + overlap fix, task #151), and v3.12 (emergencystretch leak fix). Programmer notes "No remaining Programmer wrapping tasks." No QA review tasks were created for v3.10, v3.11, or v3.12. Per Rule 3, QA cannot self-assign reviews.
