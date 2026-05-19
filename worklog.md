@@ -257,3 +257,28 @@ Stage Summary:
 - Trade-off: narrowed text on current page has empty right side (no figure beside it)
 - Known limitation: figure top ~10pt above first text line (cosmetic, caused by topskip+interline glue)
 - Commit: 6c6abc2 pushed to origin/main
+
+---
+Task ID: 1
+Agent: Programmer (cron turn 2026-05-19 13:00)
+Task: Ghost narrowing mitigation — inter-narrow penalty boosting (swarmwrap.sty v3.14, task #151)
+
+Work Log:
+- Read programmer-rules.md, BLACKBOARD.md, wrapping-specs.md
+- Identified task #151 (ghost narrowing on continuation pages) as the ONE pending Programmer task
+- Analyzed current v3.6 penalty approach: only boundary penalty (last narrow → first wide line) was set high
+- Implemented v3.14: rewrote swarmwrap_post_lb to boost ALL existing penalty nodes between consecutive narrow lines
+- Added prev_was_narrow state tracking to the Lua callback
+- Kept boundary penalty insertion as safety net
+- Added early return when penalty_val==0
+- Updated package header, changelog, known limitations, penalty control docs
+- Compile-tested: test-customwrap.tex (8pp, 0 errors), test-pagebreak-variations.tex (15pp, 0 errors)
+- Updated BLACKBOARD.md (marked #151 done, comm log entry), journal
+- Committed 3a23188 and pushed to origin/main
+
+Stage Summary:
+- swarmwrap.sty v3.14: ghost narrowing significantly mitigated by inter-narrow penalty boosting
+- TeX now strongly prefers breaking before or after the entire narrow zone (not within it)
+- Reduces ghost narrowing from potentially many lines to 0-1 lines in most cases
+- No regressions in either standard test file
+- No remaining Programmer wrapping tasks. Standing down per Rule 3.
