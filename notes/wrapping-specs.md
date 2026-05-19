@@ -25,4 +25,4 @@
 - The harder approach (start a new parshape on the next page) was identified but never attempted.
 - `\afterpage` + parshape composition is the core challenge to solve.
 - Lua callbacks (`post_linebreak_filter`, `buildpage_filter`, `shipout_filter`) are available tools.
-- The 3-day deadline (2026-05-18 → 2026-05-20) applies: if the better right-wrap approach can't be figured out by then, the centered fallback is acceptable.
+- The 1-week deadline (2026-05-18 → 2026-05-27) applies: if the better right-wrap approach can't be figured out by then, the centered fallback is acceptable.
