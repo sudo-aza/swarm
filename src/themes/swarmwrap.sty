@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.13)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.14)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -15,11 +15,11 @@
 %   - Right-side only (no left/centered wrapping needed).
 %   - Lists may break (perfect itemize/enumerate not required).
 %
-% STATUS (v3.13):
-%   Deferred figures now RIGHT-WRAP on the next page (not centered).
-%   Parshape is applied on the current page; continuation text on the
-%   next page is also narrowed. Figure overlay placed via \afterpage
-%   using a zero-height vbox (no paragraph overhead).
+% STATUS (v3.14):
+%   Deferred figures RIGHT-WRAP on the next page (v3.13).
+%   Ghost narrowing mitigation: inter-narrow line penalties are now
+%   boosted (v3.14), making TeX strongly prefer to break before or
+%   after the entire narrow zone rather than within it.
 %
 % ─────────────────────────────────────────────────────────────────────────
 %
@@ -59,15 +59,18 @@
 %
 % ── Known Limitations ─────────────────────────────────────────────────
 %
-% 1. Ghost narrowing on continuation pages:
+% 1. Ghost narrowing on continuation pages (MITIGATED in v3.14):
 %    When the wrapped paragraph spans a page break, TeX's parshape
 %    persists across the page boundary but the figure does not (it is
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
 %    lines on the next page remain narrowed even though no figure is
 %    beside them. This is cosmetic only — no text overlaps the figure.
-%    Mitigation: \swarmwrappenalty{N} inserts a penalty at the
-%    boundary to discourage TeX from breaking there (default: 10000).
-%    Affects only very long paragraphs that span page breaks.
+%    Mitigation: \swarmwrappenalty{N} (default: 10000) now boosts
+%    penalties between ALL consecutive narrow lines, not just at the
+%    boundary. TeX is strongly discouraged from breaking within the
+%    narrow zone, pushing breaks to before or after it. Very long
+%    paragraphs that cannot avoid a mid-zone break may still show
+%    ghost narrowing on 1-2 continuation lines.
 %
 % 2. Parshape leak into list items:
 %    If \swarmwrapnext is used inside a list item (\item), the parshape
@@ -84,6 +87,14 @@
 %    wraps around the deferred figure. Detection uses \pagegoal - \pagetotal.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.14: Ghost narrowing mitigation — inter-narrow line penalties
+%   are now boosted in post_linebreak_filter. Previously only the
+%   boundary penalty (last narrow → first wide) was set high. Now
+%   ALL penalties between consecutive narrow lines are boosted to
+%   \swarmwrappenalty{N}, making TeX strongly prefer breaking before
+%   or after the entire narrow zone. Reduces ghost narrowing from
+%   potentially many lines to 0-1 lines in most cases.
 %
 % v3.13: Deferred figures now right-wrap on next page. Replaced the
 %   v3.12 centered fallback with parshape + zero-height vbox overlay.
@@ -122,7 +133,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.13 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.14 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -144,8 +155,9 @@
 
 % ── Penalty control ──────────────────────────────────────────────────
 % \swarmwrappenalty{N}: set the penalty inserted at the boundary between
-% the last narrowed parshape line and the first full-width line.
-% Default: 10000 (strongly discourage page break at boundary).
+% the last narrowed parshape line and the first full-width line, AND
+% between all consecutive narrowed lines. Default: 10000 (strongly
+% discourage page breaks within or at the boundary of the narrow zone).
 % Set to 0 to allow breaks (no penalty). Set to -10000 to force a break.
 \newcount\swarmwrap@penalty
 \swarmwrap@penalty=10000
@@ -162,10 +174,10 @@
 % ── Lua callback: post_linebreak_filter ───────────────────────────────
 % When a paragraph is broken into lines, this callback checks whether
 % a parshape narrowing is active (swarmwrap@tw@lua > 0). If so, it
-% identifies the boundary between the last narrowed line and the first
-% full-width line, and inserts a penalty node there. This discourages
-% TeX from breaking the page at the transition point, which would cause
-% ghost narrowing on the continuation page.
+% boosts penalties between ALL consecutive narrow lines (not just at
+% the boundary). This makes TeX strongly prefer to break before or
+% after the entire narrow zone, reducing ghost narrowing on
+% continuation pages from potentially many lines to 0-1 lines.
 
 \ifswarmwrap@luatex
 \directlua{
@@ -177,32 +189,45 @@
     end
     local penalty_val = tex.count["swarmwrap@penalty"]
     if penalty_val == 0 then
+      tex.dimen["swarmwrap@tw@lua"] = 0
+      tex.dimen["emergencystretch"] = 0
       return head
     end
     -- Convert skip to scaled points for comparison
     local tw_val = tw_sp / 65536.0
     local tol = 3.0  -- pt tolerance
     local narrow_width_max = tw_val + tol
-    -- Walk the node list to find the last narrowed hlist
+    -- Walk the node list to boost penalties between consecutive narrow lines.
+    -- This discourages TeX from breaking within the narrow zone, which would
+    -- cause ghost narrowing on the continuation page (narrow text with no figure).
     local last_narrow = nil
+    local prev_was_narrow = false
     local current = head
     while current do
-      if current.id == 0 then  -- hlist node (a broken line)
+      if current.id == 0 then  -- hlist (broken line)
         local lw = current.width / 65536.0
         if lw <= narrow_width_max and lw > 0 then
           last_narrow = current
+          prev_was_narrow = true
+        else
+          prev_was_narrow = false
+        end
+      elseif current.id == node.id("penalty") and prev_was_narrow then
+        -- Penalty between consecutive narrow lines or at narrow->wide boundary.
+        -- Boost to discourage page breaks that cause ghost narrowing.
+        if current.penalty < penalty_val then
+          current.penalty = penalty_val
         end
       end
       current = current.next
     end
+    -- Insert boundary penalty as safety net (covers missing existing penalty).
     if last_narrow then
       local p = node.new(node.id("penalty"))
       p.penalty = penalty_val
       node.insert_after(head, last_narrow, p)
     end
-    -- Reset tw@lua and emergencystretch to prevent leaking.
-    -- tw@lua must be cleared so the next paragraph (non-wrapped)
-    -- triggers the emergencystretch reset on its callback pass.
+    -- Reset to prevent leaking.
     tex.dimen["swarmwrap@tw@lua"] = 0
     tex.dimen["emergencystretch"] = 0
     return head
@@ -240,7 +265,7 @@
   \fi
 }
 
-% ── Helper: place figure centered (kept as reserve, not used in v3.13) ──
+% ── Helper: place figure centered (kept as reserve, not used in v3.13+) ──
 % Uses explicit \hbox centering instead of \begin{center} because the
 % latter doesn't work reliably inside \afterpage.
 \newcommand{\swarmwrap@place@centered}{%
