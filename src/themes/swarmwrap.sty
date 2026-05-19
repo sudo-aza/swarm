@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.14)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.15)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -15,11 +15,11 @@
 %   - Right-side only (no left/centered wrapping needed).
 %   - Lists may break (perfect itemize/enumerate not required).
 %
-% STATUS (v3.14):
+% STATUS (v3.15):
 %   Deferred figures RIGHT-WRAP on the next page (v3.13).
-%   Ghost narrowing mitigation: inter-narrow line penalties are now
-%   boosted (v3.14), making TeX strongly prefer to break before or
-%   after the entire narrow zone rather than within it.
+%   Ghost narrowing mitigation (v3.14): inter-narrow line penalties boosted.
+%   Deferred figure vertical alignment fixed (v3.15): figure top aligns
+%   with first text line on deferred pages (was ~10pt gap).
 %
 % ─────────────────────────────────────────────────────────────────────────
 %
@@ -88,6 +88,12 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.15: Fixed deferred figure vertical alignment on next page. The
+%   zero-height vbox placed by \afterpage caused a ~10pt gap between
+%   the figure top and the first text line (TeX's \topskip glue).
+%   Added \kern-\topskip after the vbox to eliminate this gap, so the
+%   figure top now aligns with the first continuation text line.
+%
 % v3.14: Ghost narrowing mitigation — inter-narrow line penalties
 %   are now boosted in post_linebreak_filter. Previously only the
 %   boundary penalty (last narrow → first wide) was set high. Now
@@ -133,7 +139,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.14 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.15 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -329,11 +335,9 @@
     \parshape \swarmwrap@pshape\relax
     % Defer figure to top-right of next page via zero-height vbox overlay.
     % The \smash ensures zero height/depth contribution.
-    % The figure must align with the first continuation text line on the next page.
-    % Known limitation: figure top may be ~10pt above the first text line due to
-    % \topskip + interline glue between the zero-height vbox and the text. This
-    % is cosmetic only — the figure is at the correct horizontal position and
-    % text wraps correctly around it for all subsequent lines.
+    % The figure aligns with the first continuation text line on the next page.
+    % \kern-\topskip after the vbox eliminates the ~10pt gap caused by TeX's
+    % automatic topskip insertion between page-top content and the first baseline.
     \afterpage{%
       \vbox to 0pt{%
         \hbox to \linewidth{%
@@ -343,6 +347,7 @@
         }%
         \vss
       }%
+      \kern-\topskip
     }%
     \wlog{swarmwrap next: DEFERRED RIGHT-WRAP — remaining=\the\dimen0, fh=\the\dimen1, nl=\the\swarmwrap@nl}%
   \else

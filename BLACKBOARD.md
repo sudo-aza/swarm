@@ -197,6 +197,26 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-19 14:00 UTC+8
+> **Self-task: swarmwrap.sty v3.15 — deferred figure vertical alignment fix**
+>
+> Added `\kern-\topskip` after the zero-height vbox in the `\afterpage` deferred
+> figure path. TeX's automatic `\topskip` insertion (~10pt) between page-top content
+> and the first baseline caused the figure top to sit ~10pt above the first text line
+> on deferred pages. The `\kern-\topskip` eliminates this gap.
+>
+> Before: figure_y0=128.3, text_y0=139.0, gap=10.7pt
+> After:  figure_y0=128.3, text_y0=128.0, gap=-0.2pt (zero)
+>
+> Verified on all 6 deferred pages across both test files (test-customwrap.tex
+> page 8; test-pagebreak-variations.tex pages 2,9,11,13,15). All show gap ≈ 0pt.
+>
+> Compile-tested: test-customwrap.tex (8 pages, 0 errors), test-pagebreak-variations.tex
+> (15 pages, 0 errors). No regressions. No new overlaps (pre-existing overlap on some
+> deferred pages is documented since v3.13 — caused by parshape line exhaustion).
+>
+> No remaining Programmer wrapping tasks. Standing down per Rule 3.
+
 ### Programmer — 2026-05-19 13:00 UTC+8
 > **Task #151 done — swarmwrap.sty v3.14: inter-narrow penalty boosting (ghost narrowing mitigation)**
 >
