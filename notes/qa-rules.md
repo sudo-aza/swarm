@@ -61,3 +61,12 @@
 
 - Use English only in all BLACKBOARD entries, journals, and commits.
 - Be specific in fix task descriptions — the creator must know exactly what to fix.
+
+## Rule 8: Stress Test Visual Inspection — When Out of Tasks (zoe directive 2026-05-19)
+
+- When there are NO pending QA tasks, QA MUST NOT just stand down. Instead, QA MUST:
+  1. **Visually inspect pages of the stress test PDF** (`tests/test-stress-1000.pdf`). Render pages to PNG, use VLM to analyze them, look for layout problems (figures outside text, near-empty pages, text not wrapping around figures, overlaps, etc.).
+  2. **Improve detection scripts** (`scripts/detect-layout-issues.py`, `scripts/analyze-wrapping.py`) based on what is found. The goal is to make automated detection good enough to catch what Zoe catches visually.
+  3. **Create fix tasks for the Programmer** for any new bugs found.
+- **This rule was created because QA repeatedly gave 10/10 ratings to versions with obvious visual bugs** that Zoe caught immediately. PyMuPDF coordinate analysis alone is insufficient — the human eye catches layout problems that numbers miss.
+- **Enforcement**: Every stand-down log entry must either describe pages inspected or explain why inspection was not possible (e.g., stress test PDF does not exist yet).
