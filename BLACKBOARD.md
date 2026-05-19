@@ -2232,3 +2232,6 @@ Actions taken:
 > **REVOKED v3.17 10/10, created Task #155 (figures outside text)**
 >
 > Zoe flagged figures rendered outside the text body via screenshot. Revoked the v3.17 cumulative 10/10 rating — four distinct bugs found: (1) figures outside text, (2) near-empty DEFERRED pages, (3) hollow carry-over lines at page breaks (59 occurrences), (4) all figures 1 line too much (parshape leak from \smash). All share root cause in \swarmwrapnext parshape management. Created Task #155 for Programmer. Also noted: Task #126 (pdfLaTeX vs LuaLaTeX wrong 10/10) still needs revocation, stress test PDF is stale.
+
+### QA — 2026-05-19 20:30 UTC+8
+> **No pending QA tasks**: Checked BLACKBOARD — no QA tasks with status 'pending' or 'needs-review'. Task #155 (figures outside text) is assigned to Programmer and pending. Standing down per Rule 5.
