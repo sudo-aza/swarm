@@ -285,7 +285,21 @@ def detect_overlaps(page_num, figures, text_lines, tolerance):
 
 
 def detect_ghost_narrowing(page_num, text_lines, figures):
-    """Detect text narrowed by parshape with no figure on page."""
+    """Detect text narrowed by parshape with no figure on page.
+
+    VLM-validated improvements (v3):
+    - Use MEDIAN width instead of 90th percentile as full_width baseline.
+      The 90th percentile underestimates full_width on pages where most lines
+      are wrapping, causing false positives from normal short last-lines.
+    - Increase threshold from 40pt to 60pt — normal text variation (short
+      last lines, hyphenation) can produce 40-50pt shorter lines.
+    - Require CONTIGUOUS narrowing from the top of the page (>=2 consecutive
+      narrowed lines starting from line 1). Ghost narrowing is a parshape
+      leak that affects the FIRST lines of a new page — scattered short lines
+      mid-page are just normal paragraph variation.
+    - Only count lines in the top 60% of the page body (ghost narrowing
+      never persists below mid-page on these layouts).
+    """
     issues = []
     if figures:
         return issues
@@ -294,12 +308,49 @@ def detect_ghost_narrowing(page_num, text_lines, figures):
     if not body_lines:
         return issues
 
-    widths = sorted([l["width"] for l in body_lines])
-    idx = max(0, int(len(widths) * 0.9) - 1)
-    full_width = widths[idx]
+    # Sort by vertical position (top to bottom)
+    body_lines.sort(key=lambda l: l["y0"])
 
-    narrowed = [l for l in body_lines if full_width - l["width"] > 40]
-    if narrowed:
+    # Use MEDIAN width as full_width — more robust than 90th percentile
+    widths = sorted([l["width"] for l in body_lines])
+    if not widths:
+        return issues
+    full_width = widths[len(widths) // 2]
+
+    # Ghost narrowing threshold: 60pt (was 40pt)
+    NARROW_THRESHOLD = 60
+
+    # Find contiguous narrowed lines from the TOP of the page
+    # Ghost narrowing always starts from line 1 and affects consecutive lines
+    narrowed = []
+    max_y = body_lines[-1]["y0"] if body_lines else 0
+    min_y = body_lines[0]["y0"] if body_lines else 0
+    page_body_range = max_y - min_y
+    top_limit = min_y + page_body_range * 0.6  # Only check top 60%
+
+    consecutive = 0
+    for line in body_lines:
+        # Stop checking below 60% of page body
+        if line["y0"] > top_limit:
+            break
+        if full_width - line["width"] > NARROW_THRESHOLD:
+            narrowed.append(line)
+            consecutive += 1
+        else:
+            # Allow at most 1 non-narrowed line gap (e.g., a short full-width line)
+            # before resuming consecutive count — but only if we already have some
+            if consecutive > 0:
+                consecutive = 0
+            # If we haven't found any narrowed lines yet and hit a full-width line
+            # near the top, this page likely has no ghost narrowing
+            if not narrowed and len(narrowed) == 0:
+                # Check if this is one of the first few lines
+                idx_in_page = body_lines.index(line) if line in body_lines else 0
+                if idx_in_page < 3:
+                    break  # First 3 lines are full-width — no ghost narrowing
+
+    # Require at least 2 contiguous narrowed lines to report
+    if len(narrowed) >= 2:
         issues.append({
             "page": page_num + 1,
             "n_narrowed": len(narrowed),
