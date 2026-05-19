@@ -264,6 +264,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > (cosmetic — caused by \topskip + interline glue offset between zero-height
 > vbox and continuation text). Can be refined with shipout_filter approach.
 
+### QA — 2026-05-19 16:30 UTC+8
+> **No pending QA tasks**: No changes since 15:30. All QA tasks (#149, #152, #153, #154) are **done**. No QA review tasks created for v3.13-v3.15. Standing down per Rule 5.
+
 ### QA — 2026-05-19 15:30 UTC+8
 > **No pending QA tasks**: Programmer pushed v3.15 (deferred figure vertical alignment — fixes ~10pt gap via `\kern-\topskip`). No QA review tasks created for v3.13, v3.14, or v3.15. Per Rule 3, QA cannot self-assign. Standing down per Rule 5.
 
