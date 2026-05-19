@@ -324,3 +324,30 @@ Stage Summary:
 - swarmwrap.sty v3.16: emergencystretch no longer clobbers user-set values
 - Zero regressions (same page counts, file sizes, and error counts as v3.15)
 - No remaining Programmer wrapping tasks. Standing down per Rule 3.
+
+---
+Task ID: 1
+Agent: main
+Task: Investigate swarmwrap state after 10-minute wait
+
+Work Log:
+- Pulled latest code, read BLACKBOARD.md and programmer-rules.md
+- Read wrapping-specs.md (stale — still references v3.12 centered fallback)
+- Read src/themes/swarmwrap.sty (v3.17)
+- Compiled test-customwrap.tex and test-pagebreak-variations.tex
+- Discovered CRITICAL issue: stale v3.10 swarmwrap.sty in repo root (/home/z/swarm/swarmwrap.sty) shadows the real v3.17 in src/themes/swarmwrap.sty
+- When compiling from repo root, TeX finds v3.10 first (via kpsewhich ./swarmwrap.sty)
+- v3.10 has 9+ text-figure overlaps on deferred pages; v3.17 has zero
+- Compiled with correct v3.17 via TEXINPUTS=src/themes//:
+  - test-customwrap.tex: 8pp, 0 errors
+  - test-pagebreak-variations.tex: 15pp, 0 errors
+- PyMuPDF analysis of v3.17: zero text-figure overlaps on all deferred pages (CW-P8, PBV-P9, PBV-P11, PBV-P13, PBV-P15)
+- All narrow lines end at x≈377, well before figure boundary at x≈391
+- v3.17 meets all 5 spec requirements
+
+Stage Summary:
+- v3.17 is correct — zero overlaps, right-wrapping works
+- Stale v3.10 in repo root is a deployment trap — anyone compiling from root gets wrong version
+- Root file: /home/z/swarm/swarmwrap.sty (v3.10, commit 5db9087, 2026-05-18 22:39 UTC)
+- Real file: src/themes/swarmwrap.sty (v3.17, commit f532002, 2026-05-19 11:17 UTC)
+- Cannot fix stale file under Rule 0 (only src/themes/swarmwrap.sty and test files may be modified)
