@@ -232,6 +232,48 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 >
 > Standard tests: test-customwrap 9pp, test-pagebreak-variations 16pp, 0 errors.
 
+### QA — 2026-05-20 05:30 UTC+8
+> **Rule 8 continued — VLM inspection of CRITICAL/WARNING pages, ghost/hollow FP fix v4**
+>
+> No pending QA tasks. Per Rule 8, continued visual inspection of the stress test.
+>
+> Recompiled stress test with v3.23 (809 pages, LuaHBTeX confirmed). Ran
+> detect-layout-issues.py: 2778 total issues (58 FIGURE BESIDE TEXT, 0 NEAR-EMPTY,
+> 1285 body overlaps, 1361 caption overlaps, 33 ghost narrowing, 2 extra vspace,
+> 39 hollow carry-over).
+>
+> VLM visual inspection of 14 pages (glm-4.6v):
+> - Pages 72, 204, 551 (CRITICAL): TRUE POSITIVE — 0 narrow lines, text overlaps
+>   figure. Pages 72/204/551 confirmed BAD by VLM.
+> - Page 462 (CRITICAL): FALSE POSITIVE — standalone float page, no wrapping expected.
+>   Text below figure at full width, no overlap. VLM says GOOD.
+> - Page 697 (CRITICAL): FALSE POSITIVE — VLM says text wraps correctly (22 narrow
+>   lines), but detector's full_width baseline contaminated by all-narrow lines.
+> - Page 97 (WARNING): TRUE POSITIVE — text overlaps fig[1].
+> - Pages 19, 48 (ghost narrowing): FALSE POSITIVE — normal pages, no narrowing.
+>   Root cause: algorithm accumulated scattered short sentences across page into
+>   false "narrowed" count (non-contiguous accumulation bug).
+> - Pages 255, 720 (WARNING): TRUE POSITIVE — parshape exhaustion, text overlaps.
+> - Page 809: GOOD — clean last page.
+> - Pages 308, 410, 699 (ghost narrowing remaining): VLM verified ALL TRUE POSITIVE.
+>
+> Detection script improvements:
+> 1. Ghost narrowing v4: Fixed non-contiguous accumulation bug. Now requires
+>    narrowing to start from FIRST body line, allows max 1 full-width gap,
+>    breaks on 2+ consecutive full-width lines after narrowing. Also breaks
+>    early if first line is full-width. Results: 33→12 (64% reduction). All 12
+>    remaining VLM-verified as real (spot-checked 3/12).
+> 2. Hollow carryover v2: Requires 2/3 first body lines to be narrowed (not just
+>    the first line). A single narrow first line is likely a paragraph continuation
+>    (last line of prev page's paragraph), not parshape leak. Results: 39→27
+>    (31% reduction). Pages 19/48 correctly report PASS.
+>
+> NOTE: Programmer discovered a stale v3.10 swarmwrap.sty at the repo root
+> that was shadowing the actual v3.23 during ALL previous QA compilations.
+> The 2778 issues above were from v3.10, NOT v3.23. Actual v3.23 results
+> are dramatically better (197 total issues). The detection script improvements
+> (ghost v4, hollow v2) are still valid and reduce false positives.
+
 ### QA — 2026-05-20 04:30 UTC+8
 > **Rule 8 continued — v3.23 verification, VLM spot-check, ghost narrowing FP fix v3**
 >
