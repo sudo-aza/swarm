@@ -24,6 +24,7 @@ Requires: PyMuPDF (fitz)
 """
 
 import sys
+import re
 import argparse
 import fitz  # PyMuPDF
 
@@ -222,25 +223,52 @@ def detect_near_empty_pages(page_num, page, text_lines, threshold):
     return issues
 
 
+# Patterns for caption text that legitimately overlaps figure rectangles
+_CAPTION_PATTERNS = [
+    re.compile(r'\\?Figure\s+\d+', re.IGNORECASE),
+    re.compile(r'\\?Fig\.?\s+\d+'),
+    re.compile(r'\(\d+cm\s*x\s*\d+cm\)'),  # (3cmx6cm)
+    re.compile(r'\d+cm\s*x\s*\d+cm'),  # 3cmx6cm
+]
+
+
+def _is_caption_text(text):
+    """Check if text is a figure caption or dimension label."""
+    for pat in _CAPTION_PATTERNS:
+        if pat.search(text):
+            return True
+    return False
+
+
 def detect_overlaps(page_num, figures, text_lines, tolerance):
-    """Detect text lines overlapping figure rectangles."""
+    """Detect text lines overlapping figure rectangles.
+
+    Filters out caption text (figure labels, dimension annotations)
+    which legitimately overlap the figure rectangle.
+    Returns (body_overlaps, caption_overlaps).
+    """
     issues = []
+    caption_overlaps = []
     for line in text_lines:
         for fig in figures:
             if not line["rect"].intersects(fig):
                 continue
             overlap_rect = line["rect"] & fig
             if overlap_rect.get_area() > tolerance:
-                issues.append({
+                entry = {
                     "page": page_num + 1,
                     "desc": (
                         f"  OVERLAP page {page_num + 1}: "
                         f"\"{line['text'][:40]}\" overlaps figure "
                         f"(area: {overlap_rect.width:.0f}x{overlap_rect.height:.0f}pt)"
                     ),
-                })
+                }
+                if _is_caption_text(line["text"]):
+                    caption_overlaps.append(entry)
+                else:
+                    issues.append(entry)
                 break
-    return issues
+    return issues, caption_overlaps
 
 
 def detect_ghost_narrowing(page_num, text_lines, figures):
@@ -388,6 +416,7 @@ def analyze_pdf(pdf_path, args):
         "figure_beside_text": [],
         "near_empty": [],
         "overlap": [],
+        "caption_overlap": [],
         "ghost_narrow": [],
         "extra_vspace": [],
         "hollow_carryover": [],
@@ -405,8 +434,9 @@ def analyze_pdf(pdf_path, args):
             detect_figure_beside_text(pn, figs, lines, args.min_adjacent_lines))
         results["near_empty"].extend(
             detect_near_empty_pages(pn, page, lines, args.empty_threshold))
-        results["overlap"].extend(
-            detect_overlaps(pn, figs, lines, args.overlap_tolerance))
+        body_ol, caption_ol = detect_overlaps(pn, figs, lines, args.overlap_tolerance)
+        results["overlap"].extend(body_ol)
+        results["caption_overlap"].extend(caption_ol)
         results["ghost_narrow"].extend(
             detect_ghost_narrowing(pn, lines, figs))
         results["extra_vspace"].extend(
@@ -424,7 +454,8 @@ def analyze_pdf(pdf_path, args):
     categories = [
         ("FIGURE BESIDE TEXT", "figure_beside_text"),
         ("NEAR-EMPTY PAGES", "near_empty"),
-        ("TEXT-FIGURE OVERLAP", "overlap"),
+        ("TEXT-FIGURE OVERLAP (body text)", "overlap"),
+        ("TEXT-FIGURE OVERLAP (caption, expected)", "caption_overlap"),
         ("GHOST NARROWING", "ghost_narrow"),
         ("EXTRA VSPACE", "extra_vspace"),
         ("HOLLOW CARRY-OVER", "hollow_carryover"),
