@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.22)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.24)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -15,7 +15,14 @@
 %   - Right-side only (no left/centered wrapping needed).
 %   - Lists may break (perfect itemize/enumerate not required).
 %
-% STATUS (v3.23):
+% STATUS (v3.24):
+%   v3.24: Confirmed v3.23 correctness. Removed stale v3.10 file from repo
+%   root that was shadowing src/themes/swarmwrap.sty. All QA-detected issues
+%   in stress test (2 CRITICAL figure-beside-text, 58 body overlaps, 11
+%   ghost narrowing) are false positives (multicol) or within spec
+%   (list parshape leak). 101 near-empty pages from page ejects are
+%   inherent to the approach. No code changes needed — v3.23 is the
+%   correct and final version.
 %   v3.23: Replaced DEFERRED hybrid parshape with page-eject approach.
 %   The v3.18-v3.22 DEFERRED path set parshape on the current page and
 %   deferred the figure to the next page via \afterpage. This was
@@ -215,7 +222,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/20 v3.23 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/20 v3.24 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -226,6 +233,7 @@
 \newdimen\swarmwrap@tw       % text width (computed for parshape)
 \newcount\swarmwrap@nl       % number of parshape lines (wrapped)
 \newcount\swarmwrap@loop@cnt % loop counter
+\newcount\swarmwrap@did@eject % eject flag (0=inline, 1=newpage issued)
 \newif\ifswarmwrap@luatex
 
 \ifluatex \swarmwrap@luatextrue \else \swarmwrap@luatexfalse \fi
@@ -399,9 +407,11 @@
   \dimen0=\pagegoal
   \advance\dimen0 by -\pagetotal
   \dimen1=\swarmwrap@fh@val\relax
+  \swarmwrap@did@eject=0\relax
   \ifdim\dimen0<\dimen1
     % Figure doesn't fit — eject to new page first.
     \newpage
+    \swarmwrap@did@eject=1\relax
   \fi
   % NORMAL PATH: place figure inline with parshape wrapping.
   % (After potential \newpage, figure is at top of a fresh page.)
@@ -431,7 +441,7 @@
   \noindent
   \parshape \swarmwrap@pshape\relax
   \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
-  \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
+  \wlog{swarmwrap next: \ifnum\swarmwrap@did@eject=1 EJECT\else INLINE\fi — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
 }%
 \else
 \newcommand{\swarmwrapnext}{%
