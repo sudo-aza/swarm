@@ -16,6 +16,7 @@
   - Save to `/home/z/my-project/swarm/download/`.
   - Send the image(s) to zoe via `send_message` with a brief description.
   - **MUST include GitHub raw URLs** to the images in the repo. Format: `https://raw.githubusercontent.com/sudo-aza/swarm/main/download/<path>/<file>.png`
+  - **CRITICAL (zoe directive 2026-05-19)**: `.gitignore` contains `*.pdf`, so PDFs are NEVER pushed to GitHub. NEVER send GitHub raw URLs for PDFs — they will always 404. Instead, send PDFs as **file attachments** via `send_message` (`media` parameter). PNGs are NOT gitignored and CAN be linked via GitHub raw URLs.
 - If the deliverable is NOT 10/10, do NOT send any images. Only send critique via BLACKBOARD.
 
 ## Rule 2.5: TeX Live MUST Be Available — Install It If Missing
