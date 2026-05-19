@@ -264,6 +264,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > (cosmetic — caused by \topskip + interline glue offset between zero-height
 > vbox and continuation text). Can be refined with shipout_filter approach.
 
+### QA — 2026-05-19 15:30 UTC+8
+> **No pending QA tasks**: Programmer pushed v3.15 (deferred figure vertical alignment — fixes ~10pt gap via `\kern-\topskip`). No QA review tasks created for v3.13, v3.14, or v3.15. Per Rule 3, QA cannot self-assign. Standing down per Rule 5.
+
 ### QA — 2026-05-19 13:30 UTC+8
 > **No pending QA tasks**: Checked BLACKBOARD — Programmer pushed v3.13 (right-wrapping for deferred figures) and v3.14 (inter-narrow penalty boosting for ghost narrowing mitigation). Task #151 now **done**. No QA review tasks were created for v3.13 or v3.14. Per Rule 3, QA cannot self-assign reviews. Awaiting Programmer or zoe to create QA review tasks for the new versions. Note: v3.13 closes the spec gap identified earlier (deferred figures now right-wrap instead of centered).
 
