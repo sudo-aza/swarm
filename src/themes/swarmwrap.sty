@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.19)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.20)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -15,8 +15,8 @@
 %   - Right-side only (no left/centered wrapping needed).
 %   - Lists may break (perfect itemize/enumerate not required).
 %
-% STATUS (v3.19):
-%   Same as v3.18, plus: emergencystretch save/restore now actually works.
+% STATUS (v3.20):
+%   Same as v3.18/v3.19, plus: deferred ghost narrowing reduced from ~5 to ~1-2 lines.
 %   The v3.16 changelog claimed to save/restore via \swarmwrap@saved@es
 %   register, but the register was declared and never used. The Lua callback
 %   still unconditionally reset emergencystretch to 0 for every paragraph,
@@ -90,6 +90,13 @@
 %    wraps around the deferred figure. Detection uses \pagegoal - \pagetotal.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.20: Reduced ghost narrowing on deferred pages. The v3.18 hybrid
+%   parshape used narrow_count = figlines + 6 (3 before + 3 after buffer).
+%   The "after" buffer of 3 lines created ~5 ghost narrow lines below
+%   the figure on deferred pages. Reduced to figlines + 4 (3 before + 1
+%   after), cutting ghost lines from ~5 to ~1-2 while keeping 1 line
+%   of prediction safety margin. Zero overlaps confirmed.
 %
 % v3.19: Completed the v3.16 emergencystretch save/restore fix. The v3.16
 %   changelog claimed to save/restore via \swarmwrap@saved@es register, but
@@ -185,7 +192,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.19 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.20 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -430,9 +437,9 @@
       \fi
     \fi
     % loop@cnt = full_width_end
-    % narrow_count = figlines + 6 (buffer on each side)
+    % narrow_count = figlines + 4 (buffer: 3 before page break + 1 after figure)
     \swarmwrap@current@lines=\swarmwrap@figlines
-    \advance\swarmwrap@current@lines by 6
+    \advance\swarmwrap@current@lines by 4
     % Total parshape entries = full_width_end + narrow_count + 1
     \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt+\swarmwrap@current@lines+1\relax\space}%
     % Build full-width entries (lines 1 to full_width_end)

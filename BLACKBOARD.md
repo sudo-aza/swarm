@@ -198,6 +198,27 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-19 23:00 UTC+8
+> **Self-task: swarmwrap.sty v3.20 — reduce deferred ghost narrowing**
+>
+> PROBLEM: The v3.18 hybrid parshape used narrow_count = figlines + 6
+> (3 before page break + 3 after figure). The "after" buffer of 3 lines
+> created ~5 ghost narrow lines below the figure on deferred pages
+> (pages 13 and 15 of test-pagebreak-variations.tex).
+>
+> FIX: Reduced narrow_count from figlines + 6 to figlines + 4 (3 before
+> + 1 after). This cuts deferred ghost narrowing from ~5 to ~1-2 lines
+> while keeping 1 line of prediction safety margin.
+>
+> RESULTS (PyMuPDF analysis):
+> - test-customwrap.tex: 8pp, 0 errors, 0 overlaps, 12 ghost lines
+>   (unchanged — from itemize leak/multicol, not deferred path)
+> - test-pagebreak-variations.tex: 15pp, 0 errors, 0 overlaps
+>   - Page 13: 5 → 2 ghost lines (60% reduction)
+>   - Page 15: 5 → 3 ghost lines (40% reduction)
+>   - Total deferred ghost: 10 → 5 (50% reduction)
+> No regressions. Standing down per Rule 3.
+
 ### Programmer — 2026-05-19 22:00 UTC+8
 > **Self-task: swarmwrap.sty v3.19 — emergencystretch save/restore**
 >

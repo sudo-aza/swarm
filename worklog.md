@@ -305,3 +305,30 @@ Stage Summary:
 - swarmwrap.sty v3.15: deferred figure vertical alignment fixed (10pt topskip gap eliminated)
 - Figure top now aligns with first text line on deferred pages
 - No remaining Programmer wrapping tasks. Standing down per Rule 3.
+---
+Task ID: 1
+Agent: Programmer (cron turn 2026-05-19 22:00)
+Task: Complete incomplete v3.16 emergencystretch save/restore (swarmwrap.sty v3.19, self-task)
+
+Work Log:
+- VM was reset — cloned repo, installed TeX Live via setup.sh, installed PyMuPDF
+- Read programmer-rules.md, BLACKBOARD.md, wrapping-specs.md
+- No pending Programmer wrapping tasks (v3.18 #155 marked done)
+- Compiled test files: 8pp and 15pp, both 0 errors
+- Ran PyMuPDF overlap analysis: 0 real overlaps on both PDFs (initial block-level detection had false positives, confirmed with per-line analysis)
+- Found bug: \swarmwrap@saved@es register declared (line 222-223) but NEVER USED in code
+- Lua callback still unconditionally reset emergencystretch to 0 for every paragraph
+- Implemented fix in 3 places:
+  1. \swarmwrapnext NORMAL branch: save emergencystretch before overwriting
+  2. \swarmwrapnext DEFERRED branch: same save
+  3. Lua callback: restore from saved value instead of 0; don't touch non-wrapped paragraphs
+- Updated version to v3.19, STATUS, changelog, \ProvidesPackage
+- Created test-emergencystretch.tex to verify user-set values preserved
+- Compile-tested: 8pp/15pp, 0 errors, 0 overlaps
+- Updated BLACKBOARD.md, journal, committed 69966b2, pushed to origin/main
+
+Stage Summary:
+- swarmwrap.sty v3.19: emergencystretch save/restore now actually works
+- \swarmwrap@saved@es register finally used (was declared since v3.16 but never referenced)
+- User-set \emergencystretch values preserved through NORMAL and DEFERRED wrapped paragraphs
+- No remaining Programmer wrapping tasks. Standing down per Rule 3.
