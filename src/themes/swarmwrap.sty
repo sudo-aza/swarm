@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.18)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.19)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -15,15 +15,14 @@
 %   - Right-side only (no left/centered wrapping needed).
 %   - Lists may break (perfect itemize/enumerate not required).
 %
-% STATUS (v3.18):
-%   Hybrid parshape for DEFERRED case: full-width lines on current page,
-%   narrow lines only on next page beside the figure (v3.18). Eliminates
-%   "figures outside text" and "near-empty DEFERRED pages" bugs.
-%   Deferred figures RIGHT-WRAP on the next page (v3.13).
-%   Ghost narrowing mitigation (v3.14): inter-narrow line penalties boosted.
-%   Penalty boost at wide->narrow boundary (v3.18): prevents early page
-%   breaks from putting full-width text beside the deferred figure.
-%   Rounding instead of ceiling for nl (v3.18): reduces "1 line too much".
+% STATUS (v3.19):
+%   Same as v3.18, plus: emergencystretch save/restore now actually works.
+%   The v3.16 changelog claimed to save/restore via \swarmwrap@saved@es
+%   register, but the register was declared and never used. The Lua callback
+%   still unconditionally reset emergencystretch to 0 for every paragraph,
+%   destroying user-set values. v3.19 completes the fix: \swarmwrapnext
+%   saves emergencystretch before overwriting it, and the Lua callback
+%   restores it after processing. Non-wrapped paragraphs are never touched.
 %
 % ─────────────────────────────────────────────────────────────────────────
 %
@@ -91,6 +90,15 @@
 %    wraps around the deferred figure. Detection uses \pagegoal - \pagetotal.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.19: Completed the v3.16 emergencystretch save/restore fix. The v3.16
+%   changelog claimed to save/restore via \swarmwrap@saved@es register, but
+%   the register was declared and never used. The Lua callback still
+%   unconditionally reset emergencystretch to 0 for every paragraph,
+%   destroying any user-set value. Fix: \swarmwrapnext now saves the pre-
+%   existing emergencystretch to \swarmwrap@saved@es before overwriting it
+%   (both NORMAL and DEFERRED branches). The Lua callback restores it after
+%   processing. Non-wrapped paragraphs (tw_sp <= 0) are never touched.
 %
 % v3.18: Hybrid parshape for DEFERRED case. Previously, all parshape
 %   lines were narrow, causing text on the current page to narrow with
@@ -177,7 +185,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.18 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.19 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -235,13 +243,15 @@
   function swarmwrap_post_lb(head, groupcode)
     local tw_sp = tex.dimen["swarmwrap@tw@lua"]
     if tw_sp <= 0 then
-      tex.dimen["emergencystretch"] = 0
+      -- Non-wrapped paragraph: do NOT touch emergencystretch.
+      -- Preserves any user-set value.
       return head
     end
     local penalty_val = tex.count["swarmwrap@penalty"]
     if penalty_val == 0 then
       tex.dimen["swarmwrap@tw@lua"] = 0
-      tex.dimen["emergencystretch"] = 0
+      -- Restore emergencystretch to pre-wrap value.
+      tex.dimen["emergencystretch"] = tex.dimen["swarmwrap@saved@es"]
       return head
     end
     -- Convert skip to scaled points for comparison
@@ -283,9 +293,9 @@
       p.penalty = penalty_val
       node.insert_after(head, last_narrow, p)
     end
-    -- Reset to prevent leaking.
+    -- Reset to prevent leaking. Restore emergencystretch.
     tex.dimen["swarmwrap@tw@lua"] = 0
-    tex.dimen["emergencystretch"] = 0
+    tex.dimen["emergencystretch"] = tex.dimen["swarmwrap@saved@es"]
     return head
   end
   luatexbase.add_to_callback("post_linebreak_filter",
@@ -442,6 +452,8 @@
     % Final full-width entry (default for lines beyond the narrow zone)
     \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
     % Apply hybrid parshape.
+    % Save pre-existing emergencystretch before overwriting.
+    \swarmwrap@saved@es=\emergencystretch
     \emergencystretch=\fontdimen6\font\relax
     \noindent
     \parshape \swarmwrap@pshape\relax
@@ -469,6 +481,8 @@
     \ifnum\swarmwrap@loop@cnt>0 \repeat
     \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
     % emergencystretch absorbs overfull hbox on narrowed parshape lines
+    % Save pre-existing emergencystretch before overwriting.
+    \swarmwrap@saved@es=\emergencystretch
     \emergencystretch=\fontdimen6\font\relax
     \noindent
     \parshape \swarmwrap@pshape\relax

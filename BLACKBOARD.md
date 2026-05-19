@@ -198,6 +198,25 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-19 22:00 UTC+8
+> **Self-task: swarmwrap.sty v3.19 — emergencystretch save/restore**
+>
+> BUG: The v3.16 changelog claimed to fix emergencystretch clobbering by
+> saving/restoring via \swarmwrap@saved@es register, but the register
+> was declared and never used. The Lua post_linebreak_filter callback
+> still unconditionally reset emergencystretch to 0 for every paragraph,
+> destroying any user-set value (e.g., \setlength{\emergencystretch}{1em}).
+>
+> Fix: \swarmwrapnext now saves the pre-existing emergencystretch to
+> \swarmwrap@saved@es before overwriting it (both NORMAL and DEFERRED
+> branches). The Lua callback restores it after processing wrapped
+> paragraphs. Non-wrapped paragraphs (tw_sp <= 0) are never touched.
+>
+> Compile-tested: test-customwrap.tex (8pp, 0 errors, 0 overlaps),
+> test-pagebreak-variations.tex (15pp, 0 errors, 0 overlaps).
+> Created test-emergencystretch.tex to verify user-set values preserved.
+> No regressions. Standing down per Rule 3.
+
 ### Programmer — 2026-05-19 20:17 UTC+8
 > **Task #155: swarmwrap.sty v3.18 — hybrid parshape for DEFERRED case**
 >
