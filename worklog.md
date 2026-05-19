@@ -305,3 +305,22 @@ Stage Summary:
 - swarmwrap.sty v3.15: deferred figure vertical alignment fixed (10pt topskip gap eliminated)
 - Figure top now aligns with first text line on deferred pages
 - No remaining Programmer wrapping tasks. Standing down per Rule 3.
+---
+Task ID: 1
+Agent: Programmer (cron turn 2026-05-19 18:00 UTC+8)
+Task: Self-task — emergencystretch clobbering fix (swarmwrap.sty v3.16)
+
+Work Log:
+- Read programmer-rules.md, BLACKBOARD.md, wrapping-specs.md
+- No wrapping tasks assigned in BLACKBOARD; invented self-task per Rule 0
+- Analyzed test output with PyMuPDF — confirmed zero real text-figure overlaps
+- Found bug: Lua post_linebreak_filter unconditionally resets emergencystretch to 0 for every non-wrapped paragraph
+- Implemented fix: added swarwrap@saved@es register, save/restore pattern in both NORMAL and DEFERRED branches, removed unconditional reset in tw_sp <= 0 branch
+- Compiled both test files: 8pp/15pp, 0 errors, identical to v3.15
+- Updated BLACKBOARD.md comm log, journal entry
+- Committed as db80421 and 5281e41, pushed to origin/main
+
+Stage Summary:
+- swarmwrap.sty v3.16: emergencystretch no longer clobbers user-set values
+- Zero regressions (same page counts, file sizes, and error counts as v3.15)
+- No remaining Programmer wrapping tasks. Standing down per Rule 3.
