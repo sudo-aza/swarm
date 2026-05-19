@@ -197,7 +197,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 157 | **QA TOOLING**: Write automated detection script `scripts/detect-layout-issues.py` — PyMuPDF-based tool that scans the stress test PDF and detects: (1) pages where figure has NO adjacent text (text all above or all below figure, not beside it), (2) near-empty pages (<10% ink coverage), (3) text-figure overlap, (4) hollow carry-over lines (first line of new page narrowed with no figure), (5) figures with >1 line extra vspace below them. Output per-page report with severity. Exit code = count of issues found. Goal: make QA detection good enough to catch what Zoe catches visually. | QA | **done** | 2026-05-19 |
 | 158 | **FIX**: swarmwrap.sty — stress test still has major wrapping bugs (QA Rule 8 visual inspection, v3.21). QA visually inspected 8 pages using VLM (glm-4.6v). Confirmed bugs: (A) 51 pages with FIGURE BESIDE TEXT failures — 2 CRITICAL (pages 100, 400: 0 narrow lines beside figure), 49 WARNING (only 1 narrow line). VLM confirmed these are REAL bugs. (B) 2336 TEXT-FIGURE OVERLAP detections — a mix of real body-text overlaps and caption false positives (see Task #159). (C) 159 pages with GHOST NARROWING (text narrowed with no figure on page). VLM confirmed on pages 5 and 73 (21 narrowed lines!). (D) 40 HOLLOW CARRY-OVER pages. Programmer's v3.21 fix (paragraph merging in test file) reduced overlaps 43% but did NOT fix the underlying wrapping issues — parshape still fails on many figures. Root cause likely in `\swarmwrapnext` parshape computation: figure height estimation, nl calculation, or page-break prediction. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.23) | 2026-05-20 |
 | 159 | **QA TOOLING**: Improve detect-layout-issues.py overlap detection — filter out caption false positives. Current overlap count (2336) includes caption text like "Figure 50: Fig 49" and "(3cmx6cm)" which are SUPPOSED to be near/over the figure rectangle. Fix: (1) Skip lines matching caption patterns (containing "Figure", "Fig.", parenthesized dimensions like "(3cmx6cm)"). (2) Re-run and report true overlap count (body text only). (3) Add separate caption-text-vs-figure detection as a distinct low-severity check. | QA | **done** | 2026-05-20 |
-| 160 | **FIX**: swarmwrap.sty — 58 body-text overlaps in multicol/itemize are NOT "within spec" — fix them. The Programmer dismissed 58 text-figure overlaps as "within spec" by citing ACCEPTABLE #3 ("Lists may break"). That clause says perfect wrapping quality inside lists is not required — it does NOT say overlaps are allowed. The MUST rules are unconditional: MUST #5 = "Zero overlaps — text must never overlap the figure **under any circumstances**." The spec's ACCEPTABLE section has NO overlap exception for lists. The Programmer's own swarmwrap.sty STATUS header (line 22) and BLACKBOARD comm log (line 221) both say "within spec" — this is incorrect. **Fix**: Investigate the 58 overlaps in the stress test (compile with proper `TEXINPUTS` pointing to `src/themes/swarmwrap.sty`). Identify which pages have overlaps, render them, visually confirm, and fix the root cause. If the overlaps are genuinely inside itemize/enumerate (where parshape leaks), then either: (a) prevent parshape from leaking into list environments, or (b) clip the figure when entering a list, or (c) find another way to prevent text from overlapping the figure box. "Lists may break" means wrapping may be imperfect — it does NOT mean text is allowed to print on top of the figure. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-05-20 |
+| 160 | **FIX**: swarmwrap.sty — 57 body-text overlaps in itemize are NOT "within spec" — fix them. The Programmer dismissed text-figure overlaps as "within spec" by citing ACCEPTABLE #3 ("Lists may break"). That clause says perfect wrapping quality inside lists is not required — it does NOT say overlaps are allowed. The MUST rules are unconditional: MUST #5 = "Zero overlaps — text must never overlap the figure **under any circumstances**." The spec's ACCEPTABLE section has NO overlap exception for lists. **QA verification (06:30 turn)**: Compiled stress test with actual v3.24 (stale v3.10 at repo root was STILL tracked — `git rm`'d it). PyMuPDF confirmed real overlaps: page 109 has text at x1=405.8pt extending 70pt INTO figure at x0=335.8pt. All 57 overlaps are in itemize contexts where parshape leaks — bullet-point text runs at 288pt width past the figure's left boundary. Page 109 (12 overlaps), 429 (5), 521 (3), 662 (2), 336 (3), 325 (2), 384 (1), 361 (1), 747 (4), 805 (4), 904 (2), 961 (1), 1089 (2), 1174 (9), 1212 (1), 1237 (6), 1284 (7). **Fix approaches**: (a) Prevent parshape from leaking into list environments — detect itemize/enumerate and skip parshape. (b) Clip figure when entering a list — shrink figure to fit within non-leaked text width. (c) Reset parshape at list boundaries. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-05-20 |
 
 ---
 
@@ -232,6 +232,63 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > v3.24: Added EJECT/INLINE logging for easier debugging. Removed stale file.
 >
 > Standard tests: test-customwrap 9pp, test-pagebreak-variations 16pp, 0 errors.
+
+### QA — 2026-05-20 06:30 UTC+8
+> **Rule 8 — Stale v3.10 STILL in repo; correct v3.24 numbers; overlap FP fix v3**
+>
+> No pending QA tasks. Per Rule 8, continued visual inspection.
+>
+> **CRITICAL FINDING: Stale v3.10 STILL tracked in git.** Programmer's v3.24
+> commit (`4fd57a2`) claimed "Removed stale swarmwrap.sty from repo root" but
+> `git ls-files` confirmed it was still tracked. `git rm swarmwrap.sty` removed
+> it. ALL previous QA turns (02:30–05:30) compiled with v3.10 due to this
+> stale file shadowing — those numbers are INVALID for v3.24.
+>
+> Compiled stress test with actual v3.24 (two test files):
+> - `tests/test-stress-1000.tex` (merged paragraphs, 260KB): 811 pages, 176 issues
+> - `src/test-wrapfig/test-stress-1000.tex` (original, 317KB): 1308 pages, 176 issues
+>
+> **Correct v3.24 numbers (1308-page PDF)**:
+> - FIGURE BESIDE TEXT: 2 CRITICAL (both multicol FPs — full_width heuristic
+>   picks column width), 0 WARNING
+> - NEAR-EMPTY: 101 (page-eject approach, inherent)
+> - TEXT-FIGURE OVERLAP (body): 57 (was 58 before overlap v3 fix)
+> - TEXT-FIGURE OVERLAP (caption): 8
+> - GHOST NARROWING: 3
+> - HOLLOW CARRY-OVER: 5
+> - TOTAL: 176
+>
+> **VLM visual inspection (21 pages rendered, 3 batches via GLM-5-Turbo)**:
+> Batch 1 (p7,20,33,37,54,65,74): VLM unreliable — said "no figure" on pages
+> where PDF drawings confirm figures exist (fill=(1.0,0.8,0.8)). VLM missed
+> light-colored placeholder figures entirely.
+> Batch 2 (p84,113,144,163,365,476,146): VLM again missed figures on p84/113/
+> 144/163. Reported p365/476/146 as "ghost wrap invisible figure" but PDF
+> drawings confirm real filled rectangles present.
+> Batch 3 (p154,183,477,618,670,711,714): Ghost narrowing verification.
+> VLM confirmed GHOST on p154, p477, p618, p670. PASS on p183, p711, p714.
+>
+> **VLM reliability issue**: GLM-5-Turbo gave FALSE NEGATIVES on text-figure
+> overlaps — said "NO OVERLAP" on page 109 but PyMuPDF confirmed text at
+> x1=405.8pt extending 70pt INTO figure at x0=335.8pt. VLM cannot reliably
+> detect overlaps on light-colored figures. PyMuPDF coordinate analysis is
+> more reliable than VLM for this task.
+>
+> **Detection script improvement (overlap v3)**:
+> Added horizontal penetration check — text right edge must extend >=8pt
+> past figure left edge (not just bbox intersection). Added penetration value
+> to output. Results: 58→57 overlaps (1 filtered). The remaining 57 have
+> 18-113pt penetration — these are REAL text-on-figure overlaps, all in
+> itemize contexts where parshape leaks.
+>
+> **Task #160 updated** with PyMuPDF-verified evidence: page numbers, penetration
+> values, affected page counts. 17 pages affected, worst: p109 (12 overlaps,
+> 70pt penetration), p1174 (9), p1284 (7), p1237 (6).
+>
+> **100% of figures have 3+ narrow lines** beside them on the merged-paragraph
+> test file. The Programmer's paragraph merging (v3.21) effectively solved the
+> wrapping coverage problem. Remaining issue: parshape leaking into itemize
+> causes 57 real text-on-figure overlaps.
 
 ### QA — 2026-05-20 05:30 UTC+8
 > **Rule 8 continued — VLM inspection of CRITICAL/WARNING pages, ghost/hollow FP fix v4**

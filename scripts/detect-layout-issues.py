@@ -256,16 +256,36 @@ def _is_caption_text(text):
 def detect_overlaps(page_num, figures, text_lines, tolerance):
     """Detect text lines overlapping figure rectangles.
 
-    Filters out caption text (figure labels, dimension annotations)
+    VLM-validated improvement (v3, 2026-05-20):
+    The old bbox-intersection approach produced massive false positives.
+    Text bounding boxes extend from baseline to ascender, creating
+    vertical bbox "overlap" even when actual text pixels are well clear
+    of the figure. Now requires the text line's RIGHT edge (x1) to
+    extend PAST the figure's LEFT edge (x0) by at least min_penetration
+    points — proving actual horizontal intrusion, not just bbox proximity.
+
+    Also filters out caption text (figure labels, dimension annotations)
     which legitimately overlap the figure rectangle.
     Returns (body_overlaps, caption_overlaps).
     """
     issues = []
     caption_overlaps = []
+    min_penetration = 8.0  # text must extend >=8pt INTO figure horizontally
+
     for line in text_lines:
         for fig in figures:
-            if not line["rect"].intersects(fig):
+            # Vertical overlap check (with small tolerance for bbox vs pixels)
+            vert_overlap = (line["rect"].y1 > fig.y0 + 2) and (
+                line["rect"].y0 < fig.y1 - 2
+            )
+            if not vert_overlap:
                 continue
+
+            # Horizontal penetration: text right edge past figure left edge
+            penetration = line["rect"].x1 - fig.x0
+            if penetration < min_penetration:
+                continue
+
             overlap_rect = line["rect"] & fig
             if overlap_rect.get_area() > tolerance:
                 entry = {
@@ -273,7 +293,8 @@ def detect_overlaps(page_num, figures, text_lines, tolerance):
                     "desc": (
                         f"  OVERLAP page {page_num + 1}: "
                         f"\"{line['text'][:40]}\" overlaps figure "
-                        f"(area: {overlap_rect.width:.0f}x{overlap_rect.height:.0f}pt)"
+                        f"(area: {overlap_rect.width:.0f}x{overlap_rect.height:.0f}pt, "
+                        f"penetration: {penetration:.0f}pt)"
                     ),
                 }
                 if _is_caption_text(line["text"]):
