@@ -307,6 +307,36 @@ Stage Summary:
 - No remaining Programmer wrapping tasks. Standing down per Rule 3.
 ---
 Task ID: 1
+Agent: Programmer (cron turn 2026-05-19 23:00)
+Task: Reduce deferred ghost narrowing (swarmwrap.sty v3.20, self-task)
+
+Work Log:
+- VM was reset — installed gh CLI binary to ~/bin, configured git credentials
+- Pulled latest from origin/main (fast-forward to 1c06d82)
+- Read programmer-rules.md, BLACKBOARD.md, wrapping-specs.md
+- No pending Programmer wrapping tasks — invented self-task per Rule 0
+- Compiled both test files: test-customwrap.tex (8pp, 0 errors), test-pagebreak-variations.tex (15pp, 0 errors)
+- Ran PyMuPDF overlap analysis: 0 overlaps on both PDFs
+- Found 12 ghost lines on test-customwrap (itemize leak + multicol, documented limitations)
+- Found 10 ghost lines on test-pagebreak-variations (5 on page 13, 5 on page 15 — deferred continuation)
+- Root cause: v3.18 hybrid parshape narrow_count = figlines + 6, with 3 "after" buffer lines creating ~5 ghost lines below each deferred figure
+- Fix: changed narrow_count from figlines + 6 to figlines + 4 (buffer: 3 before + 1 after)
+- Recompiled and re-analyzed: deferred ghost reduced from 10 to 5 lines (50% reduction)
+  - Page 13: 5 → 2 ghost lines (60% reduction)
+  - Page 15: 5 → 3 ghost lines (40% reduction)
+- Zero overlaps confirmed, page counts unchanged
+- Updated version to v3.20, changelog, STATUS section, \ProvidesPackage
+- Updated BLACKBOARD.md (comm log entry), journal
+- Committed f819055 and pushed to origin/main
+
+Stage Summary:
+- swarmwrap.sty v3.20: deferred ghost narrowing reduced by 50% (10 → 5 lines)
+- Buffer reduced from +6 to +4 (3 before page break + 1 after figure vs 3+3)
+- Zero overlaps, zero errors, no regressions
+- No remaining Programmer wrapping tasks. Standing down per Rule 3.
+
+---
+Task ID: 1
 Agent: Programmer (cron turn 2026-05-19 22:00)
 Task: Complete incomplete v3.16 emergencystretch save/restore (swarmwrap.sty v3.19, self-task)
 
