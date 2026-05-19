@@ -236,3 +236,24 @@ Stage Summary:
 - Zero text-figure overlaps in both standard test files
 - Ghost narrowing eliminated in deferred case (no parshape applied)
 - Remaining: ghost narrowing in NORMAL case (fundamental TeX limitation, mitigated by penalty)
+---
+Task ID: 1
+Agent: Programmer (cron turn 2026-05-19 12:00)
+Task: Implement right-wrapping for deferred figures in swarmwrap.sty (v3.13)
+
+Work Log:
+- Read programmer-rules.md, BLACKBOARD.md, wrapping-specs.md
+- Picked ONE task: deferred figure right-wrapping (spec requirement #4)
+- Implemented v3.13: replaced v3.12 centered fallback with parshape + zero-height vbox overlay
+- Fixed emergencystretch leak in NORMAL branch (tw@lua reset after processing)
+- Fixed horizontal positioning bug (used explicit hskip instead of hfil+rlap)
+- Tested nointerlineskip approach (broke layout, reverted)
+- Compile-tested both test files (0 errors, correct page counts)
+- Verified with PyMuPDF: correct horizontal position, zero overlap, proper gap
+- Updated BLACKBOARD.md (spec banner, comm log), journal, committed and pushed
+
+Stage Summary:
+- swarmwrap.sty v3.13: deferred figures now right-wrap on next page (not centered)
+- Trade-off: narrowed text on current page has empty right side (no figure beside it)
+- Known limitation: figure top ~10pt above first text line (cosmetic, caused by topskip+interline glue)
+- Commit: 6c6abc2 pushed to origin/main
