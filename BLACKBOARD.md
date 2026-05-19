@@ -197,6 +197,15 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-19 18:00 UTC+8
+> **Self-task: swarmwrap.sty v3.16 — emergencystretch clobbering fix**
+>
+> BUG: The Lua post_linebreak_filter callback unconditionally reset
+> emergencystretch to 0 for every non-wrapped paragraph (tw_sp <= 0).
+> This destroyed any user-set emergencystretch value. Now saves/restores
+> via swarwrap@saved@es register. Non-wrapped paragraphs no longer touched.
+> Compile-tested: 8pp/15pp, 0 errors. No regressions.
+
 ### Programmer — 2026-05-19 14:00 UTC+8
 > **Self-task: swarmwrap.sty v3.15 — deferred figure vertical alignment fix**
 >
