@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.17)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.18)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -15,13 +15,15 @@
 %   - Right-side only (no left/centered wrapping needed).
 %   - Lists may break (perfect itemize/enumerate not required).
 %
-% STATUS (v3.17):
+% STATUS (v3.18):
+%   Hybrid parshape for DEFERRED case: full-width lines on current page,
+%   narrow lines only on next page beside the figure (v3.18). Eliminates
+%   "figures outside text" and "near-empty DEFERRED pages" bugs.
 %   Deferred figures RIGHT-WRAP on the next page (v3.13).
 %   Ghost narrowing mitigation (v3.14): inter-narrow line penalties boosted.
-%   Deferred figure vertical alignment fixed (v3.15): figure top aligns
-%   with first text line on deferred pages (was ~10pt gap).
-%   Deferred parshape exhaustion fix (v3.17): extended nl ensures enough
-%   narrow lines on next page, eliminating text-figure overlap.
+%   Penalty boost at wide->narrow boundary (v3.18): prevents early page
+%   breaks from putting full-width text beside the deferred figure.
+%   Rounding instead of ceiling for nl (v3.18): reduces "1 line too much".
 %
 % ─────────────────────────────────────────────────────────────────────────
 %
@@ -89,6 +91,21 @@
 %    wraps around the deferred figure. Detection uses \pagegoal - \pagetotal.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.18: Hybrid parshape for DEFERRED case. Previously, all parshape
+%   lines were narrow, causing text on the current page to narrow with
+%   no figure beside it ("figures outside text") and near-empty deferred
+%   pages. Now uses a hybrid parshape: full-width lines on the current
+%   page (where no figure is present), narrow lines starting a few lines
+%   before the predicted page break (buffer=3) through the figure height
+%   on the next page, then full-width again. This means: current page
+%   text flows at full width (no wasted horizontal space), and on the
+%   next page, continuation text narrows beside the deferred figure.
+%   Also: nl computation changed from ceiling to rounding (subtract half
+%   baselineskip before the loop) to reduce the "1 line too much" issue.
+%   Lua callback now boosts penalties at the full-width -> narrow
+%   boundary (not just between narrow lines) to prevent early page breaks
+%   from placing full-width text beside the deferred figure.
 %
 % v3.17: Fixed deferred figure text-figure overlap caused by parshape
 %   line exhaustion. In the DEFERRED branch, nl was computed from the
@@ -160,7 +177,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.17 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.18 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -173,6 +190,7 @@
 \newcount\swarmwrap@nl       % number of parshape lines (wrapped)
 \newcount\swarmwrap@loop@cnt % loop counter
 \newcount\swarmwrap@current@lines % lines on current page (deferred case)
+\newcount\swarmwrap@figlines      % figure height in lines (saved for deferred)
 \newif\ifswarmwrap@luatex
 
 \ifluatex \swarmwrap@luatextrue \else \swarmwrap@luatexfalse \fi
@@ -230,27 +248,32 @@
     local tw_val = tw_sp / 65536.0
     local tol = 3.0  -- pt tolerance
     local narrow_width_max = tw_val + tol
-    -- Walk the node list to boost penalties between consecutive narrow lines.
-    -- This discourages TeX from breaking within the narrow zone, which would
-    -- cause ghost narrowing on the continuation page (narrow text with no figure).
+    -- Walk the node list to boost penalties before every narrow line.
+    -- This discourages TeX from breaking within the narrow zone, and also
+    -- at the full-width -> narrow boundary (important for hybrid parshape
+    -- in the DEFERRED case where full-width lines precede narrow lines).
     local last_narrow = nil
     local prev_was_narrow = false
+    local last_penalty = nil
     local current = head
     while current do
-      if current.id == 0 then  -- hlist (broken line)
+      if current.id == node.id("penalty") then
+        last_penalty = current
+      elseif current.id == 0 then  -- hlist (broken line)
         local lw = current.width / 65536.0
-        if lw <= narrow_width_max and lw > 0 then
+        local is_narrow = (lw <= narrow_width_max and lw > 0)
+        if is_narrow then
+          -- Boost penalty BEFORE this narrow line (whether from wide or narrow).
+          -- This covers both narrow->narrow and wide->narrow boundaries.
+          if last_penalty and last_penalty.penalty < penalty_val then
+            last_penalty.penalty = penalty_val
+          end
           last_narrow = current
           prev_was_narrow = true
         else
           prev_was_narrow = false
         end
-      elseif current.id == node.id("penalty") and prev_was_narrow then
-        -- Penalty between consecutive narrow lines or at narrow->wide boundary.
-        -- Boost to discourage page breaks that cause ghost narrowing.
-        if current.penalty < penalty_val then
-          current.penalty = penalty_val
-        end
+        last_penalty = nil
       end
       current = current.next
     end
@@ -311,16 +334,15 @@
 % All computation happens here so \linewidth is captured at the
 % correct location (inside multicol, itemize, etc.).
 %
-% Figure placement strategy (v3.13):
+% Figure placement strategy (v3.18):
 %   1. Compute parshape from full figure height (text always stays).
 %   2. Check if figure fits: \pagegoal - \pagetotal >= figure height.
 %   3. If fits → place inline with \smash{\rlap{}}.
-%   4. If doesn't fit → STILL apply parshape (text narrowed), defer
-%      figure to top-right of next page via \afterpage as a zero-height
-%      vbox overlay. On the current page, narrowed lines have no figure
-%      beside them. On the next page, parshape persists and the deferred
-%      figure overlay aligns with the narrowed continuation text, turning
-%      the empty right side into real right-wrapping.
+%   4. If doesn't fit → HYBRID parshape: full-width lines on current page
+%      (no wasted space), narrow lines on next page beside the deferred
+%      figure. Buffer of 3 lines before the predicted page break absorbs
+%      timing errors. Lua callback boosts penalty at the wide→narrow
+%      boundary to discourage early breaks that would cause overlap.
 
 \ifswarmwrap@luatex
 \newcommand{\swarmwrapnext}{%
@@ -329,24 +351,22 @@
   \swarmwrap@tw=\linewidth
   \advance\swarmwrap@tw by -\swarmwrap@fw
   \advance\swarmwrap@tw by -14pt
-  \swarmwrap@nl=0
   \swarmwrap@fh=\swarmwrap@fh@val\relax
+  % Compute nl using ROUNDING (not ceiling) to reduce "1 line too much".
+  % Subtract half baselineskip before the loop, then subtract 1 after.
+  \dimen2=\baselineskip
+  \divide\dimen2 by 2
+  \swarmwrap@nl=0
   \dimen0=\swarmwrap@fh
+  \advance\dimen0 by \dimen2
   \loop
     \advance\swarmwrap@nl by 1
     \advance\dimen0 by -\baselineskip
   \ifdim\dimen0>0pt \repeat
+  \advance\swarmwrap@nl by -1
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
   % Set Lua-readable dimension for post_linebreak_filter callback
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
-  % ── Build parshape string ──────────────────────────────────────
-  \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
-  \swarmwrap@loop@cnt=\swarmwrap@nl
-  \loop
-    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
-    \advance\swarmwrap@loop@cnt by -1
-  \ifnum\swarmwrap@loop@cnt>0 \repeat
-  \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
   % ── Figure placement: inline or deferred ───────────────────────
   % Check remaining space on current page.
   \dimen0=\pagegoal
@@ -355,24 +375,22 @@
   \ifdim\dimen0<\dimen1
     % Figure doesn't fit — defer right-wrapped figure to next page.
     %
-    % PROBLEM (v3.13-v3.16): parshape computed from figure height only.
-    % If the current page consumes most narrow lines, the next page has
-    % too few (or zero) narrow lines left, causing full-width text to
-    % overlap the deferred figure — spec violation #5 (zero overlaps).
+    % v3.18 HYBRID PARSHAPE:
+    % Instead of narrowing ALL lines (v3.17), use a hybrid approach:
+    % - Full-width lines on the current page (where no figure is)
+    % - Narrow lines starting ~3 lines before the predicted page break
+    %   (buffer) through the figure height on the next page
+    % - Full-width lines after the figure zone
     %
-    % FIX (v3.17): Extend nl by the number of narrow lines that can
-    % fit in the remaining space on the current page. This guarantees
-    % enough narrow lines carry over to the next page to cover the
-    % figure height, regardless of how many are consumed here.
+    % This eliminates "figures outside text" (narrowed text with no
+    % figure) and "near-empty DEFERRED pages" bugs.
     %
-    % Cost: on the current page, ALL text in the wrapped paragraph is
-    % narrowed (no figure beside it — cosmetic only). Previously only
-    % some lines were narrowed. On the next page, the first figure_lines
-    % narrow lines wrap the figure correctly; extra narrow lines below
-    % the figure have empty right side (minor cosmetic).
+    % Risk: if the page break happens >3 lines before predicted, full-
+    % width text on the next page could overlap the figure. Mitigated
+    % by the Lua callback boosting penalties at the wide→narrow boundary.
     %
-    % Save original nl (figure_lines) for the log.
-    \swarmwrap@loop@cnt=\swarmwrap@nl\relax
+    % Save figure_lines (nl) for later use.
+    \swarmwrap@figlines=\swarmwrap@nl\relax
     % Compute lines that fit in remaining space on current page.
     \dimen2=\dimen0  % remaining = pagegoal - pagetotal
     \swarmwrap@current@lines=0
@@ -380,26 +398,54 @@
       \advance\swarmwrap@current@lines by 1
       \advance\dimen2 by -\baselineskip
     \ifdim\dimen2>0pt \repeat
-    % Extend nl: figure_lines + current_page_lines + buffer(3)
-    \advance\swarmwrap@nl by \swarmwrap@current@lines
-    \advance\swarmwrap@nl by 3
-    % Rebuild parshape with extended nl.
-    \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
-    \swarmwrap@loop@cnt=\swarmwrap@nl
+    % Correct overcounting: loop increments BEFORE checking,
+    % so it counts 1 line even when remaining < baselineskip.
+    \ifdim\dimen2<0pt
+      \advance\swarmwrap@current@lines by -1
+    \fi
+    % Compute hybrid parshape layout:
+    %   full_width_end = max(1, current_page_lines - buffer)
+    %   narrow_count   = figlines + 2 * buffer
+    %   buffer = 3 (protects against ±3 line prediction error)
+    %
+    % Special case: if remaining < baselineskip, no lines fit.
+    % All lines go to the next page, so all should be narrow.
+    \swarmwrap@loop@cnt=\swarmwrap@current@lines
+    \advance\swarmwrap@loop@cnt by -3  % subtract buffer
+    \ifnum\swarmwrap@loop@cnt<1
+      \ifdim\dimen0>\baselineskip
+        \swarmwrap@loop@cnt=1  % at least 1 full-width line if >1 line fits
+      \else
+        \swarmwrap@loop@cnt=0  % not enough space: all narrow
+      \fi
+    \fi
+    % loop@cnt = full_width_end
+    % narrow_count = figlines + 6 (buffer on each side)
+    \swarmwrap@current@lines=\swarmwrap@figlines
+    \advance\swarmwrap@current@lines by 6
+    % Total parshape entries = full_width_end + narrow_count + 1
+    \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt+\swarmwrap@current@lines+1\relax\space}%
+    % Build full-width entries (lines 1 to full_width_end)
+    \ifnum\swarmwrap@loop@cnt>0
+      \swarmwrap@nl=\swarmwrap@loop@cnt
+      \loop
+        \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
+        \advance\swarmwrap@nl by -1
+      \ifnum\swarmwrap@nl>0 \repeat
+    \fi
+    % Build narrow entries (lines full_width_end+1 to full_width_end+narrow_count)
+    \swarmwrap@nl=\swarmwrap@current@lines
     \loop
       \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
-      \advance\swarmwrap@loop@cnt by -1
-    \ifnum\swarmwrap@loop@cnt>0 \repeat
+      \advance\swarmwrap@nl by -1
+    \ifnum\swarmwrap@nl>0 \repeat
+    % Final full-width entry (default for lines beyond the narrow zone)
     \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
-    % Apply extended parshape.
+    % Apply hybrid parshape.
     \emergencystretch=\fontdimen6\font\relax
     \noindent
     \parshape \swarmwrap@pshape\relax
     % Defer figure to top-right of next page via zero-height vbox overlay.
-    % The \smash ensures zero height/depth contribution.
-    % The figure aligns with the first continuation text line on the next page.
-    % \kern-\topskip after the vbox eliminates the ~10pt gap caused by TeX's
-    % automatic topskip insertion between page-top content and the first baseline.
     \afterpage{%
       \vbox to 0pt{%
         \hbox to \linewidth{%
@@ -411,9 +457,17 @@
       }%
       \kern-\topskip
     }%
-    \wlog{swarmwrap next: DEFERRED RIGHT-WRAP — remaining=\the\dimen0, fh=\the\dimen1, fig_nl=\the\swarmwrap@current@lines, total_nl=\the\swarmwrap@nl}%
+    \wlog{swarmwrap next: DEFERRED HYBRID — rem=\the\dimen0, fh=\the\dimen1, fig_nl=\the\swarmwrap@figlines, narrow_cnt=\the\swarmwrap@current@lines, fw_end=\the\swarmwrap@loop@cnt}%
   \else
     % Figure fits — apply parshape and place inline overlay.
+    % Build parshape: nl narrow lines + 1 full-width line.
+    \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
+    \swarmwrap@loop@cnt=\swarmwrap@nl
+    \loop
+      \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+      \advance\swarmwrap@loop@cnt by -1
+    \ifnum\swarmwrap@loop@cnt>0 \repeat
+    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
     % emergencystretch absorbs overfull hbox on narrowed parshape lines
     \emergencystretch=\fontdimen6\font\relax
     \noindent

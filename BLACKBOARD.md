@@ -192,11 +192,40 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 152 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.7 — vspace fix (task #150). (1) Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX — should be 8 pages, zero errors. (2) Compile `src/test-wrapfig/test-pagebreak-variations.tex` — should be 15 pages, zero errors. (3) Verify `\ProvidesPackage` says v3.7. (4) Check log: line counts (nl) should be exactly 1 less than v3.6 for each figure (e.g., Test 1: nl=13 not 14, Test 2: nl=20 not 21). (5) PyMuPDF: verify that the first narrow text line below each figure starts within ~15pt of the figure bottom (was ~25pt before the fix). (6) No new overlaps or regressions. | QA | **done** (10/10) | 2026-05-19 |
 | 153 | **RE-REVIEW**: Verify Programmer's swarmwrap.sty v3.8 — adaptive fallback (task #146). SUPERSEDED by zoe directive: v3.8 adaptive fallback was a bad fix. Detection was broken (false triggers when space was sufficient) and the response was wrong (text should never be ejected). Removed entirely in v3.9. | QA | **done** (superseded) | 2026-05-19 |
 | 154 | **RE-REVIEW**: Verify swarmwrap.sty v3.12 (cumulative review of v3.10+v3.11+v3.12). (1) Compile `src/test-wrapfig/test-customwrap.tex` with LuaLaTeX — should be 8 pages, zero errors. (2) Compile `src/test-wrapfig/test-pagebreak-variations.tex` — should be 15 pages, zero errors. (3) Verify `\ProvidesPackage` says v3.12. (4) **v3.10 deferred figure**: Verify figures that don't fit on the current page are deferred to the top of the next page via `\afterpage`. Zero figures clipped at page boundary. (5) **v3.11 centered deferred + overlap fix**: Deferred figures must be centered (`\hb@xt@\linewidth` instead of `\begin{center}`). Zero text-figure overlap on deferred pages — parshape should NOT be applied in deferred case (text flows full-width). (6) **v3.12 emergencystretch fix**: Non-wrapped paragraphs after a wrapped figure should have normal `\emergencystretch` (0), not the elevated ~5pt value set during wrapping. Verify by checking line widths of paragraphs after wrapped figures — should be full page width, not stretched. (7) PyMuPDF: zero real text-figure overlaps on both PDFs. (8) Ghost narrowing only in NORMAL case (inline overlay when paragraph spans page break) — mitigated by penalty. Zero ghost narrowing in deferred case. | QA | **done** (10/10) | 2026-05-19 |
-| 155 | **FIX**: swarmwrap.sty — figures rendered outside the text body (zoe visual review, v3.17). Figures appear as rectangular blocks that are not integrated with the text flow — they sit outside/beside the text without text wrapping around them. Zoe screenshot confirmed: figures look like inline blocking elements interrupting text, not right-wrapped figures with text flowing alongside. This is the primary user-visible bug. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-05-19 |
+| 155 | **FIX**: swarmwrap.sty — figures rendered outside the text body (zoe visual review, v3.17). Figures appear as rectangular blocks that are not integrated with the text flow — they sit outside/beside the text without text wrapping around them. Zoe screenshot confirmed: figures look like inline blocking elements interrupting text, not right-wrapped figures with text flowing alongside. This is the primary user-visible bug. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.18) | 2026-05-19 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-19 20:17 UTC+8
+> **Task #155: swarmwrap.sty v3.18 — hybrid parshape for DEFERRED case**
+>
+> Fixed 4 bugs sharing root cause in \swarmwrapnext parshape management:
+> (1) figures outside text, (2) near-empty DEFERRED pages, (3) hollow
+> carry-over lines, (4) 1 line too much.
+>
+> v3.18 DEFERRED branch: replaced all-narrow parshape with HYBRID parshape
+> — full-width lines on current page (where no figure is), narrow lines
+> starting ~3 lines before predicted page break through figure height on
+> next page, then full-width again. This eliminates narrowed text with
+> no figure beside it on the current page (bug #1/#2/#3).
+>
+> v3.18 nl computation: changed from ceiling to rounding (subtract half
+> baselineskip before loop) to reduce extra narrow line (bug #4).
+>
+> v3.18 Lua callback: now boosts penalties at full-width→narrow boundary
+> (not just between narrow lines) to prevent early page breaks from
+> placing full-width text beside the deferred figure.
+>
+> Fixed overcounting bug in current_page_lines computation (loop
+> incremented before checking, counting 1 line even when remaining
+> < baselineskip). Added correction and stricter threshold check.
+>
+> Compile-tested: test-customwrap.tex (8pp, 0 errors), test-pagebreak-
+> variations.tex (15pp, 0 errors). PyMuPDF: 0 real text-figure overlaps
+> on both PDFs. Deferred pages reduced from 22 to 11-15 narrow lines.
+> No remaining Programmer wrapping tasks. Standing down per Rule 3.
 
 ### Programmer — 2026-05-19 18:00 UTC+8
 > **Self-task: swarmwrap.sty v3.16 — emergencystretch clobbering fix**
