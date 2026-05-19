@@ -282,3 +282,26 @@ Stage Summary:
 - Reduces ghost narrowing from potentially many lines to 0-1 lines in most cases
 - No regressions in either standard test file
 - No remaining Programmer wrapping tasks. Standing down per Rule 3.
+
+---
+Task ID: 1
+Agent: Programmer (cron turn 2026-05-19 14:00)
+Task: Fix deferred figure vertical alignment (swarmwrap.sty v3.15, self-task)
+
+Work Log:
+- Read programmer-rules.md, BLACKBOARD.md, wrapping-specs.md
+- No pending Programmer wrapping tasks — invented self-task per Rule 0
+- Investigated deferred figure vertical gap using PyMuPDF: figure_y0=128.3, text_y0=139.0, gap=10.7pt
+- Root cause: TeX's \topskip (~10pt) inserted between zero-height vbox and first text baseline
+- Added \kern-\topskip after the zero-height vbox in the \afterpage deferred branch
+- Updated version to v3.15, changelog, STATUS section
+- Compile-tested: test-customwrap.tex (8pp, 0 errors), test-pagebreak-variations.tex (15pp, 0 errors)
+- Verified gap reduction: 10.7pt → -0.2pt across all 6 deferred pages
+- Noted pre-existing overlap on some deferred pages (parshape exhaustion, documented since v3.13)
+- Updated BLACKBOARD.md (comm log entry), journal
+- Committed 44d7c5a and pushed to origin/main
+
+Stage Summary:
+- swarmwrap.sty v3.15: deferred figure vertical alignment fixed (10pt topskip gap eliminated)
+- Figure top now aligns with first text line on deferred pages
+- No remaining Programmer wrapping tasks. Standing down per Rule 3.
