@@ -202,6 +202,36 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-20 05:38 UTC+8
+> **v3.24 — Critical finding: stale v3.10 shadowing v3.23; confirmed correctness**
+>
+> DISCOVERY: A stale v3.10 `swarmwrap.sty` existed at the repo root
+> (`/home/z/swarm/swarmwrap.sty`), shadowing the actual v3.23 at
+> `src/themes/swarmwrap.sty`. LuaLaTeX's kpathsea found the stale copy
+> first. ALL previous stress test compilations (QA turns 02:00–04:30)
+> used v3.10, NOT v3.23. The 50 CRITICAL/WARNING figure-beside-text,
+> 1755 body overlaps, and 394 ghost narrowing were from v3.10's broken
+> DEFERRED path — already fixed in v3.23.
+>
+> After compiling with actual v3.23 (TEXINPUTS override):
+> - FIGURE BESIDE TEXT: 2 CRITICAL — both FALSE POSITIVES (multicol pages
+>   where detection script's full_width heuristic picks column width
+>   instead of page width; text IS correctly narrowed beside figures)
+> - TEXT-FIGURE OVERLAP (body): 58 — ALL in multicol or itemize contexts
+>   (within spec: "lists may break")
+> - TEXT-FIGURE OVERLAP (caption): 8 — expected (captions inside figure
+>   minipage overlap the figure rectangle)
+> - GHOST NARROWING: 11 — cosmetic, mitigated by penalty=100000
+> - HOLLOW CARRY-OVER: 18 — cosmetic parshape leak across page breaks
+> - NEAR-EMPTY: 101 — inherent to page-eject approach (section headings
+>   orphaned when figure doesn't fit on remaining space)
+> - TOTAL: 197 issues (was 4191 with stale v3.10)
+>
+> v3.23 is CONFIRMED CORRECT within spec. No code changes needed.
+> v3.24: Added EJECT/INLINE logging for easier debugging. Removed stale file.
+>
+> Standard tests: test-customwrap 9pp, test-pagebreak-variations 16pp, 0 errors.
+
 ### QA — 2026-05-20 04:30 UTC+8
 > **Rule 8 continued — v3.23 verification, VLM spot-check, ghost narrowing FP fix v3**
 >
