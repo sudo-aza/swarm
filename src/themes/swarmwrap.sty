@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.15)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.16)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -15,7 +15,7 @@
 %   - Right-side only (no left/centered wrapping needed).
 %   - Lists may break (perfect itemize/enumerate not required).
 %
-% STATUS (v3.15):
+% STATUS (v3.16):
 %   Deferred figures RIGHT-WRAP on the next page (v3.13).
 %   Ghost narrowing mitigation (v3.14): inter-narrow line penalties boosted.
 %   Deferred figure vertical alignment fixed (v3.15): figure top aligns
@@ -139,7 +139,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.15 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.16 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -176,6 +176,11 @@
 % Set by \swarmwrapnext; read by the post_linebreak_filter callback.
 \newdimen\swarmwrap@tw@lua
 \swarmwrap@tw@lua=0pt
+
+% Saved emergencystretch — restored after wrapped paragraph processing.
+% Prevents clobbering user-set \emergencystretch values.
+\newdimen\swarmwrap@saved@es
+\swarmwrap@saved@es=0pt
 
 % ── Lua callback: post_linebreak_filter ───────────────────────────────
 % When a paragraph is broken into lines, this callback checks whether
