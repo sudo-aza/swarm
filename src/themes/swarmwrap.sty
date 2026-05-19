@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.12)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.13)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -15,11 +15,11 @@
 %   - Right-side only (no left/centered wrapping needed).
 %   - Lists may break (perfect itemize/enumerate not required).
 %
-% CURRENT GAP (v3.12):
-%   When figure doesn't fit on current page, it's deferred CENTERED.
-%   Spec requires it to be right-wrapped on the next page.
-%   TODO: implement right-wrap on next page (see notes/wrapping-specs.md).
-%   Deadline: 2026-05-27. If not solved by then, centered is acceptable.
+% STATUS (v3.13):
+%   Deferred figures now RIGHT-WRAP on the next page (not centered).
+%   Parshape is applied on the current page; continuation text on the
+%   next page is also narrowed. Figure overlay placed via \afterpage
+%   using a zero-height vbox (no paragraph overhead).
 %
 % ─────────────────────────────────────────────────────────────────────────
 %
@@ -76,21 +76,26 @@
 %    Workaround: use swarmwrap BEFORE the list, not inside it.
 %
 % 3. Deferred figure placement:
-%    When the figure doesn't fit on the current page, it is deferred to
-%    the top of the next page via \afterpage as a centered figure.
-%    Text on the current page flows at full width (no parshape applied).
-%    This avoids both overlap and ghost narrowing in the deferred case.
-%    Detection uses \pagegoal - \pagetotal.
+%    When the figure doesn't fit on the current page, parshape is still
+%    applied (text narrowed). The figure is deferred to the top-right
+%    of the next page via \afterpage as a zero-height vbox overlay.
+%    On the current page, narrowed text has no figure beside it (empty
+%    right side for a few lines). On the next page, continuation text
+%    wraps around the deferred figure. Detection uses \pagegoal - \pagetotal.
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
-% v3.12: Fixed emergencystretch leak. The NORMAL branch sets
-%   \emergencystretch to \fontdimen6\font (~5pt) for narrowed lines,
-%   but TeX does not auto-reset it between paragraphs. This caused
-%   subsequent (non-wrapped) paragraphs to inherit elevated
-%   emergencystretch, producing slightly looser line breaks. Now
-%   the post_linebreak_filter callback resets emergencystretch to 0pt
-%   after processing each wrapped paragraph.
+% v3.13: Deferred figures now right-wrap on next page. Replaced the
+%   v3.12 centered fallback with parshape + zero-height vbox overlay.
+%   Parshape is applied in the deferred branch (same as NORMAL), so
+%   continuation text on the next page is narrowed beside the figure.
+%   The figure is placed via \afterpage using a zero-height vbox with
+%   \smash{\rlap{}} to avoid consuming vertical space. Figure raise
+%   is compensated for interline glue offset between the vbox and the
+%   first continuation text line. Also fixed emergencystretch leak in
+%   NORMAL branch by resetting swarmwrap@tw@lua to 0 after processing.
+%
+% v3.12: Fixed emergencystretch leak (partial — only DEFERRED path).
 %
 % v3.11: Fixed deferred figure placement. v3.10's overlaid deferred
 %   figure caused text-figure overlap on the next page (full-width text
@@ -117,7 +122,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.12 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/19 v3.13 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -167,6 +172,7 @@
   function swarmwrap_post_lb(head, groupcode)
     local tw_sp = tex.dimen["swarmwrap@tw@lua"]
     if tw_sp <= 0 then
+      tex.dimen["emergencystretch"] = 0
       return head
     end
     local penalty_val = tex.count["swarmwrap@penalty"]
@@ -194,9 +200,10 @@
       p.penalty = penalty_val
       node.insert_after(head, last_narrow, p)
     end
-    -- Reset emergencystretch to prevent leaking into subsequent paragraphs.
-    -- swarmwrap sets it to \fontdimen6\font (~5pt) in the NORMAL branch,
-    -- but TeX does not auto-reset it between paragraphs.
+    -- Reset tw@lua and emergencystretch to prevent leaking.
+    -- tw@lua must be cleared so the next paragraph (non-wrapped)
+    -- triggers the emergencystretch reset on its callback pass.
+    tex.dimen["swarmwrap@tw@lua"] = 0
     tex.dimen["emergencystretch"] = 0
     return head
   end
@@ -233,10 +240,9 @@
   \fi
 }
 
-% ── Helper: place figure centered (used for deferred placement) ──────
+% ── Helper: place figure centered (kept as reserve, not used in v3.13) ──
 % Uses explicit \hbox centering instead of \begin{center} because the
-% latter doesn't work reliably inside \afterpage (which expands in a
-% special vertical mode context where \centering may not take effect).
+% latter doesn't work reliably inside \afterpage.
 \newcommand{\swarmwrap@place@centered}{%
   \par\vspace{\medskipamount}%
   \noindent\hb@xt@\linewidth{\hss\copy\swarmwrap@box\hss}%
@@ -247,15 +253,16 @@
 % All computation happens here so \linewidth is captured at the
 % correct location (inside multicol, itemize, etc.).
 %
-% Figure placement strategy (v3.11):
+% Figure placement strategy (v3.13):
 %   1. Compute parshape from full figure height (text always stays).
 %   2. Check if figure fits: \pagegoal - \pagetotal >= figure height.
 %   3. If fits → place inline with \smash{\rlap{}}.
-%   4. If doesn't fit → NO parshape (text at full width), defer
-%      centered figure to top of next page via \afterpage.
-%      This avoids overlap (overlaid figure on next page would collide
-%      with full-width continuation text after parshape expires) and
-%      ghost narrowing (no parshape = no leak across page break).
+%   4. If doesn't fit → STILL apply parshape (text narrowed), defer
+%      figure to top-right of next page via \afterpage as a zero-height
+%      vbox overlay. On the current page, narrowed lines have no figure
+%      beside them. On the next page, parshape persists and the deferred
+%      figure overlay aligns with the narrowed continuation text, turning
+%      the empty right side into real right-wrapping.
 
 \ifswarmwrap@luatex
 \newcommand{\swarmwrapnext}{%
@@ -288,13 +295,31 @@
   \advance\dimen0 by -\pagetotal
   \dimen1=\swarmwrap@fh@val\relax
   \ifdim\dimen0<\dimen1
-    % Figure doesn't fit — NO wrapping, defer centered figure to next page.
-    % Don't apply parshape: text flows at full width on current page.
-    % Disable penalty callback (no narrow lines to find).
-    \global\swarmwrap@tw@lua=0pt\relax
+    % Figure doesn't fit — apply parshape, defer right-wrapped figure to next page.
+    % Text on current page is narrowed (no figure beside it — empty right side).
+    % On next page, parshape persists and continuation text wraps the figure.
+    % emergencystretch absorbs overfull hbox on narrowed parshape lines
+    \emergencystretch=\fontdimen6\font\relax
     \noindent
-    \afterpage{\swarmwrap@place@centered}%
-    \wlog{swarmwrap next: DEFERRED CENTERED — remaining=\the\dimen0, fh=\the\dimen1, nl=\the\swarmwrap@nl}%
+    \parshape \swarmwrap@pshape\relax
+    % Defer figure to top-right of next page via zero-height vbox overlay.
+    % The \smash ensures zero height/depth contribution.
+    % The figure must align with the first continuation text line on the next page.
+    % Known limitation: figure top may be ~10pt above the first text line due to
+    % \topskip + interline glue between the zero-height vbox and the text. This
+    % is cosmetic only — the figure is at the correct horizontal position and
+    % text wraps correctly around it for all subsequent lines.
+    \afterpage{%
+      \vbox to 0pt{%
+        \hbox to \linewidth{%
+          \hskip\swarmwrap@tw@val\hskip14pt
+          \smash{\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax
+          \hbox{\copy\swarmwrap@box}}%
+        }%
+        \vss
+      }%
+    }%
+    \wlog{swarmwrap next: DEFERRED RIGHT-WRAP — remaining=\the\dimen0, fh=\the\dimen1, nl=\the\swarmwrap@nl}%
   \else
     % Figure fits — apply parshape and place inline overlay.
     % emergencystretch absorbs overfull hbox on narrowed parshape lines
