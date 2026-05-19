@@ -233,6 +233,37 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 >
 > Standard tests: test-customwrap 9pp, test-pagebreak-variations 16pp, 0 errors.
 
+### QA — 2026-05-20 07:30 UTC+8
+> **Rule 8 — Multicol FP fix; VLM unreliable for light figures; correct v3.24 numbers**
+>
+> No pending QA tasks. Per Rule 8, continued visual inspection.
+>
+> **TECHNICAL NOTE**: Previous turns compiled from wrong directory (parent repo
+> instead of swarm submodule), causing TEXINPUTS to pick up wrong .sty. Fixed
+> with absolute paths. All v3.24 numbers below are authoritative.
+>
+> **Confirmed v3.24 numbers on 1308-page PDF: 174 total** (was 176)
+> - FIGURE BESIDE TEXT: 0 (was 2 multicol FPs — eliminated by multicol detection)
+> - NEAR-EMPTY: 101 (page-eject inherent)
+> - BODY OVERLAP: 57 (Task #160 — parshape leak in itemize)
+> - CAPTION OVERLAP: 8 (expected)
+> - GHOST NARROWING: 3
+> - HOLLOW CARRY-OVER: 5
+> - Real issues (excl near-empty): 73
+>
+> **Detection script improvement (figure-beside-text v5)**: Added
+> `_is_multicol_page()` that detects 2-column layout by clustering x0
+> positions. Uses full page width instead of column width as baseline on
+> multicol pages. Eliminates the 2 CRITICAL multicol false positives.
+>
+> **VLM visual inspection (21 pages, 3 batches)**: VLM (GLM-5-Turbo) again
+> completely failed to detect light-colored figures (pink/salmon fill). All
+> 21 pages were labeled "no figure" — VLM reported "ghost narrowing" for
+> text that IS wrapping around real figures. PyMuPDF is authoritative.
+>
+> **Merged test file (811 pages) has 1623 issues** vs original (1308 pages)
+> 174 issues. The Programmer's paragraph merging made things worse.
+
 ### QA — 2026-05-20 06:30 UTC+8
 > **Rule 8 — Stale v3.10 STILL in repo; correct v3.24 numbers; overlap FP fix v3**
 >

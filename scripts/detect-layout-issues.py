@@ -121,6 +121,39 @@ def get_text_lines(page):
     return lines
 
 
+def _is_multicol_page(body_lines):
+    """Detect if page uses multicol layout (two or more text columns).
+
+    Multicol pages have body text lines starting at 2+ distinct x0 positions
+    (e.g., left column at x=118, right column at x=302). Single-column pages
+    have all body lines starting at the same x0 (within 5pt tolerance).
+
+    Returns (is_multicol, page_width) where page_width is the FULL page
+    text width (left margin to right margin), not the column width.
+    """
+    if not body_lines:
+        return False, 0
+
+    # Cluster x0 positions (group within 5pt tolerance)
+    x0_positions = sorted(set(round(l["x0"]) for l in body_lines))
+    clusters = []
+    for x0 in x0_positions:
+        if clusters and abs(x0 - clusters[-1][-1]) <= 5:
+            clusters[-1].append(x0)
+        else:
+            clusters.append([x0])
+
+    if len(clusters) < 2:
+        return False, 0
+
+    # Page width = rightmost text edge minus leftmost text edge
+    max_x1 = max(l["x1"] for l in body_lines)
+    min_x0 = min(clusters[0])
+    page_width = max_x1 - min_x0
+
+    return True, page_width
+
+
 def detect_figure_beside_text(page_num, figures, text_lines, min_adjacent):
     """
     CRITICAL CHECK: For each figure, verify text actually wraps BESIDE it.
@@ -132,6 +165,13 @@ def detect_figure_beside_text(page_num, figures, text_lines, min_adjacent):
     If all text is at full width, the figure is 'outside text' — the bug Zoe
     keeps finding. Text flows at full width and figures are just overlaid or
     placed beside without actual wrapping.
+
+    Improvement (v5, 2026-05-20):
+    Detect multicol pages and use PAGE width (not column width) as the
+    full_width baseline. Previously, the 90th percentile picked up the
+    column width on multicol pages, causing false positives: text at column
+    width was labeled "full-width" when it was actually wrapping around the
+    figure within the column.
     """
     issues = []
 
@@ -143,10 +183,17 @@ def detect_figure_beside_text(page_num, figures, text_lines, min_adjacent):
     if not body_lines:
         return issues
 
+    # Check for multicol layout
+    is_multicol, multicol_page_width = _is_multicol_page(body_lines)
+
     widths = sorted([l["width"] for l in body_lines])
     # Full width = 90th percentile of body line widths
     idx = max(0, int(len(widths) * 0.9) - 1)
     full_width = widths[idx]
+
+    # On multicol pages, use page width instead of column width
+    if is_multicol and multicol_page_width > full_width:
+        full_width = multicol_page_width
 
     for i, fig in enumerate(figures):
         # Find text lines that overlap vertically with the figure
@@ -190,7 +237,8 @@ def detect_figure_beside_text(page_num, figures, text_lines, min_adjacent):
                     f"y={fig.y0:.0f}-{fig.y1:.0f}, "
                     f"size={fig.width:.0f}x{fig.height:.0f}pt. "
                     f"Full-width text beside fig: {n_fullwidth} lines "
-                    f"(page full_width={full_width:.0f}pt)."
+                    f"(page full_width={full_width:.0f}pt" +
+                    (", multicol" if is_multicol else "") + ")."
                 ),
             })
 
