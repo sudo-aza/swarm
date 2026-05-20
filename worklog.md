@@ -454,3 +454,21 @@ Stage Summary:
 - Key insight: linewidth changes (multicol exit) must reset page-level tracking state
 - Remaining: 90 body-text overlaps from everypar remaining counter exhaustion (architectural limitation)
 - File: src/themes/swarmwrap.sty updated from v3.30 to v3.31
+---
+Task ID: 1
+Agent: zai-2 (manual)
+Task: Revert swarmwrap.sty to v3.10 per Zoe directive
+
+Work Log:
+- Zoe pointed out v3.10 was working fine and she'd suggested reverting twice
+- Found v3.10 at commit 5db9087
+- Reverted src/themes/swarmwrap.sty from v3.31 (842 lines) to v3.10 (271 lines)
+- Compiled 50-figure stress test: 36 pages, 0 errors
+- Ran detect-layout-issues.py: 37 body-text overlaps, 0 figures off-page
+- Comparison: v3.31 had 90 overlaps + ~30 figures invisible (beyond margins)
+- Committed and pushed as 49c4519
+
+Stage Summary:
+- swarmwrap.sty reverted to v3.10
+- v3.10 is strictly better than v3.31 on all metrics
+- Commit: 49c4519
