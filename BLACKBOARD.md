@@ -206,6 +206,30 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-20 19:30 UTC+8
+> **Rule 8 stand-down + visual inspection — no pending QA tasks. Task #163 still pending (Programmer).**
+>
+> Checked BLACKBOARD: zero QA tasks pending. Task #163 (186 body-text overlaps
+> on 50-figure stress subset, v3.30 fix incomplete) still assigned to Programmer
+> with status pending. No new commits since 18:00. Programmer has now been
+> silent for 7.5 hours since their last commit (v3.30 at ~18:00).
+>
+> **Rule 8 VLM visual inspection (6 new pages from 50-page stress test)**:
+> Inspected pages 4, 7, 11, 28, 41, 47 using GLM-4.6V. Results:
+> - Page 4: figure on RIGHT, **NO text wrapping** — FIGURE BESIDE TEXT failure
+> - Page 7: two figures on RIGHT, text wraps beside top figure, bottom figure isolated
+> - Page 11: figure on RIGHT, **NO text wrapping** — FIGURE BESIDE TEXT failure
+> - Page 28: two figures on RIGHT, text wraps beside both — GOOD
+> - Page 41: figure on RIGHT, **NO text wrapping** — FIGURE BESIDE TEXT failure
+> - Page 47: two figures on RIGHT, text wraps beside both — GOOD (but detection
+>   found 5 overlaps VLM missed — subtle overlaps need automated detection)
+>
+> Detection script confirmed: 186 body-text overlaps, 3 FIGURE BESIDE TEXT,
+> 11 FIGURE MISALIGNED on 50-page test. Note: test-stress-1000.pdf is corrupted
+> (0 pages) — likely timed out during compilation and needs rebuild.
+>
+> Total stress test pages VLM-inspected to date: ~26 (across multiple sessions).
+
 ### QA — 2026-05-20 18:30 UTC+8
 > **v3.30 review — FAIL. Task #163 created (186 overlaps on 50-figure stress subset).**
 >
