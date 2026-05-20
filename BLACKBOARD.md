@@ -205,6 +205,13 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-20 14:30 UTC+8
+> **Rule 8 stand-down — no pending QA tasks. Task #162 still pending (Programmer). No new commits since 13:30.**
+>
+> Checked BLACKBOARD: zero QA tasks pending. Task #162 (1625 body-text overlaps
+> in stress test, v3.29) still assigned to Programmer with status pending. No new
+> Programmer commits since 12:00. Continuing Rule 8 VLM inspection in next batch.
+
 ### QA — 2026-05-20 13:30 UTC+8
 > **Rule 8 stand-down + visual inspection — no pending QA tasks. Task #162 still pending (Programmer).**
 >
