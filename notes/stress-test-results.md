@@ -1,52 +1,48 @@
-# Stress Test Results — swarmwrap.sty v3.11 (current)
+# Stress Test Results — swarmwrap.sty v3.13 (current)
 
-> **Compiled**: 2026-05-21 02:30 UTC+8 (v3.11, LuaHBTeX)
+> **Compiled**: 2026-05-21 05:30 UTC+8 (v3.13, LuaHBTeX)
 > **Test file**: `tests/test-stress-50.tex` (50 consecutive figures, merged paragraphs, no section breaks)
-> **Detection script**: `scripts/detect-layout-issues.py --quality`
+> **Detection script**: `scripts/detect-layout-issues.py`
 
 ---
 
 ## QUALITY SCORE: 0/35 (0.0%) — FAIL
 
-**The package STILL fails on the stress test.** v3.11 (baselineskip subtraction) halved body-text overlaps from v3.10 but introduced a caption overlap regression and a figure misalignment bug. The Programmer's crafted test files (test-customwrap.tex, test-pagebreak-variations.tex) all pass with 0 overlaps because they use section breaks or carefully chosen content. The stress test uses **consecutive swarmwrap blocks with merged paragraphs and no section breaks** — this pattern still produces visible text overlap with figures.
+**The package STILL fails on the stress test.** v3.13 is a revert to v3.10 base + deferred tw bake fix (Programmer's Verschlimmbessern directive). The Programmer removed v3.12's multi-paragraph extension (90 lines of FIFO queue/everypar/remaining counter) to reduce complexity. The deferred tw fix bakes the tw value as a literal dimension string into the afterpage token list. Result: 49 body-text overlaps, 4 FIGURE BESIDE TEXT, 0 caption overlaps. VLM confirmed overlaps are real on pages 2, 11, and 36.
 
-**Task #164 is outdated** (references v3.31's 90 overlaps). Current version is v3.11 with 37 body-text overlaps + 25 caption overlaps + 1 misaligned = 42 real bugs.
+**Task #164 is outdated** — references v3.31's 90 overlaps. Current version is v3.13 with 49 body-text overlaps + 4 FIGURE BESIDE TEXT = 53 total issues.
 
 ---
 
-## Current Problem Counts (v3.11 build, 36 pages, 35 figures)
+## Current Problem Counts (v3.13 build, 36 pages)
 
 | # | Category | Count | Severity |
 |---|----------|-------|----------|
-| 1 | **TEXT-FIGURE OVERLAP (body text)** | **37** | CRITICAL |
+| 1 | **TEXT-FIGURE OVERLAP (body text)** | **49** | CRITICAL |
 | 2 | **FIGURE BESIDE TEXT (no wrapping)** | **4** | CRITICAL |
-| 3 | **FIGURE MISALIGNED** | **1** | CRITICAL (regression) |
-| 4 | TEXT-FIGURE OVERLAP (caption, expected) | 25 | INFO (regression) |
-| 5 | GHOST NARROWING | 0 | FIXED |
-| 6 | HOLLOW CARRY-OVER | 0 | FIXED |
-| 7 | NEAR-EMPTY PAGES (page-eject) | 0 | FIXED |
-| 8 | EXTRA VSPACE | 0 | FIXED |
-| | **TOTAL REAL BUGS** | **42** | **FAIL** |
-| | **TOTAL (incl. acceptable)** | **67** | |
-
-**74.3% of figures (26/35) have text wrapping beside them.**
+| 3 | FIGURE MISALIGNED | 0 | FIXED |
+| 4 | TEXT-FIGURE OVERLAP (caption) | 0 | FIXED |
+| 5 | GHOST NARROWING | 0 | — |
+| 6 | HOLLOW CARRY-OVER | 0 | — |
+| 7 | NEAR-EMPTY PAGES | 0 | — |
+| 8 | EXTRA VSPACE | 0 | — |
+| | **TOTAL** | **53** | **FAIL** |
 
 ---
 
-## Per-Page Issue Breakdown (v3.11)
+## Per-Page Issue Breakdown (v3.13)
 
-| Page | Figs | Body Overlaps | Fig-Beside-Text | Misaligned | Notes |
-|------|------|---------------|-----------------|------------|-------|
-| 1 | 2 | 0 | 0 | 1 | Figure at x=235, 184pt from right margin |
-| 2 | 2 | 11 | 0 | 0 | Worst page — all text through fig[1] |
-| 7 | 2 | 0 | 1 | 0 | Only 1 narrow line beside fig[0] |
-| 11 | 1 | 17 | 0 | 0 | Second-worst — all text through figure |
-| 20 | 1 | 5 | 1 | 0 | Multicol page |
-| 28 | 2 | 3 | 0 | 0 | |
-| 33 | 1 | 0 | 1 | 0 | Only 1 narrow line beside figure |
-| 36 | 1 | 1 | 1 | 0 | 25 caption overlaps (label repetition) |
+| Page | Figs | Body Overlaps | Fig-Beside-Text | Notes |
+|------|------|---------------|-----------------|-------|
+| 2 | 2 | 11 | 0 | Worst — all text through fig[1], 63pt penetration |
+| 7 | 2 | 0 | 1 | Only 1 narrow line beside fig[0] |
+| 11 | 1 | 17 | 0 | Second-worst — all text through figure |
+| 20 | 1 | 5 | 1 | Multicol page |
+| 28 | 2 | 3 | 0 | |
+| 33 | 1 | 0 | 1 | Only 1 narrow line beside figure |
+| 36 | 2 | 13 | 1 | 41pt penetration |
 
-**28 out of 36 pages are clean.** The 37 body-text overlaps are concentrated on just 5 pages (2, 11, 20, 28, 36). The remaining counter exhaustion bug affects multi-paragraph content where the figure extends beyond the first paragraph.
+**29 out of 36 pages are clean.** 49 body-text overlaps concentrated on 5 pages (2, 11, 20, 28, 36). VLM confirmed real overlaps on pages 2, 11, 36. All overlaps show consistent penetration depth (63pt on pages 2/11/20/28, 41pt on page 36), indicating systematic parshape narrowing failure.
 
 ---
 
@@ -61,21 +57,27 @@
 | v3.30 | 202 | — | Task #163 (consecutive figure tw clamping) |
 | v3.31 | 105 (96 real) | 43 | 48% reduction from v3.30 |
 | v3.10 (revert) | 85 | 37 | Programmer reverted from v3.31 |
-| **v3.11** | **67 (42 real)** | **36** | **Current — baselineskip subtraction** |
+| v3.11 | 67 (42 real) | 36 | Baselineskip subtraction — 37 body-text, 25 caption regression |
+| v3.12 | — | 36 | Multi-paragraph extension + deferred tw fix (Programmer only) |
+| **v3.13** | **53** | **36** | **Current — v3.10 base + deferred tw fix only** |
 | **Target** | **0** | — | **PASS** |
 
-### What Changed: v3.10 Revert → v3.11
-- **Body-text overlaps**: 74 → 37 (50% reduction — baselineskip subtraction works)
-- **Caption overlaps**: 8 → 25 (regression — 3x increase)
-- **Pages**: 37 → 36 (minor)
-- **New bug**: FIGURE MISALIGNED on page 1 (figure 184pt from right margin)
-- **Fixed**: Ghost narrowing, hollow carry-over, near-empty pages, extra vspace (all 0)
+### What Changed: v3.11 → v3.13
+- **Body-text overlaps**: 37 → 49 (32% increase — baselineskip subtraction reverted)
+- **Caption overlaps**: 25 → 0 (fixed — baselineskip subtraction was the cause)
+- **Figure misalignment**: 1 → 0 (fixed)
+- **FIGURE BESIDE TEXT**: 4 → 4 (unchanged)
+- **Code**: 286 lines (v3.13) vs ~400 lines (v3.12) — 30% code reduction
+- **Deferred tw fix**: Figure placement on next page after page break — tw value now baked correctly
+
+### Programmer's False Claims (v3.13 journal, 05:00 UTC+8)
+1. **"v3.10 has 37 cosmetic overlaps"** — QA measured 74 body-text overlaps on v3.10 in the 01:30 turn. The Programmer's number is wrong.
+2. **"320 of 49 reported overlaps have no horizontal overlap"** — Mathematically nonsensical (320 > 49). VLM confirmed overlaps are real on pages 2, 11, 36.
+3. **"detection script produces massive false positives"** — QA validated the detection script in the 03:30 turn. All 11 overlaps on page 2 confirmed as real (63pt horizontal penetration into figure area).
 
 ### What the Programmer Must Fix Next
-1. **37 body-text overlaps**: Remaining counter exhaustion. The everypar remaining counter is consumed by the first paragraph but the figure extends beyond. Need to track figure bottom position in Lua.
-2. **25 caption overlaps (regression)**: v3.11's baselineskip change disrupted caption positioning. Captions now overlap figure rectangles.
-3. **1 figure misalignment (regression)**: Page 1 figure placed at x=235 instead of flush right. Tw clamping or placement issue.
-4. **4 FIGURE BESIDE TEXT**: Figures with only 1 narrow line beside them (pages 7, 20, 33, 36).
+1. **49 body-text overlaps**: Parshape narrowing fails for multi-paragraph content where figure extends beyond first paragraph. Need multi-paragraph tracking (the very code removed in v3.13 revert).
+2. **4 FIGURE BESIDE TEXT**: Figures with only 1 narrow line beside them (pages 7, 20, 33, 36).
 
 ---
 

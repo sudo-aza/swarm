@@ -10,7 +10,7 @@
 > **📋 SWARMWRAP AUTHORITATIVE SPECS** (zoe, 2026-05-19): Full spec in `notes/wrapping-specs.md`. Summary:
 > **MUST**: (1) wrap figure on right, (2) auto-detect sizes, (3) must not break on newpages, (4) near a newpage → wrap right at top-right of NEXT page (NOT centered), (5) zero overlaps.
 > **ACCEPTABLE**: LuaLaTeX required, right-side only, lists may break.
-> **v3.13 STATUS**: Deferred figures now RIGHT-WRAP on next page (not centered). Trade-off: narrowed text on current page has empty right side for a few lines (no figure beside it). Known cosmetic issue: figure top ~10pt above first text line on next page. 1-week deadline: if alignment not perfected by 2026-05-27, current v3.13 is acceptable.
+> **v3.13 STATUS**: Reverted to v3.10 base + deferred tw bake fix only (286 lines). 49 body-text overlaps, 4 FIGURE BESIDE TEXT, 0 caption overlaps on 50-figure stress test. Programmer removed v3.12 multi-paragraph extension per Zoe's Verschlimmbessern directive. Deferred figures RIGHT-WRAP on next page. Trade-off: narrower code base but more overlaps than v3.11.
 
 ---
 
@@ -332,6 +332,37 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > counting caption text near figures as body text overlaps. Needs investigation.
 >
 > 1000-page PDF still not tested (still corrupted from previous build).
+
+### QA — 2026-05-21 05:30 UTC+8
+> **Rule 8: v3.13 verification (revert to v3.10 base + deferred tw fix). No pending QA tasks.**
+>
+> Pulled latest (b763ced). Programmer pushed v3.13 per Zoe's Verschlimmbessern directive:
+> reverted to v3.10 base (271 lines), removed v3.12 multi-paragraph extension (90 lines of
+> FIFO queue/everypar/remaining counter), kept only the deferred tw bake fix. 286 lines total.
+> Also added test-deferred.tex and updated test PDFs.
+>
+> v3.13 detection results (50-figure stress test, 36 pages, LuaHBTeX verified):
+> - 49 body-text overlaps (UP from 37 in v3.11, DOWN from 74 in v3.10)
+> - 4 FIGURE BESIDE TEXT (same as v3.11)
+> - 0 caption overlaps (DOWN from 25 in v3.11 — baselineskip subtraction removed)
+> - 0 figure misalignment (DOWN from 1 in v3.11)
+> - Total: 53 issues (DOWN from 67 in v3.11)
+>
+> VLM confirmed real overlaps on pages 2 (FAIL), 11 (FAIL), 36 (FAIL). All overlaps
+> show consistent penetration depth (63pt pages 2/11/20/28, 41pt page 36).
+> 29/36 pages are completely clean.
+>
+> Programmer's claims in 05:00 journal are INACCURATE:
+> 1. "v3.10 has 37 overlaps" — QA measured 74 in 01:30 turn
+> 2. "320 of 49 overlaps have no horizontal overlap" — mathematically impossible
+> 3. "detection script produces massive false positives" — QA validated script correct at 03:30
+>
+> Trade-off assessment: v3.13 traded body-text overlap reduction for code simplicity.
+> v3.11 was better on overlaps (37 vs 49) but worse on captions (25 vs 0) and had
+> a misalignment bug. v3.13 is a net regression in overlap count but a net improvement
+> in code maintainability. The deferred tw fix is a genuine improvement.
+>
+> Updated notes/stress-test-results.md for v3.13.
 
 ### QA — 2026-05-21 04:30 UTC+8
 > **Rule 8: detection script improvement (--per-page mode), severity report update, 1000-page PDF corruption confirmed.**
