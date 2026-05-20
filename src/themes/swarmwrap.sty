@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.27)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.28)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -103,6 +103,19 @@
 %    have unused space at the bottom — this is expected and acceptable.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.28: Fixed everypar re-injection for multi-paragraph narrowing.
+%   ROOT CAUSE: TeX consumes \\everypar after the first paragraph (clears it).
+%   The v3.25 \\swarmwrap@set@parshape macro set parshape but did NOT
+%   re-set \\everypar for subsequent paragraphs. Result: paragraph 2+
+%   from \\lipsum[2], \\lipsum[3], etc. flowed at full width, overlapping
+%   the figure (1420 overlaps in stress test).
+%   FIX: \\swarmwrap@set@parshape now re-sets \\everypar{\\swarmwrap@set@parshape}
+%   when remaining > 0, so the narrowing chain continues across all
+%   paragraphs until the narrow zone is exhausted.
+%   Also fixed register mismatch: macros now read \\swarmwrapremainingreg
+%   (which Lua updates by name) instead of \\swarmwrap@remaining (which
+%   Lua updated by hardcoded register number 286 that may not match).
 %
 % v3.27: Added \@item patch for parshape in list environments (from v3.26).
 %   When \swarmwrapnext is used inside a list item (\item), the standard
@@ -235,7 +248,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/20 v3.27 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/20 v3.28 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -294,9 +307,14 @@
 % Builds a dynamic parshape with \swarmwrap@remaining narrow lines + 1
 % full-width line, then clears \everypar when remaining reaches 0.
 \newcommand{\swarmwrap@set@parshape}{%
-  \ifnum\swarmwrap@remaining>0\relax
-    \xdef\swarmwrap@pshape@dyn{\the\numexpr\swarmwrap@remaining+1\relax\space}%
-    \swarmwrap@loop@cnt=\swarmwrap@remaining\relax
+  \ifnum\swarmwrapremainingreg>0\relax
+    % CRITICAL: re-set \everypar for the NEXT paragraph.
+    % TeX consumes \everypar after expansion — without this, only the
+    % first paragraph gets narrowed. This was the root cause of 1420
+    % overlaps in the stress test (v3.25-v3.27).
+    \everypar{\swarmwrap@set@parshape}%
+    \xdef\swarmwrap@pshape@dyn{\the\numexpr\swarmwrapremainingreg+1\relax\space}%
+    \swarmwrap@loop@cnt=\swarmwrapremainingreg\relax
     \loop
       \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\swarmwrap@tw\space}%
       \advance\swarmwrap@loop@cnt by -1\relax
@@ -319,11 +337,13 @@
 \let\swarmwrap@orig@item=\@item
 
 \def\@item{%
-  \ifnum\swarmwrap@remaining>0\relax
+  \ifnum\swarmwrapremainingreg>0\relax
     % Set parshape BEFORE \@item processes the label.
     % This guarantees the first line of each item is narrowed.
-    \xdef\swarmwrap@pshape@dyn{\the\numexpr\swarmwrap@remaining+1\relax\space}%
-    \swarmwrap@loop@cnt=\swarmwrap@remaining\relax
+    % Also re-set \everypar so subsequent items continue narrowing.
+    \everypar{\swarmwrap@set@parshape}%
+    \xdef\swarmwrap@pshape@dyn{\the\numexpr\swarmwrapremainingreg+1\relax\space}%
+    \swarmwrap@loop@cnt=\swarmwrapremainingreg\relax
     \loop
       \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\swarmwrap@tw\space}%
       \advance\swarmwrap@loop@cnt by -1\relax
@@ -382,10 +402,10 @@
       end
     end
 
-    -- Update remaining counter (both TeX register count286 and Lua-readable count288)
+    -- Update remaining counter via named register (accessible from TeX as
+    -- \swarmwrapremainingreg and from Lua as tex.count["swarmwrapremainingreg"])
     remaining = math.max(0, remaining - narrow_count)
-    tex.count[286] = remaining  -- \swarmwrap@remaining (count286)
-    tex.count["swarmwrapremainingreg"] = remaining  -- Lua-readable mirror (count288)
+    tex.count["swarmwrapremainingreg"] = remaining
 
     -- Apply penalties only for the FIRST paragraph (tw_sp > 0)
     if tw_sp > 0 then
