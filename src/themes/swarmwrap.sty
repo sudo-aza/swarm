@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.28)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.30)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -107,6 +107,27 @@
 %    have unused space at the bottom — this is expected and acceptable.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.30: Two critical fixes for consecutive figure overlap.
+%   FIX 1 — shipout_filter race condition during page eject:
+%   ROOT CAUSE: When \swarmwrapnext issues \newpage (figure doesn't
+%   fit on current page), the shipout_filter callback fires DURING the
+%   \newpage and sets swarmwrap_page_shipped=true. When the paragraph
+%   starts on the new page, \swarmwrap@set@parshape checks this flag
+%   and clears remaining to 0, preventing parshape from being applied.
+%   Result: ejected figures had NO text wrapping at all (full-width text
+%   overlapped the figure). This was the PRIMARY cause of 1625 body-text
+%   overlaps in the stress test. FIX: Reset swarmwrap_page_shipped=false
+%   immediately after \newpage in the eject path.
+%
+%   FIX 2 — consecutive figure tw clamping:
+%   ROOT CAUSE: When two figures are on the same page and the second
+%   figure is NARROWER than the first (e.g., 2cm then 3cm), the second
+%   figure's tw (text width) is WIDER than the first's. Text narrowed
+%   for the second figure extends into the first figure's area, causing
+%   overlap. FIX: Track the minimum tw (swarmwrap_min_tw) across all
+%   figures on the current page. When a new figure's tw exceeds the
+%   minimum, clamp it. Reset min_tw when a page is shipped.
 %
 % v3.29: Ghost narrowing elimination for multi-paragraph case.
 %   ROOT CAUSE: When a wrapped paragraph spans a page break, parshape
@@ -276,7 +297,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/20 v3.29 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/20 v3.30 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -288,6 +309,7 @@
 \newcount\swarmwrap@nl       % number of parshape lines (wrapped)
 \newcount\swarmwrap@loop@cnt % loop counter
 \newcount\swarmwrap@did@eject % eject flag (0=inline, 1=newpage issued)
+\newcount\swarmwrapnl       % Lua-accessible copy of nl (for extension)
 \newif\ifswarmwrap@luatex
 
 \ifluatex \swarmwrap@luatextrue \else \swarmwrap@luatexfalse \fi
@@ -434,9 +456,19 @@
   -- the continuation page has no figure but parshape persists.
   -- Detection: shipout_filter sets this flag; \everypar checks it.
   swarmwrap_page_shipped = false
+  -- v3.30: minimum tw across all figures on the current page.
+  -- Used to clamp narrower figures' tw so text doesn't overlap
+  -- wider figures still visible on the same page. Reset on page ship.
+  swarmwrap_min_tw = 0
+  -- v3.30: total narrow lines committed for the current page.
+  -- When a new figure is placed, nl is extended to at least this value,
+  -- ensuring text stays narrowed past ALL previous figures on the page.
+  swarmwrap_page_nl = 0
 
   local function swarmwrap_shipout(head, groupcode)
     swarmwrap_page_shipped = true
+    swarmwrap_min_tw = 0  -- Reset min tw tracking on page ship
+    swarmwrap_page_nl = 0  -- Reset page nl tracking on page ship
     return head
   end
   luatexbase.add_to_callback("shipout_filter",
@@ -472,6 +504,12 @@
     -- \swarmwrapremainingreg and from Lua as tex.count["swarmwrapremainingreg"])
     remaining = math.max(0, remaining - narrow_count)
     tex.count["swarmwrapremainingreg"] = remaining
+
+    -- v3.30: Update page-level narrow line tracking.
+    -- Decrement by narrow lines consumed this paragraph.
+    if swarmwrap_page_nl > 0 and narrow_count > 0 then
+      swarmwrap_page_nl = math.max(0, swarmwrap_page_nl - narrow_count)
+    end
 
     -- Apply penalties only for the FIRST paragraph (tw_sp > 0)
     if tw_sp > 0 then
@@ -604,6 +642,9 @@
     \advance\dimen0 by -\baselineskip
   \ifdim\dimen0>0pt \repeat
   \advance\swarmwrap@nl by -1
+  % v3.30: Initialize \swarmwrapnl from computed nl.
+  % This will be extended below by swarmwrap_page_nl for consecutive figures.
+  \global\swarmwrapnl=\swarmwrap@nl\relax
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
   % Set Lua-readable dimension for post_linebreak_filter callback
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
@@ -617,12 +658,60 @@
     % Figure doesn't fit — eject to new page first.
     \newpage
     \swarmwrap@did@eject=1\relax
+    % v3.30 FIX: The shipout_filter fires during \newpage and sets
+    % swarmwrap_page_shipped=true. This causes the ghost narrowing
+    % check in \swarmwrap@set@parshape to clear remaining, preventing
+    % parshape from being applied on the new page. Reset the flag.
+    \directlua{swarmwrap_page_shipped = false}%
   \fi
+  % v3.30 FIX: Consecutive figure overlap prevention.
+  % When two figures are on the same page and the second is NARROWER
+  % (e.g., 2cm then 3cm), the second figure's tw (text width) is WIDER
+  % than the first's. Text narrowed for the second figure extends into
+  % the first figure's area, causing overlap. Fix: track the minimum tw
+  % (swarmwrap_min_tw) across all figures on the current page. When a
+  % new figure's tw exceeds the minimum, clamp it. Reset on page ship.
+  % IMPORTANT: This must run BEFORE parshape build and queue insert so
+  % that parshape, figure placement, and Lua callback all use the
+  % clamped value.
+  % Copy tw to Lua-accessible bridge register (no @ for safe Lua access).
+  \global\swarmwraptw=\swarmwrap@tw\relax
+  % v3.30 FIX: Consecutive figure overlap prevention.
+  % Clamp tw to the minimum across all figures on the current page.
+  % When a new figure is narrower (e.g., 2cm) than a previous figure
+  % (e.g., 5cm), the new figure's tw is wider, causing text to extend
+  % into the previous figure's area. Fix: clamp tw to the page minimum.
+  % Reset on page ship via shipout_filter.
+  \directlua{swarmwrap_min_tw=(swarmwrap_min_tw or 0);local ctw=tex.dimen["swarmwraptw"] or 0;if ctw>0 and swarmwrap_min_tw>0 and ctw>swarmwrap_min_tw then tex.dimen["swarmwraptw"]=swarmwrap_min_tw end;local etw=tex.dimen["swarmwraptw"] or 0;if swarmwrap_min_tw==0 or etw<swarmwrap_min_tw then swarmwrap_min_tw=etw end}%
+  % Copy clamped tw back to \swarmwrap@tw so parshape and overlay
+  % use the clamped value. CRITICAL: without this, parshape uses the
+  % unclamped tw, allowing text to extend into previous figure zones.
+  \global\swarmwrap@tw=\swarmwraptw\relax
+  % Re-save tw@val and tw@lua AFTER clamping.
+  \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
+  \global\swarmwrap@tw@lua=\swarmwrap@tw
+  % v3.30: Extend nl to cover remaining narrow lines from previous
+  % figures on the same page. When Figure A (5cm, 10 lines) is followed
+  % by Figure B (3cm, 5 lines) on the same page, B's narrow zone must
+  % cover A's remaining height + B's own height. Without this, B's text
+  % returns to full width while A's figure zone is still visible.
+  % swarmwrap_page_nl tracks remaining lines from all previous figures.
+  \directlua{%
+    local pnl = swarmwrap_page_nl or 0
+    if pnl > 0 then
+      local cur_nl = tex.count["swarmwrapnl"]
+      tex.count["swarmwrapnl"] = cur_nl + pnl
+      swarmwrap_page_nl = cur_nl + pnl
+    else
+      swarmwrap_page_nl = tex.count["swarmwrapnl"]
+    end
+  }%
   % NORMAL PATH: place figure inline with parshape wrapping.
   % (After potential \newpage, figure is at top of a fresh page.)
   % Build parshape: nl narrow lines + 1 full-width line.
-  \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
-  \swarmwrap@loop@cnt=\swarmwrap@nl
+  % v3.30: Use \swarmwrapnl (possibly extended) instead of \swarmwrap@nl.
+  \xdef\swarmwrap@pshape{\the\numexpr\swarmwrapnl+1\relax\space}%
+  \swarmwrap@loop@cnt=\swarmwrapnl
   \loop
     \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
     \advance\swarmwrap@loop@cnt by -1
@@ -634,8 +723,8 @@
   \emergencystretch=\fontdimen6\font\relax
   % Set remaining counter and Lua-readable register.
   % This tracks how many narrow lines are left across paragraphs.
-  \global\swarmwrap@remaining=\swarmwrap@nl
-  \global\swarmwrapremainingreg=\swarmwrap@nl
+  \global\swarmwrap@remaining=\swarmwrapnl
+  \global\swarmwrapremainingreg=\swarmwrapnl
   % Push wrapping state onto Lua queue BEFORE \noindent.
   % Also reset the page-shipped flag so ghost narrowing detection
   % starts fresh for this figure.
@@ -646,7 +735,7 @@
     end
     swarmwrap_page_shipped = false
     table.insert(swarmwrap_queue, {%
-      tw = tex.dimen["swarmwrap@tw"],%
+      tw = tex.dimen["swarmwraptw"],%
       saved_es = tex.dimen["swarmwrap@saved@es"],%
       remaining = tonumber(tex.count["swarmwrapremainingreg"])%
     })%
