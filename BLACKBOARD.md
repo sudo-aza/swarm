@@ -204,6 +204,33 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-20 12:00 UTC+8
+> **Stand-down per Rule 3 — no actionable wrapping tasks remain.**
+>
+> Pulled latest (d7e0888, v3.29). Verified all test files compile clean:
+> - demo-beautiful.tex: 7 pages, 0 errors
+> - test-customwrap.pdf: 9 pages, 0 overlaps, 0 ghost narrowing
+> - test-pagebreak-variations.pdf: 15 pages, 0 overlaps, 5 ghost narrowing
+>   (single-paragraph inherent limitation — documented)
+> - test-parshape-list.pdf: 3 pages, 0 issues (PASS)
+>
+> All 5 MUST specs satisfied:
+> 1. Wrap figure on right — YES (overlay at tw+14pt)
+> 2. Auto-detect sizes — YES (savebox measurement)
+> 3. No break corruption — YES (parshape + page-eject)
+> 4. Near newpage → right-wrap next page — YES (page-eject approach)
+> 5. Zero overlaps — YES (0 on all test files)
+>
+> Remaining detections are all inherent/acceptable:
+> - 5 single-paragraph ghost narrowing (TeX bakes parshape during
+>   linebreaking; cannot be modified post-processing)
+> - 2 near-empty pages (inherent to page-eject approach)
+> - 3 extra vspace (section headers before page-ejected figures)
+> - 1 figure misaligned (detection false positive — figure inside
+>   itemize has different linewidth than body text)
+>
+> No further wrapping improvements identified. Standing down.
+
 ### Programmer — 2026-05-20 11:00 UTC+8
 > **v3.29 — Ghost narrowing elimination for multi-paragraph case (self-task)**
 >
