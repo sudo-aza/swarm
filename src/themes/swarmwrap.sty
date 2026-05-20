@@ -337,6 +337,7 @@
 % Global macros to persist values across the environment group boundary.
 \newcommand{\swarmwrap@fw@val}{0pt}  % figure width for parshape
 \newcommand{\swarmwrap@fh@val}{0pt}  % figure height for page break
+\newdimen\swarmwrap@place@skip  % v3.32: saved figure placement skip (lw - fw)
 \newcommand{\swarmwrap@tw@place}{0pt} % v3.31: unclamped tw for figure placement
 
 % ── Penalty control ──────────────────────────────────────────────────
@@ -489,8 +490,68 @@
   -- When linewidth changes (e.g., exiting multicol), reset min_tw and
   -- page_nl to prevent cross-context contamination.
   swarmwrap_last_lw = -1
+  -- v3.32: Figure x-position correction for page-break spanning paragraphs.
+  -- When a paragraph spans a page break, the figure overlay (\smash\rlap)
+  -- may be placed at the wrong x-position on continuation pages.
+  -- This stores the target x-shift for correction in shipout_filter.
+  swarmwrap_fig_x_shift = 0
 
   local function swarmwrap_shipout(head, groupcode)
+    -- v3.32: Correct figure x-positions that drifted due to page breaks.
+    -- When a paragraph spans a page break, the \smash{\rlap{\hskip}}
+    -- overlay may end up at the wrong x on continuation pages.
+    -- Fix by finding colored rule nodes and shifting them to the correct
+    -- position (text_left + fig_x_shift + (page_width - text_right)).
+    if swarmwrap_fig_x_shift and swarmwrap_fig_x_shift > 0 then
+      local x_shift = swarmwrap_fig_x_shift / 65536.0  -- convert from sp
+      local fig_x_target = x_shift  -- skip distance from text left margin
+      -- Find the text left margin (first non-zero-width text span x0)
+      local text_x0 = 0
+      local h = head
+      while h do
+        if h.id == 0 then  -- hbox
+          local n = h.head
+          while n do
+            if n.id == 3 then  -- glyph
+              local f = n.font
+              if f and n.width > 0 then
+                text_x0 = n.width / 65536.0
+                break
+              end
+            end
+            n = n.next
+          end
+          if text_x0 > 0 then break end
+        end
+        h = h.next
+      end
+      -- Now scan for colored rule nodes (figures)
+      h = head
+      while h do
+        if h.id == 5 then  -- rule
+          local color = h.color
+          if color and #color > 0 then
+            -- Check if it's a colored fill (not just a line)
+            local r = h.width
+            if r and r > 65536 then  -- > 1pt wide = likely a figure
+              local x0 = h.width / 65536.0
+              local expected_x0 = text_x0 + fig_x_target
+              if math.abs(x0 - expected_x0) > 5.0 then
+                -- Figure is at wrong x — fix it
+                local shift = expected_x0 - x0
+                local shift_sp = node.new("kern")
+                shift_sp.kern = shift * 65536
+                n.insert_before(h, shift_sp)
+              end
+            end
+          end
+        end
+        h = h.next
+      end
+      texio.write_nl("log", string.format("swarmwrap: shipout fig correction: shift=%.1fpt, text_x0=%.1fpt, figs adjusted", x_shift, text_x0))
+    end
+    -- Reset for next figure
+    swarmwrap_fig_x_shift = 0
     swarmwrap_page_shipped = true
     swarmwrap_min_tw = 0  -- Reset min tw tracking on page ship
     swarmwrap_page_nl = 0  -- Reset page nl tracking on page ship
@@ -675,6 +736,10 @@
   % Set Lua-readable dimension for post_linebreak_filter callback
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
   % ── Figure placement: inline or page-eject then inline ──────────
+  % v3.32: Save figure placement BEFORE potential \newpage.
+  % After \newpage, TeX's paragraph machinery may not have
+  % re-initialized, causing \linewidth to be unreliable.
+  \global\swarmwrap@place@skip=\dimexpr\linewidth-\swarmwrap@fw\relax
   % Check remaining space on current page.
   \dimen0=\pagegoal
   \advance\dimen0 by -\pagetotal
@@ -760,13 +825,13 @@
   \everypar{\swarmwrap@set@parshape}%
   \noindent
   \parshape \swarmwrap@pshape\relax
-  % v3.32: Compute figure placement DIRECTLY from linewidth and figure width.
-  % Never use stored tw values for positioning — they may be stale or clamped.
-  % This guarantees figures are always at the right margin regardless of
-  % consecutive-figure tw clamping or context changes.
-  \smash{\rlap{\hbox to \linewidth{\hfill\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}}%
-  \wlog{swarmwrap next: \ifnum\swarmwrap@did@eject=1 EJECT\else INLINE\fi — tw=\the\swarmwrap@tw, tw_place=\swarmwrap@tw@place, lw=\the\linewidth, fw=\the\swarmwrap@fw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
-  \message{swarmwrap PLACE: lw=\the\linewidth, fw=\the\swarmwrap@fw, skip=\the\dimexpr\linewidth-\swarmwrap@fw\relax}%
+  % v3.32: Use saved placement skip computed before \newpage.
+  % The skip is \linewidth - \swarmwrap@fw, positioning the figure
+  % at the right edge of the text area.
+  \smash{\rlap{\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hskip\swarmwrap@place@skip\hbox{\copy\swarmwrap@box}}}%
+  % v3.32: Tell Lua callback to adjust figure position.
+  \directlua{swarmwrap_fig_x_shift = tex.dimen["swarmwrap@place@skip"]}%
+  \wlog{swarmwrap next: \ifnum\swarmwrap@did@eject=1 EJECT\else INLINE\fi — tw=\the\swarmwrap@tw, place_skip=\the\swarmwrap@place@skip, lw=\the\linewidth, fw=\the\swarmwrap@fw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
 }%
 \else
 \newcommand{\swarmwrapnext}{%
