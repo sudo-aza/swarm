@@ -130,8 +130,16 @@ def _is_multicol_page(body_lines):
     """Detect if page uses multicol layout (two or more text columns).
 
     Multicol pages have body text lines starting at 2+ distinct x0 positions
-    (e.g., left column at x=118, right column at x=302). Single-column pages
-    have all body lines starting at the same x0 (within 5pt tolerance).
+    that are widely separated (e.g., left column at x=118, right column at x=302).
+    Single-column pages may have x0 variation from paragraph indentation
+    (~79pt) or text block splitting (~100pt), but these are NOT multicol.
+
+    v7 fix (2026-05-20): Previous version used 5pt clustering tolerance, which
+    caused false positives on single-column pages where paragraph indentation
+    (x=118 vs x=197) or text block boundaries (x=323) created multiple clusters.
+    Now requires clusters to be separated by at least 120pt to count as
+    distinct columns. This correctly distinguishes multicol (column gap ~180pt)
+    from paragraph indentation (~79pt).
 
     Returns (is_multicol, page_width) where page_width is the FULL page
     text width (left margin to right margin), not the column width.
@@ -139,16 +147,30 @@ def _is_multicol_page(body_lines):
     if not body_lines:
         return False, 0
 
-    # Cluster x0 positions (group within 5pt tolerance)
+    # Cluster x0 positions — use wide tolerance (25pt) to group paragraph
+    # indentation (79pt from margin) with the margin position.
+    # Then check if clusters are separated by enough for true columns.
     x0_positions = sorted(set(round(l["x0"]) for l in body_lines))
     clusters = []
     for x0 in x0_positions:
-        if clusters and abs(x0 - clusters[-1][-1]) <= 5:
+        if clusters and abs(x0 - clusters[-1][-1]) <= 25:
             clusters[-1].append(x0)
         else:
             clusters.append([x0])
 
     if len(clusters) < 2:
+        return False, 0
+
+    # Check inter-cluster gap: true multicol columns are separated by
+    # at least 120pt. Paragraph indentation creates ~79pt gaps.
+    is_true_multicol = False
+    for i in range(1, len(clusters)):
+        gap = clusters[i][0] - clusters[i - 1][-1]
+        if gap >= 120:
+            is_true_multicol = True
+            break
+
+    if not is_true_multicol:
         return False, 0
 
     # Page width = rightmost text edge minus leftmost text edge

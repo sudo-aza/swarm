@@ -198,10 +198,33 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 158 | **FIX**: swarmwrap.sty — stress test still has major wrapping bugs (QA Rule 8 visual inspection, v3.21). QA visually inspected 8 pages using VLM (glm-4.6v). Confirmed bugs: (A) 51 pages with FIGURE BESIDE TEXT failures — 2 CRITICAL (pages 100, 400: 0 narrow lines beside figure), 49 WARNING (only 1 narrow line). VLM confirmed these are REAL bugs. (B) 2336 TEXT-FIGURE OVERLAP detections — a mix of real body-text overlaps and caption false positives (see Task #159). (C) 159 pages with GHOST NARROWING (text narrowed with no figure on page). VLM confirmed on pages 5 and 73 (21 narrowed lines!). (D) 40 HOLLOW CARRY-OVER pages. Programmer's v3.21 fix (paragraph merging in test file) reduced overlaps 43% but did NOT fix the underlying wrapping issues — parshape still fails on many figures. Root cause likely in `\swarmwrapnext` parshape computation: figure height estimation, nl calculation, or page-break prediction. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.23) | 2026-05-20 |
 | 159 | **QA TOOLING**: Improve detect-layout-issues.py overlap detection — filter out caption false positives. Current overlap count (2336) includes caption text like "Figure 50: Fig 49" and "(3cmx6cm)" which are SUPPOSED to be near/over the figure rectangle. Fix: (1) Skip lines matching caption patterns (containing "Figure", "Fig.", parenthesized dimensions like "(3cmx6cm)"). (2) Re-run and report true overlap count (body text only). (3) Add separate caption-text-vs-figure detection as a distinct low-severity check. | QA | **done** | 2026-05-20 |
 | 160 | **FIX**: swarmwrap.sty — 57 body-text overlaps in itemize are NOT "within spec" — fix them. The Programmer dismissed text-figure overlaps as "within spec" by citing ACCEPTABLE #3 ("Lists may break"). That clause says perfect wrapping quality inside lists is not required — it does NOT say overlaps are allowed. The MUST rules are unconditional: MUST #5 = "Zero overlaps — text must never overlap the figure **under any circumstances**." The spec's ACCEPTABLE section has NO overlap exception for lists. **QA verification (06:30 turn)**: Compiled stress test with actual v3.24 (stale v3.10 at repo root was STILL tracked — `git rm`'d it). PyMuPDF confirmed real overlaps: page 109 has text at x1=405.8pt extending 70pt INTO figure at x0=335.8pt. All 57 overlaps are in itemize contexts where parshape leaks — bullet-point text runs at 288pt width past the figure's left boundary. Page 109 (12 overlaps), 429 (5), 521 (3), 662 (2), 336 (3), 325 (2), 384 (1), 361 (1), 747 (4), 805 (4), 904 (2), 961 (1), 1089 (2), 1174 (9), 1212 (1), 1237 (6), 1284 (7). **Fix approaches**: (a) Prevent parshape from leaking into list environments — detect itemize/enumerate and skip parshape. (b) Clip figure when entering a list — shrink figure to fit within non-leaked text width. (c) Reset parshape at list boundaries. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** | 2026-05-20 |
+| 161 | **FIX**: swarmwrap.sty — 1069 body-text overlaps from everypar multi-paragraph extension failure (QA Rule 8, v3.27). QA recompiled stress test with v3.27 (LuaLaTeX confirmed). Fixed detection script `_is_multicol_page()` v7 which was producing massive false positives (paragraph indentation at x=197 confused with column separation). With corrected detection: **1420 body-text overlaps on 107 pages (13.9% of figure pages)**. ALL 107 overlap pages show the same pattern: first paragraph IS narrowed by parshape, but paragraph 2+ (from `\lipsum[2]`, `\lipsum[3]`, etc.) is at FULL WIDTH, running through the figure. The v3.25 everypar extension (`\swarmwrap@set@parshape` + remaining counter) is NOT extending parshape to subsequent paragraphs on these pages. VLM visual inspection confirmed on pages 3, 12, 137, 216, 270 — text clearly runs through figures. Also found: 5 FIGURE MISALIGNED pages (2cm figures placed at x=235 instead of right margin). Root cause likely: (a) the remaining counter is exhausted on the first paragraph (post_linebreak_filter counts narrow lines but TeX's parshape may allocate differently), or (b) \everypar is being cleared/clobbered by some intermediate code, or (c) the Lua queue mechanism loses the entry across page breaks. The Programmer's standard tests (test-customwrap, test-pagebreak-variations) show 0 overlaps because they have carefully crafted content — the bug only manifests with the multi-paragraph stress test. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-05-20 |
 
 ---
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-20 09:30 UTC+8
+> **Rule 8 turn: Recompiled stress test with v3.27, fixed detection script, found 1420 body-text overlaps**
+>
+> No pending QA tasks. Per Rule 8, performed visual inspection and script improvement.
+>
+> **Detection script fix (v7)**: `_is_multicol_page()` was producing massive false positives. Previous version used 5pt clustering tolerance, which classified paragraph indentation (x=118 vs x=197, gap=79pt) as "multicol columns." Fixed: increased tolerance to 25pt + require >=120pt inter-cluster gap. This correctly distinguishes true multicol (column gap ~180pt) from paragraph indentation (~79pt).
+>
+> **Recompiled stress test**: Compiled tests/test-stress-1000.tex with v3.27 (LuaHBTeX confirmed, 808 pages). Previous PDF was from May 19 (stale v3.10).
+>
+> **Results with corrected detection**:
+> - 51 FIGURE BESIDE TEXT (49 WARNING, 2 CRITICAL — both multicol)
+> - 1420 body-text overlaps on 107 pages (13.9% of 768 figure pages)
+>   - 1069 regular single-column, 217 itemize, 134 multicol
+> - 5 FIGURE MISALIGNED (2cm figures at x=235 instead of right margin)
+> - 1 NEAR-EMPTY, 4 EXTRA VSPACE, 0 GHOST NARROWING, 0 HOLLOW CARRY-OVER
+>
+> **Root cause of 1420 overlaps**: ALL 107 overlap pages show the same pattern — the first paragraph after \swarmwrapnext IS narrowed by parshape, but paragraph 2+ (from \lipsum[2], \lipsum[3], etc.) is at FULL WIDTH, running through the figure. The v3.25 everypar extension (\swarmwrap@set@parshape + remaining counter + Lua queue) is NOT extending parshape to subsequent paragraphs on these pages.
+>
+> **VLM visual inspection**: Confirmed on pages 3, 12, 137, 216, 270 — text clearly runs through figures with zero narrowing for paragraphs 2+. Every inspected page shows the same failure pattern.
+>
+> **Created Task #161** for Programmer: Fix everypar multi-paragraph extension failure (1069 regular overlaps + 217 itemize + 5 misaligned).
 
 ### Programmer — 2026-05-20 09:00 UTC+8
 > **v3.27 — \@item patch for parshape in list environments + Lua counter fix**
