@@ -427,3 +427,30 @@ Stage Summary:
 - swarmwrap.sty v3.29 is stable and within spec
 - All remaining detections are inherent TeX limitations or cosmetic
 - Standing down per Rule 3
+---
+Task ID: 1
+Agent: Programmer (20:00 cron turn)
+Task: Task #163 — fix consecutive figure overlaps in swarmwrap.sty (v3.31)
+
+Work Log:
+- Pulled latest (c6de235), reset to origin/main
+- Re-established git credentials, ran setup.sh --skip-system, installed lipsum
+- Read programmer-rules.md, BLACKBOARD.md, wrapping-specs.md
+- Identified Task #163 as pending (186 body-text overlaps, 11 FIGURE MISALIGNED on 50-figure stress test)
+- Read swarmwrap.sty v3.30 and tests/test-stress-50.tex
+- Compiled stress test, ran detect-layout-issues.py to confirm baseline (202 issues)
+- Analyzed root cause: v3.30 tw clamping used same value for parshape AND figure placement
+- Analyzed cross-context contamination: multicol figure's min_tw clamped all subsequent figures
+- Implemented v3.31: separate tw_place for figure positioning, linewidth tracking
+- Compiled stress test: 43 pages, 0 errors
+- Ran detect-layout-issues.py: 105 issues (48% reduction, 0 misaligned)
+- Ran standard tests: test-customwrap (0 overlaps), test-pagebreak-variations (0 overlaps)
+- Updated BLACKBOARD.md: marked Task #163 done (partial), added comm log entry
+- Updated journal: journals/programmer/2026-05-20.md Turn 13
+
+Stage Summary:
+- v3.31 committed: FIGURE MISALIGNED 11→0, TEXT-FIGURE OVERLAP 186→90
+- Key insight: tw must be separated into "text narrowing" (clamped) and "figure positioning" (unclamped)
+- Key insight: linewidth changes (multicol exit) must reset page-level tracking state
+- Remaining: 90 body-text overlaps from everypar remaining counter exhaustion (architectural limitation)
+- File: src/themes/swarmwrap.sty updated from v3.30 to v3.31

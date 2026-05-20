@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.30)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.31)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -107,6 +107,26 @@
 %    have unused space at the bottom — this is expected and acceptable.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.31: Fix figure misalignment from v3.30 tw clamping.
+%   ROOT CAUSE: v3.30 clamped tw (text width) to swarmwrap_min_tw to
+%   prevent consecutive figure overlap. However, the clamped tw was used
+%   for BOTH parshape text narrowing AND figure overlay placement
+%   (\hskip\tw\hskip14pt). This caused narrower figures (e.g., 2cm) to
+%   be placed far from the right margin (87-184pt away instead of 0pt),
+%   producing 11 FIGURE MISALIGNED detections. FIX: Separate text
+%   narrowing (uses clamped tw) from figure positioning (uses original
+%   unclamped tw). A new \swarmwrap@tw@place macro stores the original
+%   tw for the figure \hskip, while \swarmwrap@tw (and \swarmwrap@tw@val)
+%   are clamped for parshape only. This preserves zero-overlap text
+%   narrowing while keeping figures correctly aligned at the right margin.
+%
+%   Also fixes the PRIMARY remaining overlap pattern: when Figure B
+%   (narrow) follows Figure A (wide) on the same page, Figure B's
+%   parshape with the clamped tw ensures text never extends past Figure
+%   A's zone. The visual trade-off is a small gap between text and
+%   Figure B (text is narrower than Figure B's natural tw), but this
+%   is cosmetic only and prevents overlap.
 %
 % v3.30: Two critical fixes for consecutive figure overlap.
 %   FIX 1 — shipout_filter race condition during page eject:
@@ -297,7 +317,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/20 v3.30 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/20 v3.31 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -317,6 +337,7 @@
 % Global macros to persist values across the environment group boundary.
 \newcommand{\swarmwrap@fw@val}{0pt}  % figure width for parshape
 \newcommand{\swarmwrap@fh@val}{0pt}  % figure height for page break
+\newcommand{\swarmwrap@tw@place}{0pt} % v3.31: unclamped tw for figure placement
 
 % ── Penalty control ──────────────────────────────────────────────────
 % \swarmwrappenalty{N}: set the penalty inserted at the boundary between
@@ -464,11 +485,16 @@
   -- When a new figure is placed, nl is extended to at least this value,
   -- ensuring text stays narrowed past ALL previous figures on the page.
   swarmwrap_page_nl = 0
+  -- v3.31: Track last linewidth to detect context changes.
+  -- When linewidth changes (e.g., exiting multicol), reset min_tw and
+  -- page_nl to prevent cross-context contamination.
+  swarmwrap_last_lw = -1
 
   local function swarmwrap_shipout(head, groupcode)
     swarmwrap_page_shipped = true
     swarmwrap_min_tw = 0  -- Reset min tw tracking on page ship
     swarmwrap_page_nl = 0  -- Reset page nl tracking on page ship
+    swarmwrap_last_lw = -1  -- v3.31: Reset linewidth tracking on page ship
     return head
   end
   luatexbase.add_to_callback("shipout_filter",
@@ -674,20 +700,50 @@
   % IMPORTANT: This must run BEFORE parshape build and queue insert so
   % that parshape, figure placement, and Lua callback all use the
   % clamped value.
+  % v3.31: Save the ORIGINAL (unclamped) tw for figure placement.
+  % The clamped tw is used only for parshape text narrowing.
+  % The figure overlay uses the unclamped tw to stay at the right margin.
+  \xdef\swarmwrap@tw@place{\the\swarmwrap@tw}%
   % Copy tw to Lua-accessible bridge register (no @ for safe Lua access).
   \global\swarmwraptw=\swarmwrap@tw\relax
-  % v3.30 FIX: Consecutive figure overlap prevention.
-  % Clamp tw to the minimum across all figures on the current page.
-  % When a new figure is narrower (e.g., 2cm) than a previous figure
-  % (e.g., 5cm), the new figure's tw is wider, causing text to extend
-  % into the previous figure's area. Fix: clamp tw to the page minimum.
-  % Reset on page ship via shipout_filter.
-  \directlua{swarmwrap_min_tw=(swarmwrap_min_tw or 0);local ctw=tex.dimen["swarmwraptw"] or 0;if ctw>0 and swarmwrap_min_tw>0 and ctw>swarmwrap_min_tw then tex.dimen["swarmwraptw"]=swarmwrap_min_tw end;local etw=tex.dimen["swarmwraptw"] or 0;if swarmwrap_min_tw==0 or etw<swarmwrap_min_tw then swarmwrap_min_tw=etw end}%
-  % Copy clamped tw back to \swarmwrap@tw so parshape and overlay
-  % use the clamped value. CRITICAL: without this, parshape uses the
+  % v3.30/v3.31 FIX: Consecutive figure overlap prevention.
+  % Clamp tw to the minimum across all figures on the current page AND
+  % in the SAME linewidth context. When a figure inside multicol sets
+  % min_tw based on a narrow column width, figures outside multicol (full
+  % linewidth) must NOT be clamped to the column-based min_tw.
+  % Fix: Track the linewidth at each swarmwrapnext call. If it changed
+  % since the last call (e.g., exiting multicol), reset min_tw and page_nl.
+  % Also reset on page ship via shipout_filter (existing behavior).
+  \directlua{%
+    swarmwrap_min_tw=(swarmwrap_min_tw or 0)
+    local ctw=tex.dimen["swarmwraptw"] or 0
+    -- v3.31: Check if linewidth changed since last figure.
+    -- If so, reset page-level tracking (min_tw, page_nl).
+    local cur_lw = tex.dimen["linewidth"] or 0
+    local prev_lw = swarmwrap_last_lw or -1
+    if prev_lw >= 0 and math.abs(cur_lw - prev_lw) > 1.0 then
+      -- Linewidth changed significantly (e.g., exiting multicol).
+      -- Reset all page-level state to avoid cross-context contamination.
+      swarmwrap_min_tw = 0
+      swarmwrap_page_nl = 0
+    end
+    swarmwrap_last_lw = cur_lw
+    -- Clamp tw to min_tw if current tw exceeds it.
+    if ctw>0 and swarmwrap_min_tw>0 and ctw>swarmwrap_min_tw then
+      tex.dimen["swarmwraptw"]=swarmwrap_min_tw
+    end
+    -- Update min_tw if this figure's tw is smaller.
+    local etw=tex.dimen["swarmwraptw"] or 0
+    if swarmwrap_min_tw==0 or etw<swarmwrap_min_tw then
+      swarmwrap_min_tw=etw
+    end
+  }%
+  % Copy clamped tw back to \swarmwrap@tw so PARSHAPE uses the
+  % clamped value. CRITICAL: without this, parshape uses the
   % unclamped tw, allowing text to extend into previous figure zones.
+  % NOTE: Figure placement (line 749) uses \swarmwrap@tw@place instead.
   \global\swarmwrap@tw=\swarmwraptw\relax
-  % Re-save tw@val and tw@lua AFTER clamping.
+  % Re-save tw@val and tw@lua AFTER clamping (for parshape only).
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
   \global\swarmwrap@tw@lua=\swarmwrap@tw
   % v3.30: Extend nl to cover remaining narrow lines from previous
@@ -746,7 +802,11 @@
   \everypar{\swarmwrap@set@parshape}%
   \noindent
   \parshape \swarmwrap@pshape\relax
-  \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+  % v3.31: Use \swarmwrap@tw@place (unclamped) for figure positioning.
+  % This ensures the figure is placed at the right margin even when
+  % tw is clamped for parshape text narrowing. Text uses clamped tw
+  % (via parshape) to avoid overlapping previous wider figures.
+  \smash{\rlap{\hskip\swarmwrap@tw@place\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
   \wlog{swarmwrap next: \ifnum\swarmwrap@did@eject=1 EJECT\else INLINE\fi — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
 }%
 \else
