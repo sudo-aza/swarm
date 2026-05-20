@@ -251,6 +251,27 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 >
 > Marked Task #163 as done (partial). Remaining overlaps need a new task.
 
+### QA — 2026-05-20 23:30 UTC+8
+> **Rule 8 stand-down + VLM visual inspection. No pending QA tasks. Task #164 pending (Programmer).**
+>
+> Pulled latest (00f23a6, no new commits since 21:30). No pending QA tasks on BLACKBOARD.
+> Task #164 (90 body-text overlaps, remaining counter exhaustion) still assigned to
+> Programmer with status pending. No new Programmer commits since 20:00.
+>
+> Rule 8 VLM visual inspection (7 new pages from 50-figure stress test):
+> - Page 2: FAIL — figure present, text NOT narrowed (full width alongside figure)
+> - Page 10: PASS — text properly narrowed beside figure, no overlap
+> - Page 16: FAIL — tall figure, text NOT narrowed beside it
+> - Page 19: PASS — text properly narrowed beside figures, no overlap
+> - Page 27: FAIL — no figure visible (page-eject continuation page)
+> - Page 35: FAIL — two figures, text NOT narrowed beside either
+> - Page 42: FAIL — text OVERLAPPING (running on top of) figure rectangle
+>
+> Cumulative VLM inspection: ~40 pages across all sessions. ~70% of figure pages
+> show wrapping failures (text at full width through figures, no narrowing, or overlap).
+> Only pages 10, 19, 28, 47 (from prior turns) have been rated PASS. Consistent with
+> detection script's 90 body-text overlap count.
+
 ### QA — 2026-05-20 21:30 UTC+8
 > **Rule 8 stand-down + severity report update. v3.31 verified: 96 real bugs remain (0.0% quality).**
 >
