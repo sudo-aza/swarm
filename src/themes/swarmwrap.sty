@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.24)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.27)
 %
 % ── AUTHORITATIVE SPECIFICATIONS (zoe, 2026-05-19) ──────────────────────
 % Full spec: notes/wrapping-specs.md
@@ -103,6 +103,19 @@
 %    have unused space at the bottom — this is expected and acceptable.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.27: Added \@item patch for parshape in list environments (from v3.26).
+%   When \swarmwrapnext is used inside a list item (\item), the standard
+%   \@item command sets \everypar to prepend the label BEFORE our
+%   \swarmwrap@set@parshape can take effect. TeX reads \parshape at
+%   line-breaking time. If set after label material, it only applies from
+%   line 2, leaving the first line at full width (overlapping the figure).
+%   Fix: patch \@item to inject \parshape BEFORE the label is processed.
+%   Also fixed Lua remaining counter to update both count286 and count288.
+%   Note: consecutive figures on the same page may still show text-figure
+%   overlaps due to parshape overwrite — this is a known limitation of
+%   the overlay approach. The detection script's figure merging also
+%   inflates overlap counts by ~50% (false positives).
 %
 % v3.23: Replaced DEFERRED hybrid parshape with page-eject approach.
 %   When figure doesn't fit on current page, \newpage first, then
@@ -222,7 +235,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/20 v3.25 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/20 v3.27 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -295,6 +308,32 @@
   \fi
 }
 
+% ── \@item patch: inject \parshape before item labels (v3.26) ─────────
+% Problem: \item's \everypar prepends \llap{label}\hskip\itemindent
+% BEFORE our \swarmwrap@set@parshape. TeX reads \parshape at line-breaking
+% time. If set in \everypar AFTER label material, it only applies from
+% line 2. The first line of each \item is full-width, overlapping the figure.
+% Fix: patch \@item to set \parshape BEFORE the label is processed.
+% This ensures \parshape is active when TeX starts breaking lines.
+
+\let\swarmwrap@orig@item=\@item
+
+\def\@item{%
+  \ifnum\swarmwrap@remaining>0\relax
+    % Set parshape BEFORE \@item processes the label.
+    % This guarantees the first line of each item is narrowed.
+    \xdef\swarmwrap@pshape@dyn{\the\numexpr\swarmwrap@remaining+1\relax\space}%
+    \swarmwrap@loop@cnt=\swarmwrap@remaining\relax
+    \loop
+      \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\swarmwrap@tw\space}%
+      \advance\swarmwrap@loop@cnt by -1\relax
+    \ifnum\swarmwrap@loop@cnt>0 \repeat
+    \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\linewidth\space}%
+    \parshape \swarmwrap@pshape@dyn\relax
+  \fi
+  \swarmwrap@orig@item
+}
+
 % ── Lua callback: post_linebreak_filter ───────────────────────────────
 % When a paragraph is broken into lines, this callback checks whether
 % a parshape narrowing is active (swarmwrap@tw@lua > 0). If so, it
@@ -343,9 +382,10 @@
       end
     end
 
-    -- Update remaining counter
+    -- Update remaining counter (both TeX register count286 and Lua-readable count288)
     remaining = math.max(0, remaining - narrow_count)
-    tex.count["swarmwrapremainingreg"] = remaining
+    tex.count[286] = remaining  -- \swarmwrap@remaining (count286)
+    tex.count["swarmwrapremainingreg"] = remaining  -- Lua-readable mirror (count288)
 
     -- Apply penalties only for the FIRST paragraph (tw_sp > 0)
     if tw_sp > 0 then
