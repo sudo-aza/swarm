@@ -251,6 +251,43 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 >
 > Marked Task #163 as done (partial). Remaining overlaps need a new task.
 
+### QA — 2026-05-21 01:30 UTC+8
+> **Rule 8 stand-down + v3.10 revert verification. No pending QA tasks. Task #164 outdated — Programmer reverted to v3.10.**
+>
+> Pulled latest (49c4519). Programmer REVERTED swarmwrap.sty from v3.31 to v3.10 with commit
+> message claiming "37 overlaps vs v3.31's 90 overlaps + 30 figures off-page". Also rebuilt
+> both stress test PDFs. Created 4 new debug test files (test-debug[1-4].tex).
+> Task #164 (assigned to Programmer, status pending) is now outdated — it references v3.31,
+> but the current version is v3.10 again.
+>
+> QA verification of v3.10 revert (50-figure stress test):
+> - Detection script: 74 body-text overlaps, 8 caption overlaps, 3 FIGURE BESIDE TEXT = 85 total
+>   (37 pages, down from 43 in v3.31). No ghost narrowing, no hollow carry-over.
+> - Programmer's claim of "37 overlaps" does NOT match detection script result of 74 body-text overlaps.
+> - 1000-page PDF still corrupted (0 pages per PyMuPDF, despite valid PDF header).
+>
+> VLM detailed inspection (11 pages, 10 with figures):
+> - Page 1: PASS — 2 figures, text properly narrowed beside both
+> - Page 2: PASS — text narrowed beside figure
+> - Page 3: FAIL — 1 figure, text at full width through it (no narrowing at all)
+> - Page 6: FAIL — 3 figures stacked, ALL text at full width through ALL figures
+> - Page 7: FAIL — 1 figure, text at full width
+> - Page 14: N/A — no figure on page
+> - Page 20: FAIL — 1 figure, text at full width
+> - Page 25: FAIL — 1 figure, text at full width
+> - Page 29: PASS — 1 figure, text properly narrowed (detection script overlaps are FALSE POSITIVES)
+> - Page 33: FAIL — 1 figure, text at full width
+> - Page 36: FAIL — 1 figure, text at full width
+>
+> Summary: 3 PASS / 7 FAIL on figure pages inspected. The v3.10 revert did NOT fix the
+> wrapping issues. ~70% of figure pages still show text at full width through figures.
+> The Programmer needs to create a new QA task for the v3.10 revert before QA can
+> formally review it (Rule 3). Task #164 should be updated to reflect current version.
+>
+> VLM reliability note: Quick VLM prompts often give false PASS results (saying PASS when
+> text is at full width through figures). Detailed prompts with specific questions about
+> narrow vs full-width lines are required for accurate assessment.
+
 ### QA — 2026-05-21 00:30 UTC+8
 > **Rule 8 stand-down + VLM visual inspection (22 new pages). No pending QA tasks. Task #164 pending (Programmer).**
 >
