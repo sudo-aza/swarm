@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.13)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.14)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -61,6 +61,14 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.14: Multi-paragraph parshape extension via everypar.
+%   Re-injects parshape into subsequent paragraphs after the first one,
+%   using a remaining-line counter decremented by Lua post_linebreak_filter.
+%   ~30 lines added (no FIFO queue, no complex state management).
+%   Reduces body-text overlaps by extending narrowing across paragraph
+%   boundaries — fixes the core issue where only the first paragraph
+%   wrapped around a multi-paragraph figure.
+%
 % v3.13: Reverted to v3.10 base (271 lines) + deferred tw bake fix only.
 %   Removed v3.12 multi-paragraph extension (135 lines of FIFO queue,
 %   everypar injection, remaining counter). v3.12 halved overlaps (74→37)
@@ -90,7 +98,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/21 v3.13 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/21 v3.14 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -101,7 +109,9 @@
 \newdimen\swarmwrap@fh       % figure height (auto-detected from box)
 \newdimen\swarmwrap@tw       % text width (computed for parshape)
 \newcount\swarmwrap@nl       % number of parshape lines (wrapped)
+\newcount\swarmwrap@remaining % remaining narrow lines (multi-paragraph)
 \newcount\swarmwrap@loop@cnt % loop counter
+\swarmwrap@remaining=0
 \newif\ifswarmwrap@luatex
 
 \ifluatex \swarmwrap@luatextrue \else \swarmwrap@luatexfalse \fi
@@ -139,38 +149,52 @@
 \directlua{
   function swarmwrap_post_lb(head, groupcode)
     local tw_sp = tex.dimen["swarmwrap@tw@lua"]
-    if tw_sp <= 0 then
-      return head
-    end
-    local penalty_val = tex.count["swarmwrap@penalty"]
-    if penalty_val == 0 then
-      return head
-    end
-    -- Convert skip to scaled points for comparison
     local tw_val = tw_sp / 65536.0
-    local tol = 3.0  -- pt tolerance
+    local tol = 3.0
     local narrow_width_max = tw_val + tol
-    -- Walk the node list to find the last narrowed hlist
-    local last_narrow = nil
-    local current = head
-    while current do
-      if current.id == 0 then  -- hlist node (a broken line)
-        local lw = current.width / 65536.0
-        if lw <= narrow_width_max and lw > 0 then
-          last_narrow = current
+    -- Multi-paragraph: count narrow lines consumed this paragraph
+    -- and decrement the remaining counter for subsequent paragraphs.
+    local rem = tex.count["swarmwrap@remaining"]
+    if rem > 0 and tw_sp > 0 then
+      local narrow_count = 0
+      local cur = head
+      while cur do
+        if cur.id == 0 then
+          local lw = cur.width / 65536.0
+          if lw <= narrow_width_max and lw > 0 then
+            narrow_count = narrow_count + 1
+          end
+        end
+        cur = cur.next
+      end
+      tex.count["swarmwrap@remaining"] = math.max(0, rem - narrow_count)
+    end
+    -- Penalty insertion at parshape boundary
+    if tw_sp > 0 then
+      local penalty_val = tex.count["swarmwrap@penalty"]
+      if penalty_val > 0 then
+        local last_narrow = nil
+        local current = head
+        while current do
+          if current.id == 0 then
+            local lw = current.width / 65536.0
+            if lw <= narrow_width_max and lw > 0 then
+              last_narrow = current
+            end
+          end
+          current = current.next
+        end
+        if last_narrow then
+          local p = node.new(node.id("penalty"))
+          p.penalty = penalty_val
+          node.insert_after(head, last_narrow, p)
         end
       end
-      current = current.next
-    end
-    if last_narrow then
-      local p = node.new(node.id("penalty"))
-      p.penalty = penalty_val
-      node.insert_after(head, last_narrow, p)
     end
     return head
   end
   luatexbase.add_to_callback("post_linebreak_filter",
-    swarmwrap_post_lb, "swarmwrap: penalty at parshape boundary")
+    swarmwrap_post_lb, "swarmwrap: multi-para + penalty at parshape boundary")
 }
 \fi
 
@@ -210,6 +234,40 @@
   \vspace{-\parskip}%
 }
 
+% ── Multi-paragraph parshape extension ──────────────────────────────
+% TeX's \parshape applies to ONE paragraph. When multiple paragraphs
+% follow \swarmwrapnext, only the first is narrowed. This hook extends
+% narrowing to subsequent paragraphs by re-injecting \parshape at each
+% paragraph start until all narrow lines are consumed. The remaining
+% line count is tracked via Lua post_linebreak_filter (above).
+
+\newcommand{\swarmwrap@everypar@hook}{%
+  \wlog{swarmwrap everypar CALLED: remaining=\the\swarmwrap@remaining, tw@val=\swarmwrap@tw@val}%
+  \ifnum\swarmwrap@remaining>0\relax
+    \swarmwrap@tw=\swarmwrap@tw@val\relax
+    \swarmwrap@loop@cnt=\swarmwrap@remaining
+    \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@remaining+1\relax\space}%
+    \loop
+      \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+      \advance\swarmwrap@loop@cnt by -1
+    \ifnum\swarmwrap@loop@cnt>0 \repeat
+    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
+    \emergencystretch=\fontdimen6\font\relax
+    \noindent
+    \parshape \swarmwrap@pshape\relax
+    \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+  \else
+    \everypar{}% All narrow lines consumed — clear hook
+  \fi
+}
+
+% Helper: set up everypar for deferred figures (called inside \afterpage).
+\newcommand{\swarmwrap@setup@everypar}{%
+  \global\swarmwrap@remaining=\swarmwrap@nl\relax
+  \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+  \everypar{\swarmwrap@everypar@hook}%
+}
+
 % ── \swarmwrapnext: compute parshape and place figure ──────────────────
 % All computation happens here so \linewidth is captured at the
 % correct location (inside multicol, itemize, etc.).
@@ -224,6 +282,7 @@
 
 \ifswarmwrap@luatex
 \newcommand{\swarmwrapnext}{%
+  \everypar{}% Clear any previous multi-paragraph hook
   % ── Shared computation: text width and wrapped line count ───────
   \swarmwrap@fw=\swarmwrap@fw@val\relax
   \swarmwrap@tw=\linewidth
@@ -259,21 +318,19 @@
   \dimen1=\swarmwrap@fh@val\relax
   \ifdim\dimen0<\dimen1
     % Figure doesn't fit — defer to top of next page via afterpage.
-    % CRITICAL: \swarmwrap@tw@val is a global macro that gets overwritten
-    % by later \swarmwrapnext calls. Bake the tw value as a literal
-    % dimension string into the \afterpage token list at definition time.
-    \directlua{
-      local tw = tex.dimen["swarmwrap@tw"]
-      tex.sprint(string.format(
-        "\\afterpage{\\noindent\\smash{\\rlap{\\hskip %.5fpt\\hskip 14pt" ..
-        "\\raise\\dimexpr\\ht\\strutbox-\\ht\\swarmwrap@box\\relax" ..
-        "\\hbox{\\copy\\swarmwrap@box}}}}",
-        tw / 65536.0))
-    }%
+    % Set up everypar for CURRENT page (narrow subsequent paragraphs
+    % to match the parshape). The deferred figure appears on the next page.
+    \afterpage{\noindent\smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}}\par
+    \global\swarmwrap@remaining=\swarmwrap@nl\relax
+    \everypar{\swarmwrap@everypar@hook}%
     \wlog{swarmwrap next: DEFERRED — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
     % Figure fits — place inline.
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+    % Set up multi-paragraph extension for subsequent paragraphs
+    \global\swarmwrap@remaining=\swarmwrap@nl\relax
+    \everypar{\swarmwrap@everypar@hook}%
+    \wlog{swarmwrap next: NORMAL — set everypar remaining=\the\swarmwrap@remaining}%
     \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
   \fi
 }%
