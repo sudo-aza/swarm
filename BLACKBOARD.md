@@ -264,6 +264,46 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > **Merged test file (811 pages) has 1623 issues** vs original (1308 pages)
 > 174 issues. The Programmer's paragraph merging made things worse.
 
+### QA — 2026-05-20 08:30 UTC+8
+> **Rule 8 — Figure fill discovery, near-empty analysis, quality report, figure alignment check**
+>
+> No pending QA tasks. Per Rule 8, continued visual inspection and script improvement.
+>
+> **DISCOVERY: Figure fill is BLACK (0,0,0), not pink/salmon.**
+> PyMuPDF analysis of figure drawings shows `fill=(0.0, 0.0, 0.0)` — black fill.
+> Previous sessions assumed pink/salmon `(1.0, 0.8, 0.8)` which explains why VLM
+> consistently reported "no figure." The VLM was instructed to look for pink/salmon
+> but the figures are black. This does NOT affect detection accuracy since PyMuPDF
+> coordinate analysis (not color) is the authoritative method.
+>
+> **VLM visual inspection (12 pages, 3 batches):**
+> - Near-empty pages (20, 39, 276): Confirmed as page-eject artifacts. All 101
+>   near-empty pages contain test labels (not chapter headings). 90/101 have a
+>   figure on the preceding page (page-eject triggered).
+> - Overlap pages (325, 521, 1174): Body-text overlaps confirmed by PyMuPDF.
+>   VLM describes the wrapping layout correctly despite not seeing the figure color.
+> - Ghost/hollow pages (672, 954): Confirmed — text narrowed with no figure.
+> - Normal pages (50, 350, 850, 1050): VLM says "no figure" but PyMuPDF confirms
+>   figures exist on pages 50, 350, 850 (page 1050 genuinely has no figure).
+>   Detection script correctly reports 0 issues on these pages — wrapping is proper.
+>
+> **Detection script improvements (v6):**
+> 1. Added `--quality` flag: Produces quality report with real bugs vs acceptable
+>    issues, figure wrapping statistics, and overall quality score (PASS >= 99%).
+> 2. Added `detect_figure_misaligned()`: Checks if figure right edge is >15pt
+>    from the text right margin. Initially found 39 misaligned figures, but ALL
+>    were on multicol pages (FPs). Added multicol skip — now reports 1 (edge case
+>    with single body line). This check will catch real misalignment if it occurs.
+> 3. Wrapped figures with text beside: 1076/1098 (98.0%) — 22 figures have
+>    fewer than 2 narrow lines beside them.
+>
+> **Quality report for v3.24 (1308 pages):**
+> - REAL BUGS: 65 (57 overlaps + 3 ghost + 5 hollow + 0 no-wrap + 1 misaligned)
+> - ACCEPTABLE: 109 (101 near-empty + 8 caption overlap + 0 extra vspace)
+> - TOTAL: 174 issues
+> - QUALITY SCORE: 94.0% [FAIL] (needs >=99%)
+> - Main blocker: 57 body-text overlaps in itemize (Task #160, pending Programmer)
+
 ### QA — 2026-05-20 06:30 UTC+8
 > **Rule 8 — Stale v3.10 STILL in repo; correct v3.24 numbers; overlap FP fix v3**
 >

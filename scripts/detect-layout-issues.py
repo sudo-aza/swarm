@@ -10,11 +10,13 @@ Catches the visual bugs that coordinate-only analysis misses:
   5. EXTRA VSPACE BELOW FIGURE — gap >1 baselineskip between last wrapped line
      and figure bottom where text should be wrapping
   6. HOLLOW CARRY-OVER — first line of page narrowed with no figure present
+  7. FIGURE MISALIGNED — figure not flush with right text margin
 
 Usage:
   python3 scripts/detect-layout-issues.py <file.pdf> [options]
   python3 scripts/detect-layout-issues.py <file.pdf> --page 3    # single page
   python3 scripts/detect-layout-issues.py <file.pdf> --summary   # counts only
+  python3 scripts/detect-layout-issues.py <file.pdf> --quality   # quality report
 
 Exit codes:
   0 = no issues found
@@ -48,6 +50,9 @@ def parse_args():
     p.add_argument("--extra-vspace", type=float, default=18.0,
                    help="Max gap (pt) between last wrapped line and figure "
                         "bottom before flagging (default: 18.0 ~= 1.5 baselineskip)")
+    p.add_argument("--quality", action="store_true",
+                   help="Print quality report with pass/fail per category "
+                        "and overall score")
     return p.parse_args()
 
 
@@ -554,6 +559,58 @@ def detect_hollow_carryover(page_num, text_lines, figures):
     return issues
 
 
+def detect_figure_misaligned(page_num, figures, text_lines):
+    """Detect figures not flush with the right text margin.
+
+    swarmwrap.sty places figures at the RIGHT side of the text area.
+    A figure is misaligned if its right edge is >15pt away from the
+    rightmost text edge on the page. This catches figures that have
+    shifted left (e.g., due to itemize parshape leak) or are centered
+    instead of right-aligned.
+
+    Added (v6, 2026-05-20): QA visual inspection confirmed this is a
+    useful check — misaligned figures are visually obvious and indicate
+    layout bugs.
+
+    v6.1 fix: Skip multicol pages. In multicol, figures are placed
+    within a column and naturally won't be at the full text area right
+    margin. All 39 initial detections were on multicol pages (FPs).
+    """
+    issues = []
+    if not figures:
+        return issues
+
+    body_lines = [l for l in text_lines if l["width"] > 150 and l["fontsize"] >= 9.0]
+    if not body_lines:
+        return issues
+
+    # Skip multicol pages — figures are within columns, not at page margin
+    is_multicol, _ = _is_multicol_page(body_lines)
+    if is_multicol:
+        return issues
+
+    # The rightmost text edge defines the text area boundary
+    max_text_x1 = max(l["x1"] for l in body_lines)
+    MARGIN_THRESHOLD = 15.0  # >15pt gap = misaligned
+
+    for i, fig in enumerate(figures):
+        gap = max_text_x1 - fig.x1
+        if gap > MARGIN_THRESHOLD:
+            issues.append({
+                "page": page_num + 1,
+                "gap": gap,
+                "desc": (
+                    f"  FIGURE MISALIGNED page {page_num + 1} fig[{i}]: "
+                    f"figure right edge {gap:.0f}pt left of text right margin. "
+                    f"Figure x={fig.x0:.0f}-{fig.x1:.0f}, "
+                    f"text right edge={max_text_x1:.0f}. "
+                    f"Figure size={fig.width:.0f}x{fig.height:.0f}pt"
+                ),
+            })
+
+    return issues
+
+
 def analyze_pdf(pdf_path, args):
     """Main analysis."""
     doc = fitz.open(pdf_path)
@@ -568,7 +625,13 @@ def analyze_pdf(pdf_path, args):
         "ghost_narrow": [],
         "extra_vspace": [],
         "hollow_carryover": [],
+        "figure_misaligned": [],
     }
+
+    # Track figure statistics for quality report
+    total_figures = 0
+    figures_with_wrapping = 0
+    pages_with_figures = 0
 
     for pn in range(total):
         if args.page is not None and args.page != pn + 1:
@@ -577,6 +640,10 @@ def analyze_pdf(pdf_path, args):
         page = doc[pn]
         figs = get_figures(page)
         lines = get_text_lines(page)
+
+        total_figures += len(figs)
+        if figs:
+            pages_with_figures += 1
 
         results["figure_beside_text"].extend(
             detect_figure_beside_text(pn, figs, lines, args.min_adjacent_lines))
@@ -591,6 +658,20 @@ def analyze_pdf(pdf_path, args):
             detect_extra_vspace(pn, figs, lines, args.extra_vspace))
         results["hollow_carryover"].extend(
             detect_hollow_carryover(pn, lines, figs))
+        results["figure_misaligned"].extend(
+            detect_figure_misaligned(pn, figs, lines))
+
+        # Count figures with wrapping (for quality report)
+        if figs:
+            body_lines = [l for l in lines if l["width"] > 150 and l["fontsize"] >= 9.0]
+            for fig in figs:
+                narrow_count = sum(
+                    1 for l in body_lines
+                    if l["y1"] > fig.y0 + 2 and l["y0"] < fig.y1 - 2
+                    and l["x1"] <= fig.x0 + 5 and l["width"] > 150
+                )
+                if narrow_count >= args.min_adjacent_lines:
+                    figures_with_wrapping += 1
 
     doc.close()
 
@@ -607,7 +688,67 @@ def analyze_pdf(pdf_path, args):
         ("GHOST NARROWING", "ghost_narrow"),
         ("EXTRA VSPACE", "extra_vspace"),
         ("HOLLOW CARRY-OVER", "hollow_carryover"),
+        ("FIGURE MISALIGNED", "figure_misaligned"),
     ]
+
+    if args.quality:
+        print("QUALITY REPORT")
+        print("=" * 60)
+        print(f"  Pages: {total} total, {pages_with_figures} with figures")
+        print(f"  Figures: {total_figures} total, "
+              f"{figures_with_wrapping} with wrapping "
+              f"({100*figures_with_wrapping/max(1,total_figures):.1f}%)")
+        print()
+
+        # Separate "real bugs" from "acceptable/known" issues
+        real_bugs = [
+            ("FIGURE BESIDE TEXT (no wrapping)", "figure_beside_text"),
+            ("TEXT-FIGURE OVERLAP (body text)", "overlap"),
+            ("GHOST NARROWING", "ghost_narrow"),
+            ("HOLLOW CARRY-OVER", "hollow_carryover"),
+            ("FIGURE MISALIGNED", "figure_misaligned"),
+        ]
+        acceptable = [
+            ("NEAR-EMPTY PAGES (page-eject)", "near_empty"),
+            ("TEXT-FIGURE OVERLAP (caption)", "caption_overlap"),
+            ("EXTRA VSPACE", "extra_vspace"),
+        ]
+
+        print("  REAL BUGS:")
+        real_total = 0
+        for label, key in real_bugs:
+            n = len(results[key])
+            real_total += n
+            status = "PASS" if n == 0 else "FAIL"
+            print(f"    {status} {label}: {n}")
+
+        print()
+        print("  ACCEPTABLE/KNOWN:")
+        acc_total = 0
+        for label, key in acceptable:
+            n = len(results[key])
+            acc_total += n
+            status = "PASS" if n == 0 else "INFO"
+            print(f"    {status} {label}: {n}")
+
+        print()
+        total_issues = sum(len(v) for v in results.values())
+        print(f"  TOTAL: {total_issues} issues ({real_total} real, "
+              f"{acc_total} acceptable)")
+
+        # Overall quality score
+        # Score based on real bugs only
+        max_score = total_figures  # Each figure is worth 1 point
+        if max_score > 0:
+            deductions = min(real_total, max_score)
+            score = max(0, max_score - deductions)
+            pct = 100.0 * score / max_score
+            grade = "PASS" if pct >= 99.0 else "FAIL"
+            print()
+            print(f"  QUALITY SCORE: {score}/{max_score} ({pct:.1f}%) [{grade}]")
+            print(f"    Criteria: >=99% for PASS (allows 1 bug per 100 figures)")
+
+        return min(real_total, 8) if real_total > 0 else 0
 
     if args.summary:
         for label, key in categories:
