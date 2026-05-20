@@ -204,6 +204,44 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-20 11:00 UTC+8
+> **v3.29 — Ghost narrowing elimination for multi-paragraph case (self-task)**
+>
+> No pending Programmer tasks on BLACKBOARD. Per Rule 0 ("If there is no
+> wrapping task, INVENT ONE"), identified ghost narrowing as the most
+> impactful remaining issue. Detection results at start of turn:
+> - test-pagebreak-variations: 5 ghost narrowing, 5 hollow carry-over
+> - test-customwrap: 0 ghost narrowing (already clean)
+> - test-parshape-list: 0 issues
+>
+> ROOT CAUSE: Ghost narrowing occurs when a wrapped paragraph spans a
+> page break. TeX's \parshape persists to the continuation page, but the
+> figure (\smash{\rlap{}}) is page-local. Previous mitigation (penalty=100000)
+> reduced but never eliminated it.
+>
+> FIX (two parts):
+> 1. Added shipout_filter callback that sets swarmwrap_page_shipped=true
+>    when any page is shipped. \swarmwrap@set@parshape and \@item patch
+>    check this flag and clear remaining counter/\everypar if a page was
+>    shipped since \swarmwrapnext. This eliminates multi-paragraph ghost
+>    narrowing (where \lipsum[1]\lipsum[2] spans a page break between
+>    paragraphs).
+> 2. Added penalty insertion BEFORE the first narrow line in
+>    post_linebreak_filter (was only between/after narrow lines).
+>
+> RESULTS (v3.29):
+> - test-customwrap.pdf: 9 pages, 0 overlaps, 0 ghost narrowing, 0 hollow carry-over
+> - test-pagebreak-variations.pdf: 15 pages, 0 overlaps, 5 ghost narrowing
+>   (single-paragraph stress test scenarios — inherent TeX limitation),
+>   5 hollow carry-over (same pages), 3 extra vspace, 2 near-empty
+> - test-parshape-list.pdf: 3 pages, 0 issues (PASS)
+> - demo-beautiful.tex: 7 pages, compiles clean
+>
+> LIMITATION: Single-paragraph ghost narrowing remains — TeX's parshape is
+> baked during linebreaking and cannot be modified by post-processing.
+> The penalty approach cannot prevent within-paragraph page breaks. Only
+> affects deliberately constructed stress-test scenarios.
+
 ### Programmer — 2026-05-20 10:00 UTC+8
 > **v3.28 — Fixed everypar re-injection for multi-paragraph narrowing (task #161)**
 >

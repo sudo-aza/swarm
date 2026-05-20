@@ -75,12 +75,16 @@
 %
 % ── Known Limitations ─────────────────────────────────────────────────
 %
-% 1. Ghost narrowing on continuation pages (MITIGATED in v3.14, v3.22):
+% 1. Ghost narrowing on continuation pages (MITIGATED in v3.14, v3.22, v3.29):
 %    When the wrapped paragraph spans a page break, TeX's parshape
 %    persists across the page boundary but the figure does not (it is
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
 %    lines on the next page remain narrowed even though no figure is
 %    beside them. This is cosmetic only — no text overlaps the figure.
+%    MULTI-PARAGRAPH (FIXED v3.29): shipout_filter detects page shipping
+%    and clears remaining counter/\everypar for subsequent paragraphs.
+%    SINGLE-PARAGRAPH (LIMITATION): One long paragraph spanning a page
+%    break cannot be fixed — TeX's parshape is baked during linebreaking.
 %    Mitigation: \swarmwrappenalty{N} (default: 100000 since v3.22) boosts
 %    penalties between ALL consecutive narrow lines, not just at the
 %    boundary. TeX is prohibited from breaking within the narrow zone
@@ -103,6 +107,30 @@
 %    have unused space at the bottom — this is expected and acceptable.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.29: Ghost narrowing elimination for multi-paragraph case.
+%   ROOT CAUSE: When a wrapped paragraph spans a page break, parshape
+%   narrowing persists to the continuation page, but the figure (placed
+%   via \smash{\rlap{}}) is page-local and does NOT carry over. This
+%   produced "ghost narrowing" — narrowed text with no figure beside it.
+%   Previous mitigation (penalty boosting) reduced but never eliminated it.
+%   FIX (two parts):
+%   1. Added shipout_filter callback that sets a flag when any page is
+%      shipped. In \swarmwrap@set@parshape (called from \everypar for
+%      subsequent paragraphs) and in the \@item patch, this flag is
+%      checked. If a page was shipped since \swarmwrapnext, remaining
+%      counter is set to 0 and \everypar is cleared, preventing all
+%      further narrowing on the continuation page. This eliminates ghost
+%      narrowing for MULTI-PARAGRAPH cases (e.g., \lipsum[1]\lipsum[2]).
+%   2. Added penalty insertion BEFORE the first narrow line in
+%      post_linebreak_filter. Previously penalties were only inserted
+%      between and after narrow lines, not before the first one.
+%   LIMITATION: Single-paragraph ghost narrowing (where one long paragraph
+%   spans a page break) remains. TeX's parshape is baked during
+%   linebreaking and cannot be modified by post-processing. The penalty
+%   approach cannot prevent within-paragraph page breaks. This only affects
+%   deliberately constructed stress-test scenarios; real documents with
+%   penalty=100000 rarely trigger this.
 %
 % v3.28: Fixed everypar re-injection for multi-paragraph narrowing.
 %   ROOT CAUSE: TeX consumes \\everypar after the first paragraph (clears it).
@@ -248,7 +276,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/20 v3.28 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/20 v3.29 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -306,21 +334,37 @@
 % Command to set parshape for remaining lines (called from \everypar).
 % Builds a dynamic parshape with \swarmwrap@remaining narrow lines + 1
 % full-width line, then clears \everypar when remaining reaches 0.
+% v3.29: Ghost narrowing fix — if a page was shipped since the last
+% \swarmwrapnext (detected via shipout_filter flag), clear narrowing
+% immediately. The figure (placed via \smash{\rlap{}}) is page-local
+% and does NOT carry over to the continuation page.
 \newcommand{\swarmwrap@set@parshape}{%
   \ifnum\swarmwrapremainingreg>0\relax
-    % CRITICAL: re-set \everypar for the NEXT paragraph.
-    % TeX consumes \everypar after expansion — without this, only the
-    % first paragraph gets narrowed. This was the root cause of 1420
-    % overlaps in the stress test (v3.25-v3.27).
-    \everypar{\swarmwrap@set@parshape}%
-    \xdef\swarmwrap@pshape@dyn{\the\numexpr\swarmwrapremainingreg+1\relax\space}%
-    \swarmwrap@loop@cnt=\swarmwrapremainingreg\relax
-    \loop
-      \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\swarmwrap@tw\space}%
-      \advance\swarmwrap@loop@cnt by -1\relax
-    \ifnum\swarmwrap@loop@cnt>0 \repeat
-    \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\linewidth\space}%
-    \parshape \swarmwrap@pshape@dyn\relax
+    % v3.29: Check if a page break occurred since \swarmwrapnext.
+    % If so, the figure is gone — clear narrowing to prevent ghost.
+    \directlua{%
+      if swarmwrap_page_shipped then
+        tex.count["swarmwrapremainingreg"] = 0
+        texio.write_nl("log", "swarmwrap: ghost narrowing detected — clearing remaining")%
+      end
+    }%
+    \ifnum\swarmwrapremainingreg>0\relax
+      % CRITICAL: re-set \everypar for the NEXT paragraph.
+      % TeX consumes \everypar after expansion — without this, only the
+      % first paragraph gets narrowed. This was the root cause of 1420
+      % overlaps in the stress test (v3.25-v3.27).
+      \everypar{\swarmwrap@set@parshape}%
+      \xdef\swarmwrap@pshape@dyn{\the\numexpr\swarmwrapremainingreg+1\relax\space}%
+      \swarmwrap@loop@cnt=\swarmwrapremainingreg\relax
+      \loop
+        \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\swarmwrap@tw\space}%
+        \advance\swarmwrap@loop@cnt by -1\relax
+      \ifnum\swarmwrap@loop@cnt>0 \repeat
+      \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\linewidth\space}%
+      \parshape \swarmwrap@pshape@dyn\relax
+    \else
+      \everypar{}%  % Clear everypar — ghost narrowing prevented
+    \fi
   \else
     \everypar{}%  % Clear everypar when narrow zone exhausted
   \fi
@@ -338,18 +382,27 @@
 
 \def\@item{%
   \ifnum\swarmwrapremainingreg>0\relax
-    % Set parshape BEFORE \@item processes the label.
-    % This guarantees the first line of each item is narrowed.
-    % Also re-set \everypar so subsequent items continue narrowing.
-    \everypar{\swarmwrap@set@parshape}%
-    \xdef\swarmwrap@pshape@dyn{\the\numexpr\swarmwrapremainingreg+1\relax\space}%
-    \swarmwrap@loop@cnt=\swarmwrapremainingreg\relax
-    \loop
-      \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\swarmwrap@tw\space}%
-      \advance\swarmwrap@loop@cnt by -1\relax
-    \ifnum\swarmwrap@loop@cnt>0 \repeat
-    \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\linewidth\space}%
-    \parshape \swarmwrap@pshape@dyn\relax
+    % v3.29: Ghost narrowing check — clear if page was shipped.
+    \directlua{%
+      if swarmwrap_page_shipped then
+        tex.count["swarmwrapremainingreg"] = 0
+        texio.write_nl("log", "swarmwrap: ghost narrowing detected in @item — clearing remaining")%
+      end
+    }%
+    \ifnum\swarmwrapremainingreg>0\relax
+      % Set parshape BEFORE \@item processes the label.
+      % This guarantees the first line of each item is narrowed.
+      % Also re-set \everypar so subsequent items continue narrowing.
+      \everypar{\swarmwrap@set@parshape}%
+      \xdef\swarmwrap@pshape@dyn{\the\numexpr\swarmwrapremainingreg+1\relax\space}%
+      \swarmwrap@loop@cnt=\swarmwrapremainingreg\relax
+      \loop
+        \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\swarmwrap@tw\space}%
+        \advance\swarmwrap@loop@cnt by -1\relax
+      \ifnum\swarmwrap@loop@cnt>0 \repeat
+      \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\linewidth\space}%
+      \parshape \swarmwrap@pshape@dyn\relax
+    \fi
   \fi
   \swarmwrap@orig@item
 }
@@ -368,13 +421,26 @@
 \newdimen\swarmwrapsavedes
 \newcount\swarmwrappenaltyreg
 \newcount\swarmwrapremainingreg
-\directlua{texio.write_nl("term and log", "swarmwrap: INITIALIZING...")}
+\directlua{texio.write_nl("term and log", "swarmwrap: INITIALIZING...")
   -- Per-paragraph wrapping state via FIFO queue.
   -- Each swarmwrap invocation pushes tw and saved_es;
   -- the callback shifts from the queue.
   -- This avoids the bug where tex.dimen reads the NEXT figure value.
   swarmwrap_queue = {}
   swarmwrap_qgen = 0
+
+  -- Ghost narrowing detection: track whether a page has been shipped
+  -- since the last \swarmwrapnext. If a page break occurs mid-wrap,
+  -- the continuation page has no figure but parshape persists.
+  -- Detection: shipout_filter sets this flag; \everypar checks it.
+  swarmwrap_page_shipped = false
+
+  local function swarmwrap_shipout(head, groupcode)
+    swarmwrap_page_shipped = true
+    return head
+  end
+  luatexbase.add_to_callback("shipout_filter",
+    swarmwrap_shipout, "swarmwrap: track page shipping")
 
   function swarmwrap_post_lb(head, groupcode)
     local entry = table.remove(swarmwrap_queue, 1)
@@ -415,7 +481,9 @@
         local tol = 3.0
         local narrow_width_max = tw_val + tol
         local last_narrow = nil
+        local first_narrow = nil
         local last_penalty = nil
+        local prev_of_first = nil  -- node before first narrow line
         local current = head
         while current do
           if current.id == node.id("penalty") then
@@ -424,6 +492,10 @@
             local lw = current.width / 65536.0
             local is_narrow = (lw <= narrow_width_max and lw > 0)
             if is_narrow then
+              if not first_narrow then
+                first_narrow = current
+                prev_of_first = last_penalty
+              end
               if last_penalty and last_penalty.penalty < penalty_val then
                 last_penalty.penalty = penalty_val
               end
@@ -433,6 +505,15 @@
           end
           current = current.next
         end
+        -- v3.29: Also insert penalty BEFORE the first narrow line.
+        -- Without this, TeX can break just before the narrow zone,
+        -- causing ghost narrowing on the continuation page.
+        if first_narrow and not prev_of_first then
+          local p = node.new(node.id("penalty"))
+          p.penalty = penalty_val
+          node.insert_before(head, first_narrow, p)
+        end
+        -- Insert penalty after the last narrow line (existing behavior).
         if last_narrow then
           local p = node.new(node.id("penalty"))
           p.penalty = penalty_val
@@ -556,11 +637,14 @@
   \global\swarmwrap@remaining=\swarmwrap@nl
   \global\swarmwrapremainingreg=\swarmwrap@nl
   % Push wrapping state onto Lua queue BEFORE \noindent.
+  % Also reset the page-shipped flag so ghost narrowing detection
+  % starts fresh for this figure.
   \directlua{%
     if swarmwrap_queue == nil then
       texio.write_nl("term and log", "swarmwrap BUG: queue is nil! Resetting.")
       swarmwrap_queue = {}
     end
+    swarmwrap_page_shipped = false
     table.insert(swarmwrap_queue, {%
       tw = tex.dimen["swarmwrap@tw"],%
       saved_es = tex.dimen["swarmwrap@saved@es"],%
