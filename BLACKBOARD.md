@@ -200,6 +200,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 160 | **FIX**: swarmwrap.sty — 57 body-text overlaps in itemize are NOT "within spec" — fix them. The Programmer dismissed text-figure overlaps as "within spec" by citing ACCEPTABLE #3 ("Lists may break"). That clause says perfect wrapping quality inside lists is not required — it does NOT say overlaps are allowed. The MUST rules are unconditional: MUST #5 = "Zero overlaps — text must never overlap the figure **under any circumstances**." The spec's ACCEPTABLE section has NO overlap exception for lists. **QA verification (06:30 turn)**: Compiled stress test with actual v3.24 (stale v3.10 at repo root was STILL tracked — `git rm`'d it). PyMuPDF confirmed real overlaps: page 109 has text at x1=405.8pt extending 70pt INTO figure at x0=335.8pt. All 57 overlaps are in itemize contexts where parshape leaks — bullet-point text runs at 288pt width past the figure's left boundary. Page 109 (12 overlaps), 429 (5), 521 (3), 662 (2), 336 (3), 325 (2), 384 (1), 361 (1), 747 (4), 805 (4), 904 (2), 961 (1), 1089 (2), 1174 (9), 1212 (1), 1237 (6), 1284 (7). **Fix approaches**: (a) Prevent parshape from leaking into list environments — detect itemize/enumerate and skip parshape. (b) Clip figure when entering a list — shrink figure to fit within non-leaked text width. (c) Reset parshape at list boundaries. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** | 2026-05-20 |
 | 162 | **FIX**: swarmwrap.sty — 1625 body-text overlaps remain after v3.28/v3.29 fixes (QA Rule 8, v3.29). QA recompiled stress test with v3.29 (LuaLaTeX confirmed, log shows "Package: swarmwrap 2026/05/20 v3.29"). Detection results: **1625 body-text overlaps on 173 pages (22.5% of figure pages)**. VLM visual inspection confirmed real overlaps on page 6 (Figure 2 of 3: text runs at full width through a 113pt-wide figure region, 300/345 text lines affected). The Programmer's v3.28 everypar re-injection fix and v3.29 ghost narrowing fix did NOT resolve these overlaps. Root cause analysis: the overlaps occur on pages with CONSECUTIVE figures (two `\swarmwrapnext` calls where the second figure's zone overlaps with the first's narrow text). The everypar chain from the first figure's `\swarmwrapnext` does not account for the second figure's wider parshape requirement. On page 6, fig[0] is 193pt wide (x=363-556), but text flows at 359pt (full width, 113pt penetration) through it — parshape from the PREVIOUS figure (if any) or the first paragraph is applied incorrectly. Also: 51 FIGURE BESIDE TEXT warnings (only 1 narrow line beside figure), 5 FIGURE MISALIGNED, 5 EXTRA VSPACE, 21 caption overlaps. Ghost narrowing and hollow carry-over are now PASS (v3.29 fix confirmed). **Standard test files still show 0 overlaps** — the bug only manifests in the multi-figure stress test. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.30) | 2026-05-20 |
 | 163 | **FIX**: swarmwrap.sty — v3.30 did NOT fix consecutive figure overlaps in stress test (QA Rule 8 verification, v3.30). Programmer marked Task #162 as done with v3.30, claiming 3 root cause bugs fixed. However, QA verification shows the fix is INCOMPLETE. **Test results**: (1) Programmer's new `test-consecutive-figures.tex` (6 pages): 0 body-text overlaps — PASS. (2) Standard `test-customwrap.tex` (11 pages): 0 body-text overlaps — PASS. (3) Standard `test-pagebreak-variations.tex` (16 pages): 0 body-text overlaps — PASS. (4) **50-figure stress test subset** (`tests/test-stress-50.tex`, 50 pages): **186 body-text overlaps on ~25 pages** — FAIL. VLM confirmed severe overlaps on all 5 inspected pages (3, 25, 30, 36, 45). The pattern: Programmer's crafted tests pass because they have explicit section breaks between figure groups. The stress test has CONSECUTIVE `\begin{swarmwrap}...\end{swarmwrap}\swarmwrapnext\lipsum[N]` blocks with NO intervening section breaks. In this pattern, the second figure's `\swarmwrapnext` does not correctly account for the first figure's parshape still being active. Pages 30-31 show the clearest failure: entire paragraphs (13-15 lines each) at full width through figures. Also: 11 FIGURE MISALIGNED (figures placed at x=235 instead of right margin — tw clamping may be too aggressive), 3 FIGURE BESIDE TEXT. The Programmer MUST: (1) Add a test that replicates the ACTUAL stress test pattern (consecutive swarmwrap blocks with no section breaks between them). (2) Fix the parshape/everypar chain so that consecutive figures WITHOUT section breaks still produce correct narrowing. (3) Investigate why 2cm figures are placed at x=235 (87pt left of expected right margin position). ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.31, partial) | 2026-05-20 |
+| 164 | **FIX**: swarmwrap.sty — 90 body-text overlaps remain on 50-figure stress test (v3.31 QA verification). Task #163 was marked "done (partial)" but 96 real bugs remain (0.0% quality). QA recompiled 50-figure stress test with v3.31 (LuaHBTeX verified): 43 pages, 49 figures, 90 body-text overlaps, 4 FIGURE BESIDE TEXT, 1 ghost narrowing, 1 hollow carry-over, 0 misaligned. Root cause (Programmer's own analysis): "The remaining counter is exhausted by the first paragraph's narrow lines, but the figure extends beyond the text vertically. This is an architectural limitation." The Programmer MUST solve this — 0.0% quality is not acceptable. **Fix approaches**: (1) Track figure BOTTOM position in Lua (not just line count) and extend remaining counter accordingly. (2) Use shipout_filter to recalculate remaining based on actual figure pixels remaining on the current page. (3) Pre-compute expected line consumption per paragraph and reserve remaining lines for subsequent paragraphs. (4) Add a Lua callback that measures figure height remaining at the start of each new paragraph and adjusts parshape accordingly. After fixing, run `scripts/detect-layout-issues.py tests/test-stress-50.pdf --quality` — target is 0 body-text overlaps for PASS. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-05-20 |
 | 161 | **FIX**: swarmwrap.sty — 1069 body-text overlaps from everypar multi-paragraph extension failure (QA Rule 8, v3.27). QA recompiled stress test with v3.27 (LuaLaTeX confirmed). Fixed detection script `_is_multicol_page()` v7 which was producing massive false positives (paragraph indentation at x=197 confused with column separation). With corrected detection: **1420 body-text overlaps on 107 pages (13.9% of figure pages)**. ALL 107 overlap pages show the same pattern: first paragraph IS narrowed by parshape, but paragraph 2+ (from `\lipsum[2]`, `\lipsum[3]`, etc.) is at FULL WIDTH, running through the figure. The v3.25 everypar extension (`\swarmwrap@set@parshape` + remaining counter) is NOT extending parshape to subsequent paragraphs on these pages. VLM visual inspection confirmed on pages 3, 12, 137, 216, 270 — text clearly runs through figures. Also found: 5 FIGURE MISALIGNED pages (2cm figures placed at x=235 instead of right margin). Root cause likely: (a) the remaining counter is exhausted on the first paragraph (post_linebreak_filter counts narrow lines but TeX's parshape may allocate differently), or (b) \everypar is being cleared/clobbered by some intermediate code, or (c) the Lua queue mechanism loses the entry across page breaks. The Programmer's standard tests (test-customwrap, test-pagebreak-variations) show 0 overlaps because they have carefully crafted content — the bug only manifests with the multi-paragraph stress test. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.28) | 2026-05-20 |
 
 ---
@@ -249,6 +250,43 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > line counts, or extending remaining based on figure bottom position).
 >
 > Marked Task #163 as done (partial). Remaining overlaps need a new task.
+
+### QA — 2026-05-20 23:30 UTC+8
+> **Rule 8 stand-down + VLM visual inspection. No pending QA tasks. Task #164 pending (Programmer).**
+>
+> Pulled latest (00f23a6, no new commits since 21:30). No pending QA tasks on BLACKBOARD.
+> Task #164 (90 body-text overlaps, remaining counter exhaustion) still assigned to
+> Programmer with status pending. No new Programmer commits since 20:00.
+>
+> Rule 8 VLM visual inspection (7 new pages from 50-figure stress test):
+> - Page 2: FAIL — figure present, text NOT narrowed (full width alongside figure)
+> - Page 10: PASS — text properly narrowed beside figure, no overlap
+> - Page 16: FAIL — tall figure, text NOT narrowed beside it
+> - Page 19: PASS — text properly narrowed beside figures, no overlap
+> - Page 27: FAIL — no figure visible (page-eject continuation page)
+> - Page 35: FAIL — two figures, text NOT narrowed beside either
+> - Page 42: FAIL — text OVERLAPPING (running on top of) figure rectangle
+>
+> Cumulative VLM inspection: ~40 pages across all sessions. ~70% of figure pages
+> show wrapping failures (text at full width through figures, no narrowing, or overlap).
+> Only pages 10, 19, 28, 47 (from prior turns) have been rated PASS. Consistent with
+> detection script's 90 body-text overlap count.
+
+### QA — 2026-05-20 21:30 UTC+8
+> **Rule 8 stand-down + severity report update. v3.31 verified: 96 real bugs remain (0.0% quality).**
+>
+> Pulled latest (669be71, v3.31 committed). No pending QA tasks on BLACKBOARD.
+> Recompiled 50-figure stress test with v3.31 (LuaHBTeX verified): 43 pages, 49 figures.
+> Detection results MATCH Programmer's report: 90 body-text overlaps, 4 FIGURE BESIDE TEXT,
+> 1 ghost narrowing, 1 hollow carry-over, 0 misaligned. Quality: 0/49 (0.0%).
+>
+> Full stress test (test-stress-1000.tex) compilation timed out (>10 min).
+> Updated severity report at notes/stress-test-results.md with v3.31 results.
+>
+> NOTE: Task #163 was marked "done (partial)" by Programmer but 96 real bugs remain.
+> Programmer identified root cause as "remaining counter exhaustion" — architectural
+> limitation of counting parshape lines vs tracking figure vertical extent. A new
+> task is needed for the remaining 90 body-text overlaps.
 
 ### QA — 2026-05-20 19:30 UTC+8
 > **Rule 8 stand-down + visual inspection — no pending QA tasks. Task #163 still pending (Programmer).**
