@@ -251,6 +251,43 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 >
 > Marked Task #163 as done (partial). Remaining overlaps need a new task.
 
+### QA — 2026-05-21 02:30 UTC+8
+> **Rule 8 stand-down + v3.11 verification. No pending QA tasks. Programmer pushed v3.11 (baselineskip fix).**
+>
+> Pulled latest (612add9, v3.11 — subtract one baselineskip from cutout height per Zoe directive).
+> No QA tasks pending. Task #164 outdated (references v3.31). Programmer has NOT created a QA review
+> task for v3.10→v3.11 changes. Per Rule 3, QA cannot self-assign.
+>
+> v3.11 detection results (50-figure stress test, 36 pages):
+> - 37 body-text overlaps (DOWN from 74 in v3.10, 90 in v3.31)
+> - 25 caption overlaps (UP from 8 in v3.10)
+> - 4 FIGURE BESIDE TEXT (UP from 3 in v3.10), including 1 CRITICAL (0 narrow lines)
+> - 1 FIGURE MISALIGNED (NEW — page 1, figure 184pt left of right margin)
+> - Total: 67 issues (DOWN from 85 in v3.10)
+>
+> VLM detailed inspection (13 pages):
+> - Page 1: PASS wrapping but MISALIGNED (figure not at right margin per VLM + detection)
+> - Page 2: PASS — 2 figures, text properly narrowed
+> - Page 3: FAIL — 1 figure, text at full width (no narrowing)
+> - Page 6: PASS — 1 figure, text properly narrowed
+> - Page 7: PASS — 2 figures, text properly narrowed
+> - Page 11: PASS — 1 figure, text properly narrowed
+> - Page 15: MIXED — top figure: full-width text through it; bottom figure: narrowed
+> - Page 20: FAIL — 1 figure, text at full width
+> - Page 25: N/A — no figure
+> - Page 29: FAIL — 1 figure, text at full width
+> - Page 33: PASS — 1 figure, text properly narrowed
+> - Page 36: FAIL — 1 figure, text at full width (CRITICAL: 0 narrow lines per detection)
+>
+> VLM pass rate: ~55% (6/11 figure pages show some narrowing). Still far from acceptable.
+> The baselineskip fix halved body-text overlaps but did not eliminate the core issue.
+>
+> Key concern: detection script reports 37 body-text overlaps but VLM says most inspected
+> pages show text is narrowed. Possible detection script false positives — the script may be
+> counting caption text near figures as body text overlaps. Needs investigation.
+>
+> 1000-page PDF still not tested (still corrupted from previous build).
+
 ### QA — 2026-05-21 01:30 UTC+8
 > **Rule 8 stand-down + v3.10 revert verification. No pending QA tasks. Task #164 outdated — Programmer reverted to v3.10.**
 >
