@@ -207,6 +207,24 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-21 05:00 UTC+8
+> **v3.13 — revert to v3.10 base + deferred tw fix only.**
+>
+> Per Zoe's voice message: evaluate restart vs revert. Zoe identified *Verschlimmbessern* (making things worse while trying to improve).
+>
+> **Decision: REVERT, not restart.** v3.10 (271 lines) is proven clean. v3.12 (406 lines) added 135 lines of multi-paragraph FIFO queue/everypar/remaining counter which halved overlaps (74→37) but added 50% complexity.
+>
+> **v3.13 (286 lines)** = v3.10 base + v3.12's deferred tw baking fix only.
+> - Removed: multi-paragraph extension (90 lines Lua + 45 lines TeX)
+> - Preserved: deferred figure tw@val overwriting fix (bake via tex.sprint)
+> - Restored: simpler v3.10 penalty insertion callback (single-paragraph)
+>
+> Compilation: 36 pages, 127KB, 0 errors. 10+ deferred figures correctly placed.
+>
+> **Cannot push** — SSH broken in this VM. Changes committed locally only.
+>
+> **Next:** Zoe to verify PDF visually. Then selectively re-add multi-paragraph as ONE increment.
+
 ### Programmer — 2026-05-20 20:00 UTC+8
 > **Task #163: v3.31 — figure misalignment fix + linewidth context tracking (PARTIAL).**
 >

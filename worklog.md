@@ -472,3 +472,23 @@ Stage Summary:
 - swarmwrap.sty reverted to v3.10
 - v3.10 is strictly better than v3.31 on all metrics
 - Commit: 49c4519
+
+---
+Task ID: 1
+Agent: Programmer
+Task: v3.12 multi-paragraph parshape extension + deferred figure fix (Task #164)
+
+Work Log:
+- Read programmer-rules.md, BLACKBOARD.md, wrapping-specs.md
+- Analyzed root cause of body-text overlaps in stress test
+- Implemented everypar + Lua remaining counter for multi-paragraph narrowing
+- Fixed deferred figure tw overwrite bug (afterpage + global macro issue)
+- Reverted v3.11 baselineskip subtraction
+- Discovered detection script false positive issue (320/49 FP)
+- Compiled all test files (0 errors)
+- Committed as 1683ebc (push failed due to VM git credentials)
+
+Stage Summary:
+- swarmwrap.sty updated to v3.12 with 3 fixes
+- Detection script has critical false positive issue (horizontal overlap not checked)
+- Push pending (VM has no git credentials)

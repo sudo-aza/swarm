@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.12)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.13)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -61,15 +61,13 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
-% v3.12: Multi-paragraph parshape extension via \everypar + Lua
-%   remaining counter. TeX's \parshape only applies to ONE paragraph;
-%   when \lipsum[1]\lipsum[2] produces multiple paragraphs, only the
-%   first was narrowed (paragraphs 2+ overlapped the figure at full
-%   width). Fix: track remaining narrow lines and use \everypar to
-%   re-inject \parshape at the start of each subsequent paragraph
-%   until the narrow zone is exhausted. Also reverted v3.11's
-%   baselineskip subtraction (caused off-page figure positioning).
-%
+% v3.13: Reverted to v3.10 base (271 lines) + deferred tw bake fix only.
+%   Removed v3.12 multi-paragraph extension (135 lines of FIFO queue,
+%   everypar injection, remaining counter). v3.12 halved overlaps (74→37)
+%   but added significant complexity. Starting clean from v3.10.
+%   v3.12's deferred tw@val overwriting bug fix preserved (bake tw as
+%   literal dimension into \afterpage token list via tex.sprint).
+
 % v3.10: Deferred figure placement. When the figure doesn't fit on the
 %   current page (\pagegoal - \pagetotal < figure height), it is placed
 %   at the top of the next page via \afterpage instead of being clipped.
@@ -92,7 +90,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/21 v3.12 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/21 v3.13 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -124,145 +122,55 @@
   \swarmwrap@penalty=#1\relax
 }
 
-% Lua-readable registers for the post_linebreak_filter callback.
+% Lua-readable register for the current wrapped text width.
+% Set by \swarmwrapnext; read by the post_linebreak_filter callback.
 \newdimen\swarmwrap@tw@lua
 \swarmwrap@tw@lua=0pt
 
-% Remaining narrow lines counter (v3.12).
-% TeX's \parshape only applies to ONE paragraph. When \lipsum[1]\lipsum[2]
-% produces multiple paragraphs, only the first is narrowed. The fix: track
-% how many narrow lines remain and use \everypar to re-inject \parshape
-% at the start of each subsequent paragraph until the narrow zone is
-% exhausted.
-\newcount\swarmwrap@remaining
-\swarmwrap@remaining=0
-
-% Saved emergencystretch to restore after wrapping is done.
-\newdimen\swarmwrap@saved@es
-\swarmwrap@saved@es=0pt
-
-% Command to set parshape for remaining lines (called from \everypar).
-% Builds a dynamic parshape with \swarmwrap@remaining narrow lines + 1
-% full-width line, then clears \everypar when remaining reaches 0.
-\newcommand{\swarmwrap@set@parshape}{%
-  \ifnum\swarmwrap@remaining>0\relax
-    \xdef\swarmwrap@pshape@dyn{\the\numexpr\swarmwrap@remaining+1\relax\space}%
-    \swarmwrap@loop@cnt=\swarmwrap@remaining\relax
-    \loop
-      \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\swarmwrap@tw\space}%
-      \advance\swarmwrap@loop@cnt by -1\relax
-    \ifnum\swarmwrap@loop@cnt>0 \repeat
-    \xdef\swarmwrap@pshape@dyn{\swarmwrap@pshape@dyn 0pt \the\linewidth\space}%
-    \parshape \swarmwrap@pshape@dyn\relax
-  \else
-    \everypar{}%  % Clear everypar when narrow zone exhausted
-  \fi
-}
-
 % ── Lua callback: post_linebreak_filter ───────────────────────────────
-% Dual purpose in v3.12:
-%   (a) Count narrow lines consumed by each paragraph and update the
-%       remaining counter so \everypar knows when to stop.
-%   (b) Insert a penalty at the boundary between the last narrowed line
-%       and the first full-width line (v3.6 feature) for the FIRST
-%       paragraph only.
-%
-% Uses a FIFO queue to handle consecutive swarmwrap invocations where
-% a second \swarmwrapnext fires before the first paragraph completes.
+% When a paragraph is broken into lines, this callback checks whether
+% a parshape narrowing is active (swarmwrap@tw@lua > 0). If so, it
+% identifies the boundary between the last narrowed line and the first
+% full-width line, and inserts a penalty node there. This discourages
+% TeX from breaking the page at the transition point, which would cause
+% ghost narrowing on the continuation page.
 
 \ifswarmwrap@luatex
 \directlua{
-  -- Per-paragraph wrapping state via FIFO queue.
-  -- Each swarmwrap invocation pushes tw, saved_es, remaining onto the queue.
-  -- post_linebreak_filter pops one entry per paragraph.
-  swarmwrap_queue = swarmwrap_queue or {}
-
   function swarmwrap_post_lb(head, groupcode)
-    -- Pop the next entry from the queue
-    local entry = table.remove(swarmwrap_queue, 1)
-    if not entry then
+    local tw_sp = tex.dimen["swarmwrap@tw@lua"]
+    if tw_sp <= 0 then
       return head
     end
-
-    local tw_sp = entry.tw
-    local remaining = entry.remaining or 0
-
-    -- Count narrow lines in this paragraph and update remaining counter
-    local narrow_count = 0
-    if tw_sp > 0 and remaining > 0 then
-      local tw_val = tw_sp / 65536.0
-      local tol = 3.0  -- pt tolerance
-      local narrow_width_max = tw_val + tol
-      local current = head
-      while current do
-        if current.id == 0 then  -- hlist node (a broken line)
-          local lw = current.width / 65536.0
-          if lw <= narrow_width_max and lw > 0 then
-            narrow_count = narrow_count + 1
-          end
-        end
-        current = current.next
-      end
+    local penalty_val = tex.count["swarmwrap@penalty"]
+    if penalty_val == 0 then
+      return head
     end
-
-    -- Update remaining counter
-    remaining = math.max(0, remaining - narrow_count)
-    tex.count["swarmwrap@remaining"] = remaining
-
-    -- Insert penalty at boundary (v3.6 feature) — first paragraph only
-    if tw_sp > 0 and entry.saved_es and entry.saved_es ~= 0 then
-      local penalty_val = tex.count["swarmwrap@penalty"]
-      if penalty_val > 0 then
-        local tw_val = tw_sp / 65536.0
-        local tol = 3.0
-        local narrow_width_max = tw_val + tol
-        local last_narrow = nil
-        local last_penalty = nil
-        local current = head
-        while current do
-          if current.id == node.id("penalty") then
-            last_penalty = current
-          elseif current.id == 0 then
-            local lw = current.width / 65536.0
-            local is_narrow = (lw <= narrow_width_max and lw > 0)
-            if is_narrow then
-              if last_penalty and last_penalty.penalty < penalty_val then
-                last_penalty.penalty = penalty_val
-              end
-              last_narrow = current
-            end
-            last_penalty = nil
-          end
-          current = current.next
-        end
-        if last_narrow then
-          local p = node.new(node.id("penalty"))
-          p.penalty = penalty_val
-          node.insert_after(head, last_narrow, p)
+    -- Convert skip to scaled points for comparison
+    local tw_val = tw_sp / 65536.0
+    local tol = 3.0  -- pt tolerance
+    local narrow_width_max = tw_val + tol
+    -- Walk the node list to find the last narrowed hlist
+    local last_narrow = nil
+    local current = head
+    while current do
+      if current.id == 0 then  -- hlist node (a broken line)
+        local lw = current.width / 65536.0
+        if lw <= narrow_width_max and lw > 0 then
+          last_narrow = current
         end
       end
+      current = current.next
     end
-
-    -- Restore saved emergencystretch
-    if entry.saved_es then
-      tex.dimen["swarmwrap@saved@es"] = entry.saved_es
+    if last_narrow then
+      local p = node.new(node.id("penalty"))
+      p.penalty = penalty_val
+      node.insert_after(head, last_narrow, p)
     end
-
-    -- If narrow lines remain, push entry back for the next paragraph.
-    -- saved_es is set to 0 so the penalty logic only fires for the
-    -- first paragraph (avoids duplicate penalties on paragraph 2+).
-    if remaining > 0 then
-      table.insert(swarmwrap_queue, {
-        tw = tw_sp,
-        saved_es = 0,
-        remaining = remaining
-      })
-    end
-
     return head
   end
   luatexbase.add_to_callback("post_linebreak_filter",
-    swarmwrap_post_lb, "swarmwrap: multi-paragraph parshape + penalty")
+    swarmwrap_post_lb, "swarmwrap: penalty at parshape boundary")
 }
 \fi
 
@@ -306,15 +214,13 @@
 % All computation happens here so \linewidth is captured at the
 % correct location (inside multicol, itemize, etc.).
 %
-% Figure placement strategy (v3.10/v3.12):
+% Figure placement strategy (v3.10):
 %   1. Compute parshape from full figure height (text always stays).
 %   2. Check if figure fits: \pagegoal - \pagetotal >= figure height.
 %   3. If fits → place inline with \smash{\rlap{}}.
 %   4. If doesn't fit → defer to top of next page via \afterpage.
 %      The deferred figure appears beside the continuation text on the
 %      next page, turning ghost narrowing into real wrapping.
-%   5. (v3.12) Set \everypar to extend parshape across paragraph
-%      boundaries until the narrow zone is exhausted.
 
 \ifswarmwrap@luatex
 \newcommand{\swarmwrapnext}{%
@@ -325,7 +231,6 @@
   \advance\swarmwrap@tw by -14pt
   \swarmwrap@nl=0
   \swarmwrap@fh=\swarmwrap@fh@val\relax
-  % Compute nl: number of baselineskips that fit in figure height.
   \dimen0=\swarmwrap@fh
   \loop
     \advance\swarmwrap@nl by 1
@@ -342,31 +247,9 @@
     \advance\swarmwrap@loop@cnt by -1
   \ifnum\swarmwrap@loop@cnt>0 \repeat
   \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
-  % ── Save pre-existing emergencystretch ─────────────────────────
-  \swarmwrap@saved@es=\emergencystretch
-  \emergencystretch=\fontdimen6\font\relax
-  % ── Set remaining counter for multi-paragraph extension (v3.12) ─
-  \global\swarmwrap@remaining=\swarmwrap@nl
-  % Clear any stale queue entries from previous swarmwrap invocations.
-  % Without this, entries from a figure inside multicol/itemize can
-  % linger and be consumed by the next figure's paragraphs, causing
-  % wrong parshape values (stale tw/remaining) and full-width overlaps.
-  \directlua{%
-    if swarmwrap_queue == nil then
-      swarmwrap_queue = {}
-    end
-    swarmwrap_queue = {}  -- clear stale entries
-    table.insert(swarmwrap_queue, {%
-      tw = tex.dimen["swarmwrap@tw"],%
-      saved_es = tex.dimen["swarmwrap@saved@es"],%
-      remaining = tonumber(tex.count["swarmwrap@remaining"])%
-    })%
-  }%
-  % Set \everypar to re-inject parshape for subsequent paragraphs.
-  % TeX's \parshape only applies to ONE paragraph. This ensures the
-  % narrowing continues across \lipsum[1]\lipsum[2] paragraph boundaries.
-  \everypar{\swarmwrap@set@parshape}%
   % ── Apply standard wrapping ────────────────────────────────────
+  % emergencystretch absorbs overfull hbox on narrowed parshape lines
+  \emergencystretch=\fontdimen6\font\relax
   \noindent
   \parshape \swarmwrap@pshape\relax
   % ── Figure placement: inline or deferred ───────────────────────
@@ -376,12 +259,9 @@
   \dimen1=\swarmwrap@fh@val\relax
   \ifdim\dimen0<\dimen1
     % Figure doesn't fit — defer to top of next page via afterpage.
-    % CRITICAL FIX (v3.12): \swarmwrap@tw@val is a global macro that gets
-    % overwritten by later \swarmwrapnext calls. If we use it directly in
-    % \afterpage, the deferred figure uses the WRONG tw (from a later
-    % figure), causing it to be placed too far right (off-page).
-    % Fix: use Lua to bake the tw value as a literal dimension string
-    % into the \afterpage token list at definition time.
+    % CRITICAL: \swarmwrap@tw@val is a global macro that gets overwritten
+    % by later \swarmwrapnext calls. Bake the tw value as a literal
+    % dimension string into the \afterpage token list at definition time.
     \directlua{
       local tw = tex.dimen["swarmwrap@tw"]
       tex.sprint(string.format(
@@ -390,11 +270,11 @@
         "\\hbox{\\copy\\swarmwrap@box}}}}",
         tw / 65536.0))
     }%
-    \wlog{swarmwrap next: DEFERRED — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining\_cnt=\the\swarmwrap@remaining}%
+    \wlog{swarmwrap next: DEFERRED — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
     % Figure fits — place inline.
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
-    \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0, remaining\_cnt=\the\swarmwrap@remaining}%
+    \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
   \fi
 }%
 \else
