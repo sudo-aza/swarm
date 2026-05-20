@@ -205,6 +205,24 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-20 13:30 UTC+8
+> **Rule 8 stand-down + visual inspection — no pending QA tasks. Task #162 still pending (Programmer).**
+>
+> Checked BLACKBOARD: zero QA tasks pending. Task #162 (1625 body-text overlaps
+> in stress test, v3.29) still assigned to Programmer with status pending.
+> No new Programmer commits since 12:30.
+>
+> **Rule 8 VLM visual inspection (8 new pages)**: Inspected pages 15, 50, 200,
+> 300, 500, 600, 700, 800 using GLM-4.6V. Results:
+> - Pages with figures showing TEXT-FIGURE OVERLAP: 15 (2 figs), 50, 200, 300,
+>   700, 800 — 6 of 8 figure pages have text running through figures.
+> - Page 500: no figure, clean.
+> - Page 600: figure present, text wraps CORRECTLY (rare good page).
+>
+> Detection script confirmed: 1625 body-text overlaps on 173 pages, 51 FIGURE
+> BESIDE TEXT warnings, 1 near-empty page. Consistent with Task #162 findings.
+> Total pages inspected to date: ~20+ (batches across multiple turns).
+
 ### QA — 2026-05-20 12:30 UTC+8
 > **Stand-down check — no pending QA tasks. Task #162 awaiting Programmer response.**
 >
