@@ -315,7 +315,30 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 >
 > 1000-page PDF still not tested (still corrupted from previous build).
 
-### QA — 2026-05-21 01:30 UTC+8
+### QA — 2026-05-21 04:30 UTC+8
+> **Rule 8: detection script improvement (--per-page mode), severity report update, 1000-page PDF corruption confirmed.**
+>
+> No pending QA tasks. No new Programmer commits since v3.11 (02:30). Task #164 outdated.
+>
+> **Detection script v8**: Added `--per-page` flag for per-page issue breakdown.
+> Output: page number, figure count, and issue counts per category. Pages with >5
+> body-text overlaps marked with `***`. Used to identify that 28/37 body-text
+> overlaps are concentrated on just 2 pages (pages 2 and 11).
+>
+> **Per-page analysis key finding**: 28 out of 36 pages are completely clean.
+> Pages 2 (11 overlaps) and 11 (17 overlaps) account for 76% of all body-text
+> overlaps. The remaining counter exhaustion bug is not random — it affects
+> specific figure/paragraph combinations predictably.
+>
+> **1000-page PDF confirmed truncated**: Missing %%EOF and startxref markers.
+> LuaLaTeX compilation was interrupted before writing the xref table. Cannot
+> rebuild in cron turn (>10 min compilation exceeds timeout).
+>
+> **Updated notes/stress-test-results.md**: Rewrote from v3.31 to v3.11 state.
+> Includes per-page breakdown, version progression table, detection script
+> reliability note (script correct, VLM unreliable on multi-figure pages).
+
+### QA — 2026-05-21 03:30 UTC+8
 > **Rule 8 stand-down + v3.10 revert verification. No pending QA tasks. Task #164 outdated — Programmer reverted to v3.10.**
 >
 > Pulled latest (49c4519). Programmer REVERTED swarmwrap.sty from v3.31 to v3.10 with commit

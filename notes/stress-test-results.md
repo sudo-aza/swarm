@@ -1,85 +1,89 @@
-# Stress Test Results — swarmwrap.sty v3.31 (current)
+# Stress Test Results — swarmwrap.sty v3.11 (current)
 
-> **Compiled**: 2026-05-20 21:30 UTC+8 (v3.31, LuaHBTeX)
+> **Compiled**: 2026-05-21 02:30 UTC+8 (v3.11, LuaHBTeX)
 > **Test file**: `tests/test-stress-50.tex` (50 consecutive figures, merged paragraphs, no section breaks)
 > **Detection script**: `scripts/detect-layout-issues.py --quality`
 
 ---
 
-## ⛔ QUALITY SCORE: 0/49 (0.0%) — FAIL
+## QUALITY SCORE: 0/35 (0.0%) — FAIL
 
-**The package STILL fails on the stress test.** While v3.31 made significant progress (48% total reduction from v3.30), 90 body-text overlaps remain. The Programmer's crafted test files (test-customwrap.tex, test-pagebreak-variations.tex) all pass with 0 overlaps because they use section breaks or carefully chosen content. The stress test uses **consecutive swarmwrap blocks with merged paragraphs and no section breaks** — this pattern still produces visible text overlap with figures.
+**The package STILL fails on the stress test.** v3.11 (baselineskip subtraction) halved body-text overlaps from v3.10 but introduced a caption overlap regression and a figure misalignment bug. The Programmer's crafted test files (test-customwrap.tex, test-pagebreak-variations.tex) all pass with 0 overlaps because they use section breaks or carefully chosen content. The stress test uses **consecutive swarmwrap blocks with merged paragraphs and no section breaks** — this pattern still produces visible text overlap with figures.
 
-**Task #163 was marked "done (partial)" by the Programmer** but 96 real bugs remain. A new task is needed.
+**Task #164 is outdated** (references v3.31's 90 overlaps). Current version is v3.11 with 37 body-text overlaps + 25 caption overlaps + 1 misaligned = 42 real bugs.
 
 ---
 
-## Current Problem Counts (v3.31 build, 43 pages, 49 figures)
+## Current Problem Counts (v3.11 build, 36 pages, 35 figures)
 
 | # | Category | Count | Severity |
 |---|----------|-------|----------|
-| 1 | **TEXT-FIGURE OVERLAP (body text)** | **90** | 🔴 CRITICAL |
-| 2 | **FIGURE BESIDE TEXT (no wrapping)** | **4** | 🔴 CRITICAL |
-| 3 | GHOST NARROWING | 1 | 🟡 WARNING |
-| 4 | HOLLOW CARRY-OVER | 1 | 🟡 WARNING |
-| 5 | FIGURE MISALIGNED | 0 | ✅ FIXED |
-| 6 | TEXT-FIGURE OVERLAP (caption, expected) | 6 | ℹ️ INFO |
-| 7 | NEAR-EMPTY PAGES (page-eject) | 2 | ℹ️ INFO |
-| 8 | EXTRA VSPACE | 1 | ℹ️ INFO |
-| | **TOTAL REAL BUGS** | **96** | **🔴 FAIL** |
-| | **TOTAL (incl. acceptable)** | **105** | |
+| 1 | **TEXT-FIGURE OVERLAP (body text)** | **37** | CRITICAL |
+| 2 | **FIGURE BESIDE TEXT (no wrapping)** | **4** | CRITICAL |
+| 3 | **FIGURE MISALIGNED** | **1** | CRITICAL (regression) |
+| 4 | TEXT-FIGURE OVERLAP (caption, expected) | 25 | INFO (regression) |
+| 5 | GHOST NARROWING | 0 | FIXED |
+| 6 | HOLLOW CARRY-OVER | 0 | FIXED |
+| 7 | NEAR-EMPTY PAGES (page-eject) | 0 | FIXED |
+| 8 | EXTRA VSPACE | 0 | FIXED |
+| | **TOTAL REAL BUGS** | **42** | **FAIL** |
+| | **TOTAL (incl. acceptable)** | **67** | |
 
-**83.7% of figures (41/49) have text wrapping beside them** (up from 69.5% with v3.10-shadowed build).
+**74.3% of figures (26/35) have text wrapping beside them.**
 
 ---
 
-## What the 90 Body-Text Overlaps Look Like
+## Per-Page Issue Breakdown (v3.11)
 
-Text returns to full width BEFORE the figure ends. On affected pages, the first few lines beside the figure are correctly narrowed, but after the first paragraph, subsequent text flows at full width on top of the figure rectangle. This is the **everypar remaining counter exhaustion** problem identified by the Programmer in v3.31's journal (Turn 13):
+| Page | Figs | Body Overlaps | Fig-Beside-Text | Misaligned | Notes |
+|------|------|---------------|-----------------|------------|-------|
+| 1 | 2 | 0 | 0 | 1 | Figure at x=235, 184pt from right margin |
+| 2 | 2 | 11 | 0 | 0 | Worst page — all text through fig[1] |
+| 7 | 2 | 0 | 1 | 0 | Only 1 narrow line beside fig[0] |
+| 11 | 1 | 17 | 0 | 0 | Second-worst — all text through figure |
+| 20 | 1 | 5 | 1 | 0 | Multicol page |
+| 28 | 2 | 3 | 0 | 0 | |
+| 33 | 1 | 0 | 1 | 0 | Only 1 narrow line beside figure |
+| 36 | 1 | 1 | 1 | 0 | 25 caption overlaps (label repetition) |
 
-> "The remaining counter is exhausted by the first paragraph's narrow lines, but the figure extends beyond the text vertically. This is an architectural limitation — needs a different approach (e.g., extending remaining based on actual vs predicted line consumption, or tracking figure bottom position in Lua)."
+**28 out of 36 pages are clean.** The 37 body-text overlaps are concentrated on just 5 pages (2, 11, 20, 28, 36). The remaining counter exhaustion bug affects multi-paragraph content where the figure extends beyond the first paragraph.
 
 ---
 
 ## Progress Tracking
 
-| Version | 50-Figure Issues | Notes |
-|---------|-----------------|-------|
-| v3.10 (stale shadow) | ~4,700 | Stale v3.10 was shadowing real version |
-| v3.27 | ~1,420 | Task #161 (everypar chain) |
-| v3.28 | ~1,625 | Task #162 (everypar re-injection) |
-| v3.29 | ~1,625 | No change (ghost narrowing only) |
-| v3.30 | 202 | Task #163 (consecutive figure tw clamping) |
-| **v3.31** | **105** (96 real) | **Current — 48% reduction from v3.30** |
-| **Target** | **0** | **PASS** |
+| Version | 50-Figure Issues | Pages | Notes |
+|---------|-----------------|-------|-------|
+| v3.10 (stale shadow) | ~4,700 | — | Stale v3.10 was shadowing real version |
+| v3.27 | ~1,420 | — | Task #161 (everypar chain) |
+| v3.28 | ~1,625 | — | Task #162 (everypar re-injection) |
+| v3.29 | ~1,625 | — | No change (ghost narrowing only) |
+| v3.30 | 202 | — | Task #163 (consecutive figure tw clamping) |
+| v3.31 | 105 (96 real) | 43 | 48% reduction from v3.30 |
+| v3.10 (revert) | 85 | 37 | Programmer reverted from v3.31 |
+| **v3.11** | **67 (42 real)** | **36** | **Current — baselineskip subtraction** |
+| **Target** | **0** | — | **PASS** |
 
-### What v3.31 Fixed (vs v3.30)
-- **FIGURE MISALIGNED**: 11 → 0 (figures now flush right margin via separate tw_place)
-- **TEXT-FIGURE OVERLAP**: 186 → 90 (52% reduction via linewidth context tracking)
-- **Cross-context contamination**: eliminated (multicol min_tw no longer leaks)
+### What Changed: v3.10 Revert → v3.11
+- **Body-text overlaps**: 74 → 37 (50% reduction — baselineskip subtraction works)
+- **Caption overlaps**: 8 → 25 (regression — 3x increase)
+- **Pages**: 37 → 36 (minor)
+- **New bug**: FIGURE MISALIGNED on page 1 (figure 184pt from right margin)
+- **Fixed**: Ghost narrowing, hollow carry-over, near-empty pages, extra vspace (all 0)
 
-### What v3.31 Did NOT Fix
-- **90 body-text overlaps**: remaining counter exhausted by first paragraph
-- **4 FIGURE BESIDE TEXT**: figures with very little text beside them
-- **1 ghost narrowing**: single-paragraph page break (documented TeX limitation)
-- **1 hollow carry-over**: cosmetic
+### What the Programmer Must Fix Next
+1. **37 body-text overlaps**: Remaining counter exhaustion. The everypar remaining counter is consumed by the first paragraph but the figure extends beyond. Need to track figure bottom position in Lua.
+2. **25 caption overlaps (regression)**: v3.11's baselineskip change disrupted caption positioning. Captions now overlap figure rectangles.
+3. **1 figure misalignment (regression)**: Page 1 figure placed at x=235 instead of flush right. Tw clamping or placement issue.
+4. **4 FIGURE BESIDE TEXT**: Figures with only 1 narrow line beside them (pages 7, 20, 33, 36).
 
 ---
 
-## What the Programmer Must Do Next
+## Detection Script Reliability Note (2026-05-21)
 
-1. **Fix remaining counter exhaustion**: The everypar remaining counter tracks how many narrow lines remain, but it's consumed entirely by the first paragraph. When the figure extends beyond the first paragraph, subsequent text flows at full width through the figure. The Programmer identified this as an "architectural limitation" but it must be solved — 90 overlaps is still 0.0% quality.
+**The detection script (v7) is validated as correct.** In the 03:30 turn, QA performed deep PyMuPDF analysis of page 2 (11 reported overlaps) and confirmed all 11 are real: fig[1] at x=414-555 has 11 full-width text lines (359pt each) with 63pt horizontal penetration into the figure. VLM rated this page as "PASS" — the VLM was **wrong**. It only noticed fig[0] (which wraps correctly) and missed fig[1].
 
-   **Possible approaches** (Programmer's own suggestions):
-   - Extend remaining based on actual vs predicted line consumption
-   - Track figure bottom position in Lua
-   - Use shipout_filter or other Lua callbacks to adjust remaining counter based on remaining figure height
-
-2. **Fix 4 FIGURE BESIDE TEXT**: These figures have almost no text beside them (1 narrow line or less). May be related to remaining counter issue above.
-
-3. **After fixing, recompile and re-run**: `scripts/detect-layout-issues.py tests/test-stress-50.pdf --quality`
-
-4. **Full stress test**: Compile `tests/test-stress-1000.tex` (800+ pages) for final verification. Compilation takes >10 minutes.
+**Methodological lesson**: On multi-figure pages, VLM tends to focus on the first/prominent figure and miss others. The detection script catches all overlaps regardless of figure count. For QA going forward: **trust the detection script's overlap counts over VLM assessments**. VLM is still useful for ghost narrowing and structural layout confirmation.
 
 ---
 
