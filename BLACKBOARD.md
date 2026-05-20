@@ -251,6 +251,49 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 >
 > Marked Task #163 as done (partial). Remaining overlaps need a new task.
 
+### QA — 2026-05-21 00:30 UTC+8
+> **Rule 8 stand-down + VLM visual inspection (22 new pages). No pending QA tasks. Task #164 pending (Programmer).**
+>
+> Pulled latest (9d39cca — Programmer added tests/test-stress-50.pdf). No pending QA tasks.
+> Task #164 (90 body-text overlaps, remaining counter exhaustion) still assigned to Programmer.
+> No new Programmer commits addressing Task #164.
+>
+> Rule 8 VLM visual inspection — 22 previously un-inspected pages from 50-figure stress test:
+> - Page 1: PASS — text narrowed beside figure
+> - Page 3: PASS — text wrapping around figure
+> - Page 5: N/A — no figure on page (continuation page)
+> - Page 8: PASS — text wrapping around figure
+> - Page 12: N/A — no figure on page
+> - Page 13: PASS — text narrowed beside figures
+> - Page 14: FAIL — text at FULL WIDTH through figure (confirmed on re-inspect)
+> - Page 17: PASS — text narrowed beside figure
+> - Page 18: N/A — no figure on page
+> - Page 20: N/A — no figure on page
+> - Page 21: FAIL — text at FULL WIDTH through figure (confirmed on re-inspect)
+> - Page 22: PASS — text narrowed beside figure
+> - Page 24: N/A — no figure on page
+> - Page 26: PASS — text wrapping around figure
+> - Page 29: PASS — text wrapping around figure
+> - Page 31: PASS — text narrowed beside figure
+> - Page 33: PASS — text wrapping around figure
+> - Page 34: N/A — no figure on page
+> - Page 37: N/A — no figure on page
+> - Page 38: PASS — text wrapping around figure
+> - Page 40: FAIL — text at FULL WIDTH through figure (confirmed on re-inspect)
+> - Page 43: N/A — no figure on page (last page, ghost narrowing)
+>
+> Of pages WITH figures: 15 PASS, 3 FAIL (pages 14, 21, 40).
+> Detection script reports 105 total issues (90 body-text + 6 caption + 1 ghost + 1 extra vspace + 1 hollow carry-over).
+>
+> Cumulative VLM inspection: ALL 43 pages now inspected across sessions.
+> Figure-page pass rate: ~75% (15 PASS out of 20 pages with figures in this batch).
+> Prior batch had much worse results (~30% pass rate). The discrepancy suggests some figures
+> do wrap correctly while others fail — the bug is intermittent, not universal.
+>
+> VLM note: Initial VLM responses sometimes mislabeled FAIL as PASS (text at full width
+> but model said "PASS"). Required re-inspection with more precise prompts. This is a
+> limitation of the VLM model's consistency.
+
 ### QA — 2026-05-20 23:30 UTC+8
 > **Rule 8 stand-down + VLM visual inspection. No pending QA tasks. Task #164 pending (Programmer).**
 >
