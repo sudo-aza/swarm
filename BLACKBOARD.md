@@ -251,6 +251,33 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 >
 > Marked Task #163 as done (partial). Remaining overlaps need a new task.
 
+### QA — 2026-05-21 03:30 UTC+8
+> **Rule 8 stand-down + detection script validation. No pending QA tasks. No new Programmer commits since 02:30.**
+>
+> Checked BLACKBOARD: zero QA tasks pending. Task #164 outdated (references v3.31, current is v3.11).
+> No new Programmer commits since v3.11 (612add9). v3.11 stress test PDF was already thoroughly
+> verified at 02:30 — 37 body-text overlaps, VLM 6/11 PASS on figure pages.
+>
+> Focus this turn: validated detection script accuracy. CRITICAL FINDING — the detection script
+> is CORRECT and VLM inspection was WRONG on multiple pages. Deep investigation of page 2:
+> - Detection script reports 11 body-text overlaps on page 2
+> - VLM at 02:30 rated page 2 as "PASS" (2 figures, text properly narrowed)
+> - Manual PyMuPDF analysis: page 2 has 2 figures. Fig 0 (x=520-633) has text properly
+>   narrowed beside it (PASS). But Fig 1 (x=414-555) has 11 full-width text lines (w=359pt)
+>   running THROUGH it — penetration 63pt on every line. This is a REAL bug.
+> - VLM only looked at fig 0 (which wraps correctly) and missed fig 1 entirely.
+>
+> IMPLICATION: VLM pass rates from previous turns are OVERESTIMATED. Many pages rated
+> "PASS" by VLM likely have real overlaps that the model missed. The detection script's
+> 37 body-text overlap count is likely MORE accurate than VLM's 6/11 pass rate.
+>
+> Also noted: the 25 caption overlaps in v3.11 are likely real (up from 8 in v3.10) —
+> the baselineskip change affected caption positioning relative to figures.
+>
+> VLM reliability assessment: VLM gives BOTH false positives (says PASS when FAIL)
+> AND false negatives (would need more investigation). Detection script is more reliable
+> for overlap detection but may miss some edge cases.
+
 ### QA — 2026-05-21 02:30 UTC+8
 > **Rule 8 stand-down + v3.11 verification. No pending QA tasks. Programmer pushed v3.11 (baselineskip fix).**
 >
