@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.10)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.11)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -61,6 +61,10 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.11: Subtract one \baselineskip from figure height before computing
+%   parshape line count. This makes the text cutout one line shorter per
+%   figure, reducing ghost narrowing on continuation pages by one line.
+%
 % v3.10: Deferred figure placement. When the figure doesn't fit on the
 %   current page (\pagegoal - \pagetotal < figure height), it is placed
 %   at the top of the next page via \afterpage instead of being clipped.
@@ -83,7 +87,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/19 v3.10 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/20 v3.11 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -224,7 +228,9 @@
   \advance\swarmwrap@tw by -14pt
   \swarmwrap@nl=0
   \swarmwrap@fh=\swarmwrap@fh@val\relax
+  % v3.11: subtract one baselineskip so parshape is one line shorter
   \dimen0=\swarmwrap@fh
+  \advance\dimen0 by -\baselineskip
   \loop
     \advance\swarmwrap@nl by 1
     \advance\dimen0 by -\baselineskip
