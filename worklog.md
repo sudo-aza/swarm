@@ -492,3 +492,25 @@ Stage Summary:
 - swarmwrap.sty updated to v3.12 with 3 fixes
 - Detection script has critical false positive issue (horizontal overlap not checked)
 - Push pending (VM has no git credentials)
+
+---
+Task ID: 1
+Agent: Programmer (main)
+Task: Fix consecutive figure overlaps in swarmwrap.sty v3.14
+
+Work Log:
+- Pulled latest (3e3e413, QA turns with detection script v9/v10)
+- Read programmer-rules.md, wrapping-specs.md, BLACKBOARD.md
+- Compiled stress test — 43 body-text overlaps on v3.13
+- Analyzed overlap pattern: 37/43 on pages 2, 11, 36 (consecutive figures)
+- Root cause: \noindent does NOT force paragraph break mid-paragraph
+- Fixed with two-part approach: \par + remaining-height vspace
+- Compiled v3.14: 42 pages, 0 errors, 43→0 body-text overlaps
+- Updated BLACKBOARD.md comm log, journal, committed f0aa988
+- Pushed to origin/main via gh credential helper
+
+Stage Summary:
+- v3.14 eliminates ALL body-text overlaps (43→0) and FBT (4→0)
+- 4 ghost narrowing + 4 hollow carry-over remain (page-break boundary)
+- No regressions on standard tests
+- ~20 lines of new code (vs v3.12's 135 lines)
