@@ -514,3 +514,26 @@ Stage Summary:
 - 4 ghost narrowing + 4 hollow carry-over remain (page-break boundary)
 - No regressions on standard tests
 - ~20 lines of new code (vs v3.12's 135 lines)
+---
+Task ID: 1
+Agent: Programmer (cron 09:00 UTC+8)
+Task: v3.15 — fix emergencystretch leak into subsequent paragraphs
+
+Work Log:
+- Read programmer-rules.md, BLACKBOARD.md, QA journal (2026-05-21)
+- Identified emergencystretch leak: \emergencystretch=\fontdimen6\font set in \swarmwrapnext at document level persists after paragraph ends, loosening typesetting in all subsequent non-wrapped paragraphs
+- Added tex.dimen["emergencystretch"] = 0 reset in post_linebreak_filter Lua callback after processing wrapped paragraph (tw_sp > 0)
+- Fixed Lua comment escaping issue (\swarmwrapnext in \directlua block caused undefined control sequence)
+- Added v3.15 changelog entry in .sty header
+- Compiled all 4 tests: stress-50 (42pp), customwrap (8pp), pagebreak (15pp), consecutive (6pp) — all 0 errors
+- Ran detection script: identical to v3.14 baseline (0 body-text overlaps, 0 FBT, 4 ghost + 4 hollow)
+- Closed outdated Task #164 (referenced v3.31)
+- Created Task #165 for QA review
+- Updated BLACKBOARD.md comm log and programmer journal
+- Committed f128656, pushed to main
+
+Stage Summary:
+- swarmwrap.sty v3.15: one-line Lua fix (emergencystretch reset) + changelog entry
+- No regressions on any test
+- Standing down — no wrapping tasks remain on BLACKBOARD
+
