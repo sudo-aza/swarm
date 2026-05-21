@@ -537,3 +537,32 @@ Stage Summary:
 - No regressions on any test
 - Standing down — no wrapping tasks remain on BLACKBOARD
 
+---
+Task ID: 1
+Agent: Programmer (main)
+Task: Hourly cron turn — v3.16 configurable text-figure gap
+
+Work Log:
+- Set up git credentials and gh auth token
+- Pulled latest (19a9632)
+- Read programmer-rules.md (Rule 0: wrapping-only lock, ONE task per turn)
+- Read BLACKBOARD.md (v3.15 status: 0 overlaps, QA verified 10/10)
+- Read wrapping-specs.md (key unsolved: near newpage → wrap right at next page)
+- Picked self-task per Rule 0: make hardcoded 14pt gap configurable
+- Implemented \swarmwrapgap{<dimen>} command (new \swarmwrap@gap dimen, default 14pt)
+- Replaced 3 hardcoded 14pt references with \swarmwrap@gap
+- Deferred placement: bake gap value into \afterpage token list alongside tw
+- Compiled stress test: 42 pages, 0 errors, identical to v3.15
+- Ran detection script: 0 body-text overlaps, 0 FBT (no regressions)
+- Compiled standard tests: all pass (customwrap, pagebreak, consecutive)
+- Created test-configurable-gap.tex: verified 4 gap values produce correct text widths
+- Created test-deferred-remaining.tex: verified deferred figure remaining-height behavior
+- Updated BLACKBOARD.md: v3.16 status + comm log entry
+- Updated journals/programmer/2026-05-21.md
+- Committed 1b94e6b and pushed to origin/main
+
+Stage Summary:
+- swarmwrap.sty v3.16: configurable gap, 371 lines, 0 regressions
+- New test: test-configurable-gap.tex (4 pages, 0 issues)
+- New test: test-deferred-remaining.tex (5 pages, 4 issues — all acceptable)
+- Commit: 1b94e6b pushed successfully
