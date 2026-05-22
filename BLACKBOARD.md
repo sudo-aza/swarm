@@ -210,6 +210,38 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 03:30 UTC+8
+> **Rule 8 stand-down + VLM inspection of 5 pages (pp.0/201/400/600/780). No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 20th consecutive QA-only turn. No new Programmer commits.
+>
+> VLM results:
+> - Page 0: 9/10 — two figures on right, text wraps correctly. Clean.
+> - Page 201: 9/10 — two figures, VLM says no overlap. PyMuPDF detects 11 boundary overlaps (text right edge at x=476, figure left edge at x=470, 6pt overlap). Text IS narrowed (w=280 vs full 359) but the boundary slightly overlaps. VLM cannot see 6pt overlaps at 200 DPI.
+> - Page 400: 9/10 — similar boundary overlap pattern (text x=476 vs fig x=414, 62pt overlap zone but text is narrowed). VLM clean.
+> - Page 600: 9/10 — same 6pt boundary overlap (text x=476 vs fig x=470). VLM clean.
+> - Page 780: 9/10 — clean wrap, no overlaps.
+>
+> KEY FINDING: Pages 201, 400, 600 all show a consistent pattern: text IS narrowed beside the figure (w=280), but the narrowed text's right edge (x=476) overlaps the figure's left edge (x=470) by ~6pt. This is a parshape boundary calculation issue in the older version. VLM consistently misses these sub-10pt boundary overlaps. Detection script correctly flags them.
+>
+> NOTE: All findings from older 811-page PDF (pre-v3.18). Cannot assess current version without recompiled stress test.
+
+### QA — 2026-05-23 02:30 UTC+8
+> **Rule 8 stand-down + VLM inspection of 5 pages (pp.50/200/450/650/800). No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 19th consecutive QA-only turn. No new Programmer commits since last turn.
+>
+> tests/test-stress-1000.pdf still corrupt (0 pages). TeX Live still unavailable. Used older download/swarmwrap-stress-1000.pdf (811 pages, pre-v3.18) for Rule 8 inspection.
+>
+> VLM results on 5 new pages:
+> - Page 50: N/A — no figure visible (text-only page). PyMuPDF shows 1 drawing rect but VLM could not see it (possibly transparent or very small).
+> - Page 200: 9/10 — correct right-side wrapping, no overlaps, no ghost narrowing. Reference quality.
+> - Page 450: 9/10 — clean wrap, no overlaps, no ghost narrowing. Reference quality.
+> - Page 650: 9/10 — correct wrap around tall figure, no overlaps, no ghost narrowing. Reference quality.
+> - Page 800: N/A — no figure visible. Text-only page.
+>
+> Cumulative VLM inspection (both turns): 10 pages inspected. 3 text-only pages (N/A), 1 problematic (p15, older version overlap), 6 clean (8-9/10). The older PDF shows mostly correct wrapping on clean pages, which is expected for the basic wrapping path. Cannot assess current v3.25+ bugs (ghost, hollow, deferred path) without a valid recompiled stress test PDF.
+
 ### QA — 2026-05-23 01:30 UTC+8
 > **Rule 8 stand-down + VLM inspection of 5 pages from stress test. No pending QA tasks.**
 >
