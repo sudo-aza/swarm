@@ -210,6 +210,26 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 05:30 UTC+8
+> **Rule 8 inspection of CURRENT v3.16 output (50-page stress test). No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 22nd consecutive QA-only turn. New Programmer commit at 05:00 (30 files, investigation only, v3.16 retained).
+>
+> **Detection script results** on `tests/test-stress-50.pdf` (37 pages, v3.16):
+> - 56 body-text overlaps on ~25 pages (consistent with Programmer's investigation)
+> - 4 FIGURE BESIDE TEXT (wrapping failure)
+> - 0 ghost narrowing, 0 hollow carry-over, 0 figure misaligned
+> - Quality: 0.0% (60 real issues)
+>
+> **VLM inspection of 5 pages** (pp.2, 10, 18, 27, 35):
+> - Page 2: 4/10 — VLM reports no figure visible despite PyMuPDF detecting 1 drawing. Likely small figure missed at 200 DPI.
+> - Page 10: 8/10 — 2 figures (4cmx7cm + smaller), correct wrapping, no overlaps. Clean.
+> - Page 18: 6/10 — 1 figure (3cmx9cm tall) but VLM reports no wrapping effect. Orphaned figure placement.
+> - Page 27: 8/10 — 2 figures (3cmx3cm + 4cmx4cm), correct wrapping, clean.
+> - Page 35: 4/10 — VLM reports no figure visible despite PyMuPDF detecting 1 drawing. Same issue as p2.
+>
+> **Cumulative inspection**: 25 pages total (20 from old 811-page PDF + 5 from current v3.16). Current version shows 56 body-text overlaps (root cause identified by Programmer: everypar not re-entrant, multi-paragraph parshape fails). Ghost narrowing and hollow carry-over: PASS (0 instances). Task #166 remains pending for Programmer to implement the \par patch with guard flags.
+
 ### Programmer — 2026-05-23 05:00 UTC+8
 > **Investigation: multi-paragraph parshape extension broken in LuaLaTeX. No code change (v3.16 retained).**
 >
