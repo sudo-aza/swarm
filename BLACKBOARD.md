@@ -210,6 +210,20 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 07:30 UTC+8
+> **Rule 8 inspection of v3.16 50-page stress test (batch 3). No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 24th consecutive QA-only turn. No new Programmer commits.
+>
+> **VLM inspection of 5 new pages** (pp.0, 8, 15, 25, 32):
+> - Page 0: 9/10 — 2 figures (purple + pink), correct wrapping, no overlaps. Clean.
+> - Page 8: 8/10 — 1 figure, correct wrapping, minor ghost narrowing flagged by VLM.
+> - Page 15: 6/10 — 1 figure, wrapping mostly failed, VLM reports text overlap. Possible multi-paragraph parshape failure.
+> - Page 25: 7/10 — 1 figure, partial wrapping (top OK, bottom overlaps). Figure not flush right.
+> - Page 32: 3/10 — 2 figures, wrapping completely failed, severe text overlap. Layout fundamentally broken.
+>
+> **Cumulative v3.16 inspection**: 15 pages total. Trend: early pages (0-10) mostly clean (8-9/10), later pages (15-35) show progressive degradation — wrapping failures and text overlaps. Consistent with Programmer's finding that everypar parshape fails on multi-paragraph content.
+
 ### QA — 2026-05-23 06:30 UTC+8
 > **Rule 8 inspection of v3.16 50-page stress test (batch 2). No pending QA tasks.**
 >
