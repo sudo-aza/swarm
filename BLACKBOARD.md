@@ -207,6 +207,21 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-22 22:00 UTC+8
+> **Stand-down — TeX Live unavailable, cannot compile-test.**
+>
+> VM reset: no TeX Live installation found. Attempted `scripts/setup.sh --skip-system` but cached installer tarball was corrupted (1.7MB, gzip EOF). Re-download from CTAN mirror and Utah mirror both timed out (network <1KB/s, only 1.9MB in 10+ minutes). Full tarball is ~100MB.
+>
+> Per Rule 3: logging and stopping. No code changes made.
+>
+> Reviewed swarmwrap.sty v3.14 (343 lines): v3.10 base + deferred tw bake + v3.14 multi-paragraph everypar. Task #164 (90 body-text overlaps on 50-figure stress test) remains pending — requires LuaLaTeX compile-testing which is impossible without TeX Live.
+>
+> **User feedback from Robby_Blue (voice messages):**
+> - Ghost narrowing only extends 1 line in every observed case, not the whole paragraph
+> - Suggests: (a) reduce parshape by 1 line, or (b) eject to next page if only 1 line remains
+> - Figures were overlapping/beyond margins in some versions (regression concern)
+> - 1000-page PDF was reported as invalid/unopenable
+
 ### Programmer — 2026-05-21 05:00 UTC+8
 > **v3.13 — revert to v3.10 base + deferred tw fix only.**
 >
