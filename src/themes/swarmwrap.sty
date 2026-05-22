@@ -61,6 +61,16 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.18: Multi-paragraph parshape extension fix (everypar restart mechanism).
+%   ROOT CAUSE: \everypar set in hmode (after \noindent) was never triggered
+%   by LuaLaTeX for subsequent paragraphs. The NORMAL path set everypar
+%   after entering hmode, but LuaLaTeX silently ignored it.
+%   FIX: (1) Move everypar and remaining assignment to BEFORE \parshape/\noindent
+%   (vertical mode). (2) In the everypar hook, use a "restart" mechanism:
+%   \endgraf returns to vmode, parshape is set in vmode, \noindent restarts
+%   the paragraph. A skip flag prevents infinite looping.
+%   Result: Multi-paragraph extension now works for consecutive figures.
+%
 % v3.16: List parshape preservation.
 %   Patched \\list to detect active swarmwrap wrapping and re-inject
 %   the everypar hook after list setup. This fixes body-text overlaps
@@ -115,7 +125,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/23 v3.17 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/23 v3.18 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -165,6 +175,7 @@
 \ifswarmwrap@luatex
 \directlua{
   function swarmwrap_post_lb(head, groupcode)
+    texio.write_nl("SW POST_LB FIRED")
     local tw_sp = tex.dimen["swarmwrap@tw@lua"]
     local tw_val = tw_sp / 65536.0
     local tol = 3.0
@@ -173,6 +184,7 @@
     -- and decrement the remaining counter for subsequent paragraphs.
     local rem = tex.count["swarmwrap@remaining"]
     if rem > 0 and tw_sp > 0 then
+      texio.write_nl("SW POST_LB: rem=" .. rem .. ", tw_sp=" .. (tw_sp/65536.0))
       local narrow_count = 0
       local cur = head
       while cur do
@@ -210,6 +222,7 @@
     end
     return head
   end
+
   luatexbase.add_to_callback("post_linebreak_filter",
     swarmwrap_post_lb, "swarmwrap: multi-para + penalty at parshape boundary")
 }
@@ -251,30 +264,46 @@
   \vspace{-\parskip}%
 }
 
-% ── Multi-paragraph parshape extension ──────────────────────────────
+% ── Multi-paragraph parshape extension (v3.18) ────────────────────
 % TeX's \parshape applies to ONE paragraph. When multiple paragraphs
 % follow \swarmwrapnext, only the first is narrowed. This hook extends
 % narrowing to subsequent paragraphs by re-injecting \parshape at each
 % paragraph start until all narrow lines are consumed. The remaining
 % line count is tracked via Lua post_linebreak_filter (above).
+%
+% MECHANISM: The everypar hook uses a "restart" trick. When TeX enters
+% hmode (paragraph start), everypar fires. We call \endgraf to return
+% to vmode, set \parshape there, then \noindent to restart. A flag
+% (\swarmwrap@skip) prevents infinite looping. This ensures \parshape
+% is always set in vmode before the paragraph breaker runs.
+
+\newcount\swarmwrap@skip
+\swarmwrap@skip=0
 
 \newcommand{\swarmwrap@everypar@hook}{%
-  \wlog{swarmwrap everypar CALLED: remaining=\the\swarmwrap@remaining, tw@val=\swarmwrap@tw@val}%
-  \ifnum\swarmwrap@remaining>0\relax
-    \swarmwrap@tw=\swarmwrap@tw@val\relax
-    \swarmwrap@loop@cnt=\swarmwrap@remaining
-    \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@remaining+1\relax\space}%
-    \loop
-      \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
-      \advance\swarmwrap@loop@cnt by -1
-    \ifnum\swarmwrap@loop@cnt>0 \repeat
-    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
-    \emergencystretch=\fontdimen6\font\relax
-    \noindent
-    \parshape \swarmwrap@pshape\relax
-    \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+  \wlog{swarmwrap everypar CALLED: remaining=\the\swarmwrap@remaining, tw@val=\swarmwrap@tw@val, skip=\the\swarmwrap@skip}%
+  \ifnum\swarmwrap@skip>0\relax
+    \global\swarmwrap@skip=0\relax
   \else
-    \everypar{}% All narrow lines consumed — clear hook
+    \ifnum\swarmwrap@remaining>0\relax
+      \global\swarmwrap@skip=1\relax
+      \parskip=0pt\relax% Suppress extra vspace from empty restart paragraph
+      \endgraf% Return to vmode (safe — no content yet, just entered hmode)
+      \swarmwrap@tw=\swarmwrap@tw@val\relax
+      \swarmwrap@loop@cnt=\swarmwrap@remaining
+      \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@remaining+1\relax\space}%
+      \loop
+        \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+        \advance\swarmwrap@loop@cnt by -1
+      \ifnum\swarmwrap@loop@cnt>0 \repeat
+      \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
+      \parshape \swarmwrap@pshape\relax
+      \emergencystretch=\fontdimen6\font\relax
+      \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+      \noindent% Restart paragraph — everypar fires again, but skip=1 so it's a no-op
+    \else
+      \everypar{}% All narrow lines consumed — clear hook
+    \fi
   \fi
 }
 
@@ -420,6 +449,13 @@
     \advance\swarmwrap@loop@cnt by -1
   \ifnum\swarmwrap@loop@cnt>0 \repeat
   \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
+  % ── Set up multi-paragraph extension (v3.18) ────────────────────
+  % CRITICAL FIX: remaining and everypar MUST be set in vertical mode
+  % (before \noindent). The everypar hook triggers the Lua
+  % pre_linebreak_filter to apply parshape for subsequent paragraphs.
+  \global\swarmwrap@remaining=\swarmwrap@nl\relax
+  \global\swarmwrap@skip=0\relax
+  \everypar{\swarmwrap@everypar@hook}%
   % ── Apply standard wrapping ────────────────────────────────────
   % emergencystretch absorbs overfull hbox on narrowed parshape lines
   \emergencystretch=\fontdimen6\font\relax
@@ -435,22 +471,14 @@
   \dimen1=\swarmwrap@fh@val\relax
   \ifdim\dimen0<\dimen1
     % Figure doesn't fit — defer to top of next page via afterpage.
-    % Set up everypar for CURRENT page (narrow subsequent paragraphs
-    % to match the parshape). The deferred figure appears on the next page.
-    % Deferred: afterpage places figure on next page; \par ends the
-    % empty paragraph that was started by the parshape above.
+    % The deferred figure appears on the next page. remaining and
+    % everypar are already set above (in vmode).
     \afterpage{\noindent\smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}}\par
-    \global\swarmwrap@remaining=\swarmwrap@nl\relax
-    \everypar{\swarmwrap@everypar@hook}%
     \wlog{swarmwrap next: DEFERRED — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
     % Figure fits — place inline. \noindent suppresses paragraph indent.
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
-    % Set up multi-paragraph extension for subsequent paragraphs
-    \global\swarmwrap@remaining=\swarmwrap@nl\relax
-    \everypar{\swarmwrap@everypar@hook}%
-    \wlog{swarmwrap next: NORMAL — set everypar remaining=\the\swarmwrap@remaining}%
     \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
   \fi
 }%
