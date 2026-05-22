@@ -115,7 +115,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/23 v3.17 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/23 v3.16 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -337,50 +337,6 @@
     \everypar{}%
   \fi
 }
-% ── List parshape preservation (v3.17) ───────────────────────────
-% ROOT CAUSE: LaTeX clears \everypar before each \item paragraph.
-% Fix: Patch \item directly to apply parshape before list paragraphs.
-% NOTE: .sty files load with @ as letter (catcode 11), so no need
-% for \makeatletter. The \begingroup/\endgroup around \let/\def
-% would save/restore \item, undoing our patch. Avoid grouping.
-
-\let\swarmwrap@orig@item\item
-
-\newcommand{\swarmwrap@apply@item@parshape}{\wlog{ITEM PARSHAPE CALLED: rem=\the\swarmwrap@remaining, tw=\the\swarmwrap@tw, fw=\the\swarmwrap@fw}%
-  \ifnum\swarmwrap@remaining>0\relax
-    \swarmwrap@tw=\linewidth
-    \advance\swarmwrap@tw by -\swarmwrap@fw
-    \advance\swarmwrap@tw by -14pt
-    \ifdim\swarmwrap@tw>10pt\relax
-      \swarmwrap@loop@cnt=\swarmwrap@remaining
-      \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@remaining+1\relax\space}%
-      \loop
-        \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
-        \advance\swarmwrap@loop@cnt by -1
-      \ifnum\swarmwrap@loop@cnt>0 \repeat
-      \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
-      \parshape \swarmwrap@pshape\relax
-      \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
-      \emergencystretch=\fontdimen6\font\relax
-    \else
-      \global\swarmwrap@remaining=0\relax
-    \fi
-  \fi
-}
-
-\def\item{%
-  \@ifnextchar [{\swarmwrap@item@opt}{\swarmwrap@item@noopt}%
-}
-\def\swarmwrap@item@opt[#1]{%
-  \swarmwrap@apply@item@parshape
-  \swarmwrap@orig@item[#1]%
-}
-\def\swarmwrap@item@noopt{%
-  \swarmwrap@apply@item@parshape
-  \swarmwrap@orig@item
-}
-
-
 
 % ── \swarmwrapnext: compute parshape and place figure ──────────────────
 % All computation happens here so \linewidth is captured at the
