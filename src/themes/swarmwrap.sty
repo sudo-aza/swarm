@@ -61,6 +61,15 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.15: Fixed parshape not applied (ROOT CAUSE of most overlaps).
+%   \noindent calls \leavevmode which starts the paragraph via \hbox{}.
+%   Setting \parshape AFTER \noindent is inside the paragraph — TeX
+%   ignores it. Fix: move \parshape before \noindent so it is set in
+%   vertical mode, before the paragraph starts. This single change
+%   should eliminate the majority of body-text overlaps on stress tests.
+%   Also added \noindent in the NORMAL branch to suppress paragraph indent
+%   (previously \noindent was before \parshape, serving dual purpose).
+%
 % v3.14: Multi-paragraph parshape extension via everypar.
 %   Re-injects parshape into subsequent paragraphs after the first one,
 %   using a remaining-line counter decremented by Lua post_linebreak_filter.
@@ -98,7 +107,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/21 v3.14 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/23 v3.15 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -309,7 +318,10 @@
   % ── Apply standard wrapping ────────────────────────────────────
   % emergencystretch absorbs overfull hbox on narrowed parshape lines
   \emergencystretch=\fontdimen6\font\relax
-  \noindent
+  % CRITICAL FIX (v3.15): parshape MUST be set before the paragraph starts.
+  % \noindent calls \leavevmode which enters hmode, starting the paragraph.
+  % If \parshape is set after that, TeX ignores it (too late). Moving
+  % \parshape before \noindent ensures it applies to the upcoming paragraph.
   \parshape \swarmwrap@pshape\relax
   % ── Figure placement: inline or deferred ───────────────────────
   % Check remaining space on current page.
@@ -320,12 +332,15 @@
     % Figure doesn't fit — defer to top of next page via afterpage.
     % Set up everypar for CURRENT page (narrow subsequent paragraphs
     % to match the parshape). The deferred figure appears on the next page.
+    % Deferred: afterpage places figure on next page; \par ends the
+    % empty paragraph that was started by the parshape above.
     \afterpage{\noindent\smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}}\par
     \global\swarmwrap@remaining=\swarmwrap@nl\relax
     \everypar{\swarmwrap@everypar@hook}%
     \wlog{swarmwrap next: DEFERRED — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
-    % Figure fits — place inline.
+    % Figure fits — place inline. \noindent suppresses paragraph indent.
+    \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
     % Set up multi-paragraph extension for subsequent paragraphs
     \global\swarmwrap@remaining=\swarmwrap@nl\relax
