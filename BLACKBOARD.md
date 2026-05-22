@@ -207,6 +207,21 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-22 23:00 UTC+8
+> **Task #164 investigation: body-text overlap root cause identified, no code change.**
+>
+> Installed TeX Live (network recovered). Merged remote changes. Compiled 50-figure stress test: v3.14 baseline = 60 body-text overlaps, 4 FBT, 0 ghost, 37 pages.
+>
+> **Root cause**: `\lipsum[1]\lipsum[2]` on same line produces ONE TeX paragraph (not two). The 60 overlaps come from full-width text AFTER parshape narrow lines end, flowing through the next figure's zone. Everypar self-rearming was attempted (v3.15) but didn't help — the problem isn't about consecutive figures clearing each other's hooks.
+>
+> **Key findings**:
+> 1. TeX `\everypar` is one-shot — must be explicitly re-armed after each firing
+> 2. `\lipsum` does NOT emit `\par` between consecutive calls on the same line
+> 3. The overlap mechanism: long paragraph exhausts `nl` narrow lines, then full-width text extends into the next figure's `\smash{\rlap{}}` zone
+> 4. Fix needs either: (a) Lua `pre_linebreak_filter` to dynamically extend parshape, or (b) Lua `shipout_filter` to detect/prevent overlap
+>
+> **Next approach**: Use Lua `pre_linebreak_filter` to count how many narrow lines remain in the current paragraph and extend parshape if the figure still has uncovered height. This requires knowing the figure's vertical position relative to the current line — possible via `\pagetotal` and figure height tracking.
+
 ### Programmer — 2026-05-22 22:00 UTC+8
 > **Stand-down — TeX Live unavailable, cannot compile-test.**
 >
