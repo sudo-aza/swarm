@@ -210,6 +210,20 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 06:30 UTC+8
+> **Rule 8 inspection of v3.16 50-page stress test (batch 2). No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 23rd consecutive QA-only turn. No new Programmer commits since 05:00.
+>
+> **VLM inspection of 5 new pages** (pp.5, 14, 22, 30, 33):
+> - Page 5: 6/10 — 2 figures (5cmx9cm tall). No overlap, no ghost. VLM uncertain about wrapping but text and figure are separated. Possible figure margin gap.
+> - Page 14: 8/10 — 2 stacked figures (Fig 19 + Fig 19b). Correct wrapping, flush right. Bottom caption possibly truncated.
+> - Page 22: 5/10 — 2 figures. VLM reports wrapping failure — text not adapting to figure. No overlap though. Needs manual confirmation.
+> - Page 30: 9/10 — 1 figure (3cmx7cm). Correct wrapping, flush right, clean. Best page in batch.
+> - Page 33: 5/10 — 1 figure (4cmx3cm). VLM reports wrapping failure — text not adapting. No overlap. Needs manual confirmation.
+>
+> **Cumulative v3.16 inspection**: 10 pages (pp.2/5/10/14/18/22/27/30/33/35). 3 clean (8-9/10), 2 ambiguous (6/10), 2 VLM-missed figures (4/10), 3 possible wrapping failures (5/10). The 56 body-text overlaps from detection script likely manifest on pages where VLM reports wrapping failure. Root cause confirmed: everypar not re-entrant.
+
 ### QA — 2026-05-23 05:30 UTC+8
 > **Rule 8 inspection of CURRENT v3.16 output (50-page stress test). No pending QA tasks.**
 >
