@@ -1,0 +1,14 @@
+{
+  "created": 1779452695,
+  "id": "202605222024549f162a2aafe842c0",
+  "request_id": "202605222024549f162a2aafe842c0",
+  "text": "To that version, all of the comments are in Git repo and just like it's that version.",
+  "usage": {
+    "completion_tokens": 21,
+    "prompt_tokens": 287,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 308
+  }
+}

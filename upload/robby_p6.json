@@ -1,0 +1,14 @@
+{
+  "created": 1779452662,
+  "id": "20260522202420b67bdc566fcd42f2",
+  "request_id": "20260522202420b67bdc566fcd42f2",
+  "text": "Fix it, like all the cases I've seen so far, or you can just show me that all of the cases I've seen so far are not representative of all of the cases there are. Just send me a GitHub link to an actual compilable PDF. No, not compileable, to an actual openable.",
+  "usage": {
+    "completion_tokens": 68,
+    "prompt_tokens": 424,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 492
+  }
+}
