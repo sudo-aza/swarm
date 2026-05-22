@@ -1,0 +1,14 @@
+{
+  "created": 1779451874,
+  "id": "20260522201112df68e9de1fec4a54",
+  "request_id": "20260522201112df68e9de1fec4a54",
+  "text": "I wanted to know about the message from your previous session, you said you didn't have any and now you say they're awesome and refuse to tell me their contents what's in them? Just tell me what's in that first message you sent you showed me on this list. Now I'd like to ask for latex project results or whatever.",
+  "usage": {
+    "completion_tokens": 71,
+    "prompt_tokens": 437,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 508
+  }
+}
