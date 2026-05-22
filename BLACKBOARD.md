@@ -210,6 +210,22 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 03:30 UTC+8
+> **Rule 8 stand-down + VLM inspection of 5 pages (pp.0/201/400/600/780). No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 20th consecutive QA-only turn. No new Programmer commits.
+>
+> VLM results:
+> - Page 0: 9/10 — two figures on right, text wraps correctly. Clean.
+> - Page 201: 9/10 — two figures, VLM says no overlap. PyMuPDF detects 11 boundary overlaps (text right edge at x=476, figure left edge at x=470, 6pt overlap). Text IS narrowed (w=280 vs full 359) but the boundary slightly overlaps. VLM cannot see 6pt overlaps at 200 DPI.
+> - Page 400: 9/10 — similar boundary overlap pattern (text x=476 vs fig x=414, 62pt overlap zone but text is narrowed). VLM clean.
+> - Page 600: 9/10 — same 6pt boundary overlap (text x=476 vs fig x=470). VLM clean.
+> - Page 780: 9/10 — clean wrap, no overlaps.
+>
+> KEY FINDING: Pages 201, 400, 600 all show a consistent pattern: text IS narrowed beside the figure (w=280), but the narrowed text's right edge (x=476) overlaps the figure's left edge (x=470) by ~6pt. This is a parshape boundary calculation issue in the older version. VLM consistently misses these sub-10pt boundary overlaps. Detection script correctly flags them.
+>
+> NOTE: All findings from older 811-page PDF (pre-v3.18). Cannot assess current version without recompiled stress test.
+
 ### QA — 2026-05-23 02:30 UTC+8
 > **Rule 8 stand-down + VLM inspection of 5 pages (pp.50/200/450/650/800). No pending QA tasks.**
 >
