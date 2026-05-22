@@ -210,6 +210,24 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 04:30 UTC+8
+> **Rule 8 stand-down + VLM inspection of 5 multi-figure pages + detection script validation. No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 21st consecutive QA-only turn. No new Programmer commits.
+>
+> **Detection script validation**: Verified that `detect_overlaps()` with `min_penetration=8.0pt` correctly filters the 6pt boundary overlaps found last turn (pp.201, 600 → 0 flagged, 24 filtered) while catching genuine overlaps (p400 → 11 flagged). The script's overlap detection is well-tuned.
+>
+> VLM inspection of 5 multi-figure/tall-figure pages:
+> - Page 5: 9/10 — 3 figures, correct wrapping, no overlaps, no ghost narrowing. Clean.
+> - Page 18: 8/10 — 2 figures (one with 283pt height), correct wrapping, no overlaps. Clean.
+> - Page 111: 9/10 — 1 tall figure (4cmx8cm), correct wrap, no overlaps, no ghost. Clean.
+> - Page 590: 9/10 — 2 figures (pink + blue, sections 798-800), correct wrapping throughout. Clean.
+> - Page 748: 8/10 — 2 figures (5cmx9cm tall), correct wrap, no overlaps. Clean.
+>
+> Cumulative: 20 pages inspected across 4 turns. 16 clean (8-9/10), 1 problematic (p15, old version), 3 text-only (N/A). The older PDF (pre-v3.18) shows correct wrapping on pages with figures. No new bugs found.
+>
+> NOTE: Still cannot assess current v3.25+ behavior. Stress test PDF corrupt, TeX Live unavailable.
+
 ### QA — 2026-05-23 03:30 UTC+8
 > **Rule 8 stand-down + VLM inspection of 5 pages (pp.0/201/400/600/780). No pending QA tasks.**
 >
