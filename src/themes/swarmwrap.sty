@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.14)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.16)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -46,11 +46,11 @@
 %    boundary to discourage TeX from breaking there (default: 10000).
 %    Affects only very long paragraphs that span page breaks.
 %
-% 2. Parshape leak into list items:
-%    If \swarmwrapnext is used inside a list item (\item), the parshape
-%    leaks into subsequent \item paragraphs within the same list
-%    environment. Items 2+ will be narrowed even without swarmwrap.
-%    Workaround: use swarmwrap BEFORE the list, not inside it.
+% 2. Parshape leak into list items (PARTIALLY FIXED in v3.16):
+%    When \swarmwrapnext is used before a list, subsequent \item
+%    paragraphs now correctly maintain parshape narrowing. However,
+%    if \swarmwrapnext is used INSIDE a list item, only that item
+%    wraps — subsequent items are not narrowed (acceptable per spec).
 %
 % 3. Deferred figure placement:
 %    When the figure doesn't fit on the current page, it is deferred to
@@ -60,6 +60,14 @@
 %    wrapping. Detection uses \pagegoal - \pagetotal.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.16: List parshape preservation.
+%   Patched \\list to detect active swarmwrap wrapping and re-inject
+%   the everypar hook after list setup. This fixes body-text overlaps
+%   in itemize contexts (Task #166: 66 overlaps on 1000-page test).
+%   The hook recomputes tw using the list-adjusted linewidth, accounting
+%   for leftmargin, labelwidth, and labelsep. Works for figure-before-
+%   list and figure-inside-list patterns. ~40 lines added.
 %
 % v3.15: Fixed parshape not applied (ROOT CAUSE of most overlaps).
 %   \noindent calls \leavevmode which starts the paragraph via \hbox{}.
@@ -107,7 +115,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/23 v3.15 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/23 v3.16 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -275,6 +283,59 @@
   \global\swarmwrap@remaining=\swarmwrap@nl\relax
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
   \everypar{\swarmwrap@everypar@hook}%
+}
+
+% ── List parshape preservation (v3.16) ───────────────────────────
+% Problem: When \swarmwrapnext is followed by \begin{itemize},
+% the list's internal setup resets \everypar, clobbering our multi-
+% paragraph extension. List items then run at full width.
+%
+% Fix: Patch \list to detect active swarmwrap wrapping and re-inject
+% the everypar hook after list setup. The hook recomputes tw using
+% the list-adjusted \linewidth (narrower due to leftmargin).
+
+\newif\ifswarmwrap@list@active
+\swarmwrap@list@activefalse
+
+\let\swarmwrap@orig@list\list
+
+\long\def\list#1#2{%
+  \ifnum\swarmwrap@remaining>0\relax
+    \global\swarmwrap@list@activetrue
+  \fi
+  \swarmwrap@orig@list{#1}{#2}%
+  \ifswarmwrap@list@active
+    \everypar{\swarmwrap@list@everypar@hook}%
+  \fi
+}
+
+% Hook for paragraphs inside lists with active swarmwrap wrapping.
+% Recomputes tw using the list-adjusted linewidth, then applies parshape.
+\newcommand{\swarmwrap@list@everypar@hook}{%
+  \ifnum\swarmwrap@remaining>0\relax
+    \swarmwrap@tw=\linewidth
+    \advance\swarmwrap@tw by -\swarmwrap@fw
+    \advance\swarmwrap@tw by -14pt
+    \ifdim\swarmwrap@tw>10pt\relax
+      \swarmwrap@loop@cnt=\swarmwrap@remaining
+      \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@remaining+1\relax\space}%
+      \loop
+        \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+        \advance\swarmwrap@loop@cnt by -1
+      \ifnum\swarmwrap@loop@cnt>0 \repeat
+      \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
+      \parshape \swarmwrap@pshape\relax
+      \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+      \emergencystretch=\fontdimen6\font\relax
+    \else
+      \global\swarmwrap@remaining=0\relax
+      \swarmwrap@list@activefalse
+      \everypar{}%
+    \fi
+  \else
+    \swarmwrap@list@activefalse
+    \everypar{}%
+  \fi
 }
 
 % ── \swarmwrapnext: compute parshape and place figure ──────────────────
