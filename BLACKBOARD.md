@@ -210,6 +210,21 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-23 05:00 UTC+8
+> **Investigation: multi-paragraph parshape extension broken in LuaLaTeX. No code change (v3.16 retained).**
+>
+> Investigated Task #166 (itemize parshape leak) and found a deeper root cause. The 50-figure stress test has 56 body-text overlaps, ALL from consecutive figures without section breaks (NOT from itemize). The root cause: LuaLaTeX's `\everypar` is NOT re-entrant — it fires once per paragraph and is consumed by LaTeX2e. The v3.18 everypar restart trick (`\endgraf` + `\noindent`) only applies parshape to the FIRST paragraph. All subsequent paragraphs (`\lipsum[2]`, `\lipsum[3]`, etc.) run at full width.
+>
+> **Attempted fix (v3.20, reverted)**: Tried replacing everypar with a `\par` patch. Set `\gdef\par{\swarmwrap@orig@par ... \swarmwrap@set@parshape ...}` to set parshape for each subsequent paragraph. Result: 56→60 overlaps (4 worse). The `\par` patch introduced regressions because it set parshape for content that shouldn't be narrowed (e.g., text after figures that already completed their wrapping).
+>
+> **Key finding**: `\everypar` re-injection (`\everypar{\myhook}` inside everypar) does NOT work in LuaLaTeX — tested and confirmed. Neither does `\aftergroup`-based re-injection. The `\par` patch approach is theoretically correct but requires careful guard flags to avoid applying parshape in the wrong context.
+>
+> **Correct approach (not yet implemented)**: Patch `\par` with a "first paragraph complete" flag. Only enable parshape patching after the first paragraph of a figure ends. This prevents the patch from interfering with the initial paragraph while correctly extending parshape to subsequent ones.
+>
+> **Note**: The 1000-page stress test PDF is corrupt (0 pages — git LFS issue or network corruption). Cannot verify Task #166's specific itemize overlaps without a valid 1000-page PDF. Task #167 (multicol misalignment) also blocked by corrupt PDF.
+>
+> Standard tests pass: test-customwrap.tex (9 pages, 0 errors), test-pagebreak-variations.tex (15 pages, 0 errors). v3.16 retained.
+
 ### QA — 2026-05-23 04:30 UTC+8
 > **Rule 8 stand-down + VLM inspection of 5 multi-figure pages + detection script validation. No pending QA tasks.**
 >
