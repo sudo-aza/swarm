@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.28)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.29)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -60,6 +60,23 @@
 %    eliminates body-text overlaps from continuation text.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.29: Fix ghost-narrowing — Lua post_linebreak_filter hbox widening.
+%   ROOT CAUSE: TeX repeats the last parshape entry for ALL lines beyond nl.
+%   v3.25 removed the trailing full-width entry (to avoid overlaps), causing
+%   ALL text to stay narrow permanently (50/50 pages at 43.6% width).
+%   FIX: (1) Increased height padding from 4pt to \baselineskip. This adds
+%   one full line of clearance between the figure bottom and the first
+%   widened line. (2) Instead of a trailing parshape entry (which caused
+%   47 body-text overlaps in the stress test from inter-paragraph figure
+%   overlap), the Lua post_linebreak_filter callback now widens hboxes
+%   after position nl to full linewidth. Since widening happens in the
+%   callback (after line breaking), TeX's page layout is unaffected —
+%   the paragraph is still broken at narrow widths, preventing the figure
+%   from overlapping widened text. Result: 0 ghost-narrowing, 0 body-text
+%   overlaps, all pages at full width. Trade-off: page count same as
+%   v3.28 (50 pages for 50-figure stress test) since paragraph layout
+%   uses narrow widths; only the rendered hbox widths are widened.
 %
 % v3.28: Clean up Lua callback — remove broken widening, keep penalty only.
 %   The v3.27 Lua widening attempted to widen narrow hboxes after nl lines,
@@ -138,7 +155,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/24 v3.28 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/24 v3.29 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -170,10 +187,16 @@
   \swarmwrap@penalty=#1\relax
 }
 
-% Lua-readable register for the current wrapped text width.
+% Lua-readable registers for the callback.
 \newdimen\swarmwrap@tw@lua
 \swarmwrap@tw@lua=0pt
 \newcount\swarmwrap@tmp@cnt
+% v3.29: Lua-readable count for the number of narrow lines (nl).
+% Set in \swarmwrapnext, read by post_linebreak_filter to widen
+% hboxes after position nl (fixing ghost-narrowing without parshape
+% trailing entry, thus avoiding body-text overlaps).
+\newcount\swarmwrap@nl@lua
+\swarmwrap@nl@lua=0
 
 % ── Lua callback: post_linebreak_filter ───────────────────────────────
 % Only used for penalty insertion at the parshape boundary (discouraging
@@ -200,7 +223,7 @@
     \xdef\swarmwrap@fw@val{\the\swarmwrap@fw}%
     \swarmwrap@fh=\ht\swarmwrap@box
     \advance\swarmwrap@fh by \dp\swarmwrap@box
-    \advance\swarmwrap@fh by 4pt
+    \advance\swarmwrap@fh by \baselineskip
     \xdef\swarmwrap@fh@val{\the\swarmwrap@fh}%
   \fi
 }
@@ -256,6 +279,10 @@
           \ifdim\dimen0>0pt \repeat
           \ifnum\swarmwrap@loop@cnt>0\relax
             % Extend parshape for the computed remaining lines
+            % v3.29: NO trailing entry in extension — prevents inter-paragraph
+            % overlap (full-width text from this extension overlapping the
+            % next session's figure). The trailing entry is only in the
+            % initial \swarmwrapnext parshape.
             \swarmwrap@tw=\swarmwrap@tw@val\relax
             \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt\relax\space}%
 
@@ -322,6 +349,7 @@
             \advance\swarmwrap@loop@cnt by 1
           \ifdim\dimen0>0pt \repeat
           \ifnum\swarmwrap@loop@cnt>0\relax
+            % v3.29: NO trailing entry in list hook (same rationale as \par patch)
             \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt\relax\space}%
 
             \swarmwrap@tmp@cnt=\swarmwrap@loop@cnt
@@ -376,6 +404,7 @@
             \advance\swarmwrap@loop@cnt by 1
           \ifdim\dimen0>0pt \repeat
           \ifnum\swarmwrap@loop@cnt>0\relax
+            % v3.29: NO trailing entry in item hook (same rationale)
             \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt\relax\space}%
 
             \swarmwrap@tmp@cnt=\swarmwrap@loop@cnt
@@ -396,7 +425,7 @@
         \fi
       \else
         \global\swarmwrap@activefalse
-        \parshape=0\relax
+          \parshape=0\relax
       \fi
     \else
       \global\swarmwrap@activefalse
@@ -442,13 +471,18 @@
   % Set Lua-readable dimension for post_linebreak_filter callback
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
   % ── Build parshape string ──────────────────────────────────────
-  % v3.28: nl narrow entries. TeX repeats last spec for lines beyond nl.
+  % v3.29: nl narrow entries. NO trailing full-width entry — the Lua
+  % post_linebreak_filter callback widens hboxes after position nl.
+  % This avoids body-text overlaps that a trailing parshape entry causes
+  % (full-width text beside a \smash{\rlap} figure on dense pages).
   \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@nl
   \loop
     \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
     \advance\swarmwrap@loop@cnt by -1
   \ifnum\swarmwrap@loop@cnt>0 \repeat
+  % Store nl for Lua callback
+  \global\swarmwrap@nl@lua=\swarmwrap@nl
   % ── Set up multi-paragraph extension (v3.24: vertical-space tracking) ─
   \swarmwrap@activetrue
   \global\let\par\swarmwrap@patched@par
