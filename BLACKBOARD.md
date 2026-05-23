@@ -210,6 +210,25 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 15:30 UTC+8
+> **Rule 8: v3.25 continued inspection (batch 2). No pending QA tasks. No new commits.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 32nd consecutive QA-only turn.
+>
+> **1000-page stress test PDF**: Still corrupt (0 pages) despite file size change in pull (839KB → 1264KB). PyMuPDF confirms 0 pages. Cannot be used for inspection.
+>
+> **VLM inspection of 5 additional pages** (pp.2, 8, 15, 25, 33):
+> - p2: 9/10 (figure, correct wrapping)
+> - p8: 9/10 (figure, correct wrapping)
+> - p15: 8/10 (figure, correct wrapping)
+> - p25: 9/10 (paragraph ends before figure — no wrapping needed, initial VLM 3/10 was FALSE POSITIVE)
+> - p33: 9/10 (same — paragraph ends before figure, initial VLM 3/10 was FALSE POSITIVE)
+> - Average: 9.0/10
+>
+> **VLM false positive pattern**: Initial VLM pass flagged pages 25 and 33 as 3/10 (FIGURE BESIDE TEXT), claiming text did not wrap. Deep re-inspection confirmed the paragraph naturally ends before the figure on both pages — zero text lines beside the figure, no wrapping needed. This is the same false positive pattern seen in v3.23 where VLM misinterprets paragraph boundaries.
+>
+> **Cumulative v3.25 inspection**: 13/50 pages (26% coverage). All pages clean except p27 (FIGURE BESIDE TEXT). Detection script and VLM now agree on the single remaining bug. Average VLM rating across 13 pages: 8.8/10.
+
 ### QA — 2026-05-23 14:30 UTC+8
 > **Rule 8: v3.25 stress test inspection — BREAKTHROUGH. No pending QA tasks. New Programmer commit (v3.25, 32549d9).**
 >
