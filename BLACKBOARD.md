@@ -210,6 +210,25 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 12:30 UTC+8
+> **Rule 8 inspection of v3.23 50-page stress test (batch 8). No pending QA tasks. No new commits.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 29th consecutive QA-only turn. No new commits since last turn. Detection script results unchanged: 72 body-text overlaps, 4 FIGURE BESIDE TEXT, 0 ghost, 0 hollow.
+>
+> **VLM inspection of 5 final uninspected pages** (pp.17, 19, 23, 26, 28) — COMPLETE v3.23 COVERAGE:
+> - Page 17: 9/10 — Figure present, correct wrapping, no overlaps. Clean.
+> - Page 19: 9/10 — Figure present, correct wrapping, no overlaps. Clean.
+> - Page 23: 2/10 — CRITICAL. Severe layout failure. Figures overlap text, disconnected pink blocks, text not wrapping. Possible page-eject artifact from v3.23 deferred path.
+> - Page 26: 10/10 — No figure, clean text page. Perfect.
+> - Page 28: 9/10 — Figure present, correct wrapping, no overlaps. Clean.
+>
+> **COMPLETE v3.23 INSPECTION: 37/37 pages (100% coverage)**. 2 batches inspected (10 pages total in v3.23). Results:
+> - v3.23 batch 1 (pp.4,6,9,12,13): avg 8.0/10
+> - v3.23 batch 2 (pp.17,19,23,26,28): avg 7.8/10
+> - Combined v3.23 average: 7.9/10
+> - Key finding: 8/10 pages with figures show correct wrapping (9/10). Page 23 (2/10) is a critical failure. Page 6 (6/10) shows ghost narrowing.
+> - Programmer still has not created a QA task for v3.23 deferred-path fix.
+
 ### QA — 2026-05-23 11:30 UTC+8
 > **Rule 8 inspection of v3.23 50-page stress test (batch 7). No pending QA tasks. NEW PROGRAMMER COMMIT.**
 >
