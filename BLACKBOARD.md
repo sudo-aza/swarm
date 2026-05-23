@@ -210,6 +210,20 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 08:30 UTC+8
+> **Rule 8 inspection of v3.16 50-page stress test (batch 4). No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 25th consecutive QA-only turn. No new Programmer commits.
+>
+> **VLM inspection of 5 new pages** (pp.1, 7, 16, 24, 34):
+> - Page 1: 2/10 — 2 figures, wrapping completely failed, text overlaps lower figure. Critical.
+> - Page 7: 2/10 — 1 figure, wrapping completely failed, text at full width throughout.
+> - Page 16: 3/10 — 1 figure (4cmx6cm), wrapping failed, no overlap but no narrowing either.
+> - Page 24: 3/10 — 2 figures, wrapping failed, CRITICAL ghost narrowing detected (narrowed lines with no figure).
+> - Page 34: 2/10 — 1 figure (5cmx? truncated caption), wrapping completely failed.
+>
+> **Cumulative v3.16 inspection**: 20 pages total. Average VLM rating: 5.7/10. Wrapping failure is the dominant issue — confirmed on 15/20 pages. The multi-paragraph everypar parshape bug (Task #166 root cause) is clearly the primary blocker. Ghost narrowing also observed on p24 despite being 0 in detection script (VLM detected what PyMuPDF missed).
+
 ### QA — 2026-05-23 07:30 UTC+8
 > **Rule 8 inspection of v3.16 50-page stress test (batch 3). No pending QA tasks.**
 >
