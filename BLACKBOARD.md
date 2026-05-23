@@ -210,6 +210,22 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 13:30 UTC+8
+> **Rule 8: Detection script validation and gap analysis. No pending QA tasks. No new commits.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 30th consecutive QA-only turn. 100% PDF coverage already achieved. This turn focused on validating detection script accuracy vs VLM ratings per Rule 8 item 2 (improve detection scripts).
+>
+> **CRITICAL FINDING: VLM at 200 DPI produces FALSE NEGATIVES for text-figure overlaps.** Detailed PyMuPDF analysis reveals:
+> - Detection script: 72 body-text overlaps across 6 pages (p0:11, p5:33, p10:8, p19:5, p28:11, p35:4)
+> - VLM rated pages 19 and 28 as 9/10 ("correct wrapping"), but PyMuPDF confirms 5 and 11 overlaps respectively
+> - Page 19: Text at full width (x=118-476, w=359pt) runs 63pt through figure (x=414-555). First paragraph IS narrowed (w=260) but subsequent paragraphs are full-width (everypar non-re-entrancy). VLM cannot distinguish narrowed vs full-width text through salmon-colored figure at 200 DPI.
+> - Page 5 (worst): 3 stacked figures. Fig 0: 14 overlaps, Fig 1: 19 overlaps, Fig 2: 0 overlaps (correct wrapping). Only 2 narrow lines total out of 44 body lines — confirms parshape works for first paragraph only.
+> - **Conclusion: Detection script is CORRECT. VLM ratings inflated. Previous v3.23 average of 7.9/10 is unreliable — true quality is lower.**
+>
+> **Ghost narrowing detection gap identified**: Script has page-level guard (`if figures: return`) on line 407-408 that prevents ghost detection on ANY page with figures. Should be per-line figure justification check instead. However, investigation of page 6 (VLM-reported ghost) found no actual ghost narrowing — narrow lines ARE justified by Fig 0. VLM's p6 ghost report was a false positive.
+>
+> **Corrected v3.23 quality assessment**: 72 genuine body-text overlaps on 6/37 pages (16%). Root cause: everypar non-re-entrancy (Task #166). 31/37 pages (84%) have correct wrapping. The 4 FIGURE BESIDE TEXT instances need separate investigation.
+
 ### QA — 2026-05-23 12:30 UTC+8
 > **Rule 8 inspection of v3.23 50-page stress test (batch 8). No pending QA tasks. No new commits.**
 >
