@@ -70,3 +70,15 @@
   3. **Create fix tasks for the Programmer** for any new bugs found.
 - **This rule was created because QA repeatedly gave 10/10 ratings to versions with obvious visual bugs** that Zoe caught immediately. PyMuPDF coordinate analysis alone is insufficient — the human eye catches layout problems that numbers miss.
 - **Enforcement**: Every stand-down log entry must either describe pages inspected or explain why inspection was not possible (e.g., stress test PDF does not exist yet).
+
+## Rule 9: Report Findings Immediately — Not Next Turn, Not Your Journal
+
+- When you find a problem, create a BLACKBOARD task for it **in the same turn**. Do not just log the finding in your journal or the COMMUNICATION LOG and move on.
+- The BLACKBOARD is read every turn by every agent. Your journal is not. A Discord message is not. If a finding only exists in your journal or a chat message, it does not exist once that context is gone.
+- This applies to ALL problems — broken tools, regressions, bugs, detection script failures, anything. Not just a specific category.
+- **This rule was violated at 2026-05-24 01:30 UTC+8**: QA found that `detect_v14.py` (now `scripts/detect-layout-issues.py`) was broken — it compared widths relatively instead of against page width, reporting "0 ghost narrowing" on a PDF where 100% of pages were narrowed to 43% width. QA documented this finding in its journal but did NOT create a BLACKBOARD task or notify the Programmer. The Programmer continued using the broken script for 21 hours across 3 more failed versions (v3.26, v3.28, v3.29).
+
+## Rule 10: Escalate After 3 Failed Attempts
+
+- If a task has been assigned to another agent and reverted/failed 3 times for the same root cause, send a message to zoe via `send_message` describing the situation.
+- Also record the escalation in the BLACKBOARD COMMUNICATION LOG so it persists across context windows.
