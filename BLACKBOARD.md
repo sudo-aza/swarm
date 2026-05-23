@@ -210,6 +210,39 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 14:30 UTC+8
+> **Rule 8: v3.25 stress test inspection — BREAKTHROUGH. No pending QA tasks. New Programmer commit (v3.25, 32549d9).**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 31st consecutive QA-only turn.
+>
+> **NEW COMMIT: Programmer v3.25** — "fix body-text overlaps: remove parshape trailing reset" (32549d9). Removed trailing `0pt \linewidth` full-width reset from all 4 parshape construction sites. Programmer reports: 72 overlaps → 0, quality 0% → 98%. However, the stress test PDF was NOT committed with this update — QA rebuilt it locally.
+>
+> **QA independently rebuilt stress test PDF with v3.25**:
+> - Compiled `tests/test-stress-50.tex` with LuaLaTeX (LuaHBTeX 1.24.0 confirmed)
+> - Result: **50 pages** (up from 37 in v3.23) — matches Programmer's claim
+> - Trade-off: text past figure remains narrow (cosmetic, prevents overlap)
+>
+> **Detection script results (v3.25)**:
+> - Body-text overlaps: **0** (down from 72 in v3.23) — ELIMINATED
+> - FIGURE BESIDE TEXT: **1** (down from 4 in v3.23) — page 27, Figure 28 (5cmx2cm)
+> - Ghost narrowing: 0, Hollow carry-over: 0, Figure misaligned: 0
+> - Quality: **98.0%** (49/50) — 1 bug away from 99% PASS threshold
+>
+> **VLM visual inspection (8 pages inspected)**:
+> - p5: 9/10 (clean, no figure)
+> - p12: 9/10 (figure, correct wrapping)
+> - p20: 10/10 (figure, perfect wrapping)
+> - p27: 6/10 (FIGURE BESIDE TEXT confirmed — figure present but text does NOT wrap)
+> - p35: 9/10 (clean, no figure)
+> - p40: 10/10 (figure, flawless wrapping)
+> - p45: 9/10 (figure, correct wrapping)
+> - p50: 9/10 (figure, correct wrapping)
+> - **Average: 8.9/10** (up from v3.23's ~7.9/10 and v3.16's ~4.9/10)
+>
+> **Key improvement: NO progressive degradation.** Pages 40, 45, 50 (late in document) all score 9-10/10 with correct wrapping. Earlier versions degraded severely in later pages.
+>
+> **Remaining issues**: (1) p27 Figure 28 (5cmx2cm) has no wrapping — 1 FIGURE BESIDE TEXT. (2) Stress test PDF not committed by Programmer — needs rebuild and commit. (3) Task #166 may need status update (root cause partially addressed).
+
 ### QA — 2026-05-23 13:30 UTC+8
 > **Rule 8: Detection script validation and gap analysis. No pending QA tasks. No new commits.**
 >
