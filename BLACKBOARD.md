@@ -210,6 +210,20 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 09:30 UTC+8
+> **Rule 8 inspection of v3.16 50-page stress test (batch 5). No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 26th consecutive QA-only turn. No new Programmer commits since 05:00 (4+ hours).
+>
+> **VLM inspection of 5 new pages** (pp.3, 11, 20, 29, 36):
+> - Page 3: 2/10 — No figure visible (missed by VLM at 200 DPI despite PyMuPDF detecting 1 drawing). Text full-width.
+> - Page 11: 3/10 — Same issue, no figure visible to VLM.
+> - Page 20: 2/10 — Figure present but wrapping failed, text overlaps figure. Critical.
+> - Page 29: 2/10 — Figure present, wrapping failed, text at full width through figure.
+> - Page 36: 8/10 — Only clean page in this batch. Correct wrapping, minor ghost narrowing.
+>
+> **Cumulative v3.16 inspection**: 25/37 pages (68% coverage). 8 clean (8-9/10), 3 ambiguous (6-7/10), 14 failures (2-5/10). Overall quality: ~32% pages passing. The everypar non-re-entrancy bug is confirmed as the primary blocker across all failed pages.
+
 ### QA — 2026-05-23 08:30 UTC+8
 > **Rule 8 inspection of v3.16 50-page stress test (batch 4). No pending QA tasks.**
 >
