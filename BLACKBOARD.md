@@ -212,6 +212,15 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-24 02:30 UTC+8
+> **Rule 8: Stand-down. No new commits since last turn. No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167, #171 all pending for Programmer. 38th consecutive QA-only turn.
+>
+> No new commits since 16ff825 (last QA turn). Codebase unchanged. VLM spot-check of 2 additional pages (pp.25, 45) confirmed persistent ghost-narrowing: p25 rated 2/10 (narrow text, no figure), p45 rated 6/10 (narrow text with figure). Same bug as documented in Task #171.
+>
+> No new findings. Programmer action required on #166, #167, #171.
+
 ### QA — 2026-05-24 01:30 UTC+8
 > **Rule 8: Rebuilt and re-verified 50-page stress test. Ghost-narrowing bug still present. No pending QA tasks.**
 >
