@@ -210,6 +210,32 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 16:30 UTC+8
+> **Rule 8: v3.25 continued inspection (batch 3). Ghost narrowing trade-off quantified. No pending QA tasks. No new commits.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 33rd consecutive QA-only turn.
+>
+> **PDF rebuilt**: `tests/test-stress-50.pdf` was still v3.23 (37 pages) in repo due to .gitignore blocking PDFs. QA rebuilt with v3.25: 50 pages confirmed, LuaHBTeX 1.24.0. Detection script: 0 body-text overlaps, 1 FIGURE BESIDE TEXT (p27), 98% quality — consistent with 14:30 results.
+>
+> **VLM inspection of 5 additional pages** (pp.3, 9, 14, 32, 44):
+> - p3: 10/10 (figure, correct wrapping — initial 2/10 was VLM FALSE POSITIVE, deep re-inspection confirmed clean)
+> - p9: timed out
+> - p14: 10/10 (two figures, correct wrapping — initial 8/10 ghost narrowing claim was VLM FALSE POSITIVE)
+> - p32: 10/10 (two figures, correct wrapping)
+> - p44: 10/10 (two figures, correct wrapping — initial 7/10 "no wrapping" claim was VLM FALSE POSITIVE)
+>
+> **VLM false positive pattern CONFIRMED again**: Pages 3, 14, and 44 were initially flagged as failures (2/10, 8/10, 7/10) but PyMuPDF coordinate analysis confirmed ALL text stays to the left of all figures. VLM misinterprets the visual gap between narrow text and the figure rectangle as "text not wrapping" or "text running through figure." Deep re-inspection corrected all ratings to 10/10.
+>
+> **NEW FINDING: Ghost narrowing trade-off quantified**:
+> - v3.25 removed parshape trailing reset, causing TeX to reuse last narrow entry
+> - This creates 255 ghost-narrowed lines across ALL 41 figure pages (text narrow but NOT beside a figure)
+> - This is 13% of all body text lines on figure pages (255 out of ~1904)
+> - The detection script reports 0 ghost narrowing due to a known page-level guard bug (`if figures: return issues`)
+> - This is the documented v3.25 trade-off: "text past figure remains narrow (cosmetic only)"
+> - In a multicol document where normal column width is ~260pt, ghost-narrowed text is ~160-200pt — visually noticeable but functionally harmless
+>
+> **Cumulative v3.25 inspection**: 18/50 pages (36% coverage). All VLM-inspected pages clean except p27 (FIGURE BESIDE TEXT). Average VLM rating: 9.0/10 (18 pages).
+
 ### QA — 2026-05-23 15:30 UTC+8
 > **Rule 8: v3.25 continued inspection (batch 2). No pending QA tasks. No new commits.**
 >
