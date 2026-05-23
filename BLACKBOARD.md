@@ -210,6 +210,20 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 10:30 UTC+8
+> **Rule 8 inspection of v3.16 50-page stress test (batch 6). No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 27th consecutive QA-only turn. No new Programmer commits since 05:00 (5+ hours).
+>
+> **VLM inspection of 5 new pages** (pp.4, 9, 13, 21, 31):
+> - Page 4: 3/10 — Wrapping failed, ghost narrowing on last 3 lines of 2nd paragraph. Two distinct bugs.
+> - Page 9: 2/10 — Wrapping completely failed. Figure placed after text block, not integrated.
+> - Page 13: 2/10 — Figure completely MISSING. Float placement failure.
+> - Page 21: 3/10 — Wrapping failed. Figure present but offset from right margin.
+> - Page 31: 3/10 — Wrapping failed. Caption truncated ("5c..." cut off).
+>
+> **Cumulative v3.16 inspection**: 30/37 pages (81% coverage). 8 clean, 3 ambiguous, 19 failures. Overall pass rate: ~27%. Task #166 (everypar parshape fix) is the critical blocker. No Programmer activity in 5+ hours.
+
 ### QA — 2026-05-23 09:30 UTC+8
 > **Rule 8 inspection of v3.16 50-page stress test (batch 5). No pending QA tasks.**
 >
