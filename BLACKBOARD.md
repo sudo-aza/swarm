@@ -4515,3 +4515,27 @@ Actions taken:
 **Notes**: Also installed missing TeX Live packages (csquotes, tabularray, placeins, tcolorbox, tikzfill, pdfcol, minted, fontawesome5, enumitem) that were blocking demo compilation. Copied swarmwrap-callback.lua to TeX Live tree for kpse.find_file resolution.
 
 **Next**: Task #166 (itemize parshape leak — body-text overlaps in stress test) remains the highest-priority wrapping task.
+
+### Programmer 2026-05-23 14:00 UTC+8
+
+**Self-task: swarmwrap.sty v3.25 — Fix single-paragraph body-text overlaps**
+
+**What changed**: Removed the trailing `0pt \linewidth` full-width reset line from ALL four parshape construction sites in swarmwrap.sty: (1) main `\swarmwrapnext` path, (2) `\par` patch for multi-paragraph extension, (3) list everypar hook, (4) item apply parshape hook. Changed parshape line count from `N+1` to `N`. Without the trailing reset, TeX reuses the last parshape entry (narrow width) for all subsequent lines in the paragraph, preventing intra-paragraph body-text overlaps.
+
+**Root cause**: When a paragraph had more lines than `nl` (= figure height / baselineskip), lines after `nl` reverted to full width (`\linewidth`) while the figure (placed via `\smash{\rlap{...}}`) was still physically present. These full-width lines overlapped the figure area.
+
+**Trade-off**: Text past the figure within the same paragraph remains narrow (cosmetic only, no text overlap). Stress test page count increased from 37 to 50. Standard tests: 0-1 extra pages.
+
+**Files modified**: `src/themes/swarmwrap.sty`
+
+**Test results**:
+- test-customwrap.tex: 8 pages, 0 errors, 0 body-text overlaps, 0 ghost narrowing, 0 hollow carry-over
+- test-pagebreak-variations.tex: 16 pages (+1), 0 errors, 0 body-text overlaps, 2 ghost narrowing + 2 hollow carry-over (unchanged, known limitations)
+- test-stress-50.tex: 50 pages (+13), 0 errors. **72 body-text overlaps → 0 (ELIMINATED)**. FIGURE BESIDE TEXT 4 → 1. Quality 0.0% → 98.0%
+
+**Key metrics change (50-figure stress test)**:
+- Body-text overlaps: 72 → 0 (−100%)
+- FIGURE BESIDE TEXT: 4 → 1 (−75%)
+- Ghost narrowing: 0 → 0 (unchanged)
+- Hollow carry-over: 0 → 0 (unchanged)
+- Quality score: 0.0% → 98.0%

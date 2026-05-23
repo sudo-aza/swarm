@@ -1,38 +1,15 @@
 -- swarmwrap-callback.lua — Lua callbacks for swarmwrap.sty
--- v3.23: Deferred path now uses page eject (no \afterpage). Callback unchanged.
--- v3.22: Fix remaining counter — count only narrow lines beside the figure.
--- Previous versions counted ALL lines (including full-width trailing lines),
--- which over-decremented remaining on the first paragraph, preventing the
--- \par patch from extending parshape to subsequent paragraphs.
+-- v3.24: Removed line counting from post_linebreak_filter. Multi-paragraph
+-- parshape extension now uses synchronous vertical-space tracking in the
+-- TeX-side \par patch (see swarmwrap.sty v3.24 changelog).
+-- This callback is now ONLY used for penalty insertion at the parshape
+-- boundary (discouraging page breaks that cause ghost narrowing).
 
 function swarmwrap_post_lb(head, groupcode)
   local tw_sp = tex.dimen["swarmwrap@tw@lua"]
   local tw_val = tw_sp / 65536.0
   local tol = 3.0
   local narrow_width_max = tw_val + tol
-
-  -- Read the TeX-side remaining counter
-  local rem = tex.count["swarmwrap@remaining"]
-
-  if rem > 0 and tw_sp > 0 then
-    -- Count only NARROW lines (lines beside the figure).
-    -- Full-width trailing lines (past the figure) don't consume figure
-    -- vertical space and should NOT decrement remaining.
-    local narrow_count = 0
-    local cur = head
-    while cur do
-      if cur.id == 0 then
-        local lw = cur.width / 65536.0
-        if lw <= narrow_width_max and lw > 0 then
-          narrow_count = narrow_count + 1
-        end
-      end
-      cur = cur.next
-    end
-    -- Only decrement by narrow lines (capped at remaining).
-    local new_rem = math.max(0, rem - narrow_count)
-    tex.count["swarmwrap@remaining"] = new_rem
-  end
 
   -- Penalty insertion at parshape boundary
   if tw_sp > 0 then
@@ -59,7 +36,7 @@ function swarmwrap_post_lb(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.23 loaded, registering post_linebreak_filter")
+texio.write_nl("swarmwrap: callback v3.24 loaded, registering post_linebreak_filter")
 luatexbase.add_to_callback("post_linebreak_filter",
-  swarmwrap_post_lb, "swarmwrap: multi-para + penalty at parshape boundary")
+  swarmwrap_post_lb, "swarmwrap: penalty at parshape boundary")
 texio.write_nl("swarmwrap: callback registered successfully")
