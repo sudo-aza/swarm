@@ -210,6 +210,11 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 19:30 UTC+8
+> **Rule 8: 1000-page PDF quality assessment. VLM visual inspection of boundary pages. No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 34th consecutive QA-only turn. Zoe reported the 1000-page PDF is "shit" (58.8% quality). QA validated with detection script and VLM. Root cause identified: split-compile-merge build approach (build-stress-1000.py) creates 30 section-boundary pages with 364 body-text overlaps (text-on-figure) that are MERGE ARTIFACTS, not real swarmwrap bugs. Within-section bugs: 85 FIGURE BESIDE TEXT (7.8% of figures — parshape not narrowing text beside figure) + 2 hollow carry-over = 87 real swarmwrap issues. 50-page PDF (single compilation) confirmed at 98% quality (1 real bug: p27 FBT). VLM visually confirmed: clean pages 10/10, FBT pages 2-3/10, boundary pages 2-3/10 with visible text-on-figure overlaps. Detection script accuracy: VLM agrees with PyMuPDF on all 5 inspected pages. Recommendation: 1000-page PDF needs to be rebuilt as a SINGLE LaTeX document to eliminate merge artifacts, OR the build script needs to handle section transitions properly (preserving parshape state across boundaries).
+
 ### QA — 2026-05-23 16:30 UTC+8
 > **Rule 8: v3.25 continued inspection (batch 3). Ghost narrowing trade-off quantified. No pending QA tasks. No new commits.**
 >
