@@ -384,7 +384,7 @@ def detect_overlaps(page_num, figures, text_lines, tolerance):
     return issues, caption_overlaps
 
 
-def detect_ghost_narrowing(page_num, text_lines, figures):
+def detect_ghost_narrowing(page_num, page, text_lines, figures):
     """Detect text narrowed by parshape with no figure on page.
 
     VLM-validated improvements (v4, 2026-05-20):
@@ -414,7 +414,42 @@ def detect_ghost_narrowing(page_num, text_lines, figures):
     # Sort by vertical position (top to bottom)
     body_lines.sort(key=lambda l: l["y0"])
 
-    # Use MEDIAN width as full_width — more robust than 90th percentile
+    # v8 (2026-05-24): ABSOLUTE page width baseline.
+    # Previous versions used the MEDIAN of body line widths as the "full
+    # width" baseline. When ALL lines are narrow from a parshape leak
+    # (e.g., 259.7pt on a 595pt page), the median is also 259.7pt, so
+    # no line appears "narrower than full width." This caused 50/50
+    # ghost-narrowed pages to be reported as 0 ghost-narrowing (false
+    # PASS). Fix: compare max text width against 55% of page width.
+    # Normal documents have text spanning 60-80% of page width.
+    # Parshape-leaked pages have text at ~44% (259.7/595.3).
+    page_width = page.rect.width
+    ABSOLUTE_MIN_WIDTH = page_width * 0.55
+    max_text_width = max(l["width"] for l in body_lines)
+
+    if max_text_width < ABSOLUTE_MIN_WIDTH:
+        narrow_count = sum(1 for l in body_lines
+                          if l["width"] < ABSOLUTE_MIN_WIDTH)
+        if narrow_count >= 2:
+            issues.append({
+                "page": page_num + 1,
+                "n_narrowed": narrow_count,
+                "max_width": max_text_width,
+                "page_width": page_width,
+                "narrowest": min(l["width"] for l in body_lines),
+                "desc": (
+                    f"  GHOST NARROW page {page_num + 1}: "
+                    f"{narrow_count}/{len(body_lines)} lines narrowed "
+                    f"(max={max_text_width:.0f}pt, "
+                    f"narrowest={min(l['width'] for l in body_lines):.0f}pt, "
+                    f"page={page_width:.0f}pt, "
+                    f"threshold={ABSOLUTE_MIN_WIDTH:.0f}pt) "
+                    f"-- no figure on this page"
+                ),
+            })
+            return issues  # Absolute detection is definitive
+
+    # Relative baseline check (fallback for subtler cases)
     widths = sorted([l["width"] for l in body_lines])
     if not widths:
         return issues
@@ -525,7 +560,7 @@ def detect_extra_vspace(page_num, figures, text_lines, threshold):
     return issues
 
 
-def detect_hollow_carryover(page_num, text_lines, figures):
+def detect_hollow_carryover(page_num, page, text_lines, figures):
     """
     Detect hollow carry-over: first line(s) of page narrowed but no figure.
 
@@ -555,13 +590,39 @@ def detect_hollow_carryover(page_num, text_lines, figures):
 
     # Sort by vertical position
     body_lines.sort(key=lambda l: l["y0"])
+    first3 = body_lines[:3]
 
-    # Compute full width from the MEDIAN of all body lines (robust baseline)
+    # v8 (2026-05-24): ABSOLUTE page width baseline.
+    # Same blind spot as ghost-narrowing: median of all-narrow lines
+    # equals the narrow width, so nothing is detected. Fix: use page
+    # width as absolute baseline.
+    page_width = page.rect.width
+    ABSOLUTE_MIN_WIDTH = page_width * 0.55
+    n_narrow_abs = sum(1 for l in first3 if l["width"] < ABSOLUTE_MIN_WIDTH)
+
+    if n_narrow_abs >= 2:
+        first_line = body_lines[0]
+        issues.append({
+            "page": page_num + 1,
+            "n_narrow": n_narrow_abs,
+            "max_width": max(l["width"] for l in body_lines),
+            "page_width": page_width,
+            "desc": (
+                f"  HOLLOW CARRY-OVER page {page_num + 1}: "
+                f"{n_narrow_abs}/3 first lines narrowed "
+                f"(max_width={max(l['width'] for l in body_lines):.0f}pt, "
+                f"page={page_width:.0f}pt, "
+                f"threshold={ABSOLUTE_MIN_WIDTH:.0f}pt, "
+                f"first=\"{first_line['text'][:50]}\", "
+                f"first_w={first_line['width']:.0f}pt) "
+                f"-- no figure on this page"
+            ),
+        })
+        return issues  # Absolute detection is definitive
+
+    # Relative baseline check (fallback)
     widths = sorted([l["width"] for l in body_lines])
     full_width = widths[len(widths) // 2]
-
-    # Check how many of the first 3 lines are narrowed
-    first3 = body_lines[:3]
     n_narrow_first3 = sum(
         1 for l in first3 if full_width - l["width"] > 40
     )
@@ -677,9 +738,9 @@ def analyze_pdf(pdf_path, args):
         fbt = detect_figure_beside_text(pn, figs, lines, args.min_adjacent_lines)
         ne = detect_near_empty_pages(pn, page, lines, args.empty_threshold)
         body_ol, caption_ol = detect_overlaps(pn, figs, lines, args.overlap_tolerance)
-        gn = detect_ghost_narrowing(pn, lines, figs)
+        gn = detect_ghost_narrowing(pn, page, lines, figs)
         ev = detect_extra_vspace(pn, figs, lines, args.extra_vspace)
-        hc = detect_hollow_carryover(pn, lines, figs)
+        hc = detect_hollow_carryover(pn, page, lines, figs)
         fm = detect_figure_misaligned(pn, figs, lines)
 
         results["figure_beside_text"].extend(fbt)
