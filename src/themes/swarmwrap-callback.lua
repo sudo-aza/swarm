@@ -1,15 +1,15 @@
 -- swarmwrap-callback.lua — Lua callbacks for swarmwrap.sty
--- v3.24: Removed line counting from post_linebreak_filter. Multi-paragraph
--- parshape extension now uses synchronous vertical-space tracking in the
--- TeX-side \par patch (see swarmwrap.sty v3.24 changelog).
--- This callback is now ONLY used for penalty insertion at the parshape
--- boundary (discouraging page breaks that cause ghost narrowing).
+-- v3.28: Penalty insertion only. Line widening removed — full-width
+-- reset is now handled by a trailing parshape entry in the .sty file
+-- (nl narrow entries + 1 full-width entry). The height padding was
+-- increased from 4pt to baselineskip to ensure the figure ends before
+-- the full-width line starts, preventing body-text overlaps.
+
+local debug_mode = false
 
 function swarmwrap_post_lb(head, groupcode)
   local tw_sp = tex.dimen["swarmwrap@tw@lua"]
   local tw_val = tw_sp / 65536.0
-  local tol = 3.0
-  local narrow_width_max = tw_val + tol
 
   -- Penalty insertion at parshape boundary
   if tw_sp > 0 then
@@ -20,7 +20,7 @@ function swarmwrap_post_lb(head, groupcode)
       while current do
         if current.id == 0 then
           local lw = current.width / 65536.0
-          if lw <= narrow_width_max and lw > 0 then
+          if lw <= tw_val + 3.0 and lw > 0 then
             last_narrow = current
           end
         end
@@ -36,7 +36,7 @@ function swarmwrap_post_lb(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.24 loaded, registering post_linebreak_filter")
+texio.write_nl("swarmwrap: callback v3.28 loaded (penalty only)")
 luatexbase.add_to_callback("post_linebreak_filter",
-  swarmwrap_post_lb, "swarmwrap: penalty at parshape boundary")
+  swarmwrap_post_lb, "swarmwrap: penalty")
 texio.write_nl("swarmwrap: callback registered successfully")

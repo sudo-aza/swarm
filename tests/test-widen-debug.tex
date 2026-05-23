@@ -1,0 +1,17 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{lipsum}
+\usepackage{swarmwrap}
+\begin{document}
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \textcolor{red!20}{\rule{\linewidth}{3cm}}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-6]  % Should produce ~40-50 lines, nl ~= 12
+
+Test text after wrapping zone should be full width.
+
+\end{document}
