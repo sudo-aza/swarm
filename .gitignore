@@ -58,6 +58,9 @@ Thumbs.db
 
 # Secrets
 .env
+# PDFs (except stress test outputs)
 *.pdf
+!tests/test-stress-50.pdf
+!tests/test-stress-1000.pdf
 *.listing
 .install-tl-cache/
