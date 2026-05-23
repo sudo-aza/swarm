@@ -212,6 +212,18 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 21:30 UTC+8
+> **Rule 8: Ghost-narrowing confirmation + merge artifact analysis. No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167, #171 all pending for Programmer. 36th consecutive QA-only turn.
+>
+> Performed comprehensive quantitative analysis of BOTH stress test PDFs, confirming the ghost-narrowing bug (Task #171):
+> - **1000-page PDF**: 0/1234 pages have full-width text. 1208/1234 at <50% width. Dominant text width: 259.7pt (43.6% of 595pt A4). 6 near-empty pages (pp.51, 277, 382, 497, 722, 1065) confirmed as merge artifacts from split-compile-merge build.
+> - **50-page PDF**: 0/50 pages have full-width text. All at 43.6% width (259.7pt). Confirms the bug exists in single-document compilation (not merge-related).
+> - VLM visual inspection of 6 pages across both PDFs confirmed unnatural text narrowing (VLM estimates: 40-65% width).
+>
+> No new bugs found beyond those already tracked in Tasks #166, #167, #171. Programmer action needed on all three.
+
 ### QA — 2026-05-23 20:30 UTC+8
 > **Rule 8: CRITICAL FINDING — parshape never resets to full width. Both PDFs visually bad. No pending QA tasks.**
 >
