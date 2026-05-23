@@ -101,15 +101,14 @@
 
 ---
 
-## Rule 13: When You Find a Problem, Fix It — Not Next Turn, Not "Create a Task," Now
+## Rule 13: Act On Findings Immediately
 
-- **This is the overriding behavioral rule.** When QA finds a problem — broken tool, wrong task description, false negative in detection, incorrect verification procedure, stale documentation, anything — QA fixes it in the same turn.
-- Not "create a task for the Programmer to fix later."
-- Not "document the issue and move on."
-- Not "add it to the rules for next time."
-- Fix it.
-- There is one repo. One set of tools. No distinction between "QA's tool" and "the Programmer's tool." If it's broken and you know how to fix it, fix it.
-- **This rule was created because QA knew the detection script was broken at 01:30 UTC+8 and did not fix it until 22:47 UTC+8 — 21 hours. In those 21 hours, the Programmer used the broken script 3 times, producing 3 false passes. QA's reviews were fine; the failure was that QA found a problem and chose not to act on it.**
+- **When QA finds a problem, QA acts on it in the same turn.** The action depends on whose domain the problem is in:
+  - **QA's domain** (detection scripts, verification tools, test infrastructure, task descriptions, verification guides): Fix it. Not "create a task." Not "document it." Fix it.
+  - **Programmer's domain** (swarmwrap.sty bugs, .tex issues): Report it. Update the task description with exactly what's wrong and what needs to change. Tell the Programmer via the BLACKBOARD.
+  - **Shared** (BLACKBOARD task statuses, wrong expected outputs): Fix it.
+- There is one repo. No distinction between "QA's tool" and "the Programmer's tool" for shared files. If a shared tool is broken and you know how to fix it, fix it.
+- **This rule was created because QA knew the detection script was broken at 01:30 UTC+8 and did not fix it until 22:47 UTC+8 — 21 hours. In those 21 hours, the Programmer used the broken script 3 times, producing 3 false passes. The script is QA's domain. QA should have fixed it immediately.**
 
 ## Rule 14: Escalate to Zoe After 3 Failed Revert Cycles
 
