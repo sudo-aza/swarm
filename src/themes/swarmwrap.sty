@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.25)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.26)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -61,6 +61,18 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.26: Fix parshape never resetting — reset parshape=0 on deactivation.
+%   ROOT CAUSE: In TeX, \parshape persists across paragraph boundaries until
+%   explicitly reset. The v3.25 \par patch deactivation paths restored \par
+%   to the original and set \swarmwrap@activefalse, but did NOT reset
+%   \parshape. Result: after a wrapping session ended, the last parshape
+%   specification remained in effect, narrowing ALL subsequent text to ~43%
+%   of page width permanently.
+%
+%   FIX: Add \parshape=0\relax to ALL 11 deactivation paths across the
+%   \par patch, list hook, and item hook. Also add parshape reset to the
+%   cleanup section of \swarmwrapnext for safety.
+%
 % v3.25: Fix single-paragraph body-text overlaps — remove trailing full-width reset.
 %   ROOT CAUSE: The parshape specification ended with `0pt \linewidth` (a
 %   full-width reset line). When a paragraph had more lines than `nl`, lines
@@ -119,7 +131,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/23 v3.25 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/24 v3.26 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -253,16 +265,19 @@
             % No more vertical space — deactivate
             \swarmwrap@activefalse
             \global\let\par\swarmwrap@orig@par
+            \parshape=0\relax
           \fi
         \else
           % Past the figure's zone — deactivate
           \swarmwrap@activefalse
           \global\let\par\swarmwrap@orig@par
+          \parshape=0\relax
         \fi
       \else
         % Different page — deactivate (figure was on previous page)
         \swarmwrap@activefalse
         \global\let\par\swarmwrap@orig@par
+        \parshape=0\relax
       \fi
     \fi
   \fi
@@ -316,19 +331,23 @@
             \global\swarmwrap@activefalse
             \swarmwrap@list@activefalse
             \everypar{}%
+            \parshape=0\relax
           \fi
         \else
           \global\swarmwrap@activefalse
           \swarmwrap@list@activefalse
           \everypar{}%
+          \parshape=0\relax
         \fi
       \else
         \swarmwrap@list@activefalse
         \everypar{}%
+        \parshape=0\relax
       \fi
     \else
       \swarmwrap@list@activefalse
       \everypar{}%
+      \parshape=0\relax
     \fi
   \fi
 }
@@ -365,15 +384,19 @@
             \emergencystretch=\fontdimen6\font\relax
           \else
             \global\swarmwrap@activefalse
+            \parshape=0\relax
           \fi
         \else
           \global\swarmwrap@activefalse
+          \parshape=0\relax
         \fi
       \else
         \global\swarmwrap@activefalse
+        \parshape=0\relax
       \fi
     \else
       \global\swarmwrap@activefalse
+        \parshape=0\relax
     \fi
   \fi
 }
@@ -398,6 +421,7 @@
   \global\let\par\swarmwrap@orig@par
   \everypar{}%
   \swarmwrap@list@activefalse
+  \parshape=0\relax
   % ── Shared computation: text width and wrapped line count ───────
   \swarmwrap@fw=\swarmwrap@fw@val\relax
   \swarmwrap@tw=\linewidth
