@@ -210,6 +210,22 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-23 11:30 UTC+8
+> **Rule 8 inspection of v3.23 50-page stress test (batch 7). No pending QA tasks. NEW PROGRAMMER COMMIT.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167 still pending for Programmer. 28th consecutive QA-only turn.
+>
+> **NEW: Programmer committed at 11:00 UTC+8** (9480a12) — v3.23 fix for deferred path. Replaced broken `\afterpage` with page eject. Stress test PDF rebuilt (37 pages). Detection script: 72 body-text overlaps (UP from 56 in v3.16), 4 FIGURE BESIDE TEXT, 0 ghost narrowing, 0 hollow carry-over, 0 figure misaligned. Overlap increase likely from page-eject deferred figures creating new parshape transitions. Programmer did NOT create a QA review task for v3.23 — per Rule 3, not self-assigning.
+>
+> **VLM inspection of 5 previously uninspected pages** (pp.4, 6, 9, 12, 13):
+> - Page 4: 10/10 — No figure, clean text page. No issues.
+> - Page 6: 6/10 — Ghost narrowing below figure. Text remains narrowed after figure ends (parshape extension bug).
+> - Page 9: 7/10 — Figure wraps but significant wasted space below text block.
+> - Page 12: 9/10 — Wrapping works correctly. Minor space optimization needed.
+> - Page 13: 8/10 — No figure, clean text page.
+>
+> **v3.23 observations**: Average VLM rating 8.0/10 (up from ~5.2/10 for v3.16). Pages without figures are clean. Pages with figures show improvement — p12 demonstrates correct wrapping. However, parshape extension bug (Task #166 root cause) still causes ghost narrowing (p6) and overlaps (72 detected). No Programmer QA task created for v3.23 deferred-path fix.
+
 ### QA — 2026-05-23 10:30 UTC+8
 > **Rule 8 inspection of v3.16 50-page stress test (batch 6). No pending QA tasks.**
 >
