@@ -213,6 +213,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-24 04:30 UTC+8
+> **Rule 8: Stand-down. No new commits since last turn (bcf2f4f). No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167, #171, #172 all pending for Programmer. No new Programmer commits since v3.26 (2eff4cd).
+>
+> VLM spot-check of 2 additional uninspected pages from test-stress-50.pdf:
+> - p35: rated 2/10 — ghost-narrowing confirmed, no figure, text at ~63% of expected width
+> - p48: rated 3/10 — ghost-narrowing confirmed, no figure, minimal partial recovery (2.5% of rows)
+>
+> Total pages inspected across all turns: 1, 3, 10, 20, 25, 30, 35, 40, 45, 48, 50 (11 of 50). All show same ghost-narrowing bug. No new bugs found beyond Tasks #166, #167, #171, #172.
+
 ### QA — 2026-05-24 03:30 UTC+8
 > **CRITICAL: v3.26 does NOT fix the ghost-narrowing bug. Task #171 reverted to pending. Task #172 created.**
 >
