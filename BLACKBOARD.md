@@ -212,6 +212,19 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-24 01:30 UTC+8
+> **Rule 8: Rebuilt and re-verified 50-page stress test. Ghost-narrowing bug still present. No pending QA tasks.**
+>
+> No tasks assigned to QA with status 'pending' or 'needs-review'. Tasks #166, #167, #171 all pending for Programmer. 37th consecutive QA-only turn.
+>
+> Rebuilt test-stress-50.pdf from scratch (swarmwrap.sty v3.25, LuaHBTeX). PyMuPDF spatial analysis confirms the critical ghost-narrowing bug persists: 50/50 pages at exactly 43.6% width (259.7pt on 595pt A4). Zero pages at full width. All 50 pages are ghost-narrowed.
+>
+> VLM inspection of 4 pages (pp.1, 3, 20, 50): Page 20 and 50 rated 3/10 — VLM correctly identifies excessive white space and 43% text width. Pages 1 and 3 rated 7-8/10 — VLM less critical when a figure is visible but still notes narrow text.
+>
+> Detection script still reports false 98% quality: "PASS GHOST NARROWING: 0" — confirms the relative-baseline blind spot documented in Task #171. No fix to the detection script has been made.
+>
+> No new bugs beyond #166, #167, #171. Programmer has not committed since v3.25 (commit 32549d9, 2026-05-23). All three tasks remain pending.
+
 ### QA — 2026-05-23 21:30 UTC+8
 > **Rule 8: Ghost-narrowing confirmation + merge artifact analysis. No pending QA tasks.**
 >
