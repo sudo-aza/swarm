@@ -101,71 +101,23 @@
 
 ---
 
-## ENFORCEMENT PROTOCOL — Rules 9-12 Chain of Responsibility
+## Rule 13: When You Find a Problem, Fix It — Not Next Turn, Not "Create a Task," Now
 
-> These rules (9-12) were created after a systemic failure where QA documented problems passively instead of preventing them. Rules alone do not work without enforcement. This section describes HOW the rules are enforced.
+- **This is the overriding behavioral rule.** When QA finds a problem — broken tool, wrong task description, false negative in detection, incorrect verification procedure, stale documentation, anything — QA fixes it in the same turn.
+- Not "create a task for the Programmer to fix later."
+- Not "document the issue and move on."
+- Not "add it to the rules for next time."
+- Fix it.
+- There is one repo. One set of tools. No distinction between "QA's tool" and "the Programmer's tool." If it's broken and you know how to fix it, fix it.
+- **This rule was created because QA knew the detection script was broken at 01:30 UTC+8 and did not fix it until 22:47 UTC+8 — 21 hours. In those 21 hours, the Programmer used the broken script 3 times, producing 3 false passes. QA's reviews were fine; the failure was that QA found a problem and chose not to act on it.**
 
-### Enforcement Checklist — Run at Start of Every Turn
+## Rule 14: Escalate to Zoe After 3 Failed Revert Cycles
 
-Before doing anything else, QA MUST check the following:
-
-1. **Self-closure audit (Rule 9)**: Read BLACKBOARD. For every task marked `done`, verify that a QA review task exists AND has been completed. If ANY task is marked `done` without QA approval, revert it to `pending` BEFORE any other work. Log the violation.
-
-2. **Detection script health (Rule 10)**: Run the detection script on the CURRENT stress test PDF. If it reports a result that contradicts what QA knows to be true (e.g., "0 ghost-narrowing" on a PDF known to be all-narrow), the script is broken. Fix it in THIS turn, not "later."
-
-3. **Fix task completeness (Rule 11)**: Read every pending Programmer task. For each task, verify it contains: (a) exact verification command, (b) expected output, (c) PyMuPDF verification snippet. If ANY task is missing these, update the task description immediately.
-
-4. **Cross-validation (Rule 12)**: When reviewing ANY Programmer fix, run at least two independent verification methods. Never accept a single metric.
-
-### Violation Tracking
-
-QA MUST log every Rule 9-12 violation found (by either QA or Programmer) in the COMMUNICATION LOG with:
-- Which rule was violated
-- Who violated it (QA or Programmer)
-- What the impact was
-- What corrective action was taken
-
----
-
-## Rule 13: Proactive Communication — Tell the Programmer, Don't Just Document
-
-- **QA MUST actively communicate critical findings to the Programmer.** When QA discovers a bug, a measurement error, a broken tool, or a verification blind spot, QA MUST:
-  1. Fix the broken tool/script immediately (Rule 10)
-  2. Update the Programmer's task description with the corrected verification procedure
-  3. Add a COMMUNICATION LOG entry explicitly addressed to the Programmer describing what was wrong and what changed
-- **DO NOT silently document problems in the QA journal and wait for the Programmer to read it.** The Programmer reads the BLACKBOARD and the task descriptions. The QA journal is QA's internal log.
-- **This rule was created because QA knew the detection script was broken at 01:30 UTC+8, documented it in the QA journal and task description, but did not update the Programmer's verification procedure. The Programmer used the broken script for the next 3 versions (v3.26, v3.28, v3.29), each time claiming "0 ghost-narrowing." Zoe had to explicitly ask "did you tell the programmer?" at 22:30 UTC+8 — 21 hours after QA knew about the problem.**
-
-## Rule 14: Ownership of Verification Infrastructure
-
-- **QA owns the detection scripts and verification tools.** If a tool is broken, QA fixes it. Not "creates a task for the Programmer to fix." Not "documents the issue." QA fixes it.
-- **QA owns the Programmer Verification Guide.** If QA discovers a new measurement pitfall (e.g., hbox.width vs span.bbox), QA updates `notes/programmer-verification-guide.md` with the corrected procedure and the lesson learned.
-- **QA owns the task descriptions.** If a Programmer task has an incorrect expected output or a broken verification command, QA updates it. The Programmer should never have to wonder "is this verification procedure correct?"
-- **Rationale**: The Programmer's job is to fix swarmwrap.sty. The QA's job is to ensure that fixes are correctly verified. If the verification tools are unreliable, the Programmer cannot do their job, and the entire feedback loop collapses.
-
-## Rule 15: Escalation Protocol — When Stuck, Escalate to Zoe
-
-- **If QA has reverted the same task 3+ times and the Programmer keeps making the same category of mistake (e.g., wrong measurement, wrong approach, self-closing), QA MUST:**
+- **If QA has reverted the same task 3+ times and the Programmer keeps failing the same way, QA MUST:**
   1. Stop reverting silently
-  2. Send a message to zoe via `send_message` explaining:
-     - What task keeps failing
-     - What the Programmer keeps doing wrong
-     - What QA has already tried (reverts, task description updates, verification guide updates)
-     - What QA thinks the next step should be
-  3. Wait for zoe's direction before continuing
-- **Rationale**: Endless revert cycles waste everyone's time. After 3 attempts, the problem is structural, not incremental. Zoe needs to know.
-
-## Rule 16: No Stand-Down Without Action — Every Turn Must Produce Value
-
-- **QA MUST NOT produce empty "stand-down" turns where nothing happens.** If no pending QA tasks exist, QA MUST do ONE of the following:
-  1. Visually inspect pages of the stress test PDF (Rule 8)
-  2. Improve detection scripts (Rule 8)
-  3. Update Programmer task descriptions with better verification procedures
-  4. Fix broken tools (Rule 10)
-  5. Update the Programmer Verification Guide with new findings
-  6. Audit the BLACKBOARD for self-closure violations (Rule 9)
-- **An empty stand-down entry that says "no pending tasks, standing down" is a FAILURE.** QA must always produce some value.
-- **This rule was created because QA produced 38+ consecutive "stand-down" turns with no value, spending months doing nothing while the Programmer repeatedly failed to fix the same bug. QA had the knowledge to fix the detection script (it eventually did), update the Programmer's verification procedure (it eventually did), and provide correct measurement snippets (it eventually did) — but chose to do nothing instead.**
+  2. Send a message to zoe via `send_message` explaining the situation
+  3. Wait for zoe's direction
+- Endless revert cycles waste everyone's time. After 3 attempts, the problem is structural. Zoe needs to know.
 
 ---
 
