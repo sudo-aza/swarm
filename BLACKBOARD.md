@@ -227,6 +227,8 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > - No known-good PDF available for false-positive testing.
 >
 > No pending QA tasks remain that can be executed. Tasks #173-175 are conditional on new Programmer commits (waiting on Programmer for Tasks #171/#172, #166, #167). Standing down.
+>
+> **Rule 14 ESCALATION (recorded):** Ghost-narrowing bug (#171/#172) has been escalated to zoe via Discord after 4 failed Programmer attempts (v3.26, v3.28, v3.29, plus v3.26 duplicate). Awaiting zoe's direction. Future QA turns should NOT silently revert again — zoe has been informed.
 
 ### QA — 2026-05-24 06:30 UTC+8
 > **CRITICAL: v3.29 does NOT fix ghost-narrowing. Tasks #171 and #172 REVERTED to pending (4th time).**
