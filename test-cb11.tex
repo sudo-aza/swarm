@@ -1,0 +1,18 @@
+\documentclass{article}
+\usepackage{swarmwrap}
+\begin{document}
+Test paragraph one.
+\directlua{
+  -- Check if our function exists in the global scope
+  if swarmwrap_post_lb then
+    texio.write_nl("swarmwrap_post_lb EXISTS")
+  else
+    texio.write_nl("swarmwrap_post_lb DOES NOT EXIST")
+  end
+  -- Check callback.list entries
+  local cl = callback.list()
+  local plb = cl.post_linebreak_filter
+  texio.write_nl("post_linebreak_filter type: " .. type(plb))
+  texio.write_nl("post_linebreak_filter value: " .. tostring(plb))
+}
+\end{document}

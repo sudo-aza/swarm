@@ -4441,3 +4441,26 @@ Actions taken:
 > Task #164 is PARTIALLY addressed. The multi-paragraph extension and
 > deferred figure fix are implemented. Remaining work: the detection script
 > needs a horizontal overlap check to produce accurate overlap counts.
+
+> **v3.23 STATUS**: Deferred path fixed — replaced broken `\afterpage` with page eject. ROOT CAUSE: afterpage package was never loaded (missing `\RequirePackage`), causing "Undefined control sequence" on every deferred figure. FIX: When figure doesn't fit, cancel parshape (reset to full width), eject page via `\newpage`, then re-establish wrapping on new page with figure overlay. Result: deferred figures now work correctly (previously completely broken). Standard tests: test-customwrap.tex 8 pages 0 errors, test-pagebreak-variations.tex 15 pages 0 errors, demo-beautiful.tex 7 pages 0 errors. Stress test (50 figures): 37 pages, 0 errors, 49 NORMAL + 1 DEFERRED. Detection: 72 body-text overlaps (pre-existing, from multi-paragraph parshape extension — Task #166), 4 FIGURE BESIDE TEXT (multicol), 8 caption overlaps.
+
+---
+
+### Programmer 2026-05-23 11:00 UTC+8
+
+**Task #166 partial — swarmwrap.sty v3.23: Fix deferred path (replace broken \afterpage with page eject)**
+
+**What changed**: The deferred path in `\swarmwrapnext` used `\afterpage` to place figures on the next page, but the `afterpage` package was never loaded. This caused "Undefined control sequence" errors on every deferred figure. Replaced with page eject approach: cancel parshape on current page (text runs full width), `\newpage`, re-establish wrapping on new page with figure inline.
+
+**Files modified**: `src/themes/swarmwrap.sty`, `src/themes/swarmwrap-callback.lua`
+
+**Test results**:
+- test-customwrap.tex: 8 pages, 0 errors, 5 NORMAL + 1 DEFERRED (page eject)
+- test-pagebreak-variations.tex: 15 pages, 0 errors, 2 NORMAL + 6 DEFERRED (page eject)
+- demo-beautiful.tex: 7 pages, 0 errors (minted warning expected)
+- test-stress-50.tex: 37 pages, 0 errors, 49 NORMAL + 1 DEFERRED
+- Detection script: 72 body-text overlaps (pre-existing from multi-paragraph extension, Task #166)
+
+**Notes**: Also installed missing TeX Live packages (csquotes, tabularray, placeins, tcolorbox, tikzfill, pdfcol, minted, fontawesome5, enumitem) that were blocking demo compilation. Copied swarmwrap-callback.lua to TeX Live tree for kpse.find_file resolution.
+
+**Next**: Task #166 (itemize parshape leak — body-text overlaps in stress test) remains the highest-priority wrapping task.

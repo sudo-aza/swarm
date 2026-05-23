@@ -6,7 +6,9 @@
 
 \begin{document}
 
-% Test: two consecutive figures with multi-paragraph text
+% Test: Two consecutive figures with 2 paragraphs each
+% This mimics the exact pattern from test-stress-50.tex
+
 \begin{swarmwrap}%
   \begin{minipage}[t]{3cm}
     \centering
@@ -15,6 +17,7 @@
   \end{minipage}%
 \end{swarmwrap}%
 \swarmwrapnext\lipsum[1]\lipsum[2]
+
 \begin{swarmwrap}%
   \begin{minipage}[t]{4cm}
     \centering
@@ -23,5 +26,14 @@
   \end{minipage}%
 \end{swarmwrap}%
 \swarmwrapnext\lipsum[3]\lipsum[4]
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{5cm}
+    \centering
+    \textcolor{green!20}{\rule{\linewidth}{5cm}}
+    \captionof{figure}{Fig C (5cmx5cm)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext\lipsum[5]\lipsum[6]
 
 \end{document}
