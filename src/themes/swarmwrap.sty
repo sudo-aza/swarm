@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.29)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.30)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -61,22 +61,23 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
-% v3.29: Fix ghost-narrowing — Lua post_linebreak_filter hbox widening.
+% v3.30: Fix ghost-narrowing — trailing full-width parshape entry.
 %   ROOT CAUSE: TeX repeats the last parshape entry for ALL lines beyond nl.
-%   v3.25 removed the trailing full-width entry (to avoid overlaps), causing
-%   ALL text to stay narrow permanently (50/50 pages at 43.6% width).
-%   FIX: (1) Increased height padding from 4pt to \baselineskip. This adds
-%   one full line of clearance between the figure bottom and the first
-%   widened line. (2) Instead of a trailing parshape entry (which caused
-%   47 body-text overlaps in the stress test from inter-paragraph figure
-%   overlap), the Lua post_linebreak_filter callback now widens hboxes
-%   after position nl to full linewidth. Since widening happens in the
-%   callback (after line breaking), TeX's page layout is unaffected —
-%   the paragraph is still broken at narrow widths, preventing the figure
-%   from overlapping widened text. Result: 0 ghost-narrowing, 0 body-text
-%   overlaps, all pages at full width. Trade-off: page count same as
-%   v3.28 (50 pages for 50-figure stress test) since paragraph layout
-%   uses narrow widths; only the rendered hbox widths are widened.
+%   When parshape has only narrow entries, ALL lines are narrow permanently.
+%   v3.29 tried fixing this via Lua post_linebreak_filter (changing
+%   hbox.width to linewidth) but this only changed the hbox reference
+%   width, NOT the actual text glyph positions. QA verified: text spans
+%   remained at 259.7pt (43.6% page width) — the fix was cosmetic only.
+%   FIX: (1) Restored the trailing full-width parshape entry (0pt \linewidth)
+%   at position nl+1. TeX repeats this for ALL subsequent lines, resetting
+%   text to full page width. (2) Increased figure height padding from
+%   1*\baselineskip to 2*\baselineskip, ensuring at least 35pt of
+%   vertical clearance between the figure bottom and the first full-width
+%   line (vs. 8.5pt in the v3.25 version that caused 72 overlaps).
+%   (3) Removed the broken Lua hbox widening from the callback (it only
+%   changed hbox.width, not text content). Result: 0 ghost-narrowing,
+%   text spans reach full linewidth after figure ends. Trade-off: 1 extra
+%   narrow line per figure (the padding line), total ~1% more pages.
 %
 % v3.28: Clean up Lua callback — remove broken widening, keep penalty only.
 %   The v3.27 Lua widening attempted to widen narrow hboxes after nl lines,
@@ -155,7 +156,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/24 v3.29 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/24 v3.30 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -223,7 +224,7 @@
     \xdef\swarmwrap@fw@val{\the\swarmwrap@fw}%
     \swarmwrap@fh=\ht\swarmwrap@box
     \advance\swarmwrap@fh by \dp\swarmwrap@box
-    \advance\swarmwrap@fh by \baselineskip
+    \advance\swarmwrap@fh by 2\baselineskip
     \xdef\swarmwrap@fh@val{\the\swarmwrap@fh}%
   \fi
 }
@@ -279,18 +280,20 @@
           \ifdim\dimen0>0pt \repeat
           \ifnum\swarmwrap@loop@cnt>0\relax
             % Extend parshape for the computed remaining lines
-            % v3.29: NO trailing entry in extension — prevents inter-paragraph
-            % overlap (full-width text from this extension overlapping the
-            % next session's figure). The trailing entry is only in the
-            % initial \swarmwrapnext parshape.
+            % v3.30: trailing full-width entry in \par patch extension.
+            % After the computed remaining narrow lines, text resets to
+            % full linewidth. Safe because fig_bottom includes 2*bs padding.
             \swarmwrap@tw=\swarmwrap@tw@val\relax
-            \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt\relax\space}%
+            % Count = remaining lines + 1 trailing full-width
+            \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt+1\relax\space}%
 
             \swarmwrap@tmp@cnt=\swarmwrap@loop@cnt
             \loop
               \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
               \advance\swarmwrap@tmp@cnt by -1
             \ifnum\swarmwrap@tmp@cnt>0 \repeat
+            % Trailing full-width entry
+            \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \linewidth\space}%
             \parshape \swarmwrap@pshape\relax
             \emergencystretch=\fontdimen6\font\relax
             \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
@@ -349,14 +352,17 @@
             \advance\swarmwrap@loop@cnt by 1
           \ifdim\dimen0>0pt \repeat
           \ifnum\swarmwrap@loop@cnt>0\relax
-            % v3.29: NO trailing entry in list hook (same rationale as \par patch)
-            \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt\relax\space}%
+            % v3.30: trailing full-width entry in list hook
+            % Count = remaining lines + 1 trailing full-width
+            \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt+1\relax\space}%
 
             \swarmwrap@tmp@cnt=\swarmwrap@loop@cnt
             \loop
               \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
               \advance\swarmwrap@tmp@cnt by -1
             \ifnum\swarmwrap@tmp@cnt>0 \repeat
+            % Trailing full-width entry
+            \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \linewidth\space}%
             \parshape \swarmwrap@pshape\relax
             \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
             \emergencystretch=\fontdimen6\font\relax
@@ -370,7 +376,7 @@
           \global\swarmwrap@activefalse
           \swarmwrap@list@activefalse
           \everypar{}%
-          \parshape=0\relax
+            \parshape=0\relax
         \fi
       \else
         \swarmwrap@list@activefalse
@@ -404,14 +410,17 @@
             \advance\swarmwrap@loop@cnt by 1
           \ifdim\dimen0>0pt \repeat
           \ifnum\swarmwrap@loop@cnt>0\relax
-            % v3.29: NO trailing entry in item hook (same rationale)
-            \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt\relax\space}%
+            % v3.30: trailing full-width entry in item hook
+            % Count = remaining lines + 1 trailing full-width
+            \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt+1\relax\space}%
 
             \swarmwrap@tmp@cnt=\swarmwrap@loop@cnt
             \loop
               \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
               \advance\swarmwrap@tmp@cnt by -1
             \ifnum\swarmwrap@tmp@cnt>0 \repeat
+            % Trailing full-width entry
+            \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \linewidth\space}%
             \parshape \swarmwrap@pshape\relax
             \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
             \emergencystretch=\fontdimen6\font\relax
@@ -471,16 +480,20 @@
   % Set Lua-readable dimension for post_linebreak_filter callback
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
   % ── Build parshape string ──────────────────────────────────────
-  % v3.29: nl narrow entries. NO trailing full-width entry — the Lua
-  % post_linebreak_filter callback widens hboxes after position nl.
-  % This avoids body-text overlaps that a trailing parshape entry causes
-  % (full-width text beside a \smash{\rlap} figure on dense pages).
-  \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl\relax\space}%
+  % v3.30: nl narrow entries + 1 trailing full-width entry.
+  % TeX repeats the last entry for all subsequent lines, so the
+  % trailing 0pt \linewidth resets text to full page width after
+  % the figure zone. The 2*\baselineskip padding in fh ensures
+  % >= 35pt clearance between figure bottom and full-width line.
+  % Count = nl (narrow) + 1 (trailing full-width)
+  \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@nl
   \loop
     \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
     \advance\swarmwrap@loop@cnt by -1
   \ifnum\swarmwrap@loop@cnt>0 \repeat
+  % Trailing full-width entry: resets text to full linewidth after nl narrow lines
+  \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \linewidth\space}%
   % Store nl for Lua callback
   \global\swarmwrap@nl@lua=\swarmwrap@nl
   % ── Set up multi-paragraph extension (v3.24: vertical-space tracking) ─

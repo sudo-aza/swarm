@@ -1,12 +1,19 @@
 -- swarmwrap-callback.lua — Lua callbacks for swarmwrap.sty
--- v3.29: Line widening + penalty insertion.
--- After N narrow hboxes (beside the figure), subsequent hboxes are
--- widened to full linewidth. This fixes ghost-narrowing without using
--- a trailing parshape entry, which caused 47 body-text overlaps on
--- the 50-figure stress test (full-width text overlapping the next
--- session's figure). The baselineskip padding in swarmwrap.sty
--- ensures at least one line of clearance between the figure bottom
--- and the first widened line.
+-- v3.30: Penalty insertion only (hbox widening removed).
+--
+-- v3.29's hbox widening (setting current.width = tex.dimen["linewidth"]
+-- for hboxes after position nl) did NOT modify actual text glyph positions.
+-- QA verified via PyMuPDF that text spans remained at 259.7pt (43.6%
+-- page width) — only the hbox reference width changed, not the content.
+--
+-- The ghost-narrowing fix is now handled by the trailing full-width
+-- parshape entry (0pt \linewidth) in swarmwrap.sty. TeX repeats
+-- the last parshape entry for all subsequent lines, so text after
+-- nl narrow lines automatically resets to full page width.
+--
+-- This callback retains only the penalty insertion at the narrow/full-width
+-- boundary, discouraging page breaks that would cause continuation-page
+-- ghost narrowing.
 
 local debug_mode = false
 
@@ -19,30 +26,12 @@ function swarmwrap_post_lb(head, groupcode)
     return head
   end
 
-  local nl = tex.count["swarmwrap@nl@lua"]
   local linewidth = tex.dimen["linewidth"] / 65536.0
   local penalty_val = tex.count["swarmwrap@penalty"]
 
-  -- Phase 1: Count hboxes and widen those after position nl
-  if nl > 0 then
-    local hbox_count = 0
-    local current = head
-    while current do
-      if current.id == 0 then -- hbox
-        hbox_count = hbox_count + 1
-        if hbox_count > nl then
-          -- This hbox is past the narrow zone. Widen to full linewidth.
-          local lw = current.width / 65536.0
-          if lw < linewidth - 5.0 then
-            current.width = tex.dimen["linewidth"]
-          end
-        end
-      end
-      current = current.next
-    end
-  end
-
-  -- Phase 2: Penalty insertion at parshape boundary
+  -- Penalty insertion at parshape boundary (narrow → full-width)
+  -- Insert a penalty after the last narrow hbox to discourage page breaks
+  -- at the transition point where ghost narrowing would occur.
   if penalty_val > 0 then
     local last_narrow = nil
     local current = head
@@ -65,7 +54,7 @@ function swarmwrap_post_lb(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.29 loaded (widening + penalty)")
+texio.write_nl("swarmwrap: callback v3.30 loaded (penalty only)")
 luatexbase.add_to_callback("post_linebreak_filter",
-  swarmwrap_post_lb, "swarmwrap: widen+penalty")
+  swarmwrap_post_lb, "swarmwrap: penalty")
 texio.write_nl("swarmwrap: callback registered successfully")
