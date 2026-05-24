@@ -70,3 +70,48 @@
   3. **Create fix tasks for the Programmer** for any new bugs found.
 - **This rule was created because QA repeatedly gave 10/10 ratings to versions with obvious visual bugs** that Zoe caught immediately. PyMuPDF coordinate analysis alone is insufficient — the human eye catches layout problems that numbers miss.
 - **Enforcement**: Every stand-down log entry must either describe pages inspected or explain why inspection was not possible (e.g., stress test PDF does not exist yet).
+
+## Rule 9: No Self-Closure — QA Must Approve Before "done"
+
+- **The Programmer must NOT mark a fix task as `done` on the BLACKBOARD unless a QA task exists and QA has approved the deliverable.**
+- If the Programmer commits a fix and marks the task `done` without QA review, QA will immediately revert the task to `pending` and note the violation in the COMMUNICATION LOG.
+- **Enforcement**: When QA pulls a new commit and finds a task marked `done` without a corresponding QA review task or approval entry, QA reverts the task to `pending` before any other work. This is non-negotiable.
+- **This rule was created because the Programmer marked Tasks #171 and #172 as `done` three times (v3.26, v3.28, v3.29) without QA review. Each time, QA independently verified and found the fix did not work. The Programmer was verifying against a broken detection script that reported false passes.**
+
+## Rule 10: Fix Broken Detection Scripts Immediately — Do Not Just Document Them
+
+- **If QA discovers that a detection script has a false-negative (reports PASS when there is a real bug), QA must fix the detection script in the same turn.** Do not create a task for the Programmer to fix it later. Do not just document the blind spot and move on.
+- A broken detection script is QA's responsibility. The Programmer uses these scripts to verify their work. If the script lies, the Programmer's verification is meaningless.
+- **This rule was created because QA documented the detect-layout-issues.py blind spot (relative baseline) in Task #171 at 01:30 UTC+8 but did not fix the script. The Programmer then used the same broken script to claim "0 ghost-narrowing" on v3.26, v3.28, and v3.29 — all false passes. QA only fixed the script at 22:47 UTC+8, ~21 hours later, after zoe explicitly asked "did you tell the programmer about it?"**
+
+## Rule 11: Include Verification Commands in Every Fix Task Description
+
+- **When QA creates a fix task for the Programmer, the task description MUST include:**
+  1. The exact command to verify the fix (e.g., `python3 scripts/detect-layout-issues.py tests/test-stress-50.pdf --quality`)
+  2. The expected output (e.g., "GHOST NARROWING: 0" and "QUALITY SCORE: 49/50 (98.0%) [PASS]")
+  3. A PyMuPDF snippet the Programmer can use to independently verify text widths (see `notes/programmer-verification-guide.md`)
+- The Programmer must run these commands and include the output in their comm log before marking the task done.
+- **This rule was created because the Programmer kept verifying their fixes with the wrong measurement. In v3.29, the Programmer measured `hbox.width` (which their code changed) instead of `span.bbox` width (which is the actual visual text extent). The Programmer's PyMuPDF check showed "37/37 pages at 359pt" while the actual text was still at 259.7pt on every page.**
+
+## Rule 12: Never Trust a Single Metric — Cross-Validate
+
+- **QA must never accept a single metric as proof of correctness.** When verifying a fix, always cross-validate with at least two independent methods.
+- For ghost-narrowing specifically: run BOTH the detection script AND the PyMuPDF width check (see `notes/programmer-verification-guide.md`). If they disagree, investigate.
+- **This rule was created because the detection script alone was insufficient.** The script reported 98% quality while every page was narrowed. Only by combining the detection script with independent PyMuPDF width measurement was the bug caught.
+
+## Rule 13: Report Findings to the BLACKBOARD Immediately
+
+- **When QA finds a problem, record it on the BLACKBOARD in the same turn.** Create a task, update an existing task description, or add a COMMUNICATION LOG entry — whatever is appropriate. Do NOT just write it in your journal or send a Discord message.
+- The BLACKBOARD is read every turn by every agent. Your journal is not. A Discord message is not. If a finding only exists in your journal or a chat message, it does not exist once that context is gone.
+- This applies to ALL problems — broken tools, regressions, bugs, detection script failures, anything. Not just a specific category.
+- For QA's own domain (detection scripts, test infrastructure): fix it in the same turn AND record what you did on the BLACKBOARD. For the Programmer's domain (swarmwrap.sty bugs): update the relevant task on the BLACKBOARD with exactly what's wrong and what needs to change.
+- **This rule was created because QA knew the detection script was broken at 01:30 UTC+8 and did not report it to the Programmer via the BLACKBOARD. The Programmer continued using the broken script for 21 hours across 3 more failed versions (v3.26, v3.28, v3.29). The finding existed only in QA's journal — which the Programmer never reads.**
+
+## Rule 14: Escalate to Zoe After 3 Failed Revert Cycles
+
+- **If QA has reverted the same task 3+ times and the Programmer keeps failing the same way, QA MUST:**
+  1. Stop reverting silently
+  2. Send a message to zoe via `send_message` explaining the situation
+  3. Record the escalation in the BLACKBOARD COMMUNICATION LOG so it persists across context windows
+- A Discord message alone is not enough — it's gone once context resets. The BLACKBOARD entry ensures the next QA turn knows an escalation already happened and what zoe said.
+- **This rule was created because QA escalated the ghost-narrowing bug to zoe after 4 failed Programmer attempts, but only via Discord. If the escalation had been recorded on the BLACKBOARD, the next QA turn would have known not to revert again silently.**
