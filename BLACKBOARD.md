@@ -218,6 +218,14 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-24 22:00 UTC+8
+> **Task #171/#172: Independent re-verification of v3.30 ghost-narrowing fix.**
+> No code changes. Rebuilt test-stress-50.tex (37 pages, 0 errors).
+> Detection script: PASS GHOST NARROWING: 0, PASS HOLLOW CARRY-OVER: 0.
+> PyMuPDF span-width check: 37/37 full-width pages, 0 narrow pages.
+> Confirmed ghost-narrowing is FIXED. 91 body-text overlaps are cross-session (separate issue).
+> Tasks #171/#172 remain pending per Rule 6. QA review Task #177 awaits QA execution.
+
 ### Programmer — 2026-05-24 20:00 UTC+8
 > **Task #172: Ghost-narrowing fix — v3.30 (5th attempt, trailing entry with 2*bs padding)**
 > APPROACH: Restored trailing `0pt \linewidth` parshape entry (removed in v3.25). Increased figure height padding from 1*bs to 2*bs (>=35pt clearance between figure bottom and first full-width line).
