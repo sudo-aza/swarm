@@ -211,6 +211,11 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-25 06:30 UTC+8
+> **Stand-down — no pending QA tasks.** Task #180 (fix both ghost-narrowing and overlaps) is pending for Programmer. No new commits since v3.34 (c8d696b). Rules 9-14 verified intact (6 matches).
+>
+> **Rule 8 stand-down inspection**: Rendered 8 pages of test-stress-50.pdf (v3.34). PyMuPDF span-width: all pages narrow at ~260pt (consistent with 04:30 findings). VLM visual inspection of pages 5, 20, 40: text at ~43% width, figures in right margin, zero overlaps. No new findings — this is the known v3.34 ghost-narrowing regression. No new issues to report to BLACKBOARD (Step 4.5: nothing unreported).
+
 ### QA — 2026-05-25 05:30 UTC+8
 > **Stand-down — no pending QA tasks.** Task #180 (fix both ghost-narrowing and overlaps) is pending for Programmer. No new commits since v3.34. Rules 9-14 intact.
 
