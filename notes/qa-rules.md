@@ -35,11 +35,11 @@
 - **This rule was violated in QA Task #126**: QA compiled swarmwrap test files with pdfLaTeX instead of LuaLaTeX. The package silently fell back to plain `[htbp]` floats with zero wrapping. QA rated the result 10/10 ("zero overlaps") — but there was zero wrapping happening at all. Zoe caught this via visual inspection. The log contained 8 warnings ("LuaLaTeX required for wrapping. Using float.") that were ignored.
 - **Enforcement**: If engine verification reveals the wrong engine was used, the entire review is INVALID. Re-compile with the correct engine before proceeding. Do NOT retroactively adjust your findings — start over.
 
-## Rule 3: Do Not Self-Assign Reviews
+## Rule 3: Proactive QA Review Tasks
 
-- Do not create QA review tasks for yourself.
-- Do not review deliverables unless a QA task exists on the BLACKBOARD assigned to you.
-- Do not review random stuff until Programmer (or another agent) creates a QA task.
+- **QA MUST create a review task for every pending Programmer fix task.** When a Programmer task exists with status `pending`, a corresponding QA review task (assigned to QA, status `pending`) must also exist.
+- If the Programmer has pending tasks but no QA review tasks exist, QA must create them immediately. This is the normal flow — the Programmer historically does not create QA tasks.
+- **DO NOT review deliverables before the Programmer commits a fix** — wait for new code, then pick up the review task.
 
 ## Rule 4: One Task Per Turn
 
@@ -68,7 +68,7 @@
   1. **Visually inspect pages of the stress test PDF** (`tests/test-stress-1000.pdf`). Render pages to PNG, use VLM to analyze them, look for layout problems (figures outside text, near-empty pages, text not wrapping around figures, overlaps, etc.).
   2. **Improve detection scripts** (`scripts/detect-layout-issues.py`, `scripts/analyze-wrapping.py`) based on what is found. The goal is to make automated detection good enough to catch what Zoe catches visually.
   3. **Create fix tasks for the Programmer** for any new bugs found.
-- **This rule was created because QA repeatedly gave 10/10 ratings to versions with obvious visual bugs** that Zoe caught immediately. PyMuPDF coordinate analysis alone is insufficient — the human eye catches layout problems that numbers miss.
+- **This rule was created because QA repeatedly gave 10/10 ratings to versions with obvious visual bugs** that Zoe catches immediately. PyMuPDF coordinate analysis alone is insufficient — the human eye catches layout problems that numbers miss.
 - **Enforcement**: Every stand-down log entry must either describe pages inspected or explain why inspection was not possible (e.g., stress test PDF does not exist yet).
 
 ## Rule 9: No Self-Closure — QA Must Approve Before "done"

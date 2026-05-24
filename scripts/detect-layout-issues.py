@@ -17,6 +17,7 @@ Usage:
   python3 scripts/detect-layout-issues.py <file.pdf> --page 3    # single page
   python3 scripts/detect-layout-issues.py <file.pdf> --summary   # counts only
   python3 scripts/detect-layout-issues.py <file.pdf> --quality   # quality report
+  python3 scripts/detect-layout-issues.py <file.pdf> --per-page  # per-page breakdown
 
 Exit codes:
   0 = no issues found
@@ -53,6 +54,9 @@ def parse_args():
     p.add_argument("--quality", action="store_true",
                    help="Print quality report with pass/fail per category "
                         "and overall score")
+    p.add_argument("--per-page", action="store_true",
+                   help="Print per-page issue breakdown (page number, "
+                        "figure count, issue counts per category)")
     return p.parse_args()
 
 
@@ -380,7 +384,7 @@ def detect_overlaps(page_num, figures, text_lines, tolerance):
     return issues, caption_overlaps
 
 
-def detect_ghost_narrowing(page_num, text_lines, figures):
+def detect_ghost_narrowing(page_num, page, text_lines, figures):
     """Detect text narrowed by parshape with no figure on page.
 
     VLM-validated improvements (v4, 2026-05-20):
@@ -410,7 +414,42 @@ def detect_ghost_narrowing(page_num, text_lines, figures):
     # Sort by vertical position (top to bottom)
     body_lines.sort(key=lambda l: l["y0"])
 
-    # Use MEDIAN width as full_width — more robust than 90th percentile
+    # v8 (2026-05-24): ABSOLUTE page width baseline.
+    # Previous versions used the MEDIAN of body line widths as the "full
+    # width" baseline. When ALL lines are narrow from a parshape leak
+    # (e.g., 259.7pt on a 595pt page), the median is also 259.7pt, so
+    # no line appears "narrower than full width." This caused 50/50
+    # ghost-narrowed pages to be reported as 0 ghost-narrowing (false
+    # PASS). Fix: compare max text width against 55% of page width.
+    # Normal documents have text spanning 60-80% of page width.
+    # Parshape-leaked pages have text at ~44% (259.7/595.3).
+    page_width = page.rect.width
+    ABSOLUTE_MIN_WIDTH = page_width * 0.55
+    max_text_width = max(l["width"] for l in body_lines)
+
+    if max_text_width < ABSOLUTE_MIN_WIDTH:
+        narrow_count = sum(1 for l in body_lines
+                          if l["width"] < ABSOLUTE_MIN_WIDTH)
+        if narrow_count >= 2:
+            issues.append({
+                "page": page_num + 1,
+                "n_narrowed": narrow_count,
+                "max_width": max_text_width,
+                "page_width": page_width,
+                "narrowest": min(l["width"] for l in body_lines),
+                "desc": (
+                    f"  GHOST NARROW page {page_num + 1}: "
+                    f"{narrow_count}/{len(body_lines)} lines narrowed "
+                    f"(max={max_text_width:.0f}pt, "
+                    f"narrowest={min(l['width'] for l in body_lines):.0f}pt, "
+                    f"page={page_width:.0f}pt, "
+                    f"threshold={ABSOLUTE_MIN_WIDTH:.0f}pt) "
+                    f"-- no figure on this page"
+                ),
+            })
+            return issues  # Absolute detection is definitive
+
+    # Relative baseline check (fallback for subtler cases)
     widths = sorted([l["width"] for l in body_lines])
     if not widths:
         return issues
@@ -521,7 +560,7 @@ def detect_extra_vspace(page_num, figures, text_lines, threshold):
     return issues
 
 
-def detect_hollow_carryover(page_num, text_lines, figures):
+def detect_hollow_carryover(page_num, page, text_lines, figures):
     """
     Detect hollow carry-over: first line(s) of page narrowed but no figure.
 
@@ -551,13 +590,39 @@ def detect_hollow_carryover(page_num, text_lines, figures):
 
     # Sort by vertical position
     body_lines.sort(key=lambda l: l["y0"])
+    first3 = body_lines[:3]
 
-    # Compute full width from the MEDIAN of all body lines (robust baseline)
+    # v8 (2026-05-24): ABSOLUTE page width baseline.
+    # Same blind spot as ghost-narrowing: median of all-narrow lines
+    # equals the narrow width, so nothing is detected. Fix: use page
+    # width as absolute baseline.
+    page_width = page.rect.width
+    ABSOLUTE_MIN_WIDTH = page_width * 0.55
+    n_narrow_abs = sum(1 for l in first3 if l["width"] < ABSOLUTE_MIN_WIDTH)
+
+    if n_narrow_abs >= 2:
+        first_line = body_lines[0]
+        issues.append({
+            "page": page_num + 1,
+            "n_narrow": n_narrow_abs,
+            "max_width": max(l["width"] for l in body_lines),
+            "page_width": page_width,
+            "desc": (
+                f"  HOLLOW CARRY-OVER page {page_num + 1}: "
+                f"{n_narrow_abs}/3 first lines narrowed "
+                f"(max_width={max(l['width'] for l in body_lines):.0f}pt, "
+                f"page={page_width:.0f}pt, "
+                f"threshold={ABSOLUTE_MIN_WIDTH:.0f}pt, "
+                f"first=\"{first_line['text'][:50]}\", "
+                f"first_w={first_line['width']:.0f}pt) "
+                f"-- no figure on this page"
+            ),
+        })
+        return issues  # Absolute detection is definitive
+
+    # Relative baseline check (fallback)
     widths = sorted([l["width"] for l in body_lines])
     full_width = widths[len(widths) // 2]
-
-    # Check how many of the first 3 lines are narrowed
-    first3 = body_lines[:3]
     n_narrow_first3 = sum(
         1 for l in first3 if full_width - l["width"] > 40
     )
@@ -650,6 +715,9 @@ def analyze_pdf(pdf_path, args):
         "figure_misaligned": [],
     }
 
+    # Per-page tracking for --per-page mode
+    per_page = {}  # page_num -> {figs, issues by category}
+
     # Track figure statistics for quality report
     total_figures = 0
     figures_with_wrapping = 0
@@ -667,21 +735,35 @@ def analyze_pdf(pdf_path, args):
         if figs:
             pages_with_figures += 1
 
-        results["figure_beside_text"].extend(
-            detect_figure_beside_text(pn, figs, lines, args.min_adjacent_lines))
-        results["near_empty"].extend(
-            detect_near_empty_pages(pn, page, lines, args.empty_threshold))
+        fbt = detect_figure_beside_text(pn, figs, lines, args.min_adjacent_lines)
+        ne = detect_near_empty_pages(pn, page, lines, args.empty_threshold)
         body_ol, caption_ol = detect_overlaps(pn, figs, lines, args.overlap_tolerance)
+        gn = detect_ghost_narrowing(pn, page, lines, figs)
+        ev = detect_extra_vspace(pn, figs, lines, args.extra_vspace)
+        hc = detect_hollow_carryover(pn, page, lines, figs)
+        fm = detect_figure_misaligned(pn, figs, lines)
+
+        results["figure_beside_text"].extend(fbt)
+        results["near_empty"].extend(ne)
         results["overlap"].extend(body_ol)
         results["caption_overlap"].extend(caption_ol)
-        results["ghost_narrow"].extend(
-            detect_ghost_narrowing(pn, lines, figs))
-        results["extra_vspace"].extend(
-            detect_extra_vspace(pn, figs, lines, args.extra_vspace))
-        results["hollow_carryover"].extend(
-            detect_hollow_carryover(pn, lines, figs))
-        results["figure_misaligned"].extend(
-            detect_figure_misaligned(pn, figs, lines))
+        results["ghost_narrow"].extend(gn)
+        results["extra_vspace"].extend(ev)
+        results["hollow_carryover"].extend(hc)
+        results["figure_misaligned"].extend(fm)
+
+        # Per-page tracking
+        if args.per_page:
+            per_page[pn + 1] = {
+                "figs": len(figs),
+                "fbt": len(fbt),
+                "body_ol": len(body_ol),
+                "cap_ol": len(caption_ol),
+                "gn": len(gn),
+                "ev": len(ev),
+                "hc": len(hc),
+                "fm": len(fm),
+            }
 
         # Count figures with wrapping (for quality report)
         if figs:
@@ -771,6 +853,34 @@ def analyze_pdf(pdf_path, args):
             print(f"    Criteria: >=99% for PASS (allows 1 bug per 100 figures)")
 
         return min(real_total, 8) if real_total > 0 else 0
+
+    if args.per_page:
+        print("PER-PAGE ISSUE BREAKDOWN")
+        print("=" * 80)
+        # Header
+        print(f"  {'Page':>4}  {'Figs':>4}  {'FBT':>3}  {'BodyOL':>6}  "
+              f"{'CapOL':>5}  {'Ghost':>5}  {'VSpace':>6}  {'Hollow':>6}  "
+              f"{'MisAlign':>8}")
+        print(f"  {'-'*4}  {'-'*4}  {'-'*3}  {'-'*6}  "
+              f"{'-'*5}  {'-'*5}  {'-'*6}  {'-'*6}  "
+              f"{'-'*8}")
+        issue_pages = 0
+        for pnum in sorted(per_page.keys()):
+            d = per_page[pnum]
+            total_p = d["fbt"] + d["body_ol"] + d["gn"] + d["ev"] + d["hc"] + d["fm"]
+            if total_p == 0:
+                continue  # Skip clean pages
+            issue_pages += 1
+            marker = " ***" if d["body_ol"] > 5 else ""
+            print(f"  {pnum:>4}  {d['figs']:>4}  {d['fbt']:>3}  {d['body_ol']:>6}  "
+                  f"{d['cap_ol']:>5}  {d['gn']:>5}  {d['ev']:>6}  {d['hc']:>6}  "
+                  f"{d['fm']:>8}{marker}")
+        clean = sum(1 for p in per_page.values()
+                    if p["fbt"] + p["body_ol"] + p["gn"] + p["ev"] + p["hc"] + p["fm"] == 0)
+        print()
+        print(f"  Pages with issues: {issue_pages}/{len(per_page)} "
+              f"({clean} clean)")
+        return 0
 
     if args.summary:
         for label, key in categories:

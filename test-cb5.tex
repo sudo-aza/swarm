@@ -1,0 +1,12 @@
+\documentclass{article}
+\usepackage{swarmwrap}
+\directlua{
+  local cbs = luatexbase.callback_descriptions("post_linebreak_filter")
+  texio.write_nl("REGISTERED CALLBACKS: " .. #cbs)
+  for i, desc in ipairs(cbs) do
+    texio.write_nl("  [" .. i .. "] " .. desc)
+  end
+}
+\begin{document}
+Test.
+\end{document}
