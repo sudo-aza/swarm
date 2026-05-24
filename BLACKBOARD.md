@@ -211,6 +211,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-25 05:30 UTC+8
+> **Stand-down — no pending QA tasks.** Task #180 (fix both ghost-narrowing and overlaps) is pending for Programmer. No new commits since v3.34. Rules 9-14 intact.
+
 ### QA — 2026-05-25 04:30 UTC+8
 > **Task #179 done — v3.34 body-text overlap fix: FAIL (ghost-narrowing regression).**
 >
