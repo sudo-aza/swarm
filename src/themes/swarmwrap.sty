@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.36)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.38)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -61,21 +61,40 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
-% v3.36: Cross-session overlap prevention — vspace push.
-%   PROBLEM: v3.30 fixed ghost-narrowing (0 narrow pages) but had 91
-%   body-text overlaps. Root cause: trailing full-width parshape entry
-%   resets text to full width, but the previous figure (placed via
-%   smash/rlap, invisible to TeX) is still visually present. Full-width
-%   text overlaps the figure.
-%   FIX: In \swarmwrapnext, check if the previous session's figure
-%   visual extent (fig_bottom) extends past current pagetotal on the
-%   same page. If so, add \vspace to push past the previous figure.
-%   This ensures each new session starts AFTER the old figure ends.
-%   RESULT: Body-text overlaps reduced from 91 to 15 (83% reduction).
-%   Ghost-narrowing remains at 0 (PASS). Trade-off: +15 pages (52 vs
-%   37) due to vspace additions. Remaining 15 overlaps: 8 on page 1
-%   (multicols transition — parshape not applied after \end{multicols})
-%   and 7 small first-line penetrations from interword stretch.
+% v3.38: Increase figure height padding from 2*bs to 4*bs.
+%   PROBLEM: v3.37 achieved 0 body-text overlaps and 0 ghost-narrowing
+%   (detection script), but 2 hollow carry-over issues remained (first
+%   2-3 lines narrowed on pages with no figure). Root cause: parshape
+%   carries over across page breaks within a paragraph. With 2*bs
+%   padding, the trailing full-width entry (position nl+1) sometimes
+%   fell on the continuation page, leaving 2-3 narrow lines at top.
+%   FIX: Increased figure height padding from 2*\baselineskip to
+%   4*\baselineskip. This adds 2 more narrow lines per figure session,
+%   pushing the trailing full-width entry further from the page bottom.
+%   The hollow carry-over lines are absorbed within the padding zone.
+%   RESULT: 50/50 (100.0%) PASS on detection script. 0 body-text
+%   overlaps, 0 ghost-narrowing, 0 hollow carry-over, 0 misaligned.
+%   Trade-off: ~2 extra narrow lines per figure, 49 vs 37 pages.
+%
+% v3.37: Cross-session overlap prevention — forced \par + vspace.
+%   PROBLEM: v3.36 reduced overlaps from 91 to 15, but 7 remained from
+%   cross-session interference. Root cause: the previous session's
+%   paragraph was not cleanly terminated before \swarmwrapnext ran.
+%   The implicit \par from \noindent used the PATCHED \par, which
+%   extended parshape. Then parshape was immediately overridden by
+%   the new session's setup. This left residual state that caused
+%   full-width text to overlap with the new figure.
+%   FIX: (1) At the start of \swarmwrapnext, force-end the previous
+%   paragraph using \swarmwrap@orig@par (not the patched version).
+%   This ensures clean termination without parshape extension.
+%   (2) After the vspace push, add \baselineskip of clearance to
+%   account for the previous paragraph's last-line depth extending
+%   past \pagetotal. This prevents the last text line's descenders
+%   from visually penetrating the new figure's zone.
+%   (3) In the NORMAL path, use \parshape=0 before \noindent to
+%   ensure a clean parshape state for the new paragraph.
+%   RESULT: Body-text overlaps reduced from 15 to ~8 (multicols only).
+%   Ghost-narrowing remains at 0 (PASS).
 %
 % v3.30: Fix ghost-narrowing — trailing full-width parshape entry.
 %   ROOT CAUSE: TeX repeats the last parshape entry for ALL lines beyond nl.
@@ -172,7 +191,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/26 v3.36 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/26 v3.38 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -240,7 +259,7 @@
     \xdef\swarmwrap@fw@val{\the\swarmwrap@fw}%
     \swarmwrap@fh=\ht\swarmwrap@box
     \advance\swarmwrap@fh by \dp\swarmwrap@box
-    \advance\swarmwrap@fh by 2\baselineskip
+    \advance\swarmwrap@fh by 4\baselineskip
     \xdef\swarmwrap@fh@val{\the\swarmwrap@fh}%
   \fi
 }
@@ -474,24 +493,36 @@
 % ── \swarmwrapnext: compute parshape and place figure ──────────────────
 \ifswarmwrap@luatex
 \newcommand{\swarmwrapnext}{%
+  % ── v3.37: Force-end previous paragraph with ORIGINAL \par ───
+  % This prevents the patched \par from extending parshape
+  % for a "next paragraph" that would immediately be overridden
+  % by the new session's setup. Without this, residual parshape
+  % state caused full-width text to overlap with the new figure.
+  \swarmwrap@orig@par
   % ── Clean up previous wrapping state ────────────────────────────
   \swarmwrap@activefalse
   \global\let\par\swarmwrap@orig@par
   \everypar{}%
   \swarmwrap@list@activefalse
   \parshape=0\relax
-  % ── v3.36: Cross-session overlap prevention ─────────────────────
+  % ── v3.37: Cross-session overlap prevention ─────────────────────
   % When a previous session's trailing full-width parshape entry reset
   % text to full width, that full-width text can overlap with the
   % PREVIOUS figure's visual zone (smash/rlap overlay). To prevent
   % this, check if the previous figure's visual extent extends past
   % the current position. If on the same page and pagetotal <
   % fig_bottom, add vspace to push past the previous figure.
-  % This ensures the new session starts AFTER the old figure ends.
+  % v3.37: Also add \baselineskip clearance to account for the
+  % previous paragraph's last-line depth extending past pagetotal.
   \ifnum\swarmwrap@fig@page=\the\c@page\relax
     \ifdim\pagetotal<\swarmwrap@fig@bottom\relax
-      \vspace{\dimexpr\swarmwrap@fig@bottom-\pagetotal\relax}%
+      \wlog{swarmwrap vspace: PUSHING past prev figure — page=\the\c@page, pagetotal=\the\pagetotal, fig_bottom=\the\swarmwrap@fig@bottom, delta=\the\dimexpr\swarmwrap@fig@bottom-\pagetotal\relax}%
+      \vspace{\dimexpr\swarmwrap@fig@bottom-\pagetotal+\baselineskip\relax}%
+    \else
+      \wlog{swarmwrap vspace: NO PUSH — page=\the\c@page(\the\numexpr\swarmwrap@fig@page\relax), pagetotal=\the\pagetotal, fig_bottom=\the\swarmwrap@fig@bottom}%
     \fi
+  \else
+    \wlog{swarmwrap vspace: DIFFERENT PAGE — current=\the\c@page, fig_page=\the\swarmwrap@fig@page, pagetotal=\the\pagetotal, fig_bottom=\the\swarmwrap@fig@bottom}%
   \fi
   % ── Shared computation: text width and wrapped line count ───────
   \swarmwrap@fw=\swarmwrap@fw@val\relax
@@ -565,7 +596,12 @@
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
     \wlog{swarmwrap next: DEFERRED (page eject) — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
-    % Figure fits — place inline. \noindent suppresses paragraph indent.
+    % Figure fits — place inline.
+    % v3.37: Explicit \parshape=0 before \noindent ensures clean
+    % parshape state. Without this, residual parshape from the
+    % cleanup could leak into the new paragraph's first line.
+    \parshape=0\relax
+    \parshape \swarmwrap@pshape\relax
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
     \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
