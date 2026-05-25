@@ -1,0 +1,213 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{caption}
+\usepackage{swarmwrap}
+
+\title{swarmwrap v3.0 — Page Break Detection Variations}
+\author{QA Agent}
+\date{2026-05-18}
+
+\begin{document}
+\maketitle
+
+\newdimen\pbht
+
+% ====================================================================
+% We use a short figure (2.5cm rule + caption) that needs ~100pt.
+% This lets us show a wider range of remaining-space scenarios.
+% ====================================================================
+
+% ====================================================================
+% Scenario A: Abundant room — figure fits easily, no break
+% ====================================================================
+\section*{A: Abundant room (300pt remaining)}
+
+\pbht=\textheight
+\advance\pbht by -300pt
+
+\vbox to\pbht{%
+  \lipsum[1-2]%
+  \vss
+}%
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2.5cm}
+    \captionof{figure}{A: 300pt room — should fit.}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+\newpage
+% ====================================================================
+% Scenario B: Moderate room
+% ====================================================================
+\section*{B: Moderate room (250pt remaining)}
+
+\pbht=\textheight
+\advance\pbht by -250pt
+
+\vbox to\pbht{%
+  \lipsum[1-2]%
+  \vss
+}%
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2.5cm}
+    \captionof{figure}{B: 250pt room — should fit.}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+\newpage
+% ====================================================================
+% Scenario C: Comfortable
+% ====================================================================
+\section*{C: Comfortable (200pt remaining)}
+
+\pbht=\textheight
+\advance\pbht by -200pt
+
+\vbox to\pbht{%
+  \lipsum[1-2]%
+  \vss
+}%
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2.5cm}
+    \captionof{figure}{C: 200pt room — should fit.}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+\newpage
+% ====================================================================
+% Scenario D: Tight — figure barely fits
+% ====================================================================
+\section*{D: Tight (160pt remaining)}
+
+\pbht=\textheight
+\advance\pbht by -160pt
+
+\vbox to\pbht{%
+  \lipsum[1-2]%
+  \vss
+}%
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2.5cm}
+    \captionof{figure}{D: 160pt room — tight fit.}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+\newpage
+% ====================================================================
+% Scenario E: Very tight — right at the boundary
+% ====================================================================
+\section*{E: Boundary (130pt remaining)}
+
+\pbht=\textheight
+\advance\pbht by -130pt
+
+\vbox to\pbht{%
+  \lipsum[1-2]%
+  \vss
+}%
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2.5cm}
+    \captionof{figure}{E: 130pt room — boundary.}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+\newpage
+% ====================================================================
+% Scenario F: Does NOT fit — page break triggered
+% ====================================================================
+\section*{F: Too small — page break (100pt remaining)}
+
+\pbht=\textheight
+\advance\pbht by -100pt
+
+\vbox to\pbht{%
+  \lipsum[1-2]%
+  \vss
+}%
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2.5cm}
+    \captionof{figure}{F: 100pt room — breaks.}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+\newpage
+% ====================================================================
+% Scenario G: Very small — definitely breaks
+% ====================================================================
+\section*{G: Very small — page break (60pt remaining)}
+
+\pbht=\textheight
+\advance\pbht by -60pt
+
+\vbox to\pbht{%
+  \lipsum[1-2]%
+  \vss
+}%
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2.5cm}
+    \captionof{figure}{G: 60pt room — breaks.}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+\newpage
+% ====================================================================
+% Scenario H: Almost no room
+% ====================================================================
+\section*{H: Almost no room — page break (30pt remaining)}
+
+\pbht=\textheight
+\advance\pbht by -30pt
+
+\vbox to\pbht{%
+  \lipsum[1-2]%
+  \vss
+}%
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2.5cm}
+    \captionof{figure}{H: 30pt room — breaks.}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+\end{document}

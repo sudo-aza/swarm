@@ -1,0 +1,54 @@
+% Minimal test: parshape interaction with itemize
+\documentclass[a4paper,11pt]{article}
+\usepackage{swarmwrap}
+\usepackage{lipsum}
+
+\begin{document}
+
+% Test A: Figure inside itemize — first item wraps, subsequent items
+\section*{Test A: Figure inside itemize}
+\begin{itemize}
+  \item \swarmwrapnext\lipsum[17][1-4]
+  \item \lipsum[19][1-3]
+  \item \lipsum[20][1-3]
+  \item \lipsum[21][1-3]
+\end{itemize}
+
+\newpage
+
+% Test B: Figure before itemize
+\section*{Test B: Figure before itemize}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Test B figure (3cm x 4cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+\begin{itemize}
+  \item \lipsum[2][1-3]
+  \item \lipsum[3][1-3]
+  \item \lipsum[4][1-3]
+\end{itemize}
+
+\newpage
+
+% Test C: Figure inside itemize, 2cm figure (matches stress test)
+\section*{Test C: Small figure inside itemize}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{2cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Test C figure (2cm x 3cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\begin{itemize}
+  \item \swarmwrapnext\lipsum[141][1-4]
+  \item \lipsum[143][1-3]
+  \item \lipsum[144][1-3]
+  \item \lipsum[145][1-3]
+\end{itemize}
+
+\end{document}

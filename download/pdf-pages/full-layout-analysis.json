@@ -1,0 +1,1045 @@
+{
+  "50page": [
+    {
+      "page": 1,
+      "figures": 1,
+      "text_blocks": 3,
+      "fig_rects": [
+        {
+          "x": 235.5,
+          "y": 153.8,
+          "w": 56.7,
+          "h": 56.7
+        }
+      ],
+      "issues": [],
+      "text_span": "118-406 (288pt / 595pt = 48%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 2,
+      "figures": 2,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 391.4,
+          "y": 128.3,
+          "w": 85.0,
+          "h": 85.0
+        },
+        {
+          "x": 575.0,
+          "y": 480.5,
+          "w": 113.4,
+          "h": 113.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 3,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 371.0,
+          "y": 439.9,
+          "w": 141.7,
+          "h": 141.7
+        }
+      ],
+      "issues": [
+        "Fig 0: TEXT OVERLAPS FIGURE"
+      ],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 4,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 520.9,
+          "y": 507.6,
+          "w": 56.7,
+          "h": 170.1
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 5,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 6,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 491.1,
+          "y": 155.4,
+          "w": 85.0,
+          "h": 198.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 7,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 483.9,
+          "y": 534.7,
+          "w": 113.4,
+          "h": 226.8
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 8,
+      "figures": 2,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 452.8,
+          "y": 155.4,
+          "w": 141.7,
+          "h": 255.1
+        },
+        {
+          "x": 649.0,
+          "y": 507.6,
+          "w": 56.7,
+          "h": 283.5
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 9,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 427.7,
+          "y": 467.0,
+          "w": 85.0,
+          "h": 56.7
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 10,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 464.2,
+          "y": 534.7,
+          "w": 113.4,
+          "h": 85.0
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 11,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 12,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 434.5,
+          "y": 182.5,
+          "w": 141.7,
+          "h": 113.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 13,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 540.6,
+          "y": 561.8,
+          "w": 56.7,
+          "h": 141.7
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 14,
+      "figures": 2,
+      "text_blocks": 3,
+      "fig_rects": [
+        {
+          "x": 509.5,
+          "y": 182.5,
+          "w": 85.0,
+          "h": 170.1
+        },
+        {
+          "x": 592.3,
+          "y": 534.7,
+          "w": 113.4,
+          "h": 198.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 3
+    },
+    {
+      "page": 15,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 371.0,
+          "y": 494.1,
+          "w": 141.7,
+          "h": 226.8
+        }
+      ],
+      "issues": [
+        "Fig 0: TEXT OVERLAPS FIGURE"
+      ],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 16,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 520.9,
+          "y": 561.8,
+          "w": 56.7,
+          "h": 255.1
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 17,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 18,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 491.1,
+          "y": 209.6,
+          "w": 85.0,
+          "h": 283.5
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 19,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 483.9,
+          "y": 588.9,
+          "w": 113.4,
+          "h": 56.7
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 20,
+      "figures": 2,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 452.8,
+          "y": 209.6,
+          "w": 141.7,
+          "h": 85.0
+        },
+        {
+          "x": 649.0,
+          "y": 561.8,
+          "w": 56.7,
+          "h": 113.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 21,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 427.7,
+          "y": 521.2,
+          "w": 85.0,
+          "h": 141.7
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 22,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 464.2,
+          "y": 588.9,
+          "w": 113.4,
+          "h": 170.1
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 23,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 24,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 434.5,
+          "y": 236.7,
+          "w": 141.7,
+          "h": 198.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 25,
+      "figures": 1,
+      "text_blocks": 1,
+      "fig_rects": [
+        {
+          "x": 540.6,
+          "y": 616.0,
+          "w": 56.7,
+          "h": 226.8
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 26,
+      "figures": 2,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 509.5,
+          "y": 236.7,
+          "w": 85.0,
+          "h": 255.1
+        },
+        {
+          "x": 592.3,
+          "y": 588.9,
+          "w": 113.4,
+          "h": 283.5
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 27,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 371.0,
+          "y": 548.3,
+          "w": 141.7,
+          "h": 56.7
+        }
+      ],
+      "issues": [
+        "Fig 0: TEXT OVERLAPS FIGURE"
+      ],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 28,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 520.9,
+          "y": 616.0,
+          "w": 56.7,
+          "h": 85.0
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 29,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 30,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 491.1,
+          "y": 263.8,
+          "w": 85.0,
+          "h": 113.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 31,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 483.9,
+          "y": 643.1,
+          "w": 113.4,
+          "h": 141.7
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 32,
+      "figures": 2,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 452.8,
+          "y": 263.8,
+          "w": 141.7,
+          "h": 170.1
+        },
+        {
+          "x": 649.0,
+          "y": 616.0,
+          "w": 56.7,
+          "h": 198.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 33,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 427.7,
+          "y": 575.4,
+          "w": 85.0,
+          "h": 226.8
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 34,
+      "figures": 1,
+      "text_blocks": 1,
+      "fig_rects": [
+        {
+          "x": 464.2,
+          "y": 643.1,
+          "w": 113.4,
+          "h": 255.1
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 35,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 36,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 434.5,
+          "y": 290.9,
+          "w": 141.7,
+          "h": 283.5
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 37,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 540.6,
+          "y": 670.2,
+          "w": 56.7,
+          "h": 56.7
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 38,
+      "figures": 2,
+      "text_blocks": 3,
+      "fig_rects": [
+        {
+          "x": 509.5,
+          "y": 290.9,
+          "w": 85.0,
+          "h": 85.0
+        },
+        {
+          "x": 592.3,
+          "y": 643.1,
+          "w": 113.4,
+          "h": 113.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 3
+    },
+    {
+      "page": 39,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 371.0,
+          "y": 602.5,
+          "w": 141.7,
+          "h": 141.7
+        }
+      ],
+      "issues": [
+        "Fig 0: TEXT OVERLAPS FIGURE"
+      ],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 40,
+      "figures": 1,
+      "text_blocks": 1,
+      "fig_rects": [
+        {
+          "x": 520.9,
+          "y": 670.2,
+          "w": 56.7,
+          "h": 170.1
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 41,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 42,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 491.1,
+          "y": 318.0,
+          "w": 85.0,
+          "h": 198.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 43,
+      "figures": 1,
+      "text_blocks": 1,
+      "fig_rects": [
+        {
+          "x": 483.9,
+          "y": 697.3,
+          "w": 113.4,
+          "h": 226.8
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 44,
+      "figures": 2,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 452.8,
+          "y": 318.0,
+          "w": 141.7,
+          "h": 255.1
+        },
+        {
+          "x": 649.0,
+          "y": 670.2,
+          "w": 56.7,
+          "h": 283.5
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 45,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 427.7,
+          "y": 629.6,
+          "w": 85.0,
+          "h": 56.7
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 46,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 464.2,
+          "y": 697.3,
+          "w": 113.4,
+          "h": 85.0
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 47,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 48,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 434.5,
+          "y": 345.1,
+          "w": 141.7,
+          "h": 113.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 49,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 50,
+      "figures": 2,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 540.6,
+          "y": 128.3,
+          "w": 56.7,
+          "h": 141.7
+        },
+        {
+          "x": 509.5,
+          "y": 345.1,
+          "w": 85.0,
+          "h": 170.1
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    }
+  ],
+  "1000page_sample": [
+    {
+      "page": 1,
+      "figures": 1,
+      "text_blocks": 3,
+      "fig_rects": [
+        {
+          "x": 235.5,
+          "y": 153.8,
+          "w": 56.7,
+          "h": 56.7
+        }
+      ],
+      "issues": [],
+      "text_span": "118-406 (288pt / 595pt = 48%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 2,
+      "figures": 2,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 391.4,
+          "y": 128.3,
+          "w": 85.0,
+          "h": 85.0
+        },
+        {
+          "x": 575.0,
+          "y": 480.5,
+          "w": 113.4,
+          "h": 113.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 3,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 371.0,
+          "y": 439.9,
+          "w": 141.7,
+          "h": 141.7
+        }
+      ],
+      "issues": [
+        "Fig 0: TEXT OVERLAPS FIGURE"
+      ],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 4,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 520.9,
+          "y": 507.6,
+          "w": 56.7,
+          "h": 170.1
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 5,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 50,
+      "figures": 2,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 540.6,
+          "y": 128.3,
+          "w": 56.7,
+          "h": 141.7
+        },
+        {
+          "x": 509.5,
+          "y": 345.1,
+          "w": 85.0,
+          "h": 170.1
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 100,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-321 (203pt / 595pt = 34%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 200,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 535.6,
+          "y": 372.2,
+          "w": 113.4,
+          "h": 113.4
+        }
+      ],
+      "issues": [],
+      "text_span": "118-321 (203pt / 595pt = 34%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 500,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 515.3,
+          "y": 196.0,
+          "w": 85.0,
+          "h": 141.7
+        }
+      ],
+      "issues": [],
+      "text_span": "118-349 (231pt / 595pt = 39%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 800,
+      "figures": 1,
+      "text_blocks": 2,
+      "fig_rects": [
+        {
+          "x": 520.9,
+          "y": 534.7,
+          "w": 56.7,
+          "h": 85.0
+        }
+      ],
+      "issues": [],
+      "text_span": "118-377 (260pt / 595pt = 44%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 2
+    },
+    {
+      "page": 1000,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-321 (203pt / 595pt = 34%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    },
+    {
+      "page": 1234,
+      "figures": 0,
+      "text_blocks": 1,
+      "fig_rects": [],
+      "issues": [],
+      "text_span": "118-321 (203pt / 595pt = 34%)",
+      "full_width_blocks": 0,
+      "narrow_blocks": 1
+    }
+  ]
+}
