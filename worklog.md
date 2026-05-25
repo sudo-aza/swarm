@@ -270,3 +270,29 @@ Stage Summary:
 - 4 new QA rules prevent the failures that led to 4 consecutive false fix claims
 - Programmer verification guide gives exact snippets to measure the right thing
 - Tasks #171/#172 now have mandatory verification steps that cannot be skipped
+---
+Task ID: 1
+Agent: Programmer (19:00 cron turn)
+Task: Task #180 — investigate fixing both ghost-narrowing AND body-text overlaps simultaneously
+
+Work Log:
+- Resolved merge conflict from submodule pointer
+- Read programmer-rules.md, BLACKBOARD.md, verification guide, wrapping specs, swarmwrap.sty, Lua callback
+- Implemented global figure zone tracking (global_fig_bottom/global_fig_page registers)
+- Implemented cross-session nl extension in \swarmwrapnext
+- Added debug logging to diagnose why extension wasn't triggering
+- Discovered \pagetotal doesn't track \smash{\rlap} content (key insight)
+- Confirmed cross-session extension triggers correctly (nl extended 9→27) but only fixes forward overlaps
+- Tried page eject guard before computation — too aggressive (66 pages, 644 overlaps)
+- Tried \vadjust phantom rule — stack overflow in stress test
+- Restored v3.30 from commit 2382c7b (correct baseline version)
+- Verified: 37 pages, 0 ghost-narrowing, 91 overlaps, 37/37 full-width pages
+- Updated BLACKBOARD.md comm log with investigation results
+- Updated journals/programmer/2026-05-25.md with Turn 19:00 entry
+- Committed and pushed: 04f733b
+
+Stage Summary:
+- Task #180 remains pending — architectural change needed (abandon smash/rlap)
+- 3 additional approaches tried (total 9 across 15:00 and 19:00 turns), all blocked
+- v3.30 is the best achievable version within current architecture
+- No .sty changes — pure investigation turn
