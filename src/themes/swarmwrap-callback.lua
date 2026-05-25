@@ -1,14 +1,19 @@
 -- swarmwrap-callback.lua — Lua callbacks for swarmwrap.sty
--- v3.34: Penalty insertion only (no line widening).
+-- v3.30: Penalty insertion only (hbox widening removed).
 --
--- The ghost-narrowing fix is handled by the \par patch's page-number
--- check + high penalty (default 10000). Body-text overlaps are
--- prevented by removing all trailing full-width parshape entries
--- (all lines stay narrow) and the cross-session width guard.
+-- v3.29's hbox widening (setting current.width = tex.dimen["linewidth"]
+-- for hboxes after position nl) did NOT modify actual text glyph positions.
+-- QA verified via PyMuPDF that text spans remained at 259.7pt (43.6%
+-- page width) — only the hbox reference width changed, not the content.
+--
+-- The ghost-narrowing fix is now handled by the trailing full-width
+-- parshape entry (0pt \linewidth) in swarmwrap.sty. TeX repeats
+-- the last parshape entry for all subsequent lines, so text after
+-- nl narrow lines automatically resets to full page width.
 --
 -- This callback retains only the penalty insertion at the narrow/full-width
--- boundary, discouraging page breaks at the transition between narrow
--- text and the page-end (where narrowing stops).
+-- boundary, discouraging page breaks that would cause continuation-page
+-- ghost narrowing.
 
 local debug_mode = false
 
@@ -49,7 +54,7 @@ function swarmwrap_post_lb(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.34 loaded (penalty only)")
+texio.write_nl("swarmwrap: callback v3.30 loaded (penalty only)")
 luatexbase.add_to_callback("post_linebreak_filter",
   swarmwrap_post_lb, "swarmwrap: penalty")
 texio.write_nl("swarmwrap: callback registered successfully")
