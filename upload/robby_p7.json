@@ -1,0 +1,14 @@
+{
+  "created": 1779452667,
+  "id": "20260522202425cde71ce9414d49f5",
+  "request_id": "20260522202425cde71ce9414d49f5",
+  "text": "Valid PDF, and tell me which page it's on. Or just I don't know you're wrong maybe like Just prove me wrong or if you can't prove that it uses more than one line on the second page at times then Maybe it does just use one line like I've said And You should try one of the two ideas I had for fixing it For fixing it",
+  "usage": {
+    "completion_tokens": 78,
+    "prompt_tokens": 409,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 487
+  }
+}

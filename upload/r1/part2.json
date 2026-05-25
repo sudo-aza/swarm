@@ -1,0 +1,14 @@
+{
+  "created": 1779452969,
+  "id": "20260522202927f2b4c1b79142487d",
+  "request_id": "20260522202927f2b4c1b79142487d",
+  "text": "Either there's no ghosting or the ghosting extends for just one line, and after that one line, the same paragraph continues but like using the whole page width, like it's supposed to. I've never seen any other case like either you just to me the fix seems simple, either you just tell.",
+  "usage": {
+    "completion_tokens": 65,
+    "prompt_tokens": 437,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 502
+  }
+}
