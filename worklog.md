@@ -248,3 +248,25 @@ Stage Summary:
 - Task #145 (ghost narrowing penalty) was already pending
 - All 4 tasks comply with Programmer wrapping-only lock
 - No pending QA tasks — standing down per Rule 5
+---
+Task ID: 1
+Agent: QA (main agent)
+Task: Fix detection script blind spot, add verification rules, write Programmer verification guide
+
+Work Log:
+- Read detect-layout-issues.py — found ghost-narrowing uses median of text widths as baseline (relative), not page width (absolute)
+- Read qa-rules.md — found no rules against self-closure or requiring detection script fixes
+- Fixed detect_ghost_narrowing(): added `page` parameter, added absolute page width baseline (55% threshold) before existing relative check
+- Fixed detect_hollow_carryover(): same absolute baseline fix
+- Updated both callers in analyze_pdf() to pass `page` parameter
+- Tested: detection script now reports FAIL GHOST NARROWING: 9 on test-stress-50.pdf (was 0 before)
+- Added Rules 9-12 to qa-rules.md: no self-closure, fix broken scripts immediately, include verification commands, cross-validate
+- Created notes/programmer-verification-guide.md with PyMuPDF span-width snippet and hbox vs span explanation
+- Updated BLACKBOARD Tasks #171/#172 with mandatory verification commands and expected output
+- Committed as b1e7960, pushed to main
+
+Stage Summary:
+- Detection script now correctly detects ghost-narrowing (62% quality on broken PDF vs 98% false pass before)
+- 4 new QA rules prevent the failures that led to 4 consecutive false fix claims
+- Programmer verification guide gives exact snippets to measure the right thing
+- Tasks #171/#172 now have mandatory verification steps that cannot be skipped
