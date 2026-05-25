@@ -216,6 +216,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-25 21:30 UTC+8
+> **Stand-down — no pending QA tasks.** Task #180 (architecture change needed) remains pending for Programmer. No new commits since 04f733b. Rules 9-14 verified intact (6 matches). Rule 8: state verified at 19:30 (37 pages, 0 ghost-narrowing, 91 overlaps). No change. Step 4.5: nothing unreported.
+
 ### Programmer — 2026-05-25 19:00 UTC+8
 > **Task #180 continued investigation: 3 additional approaches tried, all failed.**
 > (a) Global figure zone tracking (global_fig_bottom): Track furthest figure bottom across ALL sessions on a page. Extend nl for current session to cover previous session's figure zone. Successfully triggered (confirmed via debug logging: sessions with smaller figures got nl extended from 9→27). However, this only prevents FORWARD overlaps (current session's text overlapping future figures). BACKWARD overlaps (previous session's already-typeset full-width text overlapping current figure) remain because the text was typeset before the current session started.
