@@ -1,0 +1,103 @@
+name pdfmanagement
+category Package
+revision 79047
+shortdesc LaTeX PDF management bundle
+longdesc This package is used to load LaTeX's PDF management code. The
+longdesc PDF management code offers backend independent interfaces to
+longdesc central PDF dictionaries, tools to create annotations,
+longdesc outlines, form Xobjects, form fields, to embed files, and to
+longdesc handle PDF standards. The code is currently provided as
+longdesc independent package. It is automatically loaded if a document
+longdesc uses \DocumentMetadata. It can also be loaded as a package. At
+longdesc a later stage it will be integrated into the LaTeX kernel (or
+longdesc in parts into permanent support packages).
+containersize 63700
+containerchecksum bca16c12b506b3662e56882939ed92c89c08df15d883e4570d984dcdc287d9e117ef7d9cb225abee4685ae0eb8dd79fa689189bec754b2d19b94e3678f183b7c
+doccontainersize 5432152
+doccontainerchecksum 2d7ee18507bc0d0986f24cb9da31d6eb2d71fa8d24a71676e2e7374d542a0af813352bc8a7554ce01c74db6947aabcd34b4f92fa92943ce5385c2c17a3d0a424
+docfiles size=1764
+ texmf-dist/doc/latex/pdfmanagement/CHANGELOG.md
+ texmf-dist/doc/latex/pdfmanagement/README.md details="Readme"
+ texmf-dist/doc/latex/pdfmanagement/hyperref-generic.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3backend-pdfmanagement.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdfannot.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdfdict.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdffield-action.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdffield-checkbox.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdffield-choice.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdffield-pushbutton.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdffield-radiobutton.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdffield-textfield.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdffield.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdffile.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdfmanagement.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdfmeta.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdfoutline.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdftools.pdf
+ texmf-dist/doc/latex/pdfmanagement/l3pdfxform.pdf
+ texmf-dist/doc/latex/pdfmanagement/latex-lab-bookmark.pdf
+ texmf-dist/doc/latex/pdfmanagement/ltdocinit.pdf
+ texmf-dist/doc/latex/pdfmanagement/pdfmanagement-firstaid.pdf
+ texmf-dist/doc/latex/pdfmanagement/pdfmanagement.pdf details="Package documentation"
+srccontainersize 157160
+srccontainerchecksum 3d3779276c9efcc65de2497e5facad0df232edfcad803d93eda14a1cabf31e6ee18a339cd891a5482b9160ac7824b0e6008a6c29613c848fea4f0e6382ba773c
+srcfiles size=231
+ texmf-dist/source/latex/pdfmanagement/hyperref-generic.dtx
+ texmf-dist/source/latex/pdfmanagement/l3backend-pdfmanagement.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdfannot.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdfdict.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdffield-action.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdffield-checkbox.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdffield-choice.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdffield-pushbutton.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdffield-radiobutton.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdffield-textfield.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdffield.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdffile.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdfmanagement.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdfmeta.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdfoutline.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdftools.dtx
+ texmf-dist/source/latex/pdfmanagement/l3pdfxform.dtx
+ texmf-dist/source/latex/pdfmanagement/latex-lab-bookmark.dtx
+ texmf-dist/source/latex/pdfmanagement/ltdocinit.dtx
+ texmf-dist/source/latex/pdfmanagement/pdfmanagement-firstaid.dtx
+ texmf-dist/source/latex/pdfmanagement/pdfmanagement.dtx
+ texmf-dist/source/latex/pdfmanagement/pdfmanagement.ins
+runfiles size=179
+ texmf-dist/tex/latex/pdfmanagement/bookmark-latex-lab-testphase.ltx
+ texmf-dist/tex/latex/pdfmanagement/color-ltx.sty
+ texmf-dist/tex/latex/pdfmanagement/colorspace-patches-tmp-ltx.sty
+ texmf-dist/tex/latex/pdfmanagement/hgeneric-testphase.def
+ texmf-dist/tex/latex/pdfmanagement/hgeneric.def
+ texmf-dist/tex/latex/pdfmanagement/hyperref-colorschemes.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-pdf-dvipdfmx.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-pdf-dvips.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-pdf-dvisvgm.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-pdf-luatex.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-pdf-pdftex.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-pdf-xetex.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-pdf.lua
+ texmf-dist/tex/latex/pdfmanagement/l3backend-testphase-dvipdfmx.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-testphase-dvips.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-testphase-dvisvgm.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-testphase-luatex.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-testphase-pdftex.def
+ texmf-dist/tex/latex/pdfmanagement/l3backend-testphase-xetex.def
+ texmf-dist/tex/latex/pdfmanagement/l3pdffield-testphase.sty
+ texmf-dist/tex/latex/pdfmanagement/l3pdffield.sty
+ texmf-dist/tex/latex/pdfmanagement/latex-lab-testphase-bookmark.sty
+ texmf-dist/tex/latex/pdfmanagement/lualinksplit.lua
+ texmf-dist/tex/latex/pdfmanagement/pdfmanagement-firstaid.sty
+ texmf-dist/tex/latex/pdfmanagement/pdfmanagement-init.sty
+ texmf-dist/tex/latex/pdfmanagement/pdfmanagement-testphase.sty
+ texmf-dist/tex/latex/pdfmanagement/pdfmanagement.ltx
+ texmf-dist/tex/latex/pdfmanagement/pdfmanagement.sty
+ texmf-dist/tex/latex/pdfmanagement/xcolor-patches-tmp-ltx.sty
+catalogue-alias pdfmanagement-testphase
+catalogue-contact-bugs https://github.com/latex3/pdfresources/issues
+catalogue-contact-repository https://github.com/latex3/pdfresources
+catalogue-ctan /macros/latex/contrib/pdfmanagement
+catalogue-license lppl1.3c
+catalogue-topics latex-devel pdf-feat
+catalogue-version 0.97b

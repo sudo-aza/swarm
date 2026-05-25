@@ -1,0 +1,78 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% mcf template file    template_lib.mcf   by Akira Yamaji   2026.05.10
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  must use version 5.30
+%  tag1:var1;tag2:var2;tag3:var3 .....
+%  first character of line "%" comment out
+%  first character of line ":"  start MCF
+%  first character of line "="  start parameter setting
+%  first character of line "*"  start ext(...)
+%  first character of line "+"  start add(...)
+%  first character of line ";"  end of unit
+%  Cat = Category,EN = Name,MW = Molecular weight
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Cat:biological;EN:Paclitaxel;MW:853.918;LV:0
+%-------------------------------------------------------------------
+= %%%%%% start parameter setting %%%%%%
+  sw_frame:=Outside;
+  fsize:=(50mm,30mm);
+  fmargin:=(2mm,2mm);
+  mposition:=(1,0);
+%-------------------------------------------------------------------
+: %%%%%%% start MCF %%%%%%
+?6,5=dl,3:,`1,36,45,45,45,45,`,:5,-4=?6,-4=?4,-1=wb,-3=wf,-1:O,
+ 4:??,6:?,3^-60'15:*/OH,8^-60:/*H,9^60:?w,10:?O,
+ 1:,!O!,?O!,*/OH,!,/Ph,60~wf,NH,-60,?O,60,Ph,
+ 7:,!z,O,-45,?O,60,Ph,11^rl'*12^-15^lr:*/O!'?O!
+%-------------------------------------------------------------------
+* %%%%%% start ext(...) %%%%%%
+  defaultscale:=0.5;
+  label.lrt("EN:"&EN,(0,h));
+  label.lrt("fm:"&fm,(0,h-em));
+  label.lrt("mw:"&mw,(0,h-2em));
+  label.lrt("MW:"&MW,(0,h-3em));
+; %% end of unit
+%==============================================================================
+Cat:biological;EN:Erythromycin;MW:733.93;LV:0
+%-------------------------------------------------------------------
+= %%%%%% start parameter setting %%%%%%
+  sw_frame:=Outside;
+  fsize:=(50mm,30mm);
+  fmargin:=(2mm,2mm);
+  mposition:=(1,0);
+%-------------------------------------------------------------------
+: %%%%%%% start MCF %%%%%%
+^30,`1,^-120,60,60,60,-60,60,60,-60,60,60,60,-60,60,60,`,:1,
+ 14:O,13:/*!,1'9:?O,*2'4'6^-35'8'*10'12^35:?z,6^35'11'12^-35:*/OH,
+ $3:,!z,O,30~zb,<,?6`.7,6:O,`.5,5~wf'3^35:?,4:/*OH,3^-35:/*O!,`,
+ $5:,30~zf`1.7,O,!zb,<,?6`.7,6:O,`.5,5:?z,2:*/OH,3:/*N?!
+%-------------------------------------------------------------------
+* %%%%%% start ext(...) %%%%%%
+  defaultscale:=0.5;
+  label.lrt("EN: "&EN,(0,h));
+  label.lrt("fm:"&fm,(0,h-em));
+  label.lrt("mw:"&mw,(0,h-2em));
+  label.lrt("MW:"&MW,(0,h-3em));
+; %% end of unit
+%==============================================================================
+EN:chain strech direction;LV:0
+= %%%%%% start parameter setting %%%%%%
+  fsize:=(40mm,30mm);
+  fmargin:=(2mm,2mm);
+  sw_frame:=Outside;
+  ratio_chain_ring:=1;
+%-------------------------------------------------------------------
+: %%%%%%% start MCF %%%%%%
+  ?4,3^-90'3^-30'3^90:/!3^hz,1^-60'1'1^60:/!3^vt
+%-------------------------------------------------------------------
++ %%%%%% start add(...) %%%%%%
+  defaultscale:=0.5;
+  labeloffset:=2bp;
+  label.rt("^hz", A8);
+  label.top("^hz",A12);
+  label.top("^hz",A16);
+  label.rt("^vt", A20);
+  label.top("^vt",A24);
+  label.rt("^vt", A28);
+; %% end of unit
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -1,0 +1,398 @@
+
+\usepackage[math-style=ISO]{xcharter-otf}
+\usepackage[left=4cm]{geometry}
+\usepackage{xspace}
+\usepackage[svgnames]{xcolor}
+\usepackage{multicol}
+\usepackage{hologo}
+\usepackage{listings}
+\usepackage{showexpl} % examples
+\usepackage{mflogo}
+\usepackage{babel}
+\usepackage{tikz}
+\usepackage{url}
+\usepackage{tikz}
+\usepackage{luamplib}
+\usepackage{siunitx}
+\usepackage{pdflscape}
+\usepackage{csquotes}
+\usepackage{fancyvrb,xparse,xargs}
+\usepackage{imakeidx}
+\usepackage[colorlinks]{hyperref}
+\usepackage{isodate}
+\setmonofont{FiraMono}[
+%BoldFont=FiraCode-Bold,
+%Contextuals=Alternate, % Activate the calt feature
+%Scale=MatchLowercase
+]
+\usepackage{biblatex}
+
+\makeindex[title=Index, columns=2]
+%\usepackage[verbatim]{lstfiracode} % Activate ligatures in verbatim
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{listings,breakable}
+\addbibresource{locctan.bib}
+\newcommand\package[1]{\href{https://ctan.org/pkg/#1}{#1}}
+
+\newtcolorbox{colourband}[1][]{%
+arc=0pt,outer arc=0pt,enhanced, breakable, spread sidewards, left*=0pt, right*=0pt, boxrule=0pt, colback=LightSteelBlue!10, #1}
+
+
+\definecolor{hellgelb}{rgb}{1,1,0.85}
+\definecolor{colKeys}{rgb}{0,0,1}
+\definecolor{colIdentifier}{rgb}{0,0,0}
+\definecolor{colComments}{rgb}{0.3,0.7,0.3}
+\definecolor{colString}{rgb}{0,0.5,0}
+\definecolor{mpcode}{rgb}{0.5,0.1,0.1}
+
+\lstset{%
+  language=metapost,%
+  float=hbp,%
+  basicstyle=\ttfamily, %
+  identifierstyle=\color{DarkSlateGrey}, %
+  keywordstyle=\color{DarkBlue}, %
+  stringstyle=\color{Green}, %
+  commentstyle=\color{LightSlateGrey}\itshape, %
+  columns=flexible, %
+  tabsize=4, %
+  extendedchars=true, %
+  showspaces=false, %
+  showstringspaces=false, %
+  numbers=left,
+  numbersep=1em,
+  numberstyle=\tiny\color{gray}, %
+  breaklines=true, %
+  breakautoindent=true,
+  captionpos=b,
+  xleftmargin=0em,
+  sensitive=true,
+  morekeywords=[10]{colorie,
+  colorieAvecTransparence,trace,fermeture,fleche,pointe,pointes,marque,gddLabel,avecCrayon,ChampVecteurs,ChampVecteursDD,EtiquetteChemin,hachure,
+  withPen,gddAlphaFill, gddArrow,gddDraw, gddDrawCircleArc, gddDrawPoint, 
+gddDrawPoints,gddFill, gddHatch,gddMark, gddClose,PathTag,
+ VectorField, 
+VectorFieldDD,},
+  keywordstyle=[10]\color{Salmon},
+  morekeywords=[7]{%
+    Abscisse,Addition,AdditionAbscisses,AdditionOrdonnee,AdditionVecteur,AireTriangle,Arc,ArcEntrePoints,arccos,arctan,arcsin,AsymptoteHyperbole,AxeDeSimilitude,AxeRadical,Axes,AxesBords,
+    AngleBetweenVectors, AngleBisector, ArcBetweenPoints, AxialSymmetry, Axis,AxisOfSimilitude, 
+  Barycentre,Bissectrice,
+  Barycenter,
+  CadreRepere,Centre,CentreRadical,Cercle,CercleCirconscrit,CercleCP,CercleD,CercleEuler,CercleExinscrit,CercleInscrit,CerclePrincipale,CercleTroisPoints,ch,Chemin,cos,Courbe,CourbeDat,CourbeEnPolaires,
+  CoVertex,
+    Center, CenterRotation, CenterSimilarity,CentralSymmetry, Circle, CircleCP, CircleD,
+    CirclesIntersection, CircleThreePoints, CircumscribedCircle, CoVertex,
+    Curve, CurveData,  
+    Debut,DemiHyperbole,DemiGrandAxe,DemiPetitAxe,Directrice,DistancePointDroite,Droite,DroiteParallele,DroitePerpendiculaire,
+  Directrix,
+  Ellipse,EllipseF, EllipseFD,EquationDroite,Excentricite,exp,
+    EllipseTangent, EndWindow,EscribedCircle, EulerCircle,Excentricity,
+    ExternalCommonTangent,  ExternalEllipseTangent, 
+  Fenetre, Fin,FinFenetre,Foyer,
+  Focus, Frame, FrameBox, FrameGrid, FrameMinMax,
+    gddEnPlace,gddTraceArcDeCercle,gddTraceObjet,Graduations,GraduationsBords,GrilleRepere,
+ gddBegin, gddClip,   gddEnd,  gddInPlace, 
+gddObjectDrawing,  
+  Homothetie,HyperboleF,HyperboleFD,
+  HatchPattern, Homothety, HyperbolaAsymptote, HyperbolaF, HyperbolaFD, HyperbolaVertex,
+    Inclinaison,IntersectionCercles,IntersectionDroiteCercle,IntersectionDroites,Inversion,IsoBarycentre,
+  InscribedCircle, InternalCommonTangent, Inverse, IsoBarycenter, 
+  LigneBrisee,ln,Longueur,LongueurSegment,
+  Length, Line, LinesIntersection, LineCircleIntersection, LineEquation, LineIntersection, LineMark,
+  Marque,MarqueTrait,Milieu,
+  Mark, MidPoint,
+  NombreCotesPolygone,
+  Norme,
+  Norm,
+  Ordonnee,OrdonneeRelativePointDroite,Orthocentre,
+  Orthocenter,OrthoSign,
+  PairImp,PairTOPoint,ParaboleFD,ParametreConiqueCoef, 
+    ParametreCouleurPoint, 
+    ParametreExtensionDroite,  
+    ParametrePointeType, 
+    ParametreTaillePoint,Point,PointDansRepere,PointDe,
+    PointImp,PointIntersection,PointPolaire,PointPolygone,PointTOPair,Polygone,PolygoneRegulier,ProduitScalaire,ProjectionPointSurDroite,ProjectionPointSurDroite,
+    ParabolaFD, ParabolaVertex, ParallelLine, Path,  PerpendicularLine,
+    Plot, PointInBasis, PointLineDistance, PointLineRelativeDistance, PointOf, PointOnLineProjection, PointSum,PolarCurve, PolarPoint, Polygon, PolygonNumberOfSides, PolygonPoint,Polyline, PrincipalCircle,
+    Rayon,Repere,RepereMinMax,ReportSurDroite,Representation,Rotation,RotationCentre,
+  RadicalAxes, RadicalCenter, Radius, RegularPolygon,ReportOnLine,
+    ScalaireVecteur,SchemaHachure,Segment,SegmentTOVecteur,sh,SigneOrtho,SimilitudeACentre,sin,Sommet,SoustractionVecteur,SymetrieAxiale,SymetrieCentrale,
+  ScalarProduct, ScalarVector, Segment, SegmentLength, SegmentTOVector, SemiHyperbola, SemiMajorAxis, SemiMinorAxis, SetConicCoef, SetLineExtension, SetPointColor,SetPointSize,SetPointType, SideAxis, SideGraduations, Slope,
+    tan,TangenteCommuneExterieure,TangenteCommuneInterieure,TangenteExterieureEllipse,TangenteEllipse,th,Triangle,
+  TriangleArea,
+  Unites,
+  Units,
+  Vecteur,VecteurP,VecteursAngle,Vertex,
+  Vector, 
+VectorP, 
+VectorSubstract, 
+VectorSum,
+Window, Xcoordinate, XcoordinateSum, Ycoordinate, YcoordinateSum,},
+  keywordstyle=[7]\color{FireBrick},
+  morekeywords=[8]{gddO,gddA,gddB,gddC,gddD,gddE,gddF,gddT,gddP,gddS,gddX,gddPX,gddU,gddW,gddClip,gddCouleurCerclePoint,gddCouleurPoint,gddExtensionDroite,gddTaillePoint,gddPointeType,
+  gddXlabel,gddYlabel, _E, Pi, gddC2Dparam ,
+  AliceBlue,
+AntiqueWhite,
+Aqua,
+Aquamarine,
+Azure,
+Beige,
+Bisque,
+Black,
+BlanchedAlmond,
+Blue,
+BlueViolet,
+Brown,
+BurlyWood,
+CadetBlue,
+Chartreuse,
+Chocolate,
+Coral,
+CornflowerBlue,
+Cornsilk,
+Crimson,
+Cyan,
+DarkBlue,
+DarkCyan,
+DarkGoldenrod,
+DarkGray,
+DarkGreen,
+DarkGrey,
+DarkKhaki,
+DarkMagenta,
+DarkOliveGreen,
+DarkOrange,
+DarkOrchid,
+DarkRed,
+DarkSalmon,
+DarkSeaGreen,
+DarkSlateBlue,
+DarkSlateGray,
+DarkSlateGrey,
+DarkTurquoise,
+DarkViolet,
+DeepPink,
+DeepSkyBlue,
+DimGray,
+DimGrey,
+DodgerBlue,
+FireBrick,
+FloralWhite,
+ForestGreen,
+Fuchsia,
+Gainsboro,
+GhostWhite,
+Gold,
+Goldenrod,
+Gray,
+Green,
+GreenYellow,
+Grey,
+Honeydew,
+HotPink,
+IndianRed,
+Indigo,
+Ivory,
+Khaki,
+Lavender,
+LavenderBlush,
+LawnGreen,
+LemonChiffon,
+LightBlue,
+LightCoral,
+LightCyan,
+LightGoldenrod,
+LightGoldenrodYellow,
+LightGray,
+LightGreen,
+LightGrey,
+LightPink,
+LightSalmon,
+LightSeaGreen,
+LightSkyBlue,
+LightSlateBlue,
+LightSlateGray,
+LightSlateGrey,
+LightSteelBlue,
+LightYellow,
+Lime,
+LimeGreen,
+Linen,
+Magenta,
+Maroon,
+MediumAquamarine,
+MediumBlue,
+MediumOrchid,
+MediumPurple,
+MediumSeaGreen,
+MediumSlateBlue,
+MediumSpringGreen,
+MediumTurquoise,
+MediumVioletRed,
+MidnightBlue,
+MintCream,
+MistyRose,
+Moccasin,
+NavajoWhite,
+Navy,
+NavyBlue,
+OldLace,
+Olive,
+OliveDrab,
+Orange,
+OrangeRed,
+Orchid,
+PaleGoldenrod,
+PaleGreen,
+PaleTurquoise,
+PaleVioletRed,
+PapayaWhip,
+PeachPuff,
+Peru,
+Pink,
+Plum,
+PowderBlue,
+Purple,
+Red,
+RosyBrown,
+RoyalBlue,
+SaddleBrown,
+Salmon,
+SandyBrown,
+SeaGreen,
+Seashell,
+Sienna,
+Silver,
+SkyBlue,
+SlateBlue,
+SlateGray,
+SlateGrey,
+Snow,
+SpringGreen,
+SteelBlue,
+Tan,
+Teal,
+Thistle,
+Tomato,
+Turquoise,
+Violet,
+VioletRed,
+Wheat,
+White,
+WhiteSmoke,
+Yellow,
+YellowGreen},
+  keywordstyle=[8]\color{Sienna},
+  morekeywords=[9]{},
+  keywordstyle=[9]\color{Olive}
+}
+\lstset{explpreset={pos=t,wide=false,rframe={},preset=\centering}}
+\lstdefinestyle{syntax}{backgroundcolor=\color{blue!15},numbers=none,xleftmargin=0pt,xrightmargin=0pt,
+  frame=single}
+\lstdefinestyle{code}{backgroundcolor=\color{red!15},%numbers=left,
+  xleftmargin=0pt,xrightmargin=0pt,
+  frame=single}
+
+\newtcblisting{mpcode}{
+  arc=0pt,outer arc=0pt,
+  colback=mpcode!3,
+  breakable,
+  boxsep=0pt,left=2pt,right=2pt,top=0pt,bottom=0pt, bottomtitle =
+  3pt, toptitle=3pt,
+  boxrule=0pt,bottomrule=0.pt,toprule=0.pt, toprule at break =
+  0pt, bottomrule at break = 0pt,
+  listing only,boxsep=0pt,listing
+  options={breaklines}
+}
+
+\makeatletter
+\tcbset{%
+    listing metapost/.code={%
+        \def\tcbuselistingtext@input{\begin{mplibcode}
+        background:=(.988,.976,.976); input \jobname.listing;
+        \end{mplibcode}}%
+    }
+}
+\makeatother
+\newtcblisting[auto counter,]{ExempleMP}[1][]{%
+  arc=0pt,outer arc=0pt,
+  colback=FireBrick!3,
+  colframe=FireBrick,
+  breakable,fontupper=\small,
+  boxsep=0pt,left=2pt,right=2pt,top=0pt,bottom=2pt, bottomtitle =
+  3pt, toptitle=3pt, lefttitle=5pt,
+  boxrule=0pt,bottomrule=0.5pt,toprule=0.5pt, toprule at break =
+  0pt, bottomrule at break = 0pt,
+  listing side text,
+  listing metapost,
+  title={\bfseries\sffamily Exemple~\thetcbcounter},
+  listing options={breaklines},#1
+}
+
+
+\newcommand\mpgeomdd{\texttt{mp-geom2d}\xspace}
+\newcommand\fichier[1]{\texttt{#1}}
+\newcommand\variableGDD[1]{\texttt{\color{Sienna}#1}}
+\newcommand\typeMP[1]{\texorpdfstring{\texttt{\color{Tomato}#1}}{#1}}
+\newcommand\typeGDD[1]{\texorpdfstring{\texttt{\color{Sienna}#1}}{#1}}
+\newcommand\foncGDD[1]{\texorpdfstring{\texttt{\color{Sienna}#1}}{#1}}
+
+\newenvironment{Note}{
+  \noindent\textbf{Note~---~}}
+  {}
+
+
+
+%
+\colorlet{code}{blue!80!black}
+\newcommand\cmd{\texttt}
+\newcommand\code[1]{\texorpdfstring{\texttt{\color{code}#1}}{#1}}
+\newcommand*\cs[1]{\code{\textbackslash #1}}
+\newcommand*\macro{\par\bigskip\noindent\hspace{-30pt}%
+    \SaveVerb[aftersave={%
+     \UseVerb{Vitem}%
+    }%
+    ]{Vitem}%
+ %   \bigskip
+}
+\newcommand\vitem[1][]{\SaveVerb[%
+    aftersave={\item[\textnormal{\UseVerb[#1]{vsave}}]}]{vsave}}
+\newcommand*\textme[1]{\textcolor{black}{\rmfamily\textit{#1}}}
+\newcommand*\meta[1]{% % meta
+  \textme{\ensuremath{\langle}#1\ensuremath{\rangle}}%
+}
+\newcommand*\optstar{% % optional star
+  \meta{\ensuremath{*}}\xspace
+}
+\DefineShortVerb{\|}
+\setlength{\fboxsep}{2pt}
+\fvset{%
+    codes={\catcode`\«\active \catcode`\×\active },
+    defineactive={\makefancyog\makefancytimes},
+    formatcom=\color{FireBrick},
+    frame=single
+}
+% rendre «...» équivalent à \meta{...}
+{\catcode`\«\active
+  \newcommandx\makefancyog[0][addprefix=\global]{%
+    \def«##1»{\meta{##1}}}}
+% rendre × équivalent à \optstar
+{\catcode`\×\active
+  \newcommandx\makefancytimes[0][addprefix=\global]{%
+    \def×{\optstar{}}}}
+
+\NewDocumentEnvironment{Macro}{ov}{%
+\Verb+#2+
+}{%
+}
+\newcommand{\return}[1]{~$\rightarrow$~#1}
+\newcommand{\indication}[1]{\hfill(\itshape #1)}
+
+\newcommand{\R}{\mathbf{R}}
+
+\newcommand{\gddVersion}{1.4}
+\newcommand{\gddDate}{2025-12-03}
+
+\makeatletter
+\renewcommand{\l@subsection}{\@dottedtocline{2}{2.0em}{2.8em}}
+\makeatother

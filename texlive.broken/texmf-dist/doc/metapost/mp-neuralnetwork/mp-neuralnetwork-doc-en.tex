@@ -1,0 +1,520 @@
+
+% LTeX: language=en
+
+% huffman : draw binary huffman trees with MetaPost/MetaObj
+%
+% Originally written by Maxime Chupin <notezik@gmail.com>,
+% 2023.
+%
+% Distributed under the terms of the GNU free documentation licence:
+%   http://www.gnu.org/licenses/fdl.html
+% without any invariant section or cover text.
+
+\documentclass[english]{ltxdoc}
+
+\input{mp-neuralnetwork-preamble.tex}
+
+\usepackage[english]{babel}
+
+\makeindex[title=Command Index, columns=2]
+
+
+
+%\lstset{moredelim=*[s][\color{red}\rmfamily\itshape]{<}{>}}
+%\lstset{moredelim=*[s][\color{blue}\rmfamily\itshape]{<<}{>>}}
+
+\begin{document}
+
+\title{{\mpneural} : drawing artificial neural networks with \MP and \MO/}
+\author{Maxime Chupin, \url{notezik@gmail.com}}
+\date{\today}
+
+%% === Page de garde ===================================================
+\thispagestyle{empty}
+\begin{tikzpicture}[remember picture, overlay]
+  \node[below right, shift={(-4pt,4pt)}] at (current page.north west) {%
+    \includegraphics{fond.pdf}%
+  };
+\end{tikzpicture}%
+
+\noindent
+{\Huge \mpneural}\par\bigskip
+\noindent
+{\Large  drawing artificial neural networks \\[0.2cm]with \hologo{METAPOST} and \MO/}\\[1cm]
+\parbox{0.6\textwidth}{
+  \begin{mplibcode}[mpneural]
+    input mp-neuralnetwork;
+
+    
+beginfig(1);
+framed_output(false);
+framed_input(false);
+drawANN("x","n","a","p","b","q","y","m") "circmargin(3pt)";
+endfig;
+  \end{mplibcode}
+}\hfill
+\parbox{0.5\textwidth}{\Large\raggedleft
+  \textbf{Contributor}\\
+  Maxime \textsc{Chupin}\\
+  \url{notezik@gmail.com}
+}
+\vfill
+\begin{center}
+  Version 0.1, 2025, January, 27th \\
+  \url{https://gitlab.gutenberg-asso.fr/mchupin/mp-neuralnetwork}
+\end{center}
+%% == Page de garde ====================================================
+\newpage
+
+%\maketitle
+
+\begin{abstract}
+  This \hologo{METAPOST} package allows to draw artificial neural networks.
+  It is based on the \MO/ package which
+  provides many tools to draw and arrange nodes.
+\end{abstract}
+
+
+\begin{center}
+  \url{https://gitlab.gutenberg-asso.fr/mchupin/mp-neuralnetwork}
+\end{center}
+
+\tableofcontents
+
+
+
+\bigskip
+
+\begin{tcolorbox}[ arc=0pt,outer arc=0pt,
+  colback=darkred!3,
+  colframe=darkred,
+  breakable,
+  boxsep=0pt,left=5pt,right=5pt,top=5pt,bottom=5pt, bottomtitle =
+  3pt, toptitle=3pt,
+  boxrule=0pt,bottomrule=0.5pt,toprule=0.5pt, toprule at break =
+  0pt, bottomrule at break = 0pt,]
+  \itshape
+  This package is in beta version---do not hesitate to report bugs, as well as requests for improvement.
+\end{tcolorbox}
+
+\section{Installation}
+
+\mpneural is on \ctan{} and can also be installed via the package manager of your
+distribution.
+
+\begin{center}
+  \url{https://www.ctan.org/pkg/mp-neuralnetwork}
+\end{center}
+
+
+\subsection{With \TeX live under Linux or macOS}
+
+To install \mpneural with \TeX Live, you will have to create the directory
+\lstinline+texmf+  in your \lstinline+home+. 
+
+\begin{commandshell}
+mkdir ~/texmf
+\end{commandshell}
+
+Then, you will have to place the \lstinline+neuralnetwork.mp+ and
+\lstinline+metaobj-patch.mp+\footnote{Thanks to Denis Roegel, this file define a
+\texttt{Group} object to group different \MO/ objects.
+} files in 
+\begin{center}
+  \lstinline+~/texmf/metapost/mp-neuralnetwork/+
+\end{center}
+
+
+Once this is done, \mpneural will be loaded with the classic \MP{}
+input code
+\begin{mpcode}
+input mp-neuralnetwork
+\end{mpcode}
+
+\subsection{With Mik\TeX{} and Windows}
+
+These two systems are unknown to the author of \mpneural, so we
+refer you to the Mik\TeX documentation concerning the addition of local packages:
+\begin{center}
+  \url{http://docs.miktex.org/manual/localadditions.html}
+\end{center}
+
+
+
+\subsection{Dependencies}
+
+
+\mpneural depends:
+\begin{itemize}
+\item  of course on \MP~\cite{ctan-metapost};
+\item  on the package\package{metaobj}~\cite{ctan-metaobj};
+\item if \mpneural is not used with
+\hologo{LuaLaTeX} and the \package{luamplib} package, on the \package{latexmp}
+package\cite{ctan-latexmp};
+\item and on the package \package{colorbrewer-rgb}~\cite{ctan-metapost-colorbrewer}. 
+\end{itemize}
+\section{Main Command}
+
+The package \mpneural provides one principal command that has two possible
+invocations. 
+
+\subsection{Finite network}
+
+\commande|drawANN(«name1»,«size1»,«name2»,«size2», etc.)|\smallskip\index{drawANN@\lstinline+drawANN+}
+
+Each layer of the network  is described by a couple \meta{name} and \meta{size}, where:
+\begin{description}
+  \item[\meta{name}:] is the names of the layers. It a
+  string, and this is the prefix of each node (for instance \lstinline+"x"+ will
+  produce nodes $x_i$).
+  \item[\meta{size}:] is the size (integer) of the layer (for instance if
+  \meta{size}$=4$, the layer will be composed by nodes $x_1$, $x_2$, $x_3$ and $x_4$).
+\end{description}
+Here, a simple example.
+\begin{ExempleMP}
+input mp-neuralnetwork
+
+beginfig(1);
+drawANN("x",4,"y",5,"z",1);
+endfig;
+\end{ExempleMP}
+
+
+\subsection{Abstract network}
+
+You can set variables for the size of each layers with the same command using
+the string notation for the size instead of an integer. 
+
+\commande|drawANN(«name1»,«size1»,«name2»,«size2», etc.)|\smallskip\index{drawANN@\lstinline+drawANN+}
+
+Each layer of the network  is described by a couple \meta{name} and \meta{size}, where:
+\begin{description}
+  \item[\meta{name}:] is the names of the layers. It a
+  string, and this is the prefix of each node (for instance \lstinline+"x"+ will
+  produce nodes $x_i$).
+  \item[\meta{size}:] is the notation for size (string)  of the layer (for instance
+  \lstinline+"p"+, the layer will be composed by nodes $x_1$, $x_2$, $\dots$ and $x_p$).
+\end{description}
+Here, a simple example.
+\begin{ExempleMP}
+input mp-neuralnetwork
+
+beginfig(1);
+drawANN("x","m","y","n","z","p");
+endfig;
+\end{ExempleMP}
+
+The first and the last layers are composed with four nodes, and intern layers
+with five nodes. 
+
+\section{Options}
+
+\mpneural allows to customize the network representation. If you want to restore
+default behaviour, you can use the following command.
+\commande|mpneural_init_values|\smallskip\index{mpneural_init_values@\lstinline+mpneural_init_values+}
+
+
+\subsection{Colors}
+
+We can see, in the previous examples, that the nodes are colored. If you do not
+want them to be colored, use the following command. 
+
+\commande|colored_layers(«boolean»)|\smallskip\index{colored_layers@\lstinline+colored_layers+}
+
+\begin{description}
+  \item[\meta{boolean}:] is a \MP{} boolean (true by default) to choose if we
+  want or not colored layers.
+\end{description}
+
+If the layers are colored, \mpneural{} uses \lstinline+Spectral+ colors defined
+in \package{colorbrewer-rgb}\footnote{Up to 11 colors. If there are more layers,
+the colors cycle.}. 
+
+You can also define colors for each layer using the following command. 
+
+
+\commande|set_layer_colors(«layer number1»,«color1»,«layer number 1»,«color1»,etc.)|\smallskip\index{set_layer_colors@\lstinline+set_layer_colors+}
+
+\begin{description}
+  \item[\meta{layer number 1}, \meta{color1}:] is a couple with the integer of
+  the layer we want to color with \meta{color1}.
+\end{description}
+
+The rest of layers are set to white by default.
+
+For example:
+\begin{ExempleMP}
+input mp-neuralnetwork
+
+colored_layers(false);
+beginfig(1);
+drawANN("x",5,"y",1);
+endfig;
+\end{ExempleMP}
+
+and
+\begin{ExempleMP}
+input mp-neuralnetwork
+
+colored_layers(true);
+set_layer_colors(1,red,3,(0.7,0.7,0.7));
+
+beginfig(1);
+drawANN("x",5,"y",1,"z",4);
+endfig;
+\end{ExempleMP}
+  
+Connections are colored. The default color is gray (\lstinline+0.4*white+) but
+you can modify that with the following command. 
+
+\commande|set_connection_color(«color»)|\smallskip\index{set_connection_color@\lstinline+set_connection_color+}
+
+\begin{description}
+  \item[\meta{color}:] is the color for drawing the connections between layers
+  (default \lstinline+0.4*white+).
+\end{description}
+
+
+\subsection{Annotations}
+
+\mpneural provides some tools to annotate the network. However, because we use
+\MO/ behind the scene, you can always use \MO/ tools to draw above the graph
+build with \mpneural (see section~\ref{sec:mo}).
+
+\subsubsection{Frames}
+
+You can add frames around three different blocks: input, output and hidden
+layers. 
+
+To draw a frame around these three types of layers (or stop the drawing of theses frames), you
+can use the following commands.
+
+
+\commande|framed_input(«boolean»)|\smallskip\index{framed_input@\lstinline+framed_input+}
+
+
+\commande|framed_output(«boolean»)|\smallskip\index{framed_output@\lstinline+framed_output+}
+
+
+\commande|framed_hidden(«boolean»)|\smallskip\index{framed_hidden@\lstinline+framed_hidden+}
+\begin{description}
+  \item[\meta{boolean}:] true or false (default).
+\end{description}
+
+\subsubsection{Positioning nodes}
+
+We can adjust the vertical and horizontal distance between nodes with the
+following commands. 
+
+\commande|set_vspace(«distance»)|\smallskip\index{set_vspace@\lstinline+set_vspace+}
+
+\begin{description}
+  \item[\meta{distance}:] is a numeric (default \lstinline+1.5cm+).
+\end{description}
+
+
+\commande|set_hspace(«distance»)|\smallskip\index{set_hspace@\lstinline+set_hspace+}
+
+\begin{description}
+  \item[\meta{distance}:] is a numeric (default \lstinline+2.2cm+).
+\end{description}
+
+\begin{ExempleMP}
+input mp-neuralnetwork
+
+beginfig(1);
+set_vspace(2cm); 
+set_hspace(3cm);
+drawANN("x",5,"u",6,"v",3,"y",2);
+endfig;
+\end{ExempleMP}
+
+\subsubsection{Labels and sections}
+
+
+First, if you do not want to label the nodes, use the following command to
+deactivate the function.  
+
+\commande|show_node_labels(«boolean»)|\smallskip\index{show_node_labels@\lstinline+show_node_labels+}
+
+You can also add legends to these part of the network (independently of the
+frame draw). For that, you can use the following command.  
+
+\commande|print_legends(«boolean»)|\smallskip\index{print_legends@\lstinline+print_legends+}
+\begin{description}
+  \item[\meta{boolean}:] true or false (default).
+\end{description}
+
+The default value for the legends of the three parts (input, output, and
+hidden), are \lstinline+"Input layer"+, \lstinline+"Output layer"+, and
+\lstinline+"Hidden layer(s)"+. You can modify these string with the following
+commands. 
+
+
+\commande|set_input_legend(«string»)|\smallskip\index{set_input_legend@\lstinline+set_input_legend+}
+
+\commande|set_output_legend(«string»)|\smallskip\index{set_output_legend@\lstinline+set_output_legend+}
+
+\commande|set_hidden_legend(«string»)|\smallskip\index{set_hidden_legend@\lstinline+set_hidden_legend+}
+
+
+\begin{description}
+  \item[\meta{string}:] is a string for the legend (default are \lstinline+"Input layer"+, \lstinline+"Output layer"+, and
+  \lstinline+"Hidden layer(s)"+). 
+\end{description}
+
+
+\begin{ExempleMP}
+input mp-neuralnetwork
+
+colored_layers(false);
+beginfig(1);
+print_legends(true);
+set_input_legend("Entrées");
+set_output_legend("Sortie");
+framed_hidden(true); 
+drawANN("x",5,"u",6,"v",8,"y",2);
+endfig;
+\end{ExempleMP}
+
+You may also want to print the \emph{weights} on the network. To do that, use
+the following commands. 
+\commande|print_weights(«boolean»)|\smallskip\index{print_weights@\lstinline+print_weights+}
+
+By default, weights are denoted by $w$, but you can change that with the
+following command.
+
+
+\commande|set_weights_notation(«string»)|\smallskip\index{set_weights_notation@\lstinline+set_weights_notation+}
+\begin{description}
+  \item[\meta{string}:] is a string for the weights (default is
+  \lstinline+"w"+). 
+  This is a prefix: for instance, with the default value, the weights are, in
+  math mode, $w_{ij}^{(k)}$ for the $k$-th layer.  
+\end{description}
+
+
+
+\begin{ExempleMP}
+input mp-neuralnetwork
+
+colored_layers(false);
+beginfig(1);
+print_legends(false);
+print_weights(true);
+drawANN("x",4,"u",6,"v",5,"y",2);
+endfig;
+\end{ExempleMP}
+  
+You can add labels positioning them with relative coordinates that is $(0,0)$ at
+bottom left of the bounding box of the complete graph and $(1,1)$ at top right. 
+For that, you can use the following command. 
+
+\commande|labelANN(«string»)(«xpart»,«ypart») «\MO/ options»|\smallskip\index{labelANN@\lstinline+labelANN+}
+\begin{description}
+  \item[\meta{string}:] is a string for the label (process by
+  \lstinline+textext+ command).
+  \item[\meta{xpart},\meta{ypart}:] are numeric in the relative coordinates (but
+  can be lower or greater than 0 and 1.).  
+\end{description}
+
+This command build a \MO/ box. It is the center of the box that is put at the
+relative coordinate. Moreover, you can add the \MO/ options at the end to
+customize the box. 
+
+\begin{ExempleMP}
+input mp-neuralnetwork
+
+colored_layers(false);
+beginfig(1);
+print_legends(false);
+print_weights(true);
+drawANN("x",4,"u",6,"v",5,"y",2);
+labelANN("My fabulous network")(0.5,-0.2) "filled(true)","fillcolor((0.8,0.5,0.5))";
+endfig;
+\end{ExempleMP}
+  
+
+
+
+\section{With MetaObj}\label{sec:mo}
+
+Because \mpneural is built above \MO/~\cite{ctan-metaobj}, the tools of the
+incredible package are available.  
+
+The nodes of the network are \MO/ boxes, with names:
+\begin{itemize}
+\item  with the prefix \texttt{ANN};
+\item the instance number of the network (useful if you draw
+multiple networks);
+\item an underscore \texttt{\_};
+\item the identifier of the layer (specified in the \lstinline+drawANN+ command);
+\item the number of the node in the layer.
+\end{itemize}
+
+The boxes of weights are named as follows:
+\begin{itemize}
+\item  with the prefix \texttt{ANN};
+\item the instance number of the network (useful if you draw
+multiple networks);
+\item an underscore \texttt{\_};
+\item \texttt{weights};
+\item the number of the left layer.
+\end{itemize}
+
+The boxes of label for input, output and hidden layers are named as follows:
+\begin{itemize}
+\item  with the prefix \texttt{ANN};
+\item the instance number of the network (useful if you draw
+multiple networks);
+\item an underscore \texttt{\_};
+\item \texttt{input}, \texttt{output} or \texttt{hidden}.
+\end{itemize}
+  
+
+
+
+Labels generated by \lstinline+labelANN+ are also \MO/ boxes named as follows:
+\begin{itemize}
+\item  with the prefix \texttt{ANN};
+\item the instance number of the network (useful if you draw
+multiple networks);
+\item an underscore \texttt{\_};
+\item \texttt{label};
+\item then the number of the label. 
+\end{itemize}
+
+For example, if you draw the following network:
+\begin{mpcode}
+input mp-neuralnetwork
+
+beginfig(1);
+drawANN("x",3,"y",2);
+endfig;
+\end{mpcode}
+
+The nodes will be named \texttt{ANN1\_x1}, \texttt{ANN1\_x2}, \texttt{ANN1\_x3},
+\texttt{ANN1\_y1}, and \texttt{ANN1\_y2}. The weights will be named
+\texttt{ANN1\_weights1}.
+
+Here is a real example (this is the 10th instance of a network drawing in this
+document). \lstinline+ncline+ is a \MO/ command. 
+\begin{ExempleMP}
+input mp-neuralnetwork;
+
+beginfig(1);
+  print_legends(true);
+  show_node_labels(true);
+  drawANN("x","n","a","p","b","q","y","m") "circmargin(3pt)";
+  labelANN("Test")(1.3,0.4);
+  labelANN("Test")(0.5,1.1) "framed(false)";
+  ncline(ANN10_label2)(ANN10_x2)"doubleline(true)","coilwidth(2mm)",
+  "angleA(0)", 
+  "linewidth(1pt)";
+endfig;
+\end{ExempleMP}
+
+
+\printbibliography
+\printindex
+\end{document}
