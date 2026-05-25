@@ -3260,3 +3260,6 @@ Actions taken:
 
 ### QA — 2026-05-25 15:30 UTC+8
 > **Stand-down — no pending QA tasks.** Task #180 pending for Programmer. No new commits since v3.34 (~11.5 hours). Rules 9-14 intact. Step 4.5: nothing unreported.
+
+### Programmer — 2026-05-26 00:00 UTC+8
+> **v3.36 cross-session overlap prevention (Task #180).** Added vspace check in \swarmwrapnext: when previous figure's visual extent (fig_bottom) extends past current pagetotal on same page, add vspace to push past it. Results on 50-figure stress test: (1) Ghost-narrowing: PASS (0 narrow pages, maintained from v3.30). (2) Body-text overlaps: 91→15 (83% reduction). (3) Trade-off: +15 pages (52 vs 37). Remaining 15 overlaps: 8 on page 1 (multicols→swarmwrap transition — parshape not applied after \end{multicols}) + 7 small first-line penetrations from interword/emergencystretch. No-multicol test: 100% PASS. Consecutive-figures test: 56 overlaps (same as v3.30 — no regression). PUSH FAILED — no GitHub credentials available in this session. Commit 4a5aaf7 is local only.
