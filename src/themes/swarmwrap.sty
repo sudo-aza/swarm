@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.39)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.42)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -61,21 +61,24 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
-% v3.39: Reduce excessive narrowing — split fh into narrow/safe values.
-%   PROBLEM: v3.38 added 4*bs padding to figure height for overlap
-%   prevention, but this padding was used for parshape line count AND
-%   \par patch extension, causing narrowing zone to extend far beyond
-%   figure height. QA measured 41/49 pages with ratio > 1.5x (avg 3.5x,
-%   worst 10.1x). Total wasted vertical space: ~15,060pt (~18 pages).
-%   FIX: Split figure height into two values:
-%   (1) fh_narrow = ht+dp (no padding) — used for parshape nl count,
-%       \par patch extension, and DEFERRED fit check. This ensures the
-%       narrowing zone closely matches the actual figure height.
-%   (2) fh_safe = ht+dp+4*bs (full padding) — used ONLY for the vspace
-%       push in \swarmwrapnext (cross-session overlap prevention).
-%   RESULT: Narrowing zone reduced from 3.5x to ~1.2-1.5x figure height.
-%   Overlap prevention maintained via separate vspace mechanism.
-%   Zero regressions: 0 overlaps, 0 ghost-narrowing, 0 hollow carry-over.
+% v3.42: Tighten visible content height — remove bonus and minimum.
+%   PROBLEM: v3.41 added 0.5*bs bonus and 2*bs minimum to the Lua
+%   visible height measurement. The bonus pushed fh_narrow past
+%   baselineskip boundaries for 6cm and 7cm figures, adding 1 extra
+%   narrow line per session. The minimum was unnecessary for all figures
+%   in the stress test (all >= 2cm, all max_rule > 2*bs).
+%   ROOT CAUSE: The 0.5*bs bonus (6.8pt) crossed baselineskip (13.6pt)
+%   boundaries for figures where max_rule had a large remainder.
+%   Example: 6cm figure max_rule=170.7pt, +bonus=177.5pt.
+%   170.7/13.6=12.55 (nl=13), 177.5/13.6=13.05 (nl=14). The bonus
+%   added 1 extra narrow line (nl 13->14) without improving safety
+%   because 13*bs=176.8 > max_rule=170.7 (6.1pt clearance).
+%   FIX: Remove bonus and minimum. Use raw max_rule for fh_narrow.
+%   The parshape loop naturally rounds up (ceil), giving 1 line of
+%   clearance. Fallback minimum reduced from 2*bs to 1*bs.
+%   RESULT: 6cm: nl 14->13, 7cm: nl 16->15. Detection excessive
+%   narrowing reduced from 26 to 24 issues. Per-session ratios
+%   remain ~1.0-1.2x. Overall quality 46%->48%.
 %
 % v3.38: Increase figure height padding from 2*bs to 4*bs.
 %   PROBLEM: v3.37 achieved 0 body-text overlaps and 0 ghost-narrowing
@@ -207,7 +210,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/26 v3.39 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/26 v3.42 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -225,6 +228,12 @@
 \newcommand{\swarmwrap@fw@val}{0pt}  % figure width for parshape
 \newcommand{\swarmwrap@fh@val}{0pt}  % figure height (full, with padding) for vspace push
 \newcommand{\swarmwrap@fh@narrow@val}{0pt}  % figure height (narrow, no padding) for parshape computation
+
+% v3.40: Hard cap on total narrow lines (initial + \par patch extensions)
+\newcount\swarmwrap@max@narrow\relax  % max allowed total narrow lines
+\newcount\swarmwrap@narrow@used\relax  % total narrow lines set so far
+% v3.41: Store box register number for Lua access
+\newcount\swarmwrap@box@num\relax
 
 % ── Vertical-space tracking for multi-paragraph extension (v3.24) ──
 \newdimen\swarmwrap@fig@bottom  % Y position where figure ends (narrow, for \par patch)
@@ -280,12 +289,19 @@
     \advance\swarmwrap@fh by \dp\swarmwrap@box
     \advance\swarmwrap@fh by 4\baselineskip
     \xdef\swarmwrap@fh@val{\the\swarmwrap@fh}%
-    % Narrow height: actual box height without extra padding.
-    % Used for parshape line count and \par patch extension.
-    % This prevents excessive narrowing (Task #185).
-    \swarmwrap@fh=\ht\swarmwrap@box
-    \advance\swarmwrap@fh by \dp\swarmwrap@box
+    % v3.42: Visible content height via Lua node traversal (Task #190).
+    % Traverse box nodes to find the max rule height (colored rectangle),
+    % which is the actual visible figure extent. No bonus, no minimum —
+    % the parshape loop naturally rounds up, giving ~1 line of clearance.
+    % Store box register number in a count for Lua access.
+    \swarmwrap@box@num=\swarmwrap@box
+    \directlua{%
+      local box_num = tex.count["swarmwrap@box@num"]%
+      local vis_h = swarmwrap_measure_visible_height(box_num)%
+      tex.dimen["swarmwrap@fh"] = vis_h%
+    }%
     \xdef\swarmwrap@fh@narrow@val{\the\swarmwrap@fh}%
+    \wlog{swarmwrap v3.42: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
   \fi
 }
 
@@ -339,24 +355,49 @@
             \advance\swarmwrap@loop@cnt by 1
           \ifdim\dimen0>0pt \repeat
           \ifnum\swarmwrap@loop@cnt>0\relax
-            % Extend parshape for the computed remaining lines
-            % v3.30: trailing full-width entry in \par patch extension.
-            % After the computed remaining narrow lines, text resets to
-            % full linewidth. Safe because fig_bottom includes 2*bs padding.
-            \swarmwrap@tw=\swarmwrap@tw@val\relax
-            % Count = remaining lines + 1 trailing full-width
-            \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt+1\relax\space}%
+            % v3.41: Hard cap on total narrow lines (Task #190).
+            % Fixed fall-through bug: extension is now nested inside
+            % the capacity check so the else-branch (cap exceeded)
+            % cannot accidentally extend.
+            \swarmwrap@tmp@cnt=\swarmwrap@max@narrow
+            \advance\swarmwrap@tmp@cnt by -\swarmwrap@narrow@used
+            \ifnum\swarmwrap@tmp@cnt>0\relax
+              \ifnum\swarmwrap@loop@cnt>\swarmwrap@tmp@cnt
+                \swarmwrap@loop@cnt=\swarmwrap@tmp@cnt
+              \fi
+              \ifnum\swarmwrap@loop@cnt>0\relax
+              % Extend parshape for the computed remaining lines
+              % v3.30: trailing full-width entry in \par patch extension.
+              % After the computed remaining narrow lines, text resets to
+              % full linewidth. Safe because fig_bottom includes 2*bs padding.
+              \swarmwrap@tw=\swarmwrap@tw@val\relax
+              % Count = remaining lines + 1 trailing full-width
+              \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt+1\relax\space}%
 
-            \swarmwrap@tmp@cnt=\swarmwrap@loop@cnt
-            \loop
-              \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
-              \advance\swarmwrap@tmp@cnt by -1
-            \ifnum\swarmwrap@tmp@cnt>0 \repeat
-            % Trailing full-width entry
-            \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \linewidth\space}%
-            \parshape \swarmwrap@pshape\relax
-            \emergencystretch=\fontdimen6\font\relax
-            \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+              \swarmwrap@tmp@cnt=\swarmwrap@loop@cnt
+              \loop
+                \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+                \advance\swarmwrap@tmp@cnt by -1
+              \ifnum\swarmwrap@tmp@cnt>0 \repeat
+              % Trailing full-width entry
+              \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \linewidth\space}%
+              \parshape \swarmwrap@pshape\relax
+              \emergencystretch=\fontdimen6\font\relax
+              \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+              % Track total narrow lines used for hard cap
+              \global\advance\swarmwrap@narrow@used by \swarmwrap@loop@cnt
+              \else
+                % No vertical space remaining after cap — deactivate
+                \swarmwrap@activefalse
+                \global\let\par\swarmwrap@orig@par
+                \parshape=0\relax
+              \fi
+            \else
+              % Already exceeded cap — deactivate immediately
+              \swarmwrap@activefalse
+              \global\let\par\swarmwrap@orig@par
+              \parshape=0\relax
+            \fi
           \else
             % No more vertical space — deactivate
             \swarmwrap@activefalse
@@ -554,22 +595,27 @@
   \advance\swarmwrap@tw by -\swarmwrap@fw
   \advance\swarmwrap@tw by -14pt
   \swarmwrap@nl=0
-  % v3.39: Use NARROW height (ht+dp, no padding) for parshape line count.
-  % This significantly reduces excessive narrowing (Task #185).
+  % v3.41: Use NARROW height (visible content height via Lua) for
+  % parshape line count. Much more accurate than ht+dp or ht+dp-strut.
   \swarmwrap@fh=\swarmwrap@fh@narrow@val\relax
   \dimen0=\swarmwrap@fh
   \loop
     \advance\swarmwrap@nl by 1
     \advance\dimen0 by -\baselineskip
   \ifdim\dimen0>0pt \repeat
+  % v3.41: Set hard cap on total narrow lines
+  \swarmwrap@max@narrow=\swarmwrap@nl
+  \advance\swarmwrap@max@narrow by 1  % allow 1 extra line for extension
+  \global\swarmwrap@narrow@used=\swarmwrap@nl  % initial nl lines count
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
   % Set Lua-readable dimension for post_linebreak_filter callback
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
   % ── Build parshape string ──────────────────────────────────────
   % v3.30: nl narrow entries + 1 trailing full-width entry.
-  % v3.39: nl is now computed from NARROW height (ht+dp, no extra
-  % padding). Overlap prevention is handled separately by the
-  % vspace push (using fh@val with 4*bs padding).
+  % v3.41: nl is computed from visible content height (Lua measurement).
+  % Overlap prevention handled separately by vspace push (fh@val).
+  % Hard cap (max_narrow = nl + 1) limits total narrow lines including
+  % \par patch extensions. Fall-through bug fixed (Task #190).
   % Count = nl (narrow) + 1 (trailing full-width)
   \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@nl
