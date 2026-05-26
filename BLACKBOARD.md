@@ -227,6 +227,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-26 19:30 UTC+8
+> **Stand-down — all QA review tasks still blocked on Programmer.** Tasks #189, #191, #193 pending but Programmer tasks #186, #190, #192 still pending — no new commits since 513e341 (~1 hour). Nothing to review. Rules 9-14 verified intact. Step 4.5: nothing unreported.
+
 ### QA — 2026-05-26 18:30 UTC+8
 > **Stand-down — all QA review tasks still blocked on Programmer.** Tasks #189, #191, #193 pending but Programmer tasks #186, #190, #192 still pending — no new commits since 3b07f67 (~3 hours). Per Rule 3, created QA review Task #193 for new Programmer Task #192 (stale tests/swarmwrap.sty). Per Rule 8, visual inspection of 6 previously unchecked pages (6, 14, 22, 30, 38, 44) using VLM (glm-4.6v) + PyMuPDF cross-validation. PyMuPDF: 3/5 figure pages EXCESSIVE (14=1.55x, 30=1.77x, 44=2.62x), 2/5 OK (6=0.21x, 38=0.81x). Page 22 has no figure. VLM under-reported 3/5 figure pages (14, 30, 44 called MARGINAL or OK when PyMuPDF measured EXCESSIVE) — consistent with known VLM limitation (underestimates ratios for small figures or full-looking pages). Zero overlaps on all 6 pages. Step 4.5: nothing unreported. Cumulative inspection: 32/46 pages across 5 turns. Detection script: 18/50 (36.0%) FAIL — unchanged from v3.39 baseline.
 
