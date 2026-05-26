@@ -234,6 +234,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-27 05:30 UTC+8
+> **Stand-down — pending QA tasks still blocked on Programmer Task #199.** No new Programmer commits since 2e496ab5. Tasks #198 and #200 remain blocked. Per Rule 8: analyzed figure-caption vertical gaps across all 49 figures — very consistent (mean 6.6pt, stdev 0.9pt, range 5.1-7.2pt, zero outliers > 2σ). Also verified zero body text inside figure boxes (real overlap check). v3.44 is solid except for carry-over narrowing (#199). Step 4.5: nothing new.
+
 ### QA — 2026-05-27 04:30 UTC+8
 > **Stand-down — both pending QA tasks blocked on Programmer Task #199.** Tasks #198 (final sign-off) and #200 (carry-over narrowing review) both require Programmer to fix #199 first. No new Programmer commits since last turn (2e496ab5). Per Rule 8: Rule 8 visual inspection — analyzed all 46 pages for additional layout issues. Checked: (1) text right-edge consistency within figure zones (16 pages show spread >20pt — all normal paragraph behavior, not bugs); (2) caption-body overlap with tighter 2pt threshold (0 found — v3.44 caption fix confirmed solid). Also verified that the detection script's 32 "excessive narrowing" detections DO include all 7 carry-over narrowing pages — the script is not blind to carry-over, just imprecise (lumps carry-over, parshape extension, and normal wrapping into one metric). No new unreported findings. Step 4.5: nothing new. Cumulative inspection: 46/46 pages fully analyzed.
 
