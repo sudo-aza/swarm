@@ -234,6 +234,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-27 07:30 UTC+8
+> **Stand-down — pending QA tasks still blocked on Programmer Task #199.** No new Programmer commits since 2e496ab5. Tasks #198 and #200 remain blocked. Per Rule 8: inspected text-figure horizontal gap consistency (14.0pt ± 0.0pt for long lines across 772 measurements — perfectly consistent), full-width text recovery after figure zones (42 instances of parshape extension beyond figure height — already captured by "32 excessive narrowing" metric, not a new bug), and figure positioning (49/50 perfectly right-aligned at x1=476.5pt, 1 non-wrapping figure as expected). v3.44 wrapping quality within each page is excellent across all inspected dimensions. Only remaining issue: carry-over narrowing across page breaks (Task #199). Step 4.5: nothing new.
+
 ### QA — 2026-05-27 05:30 UTC+8
 > **Stand-down — pending QA tasks still blocked on Programmer Task #199.** No new Programmer commits since 2e496ab5. Tasks #198 and #200 remain blocked. Per Rule 8: analyzed figure-caption vertical gaps across all 49 figures — very consistent (mean 6.6pt, stdev 0.9pt, range 5.1-7.2pt, zero outliers > 2σ). Also verified zero body text inside figure boxes (real overlap check). v3.44 is solid except for carry-over narrowing (#199). Step 4.5: nothing new.
 
