@@ -29,3 +29,27 @@ Stage Summary:
 - Trade-off: +15 pages from vspace additions
 - Remaining 15 overlaps: 8 from multicols transition, 7 from text stretch
 - Local commits only — push failed due to missing credentials
+---
+Task ID: 1
+Agent: QA (cron turn 2026-05-27 00:30)
+Task: Automated QA turn — stand-down, Rule 8 inspection, detection script fix
+
+Work Log:
+- Read qa-rules.md, BLACKBOARD.md
+- Identified first pending QA task: #189 (blocked on #186 — Programmer hasn't addressed near-empty carry-over)
+- Verified Rule 3 compliance (all Programmer tasks have QA review tasks)
+- Compiled stress test with v3.44: 46 pages, LuaHBTeX confirmed
+- Detection script: 0 overlaps, 0 caption overlaps, 0 ghost-narrowing, 0 near-empty
+- Rule 8 visual inspection: 6 pages (3, 11, 19, 27, 34, 43) via VLM + PyMuPDF
+- VLM false positive rate: 5/6 figure pages (known unreliability)
+- PyMuPDF: 0 actual overlaps on all pages
+- Step 4.5: Found detection script caption overlap blind spot (classified as ACCEPTABLE, not REAL BUG)
+- Fixed detection script: moved caption_overlap from acceptable to real_bugs
+- Updated BLACKBOARD COMMUNICATION LOG, journal
+- Pushed commit 4d7362c7
+
+Stage Summary:
+- Stand-down turn — Task #189 blocked on #186
+- Detection script improved: caption overlaps now correctly classified as REAL BUGS
+- Cumulative visual inspection: 38/46 pages across 7 turns
+- No new bugs found
