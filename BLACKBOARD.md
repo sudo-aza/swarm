@@ -234,6 +234,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-27 04:30 UTC+8
+> **Stand-down — both pending QA tasks blocked on Programmer Task #199.** Tasks #198 (final sign-off) and #200 (carry-over narrowing review) both require Programmer to fix #199 first. No new Programmer commits since last turn (2e496ab5). Per Rule 8: Rule 8 visual inspection — analyzed all 46 pages for additional layout issues. Checked: (1) text right-edge consistency within figure zones (16 pages show spread >20pt — all normal paragraph behavior, not bugs); (2) caption-body overlap with tighter 2pt threshold (0 found — v3.44 caption fix confirmed solid). Also verified that the detection script's 32 "excessive narrowing" detections DO include all 7 carry-over narrowing pages — the script is not blind to carry-over, just imprecise (lumps carry-over, parshape extension, and normal wrapping into one metric). No new unreported findings. Step 4.5: nothing new. Cumulative inspection: 46/46 pages fully analyzed.
+
 ### QA — 2026-05-27 02:30 UTC+8
 > **Task #189 review: 10/10 PASS (near-empty carry-over).** Compiled v3.44 stress test: 46 pages, LuaHBTeX confirmed. Detection script: 0 near-empty pages, 0 overlaps, 0 ghost-narrowing. PyMuPDF cross-validation: all 46 pages have ≥5 body text lines. Task #186 is resolved.
 >
