@@ -11,6 +11,8 @@ Catches the visual bugs that coordinate-only analysis misses:
      and figure bottom where text should be wrapping
   6. HOLLOW CARRY-OVER — first line of page narrowed with no figure present
   7. FIGURE MISALIGNED — figure not flush with right text margin
+  8. EXCESSIVE NARROWING — narrowing zone extends far beyond figure height
+     (ratio > threshold, default 1.5x)
 
 Usage:
   python3 scripts/detect-layout-issues.py <file.pdf> [options]
@@ -51,6 +53,9 @@ def parse_args():
     p.add_argument("--extra-vspace", type=float, default=18.0,
                    help="Max gap (pt) between last wrapped line and figure "
                         "bottom before flagging (default: 18.0 ~= 1.5 baselineskip)")
+    p.add_argument("--narrow-ratio", type=float, default=1.5,
+                   help="Max narrowing-to-figure height ratio before flagging "
+                        "(default: 1.5 = narrowing zone up to 1.5x figure height)")
     p.add_argument("--quality", action="store_true",
                    help="Print quality report with pass/fail per category "
                         "and overall score")
@@ -646,6 +651,88 @@ def detect_hollow_carryover(page_num, page, text_lines, figures):
     return issues
 
 
+def detect_excessive_narrowing(page_num, page, figures, text_lines,
+                                 ratio_threshold):
+    """Detect narrowing zone extending far beyond figure height.
+
+    On a page with a figure, the narrowing zone (vertical extent of
+    narrow text lines beside the figure) should closely match the
+    figure height. If the zone is much taller than the figure, text
+    is being forced into narrow columns unnecessarily, wasting
+    significant vertical space.
+
+    Added (v9, 2026-05-26): QA visual inspection (VLM) confirmed
+    excessive narrowing as the most prominent visual quality issue.
+    PyMuPDF cross-validation found 42/45 pages with ratio > 1.5x,
+    with the worst cases at 11x (57pt figure, 625pt narrow zone).
+    The existing detection categories (ghost-narrowing, overlap, etc.)
+    all reported PASS — this was a complete blind spot.
+    """
+    issues = []
+    if not figures:
+        return issues
+
+    body_lines = [l for l in text_lines if l["width"] > 150 and l["fontsize"] >= 9.0]
+    if not body_lines:
+        return issues
+
+    # Compute full width baseline
+    widths = sorted([l["width"] for l in body_lines])
+    full_width = widths[max(0, int(len(widths) * 0.9) - 1)]
+
+    for i, fig in enumerate(figures):
+        fig_height = fig.height
+        if fig_height < 20:
+            continue  # Skip tiny figures
+
+        # Find narrow text lines that are to the LEFT of the figure
+        narrow_lines = []
+        for line in body_lines:
+            # Must be beside the figure (to the left)
+            if line["x1"] > fig.x0 + 5:
+                continue
+            # Must actually be narrow
+            if line["width"] >= full_width - 30:
+                continue
+            narrow_lines.append(line)
+
+        if len(narrow_lines) < 2:
+            continue  # Need at least 2 narrow lines
+
+        # Compute the narrowing zone extent
+        narrow_top = min(l["y0"] for l in narrow_lines)
+        narrow_bottom = max(l["y1"] for l in narrow_lines)
+        narrow_zone = narrow_bottom - narrow_top
+
+        if narrow_zone < 20:
+            continue  # Too small to be meaningful
+
+        ratio = narrow_zone / fig_height
+
+        if ratio > ratio_threshold:
+            # Compute wasted space
+            wasted = max(0, narrow_zone - fig_height)
+            issues.append({
+                "page": page_num + 1,
+                "ratio": ratio,
+                "fig_height": fig_height,
+                "narrow_zone": narrow_zone,
+                "wasted_pt": wasted,
+                "n_narrow_lines": len(narrow_lines),
+                "desc": (
+                    f"  EXCESSIVE NARROWING page {page_num + 1} fig[{i}]: "
+                    f"narrow zone {narrow_zone:.0f}pt is {ratio:.1f}x the figure height "
+                    f"({fig_height:.0f}pt). Wasted: {wasted:.0f}pt. "
+                    f"Narrow lines: {len(narrow_lines)}. "
+                    f"Figure: x={fig.x0:.0f}-{fig.x1:.0f}, "
+                    f"y={fig.y0:.0f}-{fig.y1:.0f}. "
+                    f"Full width: {full_width:.0f}pt"
+                ),
+            })
+
+    return issues
+
+
 def detect_figure_misaligned(page_num, figures, text_lines):
     """Detect figures not flush with the right text margin.
 
@@ -713,6 +800,7 @@ def analyze_pdf(pdf_path, args):
         "extra_vspace": [],
         "hollow_carryover": [],
         "figure_misaligned": [],
+        "excessive_narrowing": [],
     }
 
     # Per-page tracking for --per-page mode
@@ -742,6 +830,8 @@ def analyze_pdf(pdf_path, args):
         ev = detect_extra_vspace(pn, figs, lines, args.extra_vspace)
         hc = detect_hollow_carryover(pn, page, lines, figs)
         fm = detect_figure_misaligned(pn, figs, lines)
+        en = detect_excessive_narrowing(pn, page, figs, lines,
+                                       args.narrow_ratio)
 
         results["figure_beside_text"].extend(fbt)
         results["near_empty"].extend(ne)
@@ -751,6 +841,7 @@ def analyze_pdf(pdf_path, args):
         results["extra_vspace"].extend(ev)
         results["hollow_carryover"].extend(hc)
         results["figure_misaligned"].extend(fm)
+        results["excessive_narrowing"].extend(en)
 
         # Per-page tracking
         if args.per_page:
@@ -763,6 +854,7 @@ def analyze_pdf(pdf_path, args):
                 "ev": len(ev),
                 "hc": len(hc),
                 "fm": len(fm),
+                "en": len(en),
             }
 
         # Count figures with wrapping (for quality report)
@@ -793,6 +885,7 @@ def analyze_pdf(pdf_path, args):
         ("EXTRA VSPACE", "extra_vspace"),
         ("HOLLOW CARRY-OVER", "hollow_carryover"),
         ("FIGURE MISALIGNED", "figure_misaligned"),
+        ("EXCESSIVE NARROWING", "excessive_narrowing"),
     ]
 
     if args.quality:
@@ -811,6 +904,7 @@ def analyze_pdf(pdf_path, args):
             ("GHOST NARROWING", "ghost_narrow"),
             ("HOLLOW CARRY-OVER", "hollow_carryover"),
             ("FIGURE MISALIGNED", "figure_misaligned"),
+            ("EXCESSIVE NARROWING", "excessive_narrowing"),
         ]
         acceptable = [
             ("NEAR-EMPTY PAGES (page-eject)", "near_empty"),
@@ -860,23 +954,23 @@ def analyze_pdf(pdf_path, args):
         # Header
         print(f"  {'Page':>4}  {'Figs':>4}  {'FBT':>3}  {'BodyOL':>6}  "
               f"{'CapOL':>5}  {'Ghost':>5}  {'VSpace':>6}  {'Hollow':>6}  "
-              f"{'MisAlign':>8}")
+              f"{'MisAlign':>8}  {'ExNarrow':>8}")
         print(f"  {'-'*4}  {'-'*4}  {'-'*3}  {'-'*6}  "
               f"{'-'*5}  {'-'*5}  {'-'*6}  {'-'*6}  "
-              f"{'-'*8}")
+              f"{'-'*8}  {'-'*8}")
         issue_pages = 0
         for pnum in sorted(per_page.keys()):
             d = per_page[pnum]
-            total_p = d["fbt"] + d["body_ol"] + d["gn"] + d["ev"] + d["hc"] + d["fm"]
+            total_p = d["fbt"] + d["body_ol"] + d["gn"] + d["ev"] + d["hc"] + d["fm"] + d["en"]
             if total_p == 0:
                 continue  # Skip clean pages
             issue_pages += 1
-            marker = " ***" if d["body_ol"] > 5 else ""
+            marker = " ***" if d["body_ol"] > 5 or d["en"] > 0 else ""
             print(f"  {pnum:>4}  {d['figs']:>4}  {d['fbt']:>3}  {d['body_ol']:>6}  "
                   f"{d['cap_ol']:>5}  {d['gn']:>5}  {d['ev']:>6}  {d['hc']:>6}  "
-                  f"{d['fm']:>8}{marker}")
+                  f"{d['fm']:>8}  {d['en']:>8}{marker}")
         clean = sum(1 for p in per_page.values()
-                    if p["fbt"] + p["body_ol"] + p["gn"] + p["ev"] + p["hc"] + p["fm"] == 0)
+                    if p["fbt"] + p["body_ol"] + p["gn"] + p["ev"] + p["hc"] + p["fm"] + p["en"] == 0)
         print()
         print(f"  Pages with issues: {issue_pages}/{len(per_page)} "
               f"({clean} clean)")
