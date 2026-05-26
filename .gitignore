@@ -42,6 +42,9 @@ texlive/
 # Metrics output
 metrics-output.json
 
+# VM environment (not part of LaTeX project)
+skills/
+
 # OS files
 .DS_Store
 Thumbs.db
@@ -55,6 +58,9 @@ Thumbs.db
 
 # Secrets
 .env
+# PDFs (except stress test outputs)
 *.pdf
+!tests/test-stress-50.pdf
+!tests/test-stress-1000.pdf
 *.listing
 .install-tl-cache/

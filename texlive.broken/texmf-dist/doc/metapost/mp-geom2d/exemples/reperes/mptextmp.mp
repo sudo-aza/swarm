@@ -1,0 +1,1 @@
+btex $\vec\jmath$ etex

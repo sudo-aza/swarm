@@ -1,0 +1,27 @@
+\DocumentMetadata{tagging = on}
+\documentclass{ltx-talk}
+
+\EditInstance{footer}{std}{
+  color         = black!50,
+  separator     = \hfill|\hfill,
+  element-order = {date, author, title, institute, framenumber},
+  right-hspace  = 3mm,
+  left-hspace   = 3mm,
+}
+
+\author{Author Name}
+\title[short-title = {Presentation title}]
+  {A Long Presentation Title Which Would Not Fit in a Footer!}
+\institute{Interesting Conference}
+
+\begin{document}
+
+\begin{frame}
+  \maketitle[framestyle = wallpaper]
+\end{frame}
+
+\begin{frame}
+  content
+\end{frame}
+
+\end{document}

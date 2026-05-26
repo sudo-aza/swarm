@@ -1,0 +1,3239 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Molecular Coding Format manual                by  Akira Yamaji 2026.05.10
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ** typeset by LuaLaTeX(luamplib)
+% ** mcf2graph must be version 5.30
+% ** mcf2graph.mp and main_lib.mcf must be in the same directory to typeset
+%----------------------------------------------------------------------------
+\documentclass[a4paper]{article}
+\usepackage{verbatim}
+\usepackage{luamplib}
+\usepackage{makeidx}
+\usepackage{hyperref}
+\makeindex
+\hypersetup{colorlinks=true,linkcolor=blue}
+%----------------------------------------------------------------------------
+\mplibnumbersystem{double}
+\mplibcodeinherit{enable}%
+\mplibverbatim{enable}%
+\mpliblegacybehavior{disabled}%
+\begin{mplibcode}
+  input mcf2graph;
+\end{mplibcode}
+%----------------------------------------------------------------------------
+\makeatletter%
+\edef\fext{mps}%
+\topmargin=-18mm
+\textheight=254mm
+\textwidth=168mm
+\oddsidemargin=0mm
+%%%%\oddsidemargin=7mm
+%%%%\evensidemargin=-7mm
+\unitlength=1mm%
+%----------------------------------------------------------------------------
+\begin{document}
+\title{\Huge\sf Molecular Coding Format manual}
+\author{Akira Yamaji}
+\date{\today}
+\maketitle
+\begin{center} mcf2graph version 5.30 \end{center}
+\begin{center} Located at http://www.ctan.org/pkg/mcf2graph \end{center}
+\begin{center} Suggestion or request mail to: mcf2graph@gmail.com \end{center}
+%-----------------------------------------------------------------------------
+\thispagestyle{empty}
+\vspace{5mm}%
+\quad
+\begin{mplibcode}
+max_blength:=10mm;
+ratio_thickness_bond:=0.015;
+ratio_atom_bond:=0.36;
+fmargin:=(2mm,1mm);
+fsize:=(40mm,24mm);
+blength:=5mm;
+sw_frame:=0;
+% Glycine
+beginfigm drawm("^30,NH2,!2,COOH") endfigm
+% L-Alanine
+beginfigm drawm("^30,NH2,!~wb,?,!,COOH") endfigm
+% L-Valine
+beginfigm drawm("^30,NH2,!~wb,/?!,!,COOH") endfigm
+% L-Leucine
+beginfigm drawm("^30,NH2,!~wb,/!'?!,!,COOH") endfigm
+\end{mplibcode}
+\\
+\begin{mplibcode}
+% L-Isoleucine
+beginfigm drawm("^30,NH2,!~wb,/?z'!2,!,COOH") endfigm
+% L-Serine
+beginfigm drawm("^30,NH2,!~wb,/!OH,!,COOH") endfigm
+% L-Threonine
+beginfigm drawm("^30,NH2,!~wb,/?'!w'OH,!,COOH") endfigm
+% L-Cysteine
+beginfigm drawm("^30,NH2,!~wb,/!SH,!,COOH") endfigm
+\end{mplibcode}
+\\
+\begin{mplibcode}
+% L-Methionine
+beginfigm drawm("^30,NH2,!~wb,/!2'S!,!,COOH") endfigm
+% L-Phenylalanine
+beginfigm drawm("^30,NH2,!~wb,/!Ph,!,COOH") endfigm
+% L-Tyrosine
+beginfigm drawm("^30,NH2,!~wb,/!Ph'-3:/OH,!,COOH") endfigm
+% L-Triptophan
+beginfigm drawm("^30,NH2,!~wb,!,COOH,2:,!2,^24,<,?5,-4=Ph,2=dr,5=dl,4:NH")
+endfigm
+\end{mplibcode}
+\\
+\begin{mplibcode}
+% L-Prorine
+beginfigm drawm("^18,?5,3:NH,4:*/COOH") endfigm
+% L-Glutamine
+beginfigm drawm("^30,NH2,!~wb,!,COOH,2:,!`1,!2,?O,!,NH2") endfigm
+% L-Asparagine
+beginfigm drawm("^30,NH2,!~wb,/!'?O'!NH2,!,COOH") endfigm
+% L-Aspartic acid
+beginfigm drawm("^30,NH2,!~wb,/!COOH,!,COOH") endfigm
+\end{mplibcode}
+\\
+\begin{mplibcode}
+% L-Glutamic acid
+beginfigm drawm("^30,NH2,!~wb,/!2'COOH,!,COOH") endfigm
+% L-Lysine
+beginfigm drawm("^30,NH2,!~wb,/!4'NH2,!,COOH") endfigm
+% L-Arginine
+beginfigm drawm("^30,NH2,!~wb,!,COOH,2:,!2`1,!2,NH,!,//NH,!,NH2") endfigm
+% L-Hystidine
+beginfigm drawm("^30,NH2,!~wb,!,COOH,2:,!2,<,?5,1'3=dl,3:N,5:NH") endfigm
+\end{mplibcode}
+\\
+\begin{mplibcode}
+% L-DOPA
+beginfigm drawm("^30,NH2,!~wb,!,COOH,2:,!2,Ph,-3'-4:/OH") endfigm
+% Ornithine
+beginfigm drawm("^30,NH2,!~wb,/!3'NH2,!,COOH") endfigm
+% Citrulline
+beginfigm drawm("^30,NH2,!~wb,/!3'NH!'?O'!NH2,!,COOH") endfigm
+% GABA
+beginfigm drawm("^30,NH2,!4,COOH") endfigm
+\end{mplibcode}
+\\
+\begin{mplibcode}
+% amino Levulinic acid
+beginfigm drawm("^30,NH2,!2,?O,!3,COOH") endfigm
+% 4-amino benzoic acid
+beginfigm drawm("^30,Ph,1:/NH2,4:/COOH") endfigm
+% L-Carboxyl glutamic acid
+beginfigm drawm("^30,NH2,!~wb,/!'?COOH'!COOH,!,COOH") endfigm
+% L-Hydroxy Prorine
+beginfigm drawm("^18,?5,1:/OH,3:NH,4:*/COOH") endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\twocolumn
+\thispagestyle{empty}
+\tableofcontents
+\linethickness{0.08mm}%
+%----------------------------------------------------------------------------
+\newpage
+\twocolumn
+\section{Introduction}
+Molecular Coding Format(MCF) is new linear notation
+represent chemical structure diagrams.
+This Coding is named from programing technique
+such as operator, array, scope, macro, adressing, etc.
+mcf2graph convert from MCF to PNG, SVG, MOL file.
+It is also able to calculate molecular weight,
+exact mass, molecular formula.
+%-----------------------------------------------------------------------------
+\section{MCF syntax}
+\subsection{Make bond}
+\subsubsection{Chain}
+\begin{verbatim}
+real number plus (+): counterclockwize 
+real number minus(-): clockwize
+$n (0<=n<360): absolute angle
+
+^10,-30,45,-45,60,$300,$0
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+sw_frame:=Outside;
+blength:=0;
+beginfigm
+  #(60mm,18mm);
+  sw_numbering:=Bond;
+  ratio_chain_ring:=1;
+%----------------------------------------------------------------------
+  drawm("^15,-30,45,-45,60,$300,$0,1^$15'2^$345'3^$30'4^$345:?~dt,5'6=vf")
+  ++(
+    defaultscale:=0.5;
+    labeloffset:=2bp;
+    drawarrow B7/*.7{B7right}..{B1right}B1/*.7;   label.ulft("-30",B7/*.7);
+    drawarrow B8/*.7{B8left}..{B2left}B2/*.7;     label.llft("45",B8/*.7);
+    drawarrow B9/*.7{B9right}..{B3right}B3/*.7;   label.ulft("-45",B9/*.7);
+    drawarrow B10/*.7{B10left}..{B4left}B4/*.7;   label.llft("60",B10/*.7);
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Chain with !,!n}
+\index{"!}%
+\begin{verbatim}
+!  : take value 60 or -60 depend on
+     current angle
+!6 : !,!,!,!,!,!
+
+^-30,!6
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,20mm);
+  sw_numbering:=Bond;
+  ratio_chain_ring:=1;
+%----------------------------------------------------------------------
+  drawm("^-30,!6,1^-120'2^60'3^-60'4^60'5^-60'6^60:?~dt")
+  ++(
+    defaultscale:=0.5;
+    labeloffset:=2bp;
+    drawarrow B7/*.7{B7right}..{B1right}B1/*.7;   label.ulft("-60",B7/*.7);
+    drawarrow B8/*.7{B8left}..{B2left}B2/*.7;     label.llft("60",B8/*.7);
+    drawarrow B9/*.7{B7right}..{B3right}B3/*.7;   label.ulft("-60",B9/*.7);
+    drawarrow B10/*.7{B10left}..{B4left}B4/*.7;   label.llft("60",B10/*.7);
+    drawarrow B11/*.7{B11right}..{B5right}B5/*.7; label.ulft("-60",B11/*.7);
+    drawarrow B12/*.7{B12left}..{B6left}B6/*.7;   label.llft("60",B12/*.7);
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\begin{verbatim}
+take value 0 just after jump to atom
+n:,! : !=0
+
+^-30,!5,3:,!
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,16mm) #@(2mm,2mm)
+  sw_trimming:=1;
+  sw_numbering:=Atom;
+  ratio_chain_ring:=1;
+  drawm("^-30,!6,3:,!")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Jump to atom}
+\begin{verbatim}
+n: : Jump to An
+** An: atom number(-999<=n<=4095)
+
+^-30,!6,3:,0,5:,-30
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,16mm) #@(2mm,2mm)
+  sw_trimming:=1;
+  sw_numbering:=Atom;
+  ratio_chain_ring:=1;
+  drawm("^-30,!6,3:,0,5:,-30")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Branch bond}
+\index{\textasciicircum}% ^
+\index{\textasciitilde}% ~
+\index{`}%
+\index{"!w}%
+\index{"!z}%
+\index{"!d}%
+\begin{verbatim}
+n:,!   : n:,!
+n:,!w  : n:,!~wf
+n:,!z  : n:,!~zf
+n:,!d  : n:,!~db
+n:,!dr : n:,!~dr
+n:,!t  : n:,!~tm
+
+^30,!12,
+2:,!,4:,!w,6:,!z,8:,!d,10:,!dr,12:,!t
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(80mm,20mm) #@(2mm,2mm)
+  sw_numbering:=Atom;
+  ratio_chain_ring:=1;
+  drawm("^30,!12,2:,!,4:,!w,6:,!z,8:,!d,10:,!dr,12:,!t")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Rotate current angle}
+\index{\textasciicircum}%
+\begin{verbatim}
+^angle : rotate current angle
+
+0,0,^90,0,^-90,0,^$315,0,^$90,0,^$0,0 
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(62mm,22mm) #@(2mm,3mm)
+  sw_trimming:=1;
+  sw_numbering:=Bond;
+  ratio_chain_ring:=1;
+    defaultscale:=0.5;
+    labeloffset:=2bp;
+  drawm("`1,0,0,^90,0,^-90,0,^$315,0,^$90,0,^$0,0,1_7=vf,3'4^180:?~dt")
+  ++(
+    drawarrow B8/*.7{B8left}..{B3left}B3/*.7;   label.urt("90",B8/*.7);
+    drawarrow B9/*.7{B9right}..{B4right}B4/*.7; label.urt("-90",B9/*.7);
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Connect atom}
+\begin{verbatim}
+:n : Connect to An
+
+^-30,!6,3:,!,!3,:6~bd,9:,:4~bz
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,20mm) #@(2mm,2mm)
+  sw_trimming:=1;
+  sw_numbering:=Atom;
+  ratio_chain_ring:=1;
+  %----------------------------------
+  drawm("^-30,!6,3:,!,!3,:6~bd,9:,:4~bz")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Ring}
+\index{?n}%
+\begin{verbatim}
+?n : n membered ring(3<=n<=20)
+?6
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,20mm) #@(2mm,3mm)
+  sw_trimming:=1;
+  sw_numbering:=Bond;
+  %---------------------------
+  drawm("?6")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Ring length}
+\begin{verbatim}
+?n`length : change ring length
+
+?6,4:,!,?6`1.2
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,20mm) #@(2mm,2mm)
+  sw_trimming:=1;
+  sw_numbering:=Bond;
+  drawm("?6,4:,!,?6`1.2")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsection{Change bond type}
+\subsubsection{Double,triple,wedge,vector}
+\index{\textasciitilde}%
+\index{\textasciitilde\textasciitilde}%
+\index{dm}%
+\index{dl}%
+\index{dr}%
+\index{db}%
+\index{tm}%
+\index{"!db}%
+\index{"!tm}%
+\index{"!d}%
+\index{"!t}%
+\index{"!dm}%
+\index{"!dl}%
+\index{"!dr}%
+\begin{verbatim}
+(Double,triple)
+dm  : double middle
+dl  : double left side
+dr  : double right side
+db  : double left or right side
+tm  : triple
+!db,!d  : !~db  / !tm,!t : !~tm
+
+^-30,!~dm,!,!~dl,!,!~dr,!~db,!~db,!,!~tm
+^-30,!dm ,!,!dl ,!,!dr ,!d  ,!d  ,!,!t
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,10mm) #@(2mm,2mm)
+  sw_trimming:=0;
+  ratio_chain_ring:=1;
+  drawm("^-30,!~dm,!,!~dl,!,!~dr,!~db,!~db,!,!~tm")
+  ++(defaultscale:=0.6; labeloffset:=0;
+      label.rt("(dm)",A1+(0,-0.7l));
+      label.rt("(dl)",A3+(0,-0.7l));
+      label.rt("(dr)",A5+(0,-0.7l));
+      label.rt("(db)",A6+(0,-0.2l));
+      label.rt("(db)",A7+(0,-0.7l));
+      label.rt("(tm)",A9+(0,-0.7l));
+  )
+endfigm
+\end{mplibcode}
+\vspace{-3mm}%
+%-----------------------------------------------------------------------------
+%%\subsubsection{Wedge}
+\index{wf}%
+\index{wb}%
+\index{zf}%
+\index{zb}%
+\index{vf}%
+\index{vb}%
+\begin{verbatim}
+
+(Wedge,Vector)
+wf: wedge forward
+wb: wedge backward
+zf: hashed(zebra stripe) wedge foward
+zb: hashed(zebra stripe) wedge backward
+vf:vector forward  /  vb:vector backward
+
+^-30,
+ !~wf,!,!~wb,!,!~zf,!,!~zb,!,!~vf,!~vb
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,10mm) #@(2mm,2mm)
+  sw_trimming:=0;
+  ratio_chain_ring:=1;
+  drawm("^-30,!~wf,!,!~wb,!,!~zf,!,!~zb,!,!~vf,!,!~vb")
+  ++(defaultscale:=0.6; labeloffset:=0;
+      label.rt("(wf)",A1+(0,-0.7l));
+      label.rt("(wb)",A3+(0,-0.7l));
+      label.rt("(zf)",A5+(0,-0.7l));
+      label.rt("(zb)",A7+(0,-0.7l));
+      label.rt("(vf)",A9+(0,-0.7l));
+      label.rt("(vb)",A11+(0,-0.7l));
+  )
+endfigm
+\end{mplibcode}
+\vspace{-3mm}%
+%-----------------------------------------------------------------------------
+%%\subsubsection{Dotted,wave}
+\index{dt}%
+\index{wv}%
+\index{bd}%
+\index{bz}%
+\begin{verbatim}
+
+(Dotted,wave)
+Bn=bond type : change bond type at Bn
+dt : dotted   /  wv : wave
+bd : broad    /  bz : broad dotted 
+
+^-30,!7,1=dt,3=wv,5=bd,7=bz
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,10mm) #@(2mm,2mm) |=(9mm)
+  sw_trimming:=1;
+  ratio_chain_ring:=1;
+  drawm("^-30,!7,1=dt,3=wv,5=bd,7=bz")
+  ++(defaultscale:=0.6; labeloffset:=0;
+      label.rt("(dt)",A1+(0,-0.6l));
+      label.rt("(wv)",A3+(0,-0.6l));
+      label.rt("(bd)",A5+(0,-0.6l));
+      label.rt("(bz)",A7+(0,-0.6l));
+  )
+endfigm
+\end{mplibcode}
+\vspace{-3mm}%
+%-----------------------------------------------------------------------------
+\subsubsection{Over line}
+\index{si\_}%
+\index{wf\_}%
+\index{wb\_}%
+\index{zf\_}%
+\index{zb\_}%
+\index{bd\_}%
+\index{dl\_}%
+\index{dr\_}%
+\index{dm\_}%
+\begin{verbatim}
+si_ : single over line 
+wf_ : wedge forward over line 
+wb_ : wedge backward over line 
+zf_ : hashed wedge forward over line 
+zb_ : hashed wedge backward over line 
+bd_ : broad over line 
+dl_ : duble left over line 
+dr_ : duble right over line 
+dm_ : duble over line 
+
+^30,!8,!,60,90`18,
+ 2~si_'4~wf_'6~wb_'8~zf_'10~zb_'
+  12~bd_'14~dl_'16~dr_'18~dm_:?`2
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  sw_trimming:=1;
+  #(75mm,20mm);
+  ratio_chain_ring:=1;
+  drawm("^30,!18,$90`1.5,90`15.5,"&
+         "2~si_'4~wf_'6~wb_'8~zf_'10~zb_'"&
+         "12~bd_'14~dl_'16~dr_'18~dm_:?`2")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Steric ring}
+\index{wf\_r}%
+\index{wb\_r}%
+\index{bd\_r}%
+\begin{verbatim}
+wf_r : wedge foward (half width)
+bd_r : broad (half width, rounded)
+wb_r : wedge backward (half width)
+
+`1.25,-30~wf_r,30~bd_r`1,30~wb_r,
+ 120,O,30,:1,`,`.5,6^$90:/!OH,
+ 1^$270'2^$90'3^$270'4^$90:/OH
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(75mm,16mm);
+  @(0.05,0.5)
+  drawm("`1.25,-30~wf_r,30~bd_r`1,30~wb_r,120,O,30,:1,`,"&
+        "`.5,1^$270'2^$90'3^$270'4^$90:/OH,6^$90:/!OH")
+  defaultscale:=0.6;
+  @(0.5,0.7)  drawm("0~wf_r") ++(label.lft("wf_r:",A1);)
+  @(0.5,0.2)  drawm("0~wf")   ++(label.lft("wf:",A1);)
+  @(0.75,0.7) drawm("0~bd_r") ++(label.lft("bd_r:",A1);)
+  @(0.75,0.2) drawm("0~bd")   ++(label.lft("bd:",A1);)
+  @(1,0.7)    drawm("0~wb_r") ++(label.lft("wb_r:",A1);)
+  @(1,0.2)    drawm("0~wb")   ++(label.lft("wb:",A1);)
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Change multiple bond type}
+\index{vf}%
+\begin{verbatim}
+2'4'6=dl or 2'4'6=dl : 2=dl,4=dl,6=dl
+
+^30,!7,2'4'6=dl or ^30,!7,2'4'6=dl 
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,8mm) #@(2mm,3mm)
+  ratio_chain_ring:=1;
+  drawm("^30,!7,2'4'6=dl")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsection{Change bond length}
+\subsubsection{Chanege chain length}
+\index{`}%
+\begin{verbatim}
+(!,!n)`length : change length of !,!n
+
+^-30,!2,!4`1.2,!2
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(55mm,8mm);
+  sw_numbering:=Bond;
+  drawm("^-30,!2,!4`1.2,!2")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Change multiple bond length}
+\begin{verbatim}
+`n : bond length=n
+` : reset bond length
+
+^-30,!2,`1.2,!4,`,!2
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(55mm,8mm);
+  sw_numbering:=Bond;
+  drawm("^-30,!2,`1.2,!4,`,!2")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsection{Change atom}
+\subsubsection{Insert atom}
+\begin{verbatim}
+Insert hetero atom
+
+^-30,!2,O,!2,N,!2
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  sw_trimming:=1;
+  #(50mm,7mm);
+  drawm("^-30,!2,O,!2,N,!2")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Change atom}
+\index{:}%
+\begin{verbatim}
+2:O : change A2 C to O
+3'4:N : change A3,A4 C to N
+
+^30,!4,2:O,3'4:N
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,10mm) ##(0.48,1)
+  @(0,0.5) drawm("^30,!5,2:O,3'4:N")
+  sw_numbering:=Atom;
+  @(1,0.5) drawm("^30,!5,2:O,3'4:N")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Brock address}
+\begin{verbatim}
+< : divide brock
+
+?6,4:,!,<,?6,2:O
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,14mm) #@(3mm,1.5mm)
+  @(0,.5) drawm("?6,4:,!,<,?6,2:O")
+  sw_numbering:=Atom;
+  ##(1,.88)
+  @(1,.5) drawm("?6,4:,!,<,?6,2:O")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Reset brock address}
+\begin{verbatim}
+> : reset brock adress
+
+?6,4:,!,<,?6,>,2:N
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,14mm) #@(3mm,1.5mm)
+  @(0,.5) drawm("?6,4:,!,<,?6,>,2:N")
+  sw_numbering:=Atom;
+  ##(1,.88)
+  @(1,.5) drawm("?6,4:,!,<,?6,>,2:N")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Absolute address}
+\index{\$}% $
+\begin{verbatim}
+$2:n : change A$2 C to N
+**1<=n<=3095
+
+?6,4:,!,<,?6,$2:N
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,14mm) #@(3mm,1.5mm)
+  @(0,.5) drawm("?6,4:,!,?6,$2:N")
+  sw_numbering:=Atom;
+  ##(1,.88) 
+  @(1,.5) drawm("?6,4:,!,?6,$2:N")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Relative address}
+\begin{verbatim}
+-2:n : change A(-2) C to N
+**-999<=n<=-1
+
+?6,4:,!,?6,-2:N
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,14mm) #@(3mm,1.5mm)
+  @(0,.5) drawm("?6,4:,!,?6,-2:N")
+  sw_numbering:=Atom;
+  ##(1,.88)
+  @(1,.5) drawm("?6,4:,!,?6,-2:N")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Charged atom}
+\begin{verbatim}
+p : positive
+n : negative
+
+^-30,!2,N,??,p,!2,S,n^180,
+!6,7:N,7:??,9:S,7:n,9:n^180
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  sw_trimming:=1;
+  #(60mm,12mm);
+  drawm("^-30,!2,N,??,p,!2,S,n^180,!6,7:N,7:??,9:S,7:p,9:n^180")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\newpage
+%-----------------------------------------------------------------------------
+\subsection{Fuse ring}
+%%%\subsubsection{Attached 1 bond}
+\begin{verbatim}
+(Attached 1 bond)
+
+?6,3=?6 : fuse ?6 at B3
+** Bn(n:-999<=n<=4095): bond number
+
+?6,3=?6
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,18mm) #@(2mm,1.5mm)
+  sw_trimming:=1;
+  sw_numbering:=Bond;
+  drawm("^30,?6,3=?6,3=dt,7_11=bd_r")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\begin{verbatim}
+** fused ring size depend on 
+attached bond length
+
+?6,4:,!,?6`1.2,5=?6,11=?6
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,25mm) #@(2mm,2mm)
+  sw_trimming:=1;
+  sw_numbering:=Bond;
+  drawm("?6,4:,!,?6`1.2,5=?6,11=?6,14_23=bd_r,5'11=dt")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\begin{verbatim}
+?6,3=`1.3'?6 : fuse #1.3'?6 at B3
+`1.3'?6 : 6 membered ring scaled 1.3
+** `n'?m (5<=m<=6,1.1<=n<=1.5)
+
+?6,3=`1.3'?6
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,18mm) #@(2mm,1.5mm)
+  margin_top_bottom:=1.5mm;
+  sw_numbering:=Bond;
+  sw_trimming:=1;
+  drawm("^30,?6,3=`1.3'?6,3=dt,7_11=bd_r")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\begin{verbatim}
+?6,-3'-4'-4'-2'-2'-4'-4=?6
+?6,4'8'13'20'25'28'33=?6
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,20mm) #@(2mm,2mm)
+  sw_numbering:=Bond;
+  sw_trimming:=1;
+  drawm("^30,?6,-3'-4'-4'-2'-2'-4'-4=?6,4'8'13'20'25'28'33=dt")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\index{--}%
+\begin{verbatim}
+(Attached 2 bond)
+
+4--11=?6 : fuse 4/6 ring to B11..B4
+4--11=?5 : fuse 3/5 ring to B11..B4
+4--11=?4 : fuse 2/4 ring to B11..B4
+
+1:^30,?6,3=?6,11--4=?6
+2:^30,?6,3=?6,11--4=?5
+3:^30,?6,3=?6,11--4=?4
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(75mm,20mm) #@(2mm,2mm)
+  sw_numbering:=Bond;
+  ##(1,.9)
+  @( 0,.5) drawm("^30,?6,3'11--4=?6,11'4=dt,12_15=bd_r")
+  ++(defaultscale:=0.4; label("(1)",p0);)
+  ##(1,.9)
+  @(.5,.5) drawm("^30,?6,3=?6,11--4=?5,11'4=dt,12_14=bd_r")
+  ++(defaultscale:=0.4; label("(2)",p0);)
+  ##(1,.9)
+  @( 1,.5) drawm("^30,?6,3=?6,11--4=?4,11'4=dt,12'13=bd_r")
+  ++(defaultscale:=0.4; label("(3)",p0);)
+endfigm
+\end{mplibcode}
+%%%%%%%\vspace{-3mm}%
+%-----------------------------------------------------------------------------
+\index{---}%
+\begin{verbatim}
+(Attached 3 bond)
+
+16---4=?6 : fuse 3/6 ring to B16..B4
+16---4=?5 : fuse 2/5 ring to B16..B4
+
+1:?6,3'10'16---4=?6
+2:?6,3'10=?6,16---4=?5
+
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,20mm) #@(2mm,2mm)
+  sw_numbering:=Bond;
+  @(0,1) drawm("?6,3'10=?6,16---4=?6,16'4=dt,17_19=bd_r")
+  ++(defaultscale:=0.4; label("(1)",p0);)
+  @(1,0) drawm("?6,3'10=?6,16---4=?5,16'4=dt,17'18=bd_r")
+  ++(defaultscale:=0.4; label("(2)",p0);)
+endfigm
+\end{mplibcode}
+%%%%%%%%\vspace{-3mm}%
+%-----------------------------------------------------------------------------
+\index{----}%
+\begin{verbatim}
+(Attached 4 bond)
+
+21----4=?6 : fuse 2/6 ring to B21..B4
+
+^-30,?6,3'10'15'(21----4)=?6
+
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,20mm) #@(2mm,2mm)
+  sw_numbering:=Bond;
+  drawm("^-30,?6,3'10'15'21----4=?6,21'4=dt,22'23=bd_r")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsection{Spiro ring}
+\begin{verbatim}
+:4,?5 : add ?5 at A4
+
+^30,!6,4:,?5
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(40mm,15mm);
+  sw_numbering:=Atom;
+  ratio_chain_ring:=1;
+  drawm("^30,!6,4:,?5")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsection{Group}
+\subsubsection{Insert group}
+\index{?}%
+\index{methyl}%
+\index{??}%
+\index{dimethyl}%
+\index{?O}%
+\index{carbonyl}%
+\index{?S}%
+\index{thioketone}%
+\index{?NH}%
+\index{imino}%
+\index{ethyl}%
+\index{propyl}%
+\index{isopropyl}%
+\index{tert-butyl}%
+\index{/}%
+\index{Ph}%
+\index{phenyl}%
+\begin{verbatim}
+?    : methyl
+??   : dimethyl
+?O   : carbonyl
+?S   : thioketone
+?NH  : imino
+/!   : ethyl
+/!2  : propyl
+/?!  : isopropyl
+/??! : tert-butyl
+/Ph  : phenyl
+
+^30,!,?,!2,??,!2,?O,!2,?S,!2,
+ ?NH,!2,/!,!2,/!2,!2`1,/?!,!2`1,
+ /??!,!2`1,/`.6'Ph,!
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,20mm);
+  drawm("^30,!,?,!2,??,!2,?O,!2,?S,!2,?NH,!2,/!,!2,/!2,!2`1,"&
+        "/?!,!2`1,/??!,!2`1,/`.6'Ph,!")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Insert modified group}
+\index{//}%
+\index{double}%
+\index{*/}%
+\index{wedge forward}%
+\index{/*}%
+\index{hashed wedge}%
+\index{*/*}%
+\index{wave}%
+\index{direct}%
+\begin{verbatim}
+//  : double (double middle)
+*/  : wedge forward
+/*  : hashed wedge forward
+*/* : wave
+
+^30,!,//!,!2,*/H,!2,/*H,!2,*/*H,!
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,14mm);
+  drawm("^30,!`1,//!,!2`1,*/H,!2`1,/*H,!2`1,*/*H,!`1")
+  ++(defaultscale:=0.75;
+      label("//",A2-(0,0.45l));
+      label("*/",A4-(0,0.45l));
+      label("/*",A6-(0,0.45l));
+      label("*/*",A8-(0,0.45l));
+     )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\index{\textasciicircum}% ^
+\index{\textasciitilde}% ~
+\index{`}%
+\index{\textless}%
+\index{change type}%
+\index{change angle}%
+\index{change length}%
+\index{change environment}%
+\begin{verbatim}
+~ : change type
+^ : change angle,environment
+` : change length
+
+^-30,`1,!,
+  ?`2^30,!2,/!2^lr,!2,/!2^rl,!
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,16mm);
+  sw_trimming:=1;
+  drawm("^-30,`1,!2,?`2^30,!2,/!2^lr,!2,/!2^rl,!")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Add group}
+\index{?w}%
+\index{?z}%
+\index{?d}%
+\begin{verbatim}
+?w : ?~wf
+?z : ?~zf
+?d : ?~dm
+
+^30,!17,2:?,3:/!,4:/!2,7:/?!,
+ 8:/??!,10^-15:/`.6'Ph,
+  11'12':?w,13'14:?z,15'16:?d
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(75mm,25mm) #@(2mm,2mm)
+  sw_numbering:=Atom;
+  drawm("^30,!17,2:?,3:/!,4:/!2,7:/?!,8:/??!,10^-15:/`.6'Ph,"&
+     "11'12:?w,13'14:?z,15'16:?d")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Add modified group}
+\begin{verbatim}
+~,^,` : change type,angle,length
+
+^30,!6,2~wf'4~zf'6^-30'8^$120:?
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,18mm) #@(2mm,2mm)
+  sw_trimming:=1;
+  sw_numbering:=Atom;
+  drawm("^30,!8`1,2~wf'4~zf'6^-30'8^$120:?")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\begin{verbatim}
+
+^,` : change angle,length,environment
+
+^-30,!7`1,3:?`2^30,5:/!2^lr,7:/!2^rl
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,16mm);
+  sw_trimming:=1;
+  sw_numbering:=Atom;
+  drawm("^-30,!7`1,3:?`2^30,5:/!2^lr,7:/!2^rl")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\newpage
+%-----------------------------------------------------------------------------
+\subsection{Chain environment}
+\subsubsection{Horizontal,vertical}
+\index{hz}%
+\index{vt}%
+\index{"'}%
+\begin{verbatim}
+^hz : horizontal environment (default)
+^vt : vertical environment
+
+?4,
+ 3^-90'3^-30'3^90:/!3^hz,
+ 1^-60'1'1^60:/!3^vt
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,35mm);
+  sw_trimming:=1;
+  ratio_chain_ring:=1;
+  drawm("?4,3^-90'3^-30'3^90:/!3^hz,1^-60'1'1^60:/!3^vt")
+  ++(defaultscale:=0.5; labeloffset:=2bp;
+      label.rt("^hz",A8);
+      label.top("^hz",A12);
+      label.top("^hz",A16);
+      label.rt("^vt",A20);
+      label.top("^vt",A24);
+      label.rt("^vt",A28);
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Left-right,right-left}
+\index{lr}%
+\index{rl}%
+\begin{verbatim}
+^lr : left-right environment
+^rl : right-left environment
+
+^-30,!6,
+3^-30'3'3^30:/!3^lr,
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+%%%%%  EN:Left-right_right-left
+  #(50mm,24mm);
+%  sw_trimming:=1;
+  drawm("^-30,!6,3^-30'3'3^30:/!3^lr,5^-30'5'5^30:/!3^rl")
+  ++(defaultscale:=0.5; labeloffset:=2bp;
+      label.lft("^lr",A11);
+      label.lft("^lr",A15);
+      label.lft("^lr",A19);
+      label.rt("^rl",A23);
+      label.rt("^rl",A27);
+      label.rt("^rl",A31);
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Rotate fixed angle}
+\index{\textasciicircum}%
+\begin{verbatim}
+^*n : rotate n
+
+^30,!4,
+2:/!6^*30,  % :2,!,30,30,30,30,30,30
+4:/!4^*-45  % :4,!,-45,-45,-45,-45
+
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(45mm,24mm);
+  sw_trimming:=1;
+  drawm("^30,!4,2:/!6^*30,4:/!4^*-45")
+  ++(defaultscale:=0.5; labeloffset:=2bp;
+      label.bot("^*30",A12);
+      label.bot("^*-45",A17);
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Rotate multiple angle}
+\begin{verbatim}
+^(90'-90,...) : rotate 90,-90,...
+
+^30,!6,6:/!5^(90'-90'90'-90'90)
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(62mm,24mm);
+  drawm("^30,!6,6:/!5^(90'-90'90'-90'90)")
+  ++(defaultscale:=0.5; labeloffset:=2bp;
+      label.lft("^(90'-90'90'-90'90)",A13);
+      label.rt("^*90",A12);
+      label.lft("^*-90",A11);
+      label.rt("^*90",A10);
+      label.lft("^*-90",A9);
+      label.rt("^*90",A8);
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\newpage
+\subsection{Miscellaneous}
+%-----------------------------------------------------------------------------
+\subsubsection{Abbreviated parts}
+\index{NH}%
+\index{N"!}%
+\index{N"!2}%
+\index{S?O}%
+\index{S?O?O}%
+\begin{verbatim}
+NH : N,/H~nl   N? : N,? 
+N?2 : N,/!     S?O : S,?O
+S?O?O : S,?O^35,//^-35
+
+^-30,!2,NH,!2,N?,!2,N?2,S?O,!2,S?O?O,!
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+#(60mm,10mm);
+sw_trimming:=1;
+drawm("^-30,!2`1.2,NH,!2`1.2,N?,!2`1.2,"&
+       "N?2,!2`1.2,S?O,!2`1.2,S?O?O,!`1.2")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\index{?"!}%
+\index{??}%
+\index{??"!}%
+\index{N?"!}%
+\index{dimethylamino}%
+\begin{verbatim}
+??   : ?^35,?-35  /?!  : isopropyl
+/??! : tert-butyl   /N?! : dimethylamino
+
+^30,!11`1,2:??,4:/!,6:/?!,8:/??!,10:/N?!
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+#(60mm,12mm);
+sw_trimming:=1;
+drawm("^30,!11`1.2,2:??,4:/!,6:/?!,8:/??!,10:/N?!")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Define group,parts}
+\index{define group}%
+\index{define group with atoms}%
+\index{define parts}%
+\index{`}%
+\index{``}%
+\begin{verbatim}
+`(..) : define group
+``(..)(..) : define group with atoms
+'(..) : define parts
+''("..") : define parts with string
+
+CF3:=`("{CF3}"); % ** group weight =0
+CF3:=``("{CF3}")(C,F,F,F);
+  ** group weight =12(C)+19(F)*3=69
+
+iBuOH:='(!?!,OH);
+drawm("^30,?6,4'6:/iBuOH,3:/CF3")
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,14mm);
+  sw_trimming:=1;
+  iBuOH:='(!?!,OH);
+  CF3:=``("{CF3}")(C,F,F,F);
+  drawm("^30,?6,4'6:/iBuOH,3:/CF3")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Concatenate group,parts}
+\index{'}%
+\begin{verbatim}
+a'b : concat a,b
+
+^30,NH2,!wb,/!Ph'5:/OH,!COOH
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,14mm) #@(2mm,1mm)
+  sw_trimming:=1;
+  drawm("^30,NH2,!wb,/!Ph'5:/OH,!COOH")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Move position [ (): ]}
+\begin{verbatim}
+ (x'y): : Move l*(x,y) from current position
+$(x'y): : Move l*(x,y) from origin(@1)
+          ** l=bond length of ring
+
+^30,?6,3:,!4,?O,!,O,n_^60,$(6'1):,H,p^15
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,15mm) #@(2mm,1mm)
+  sw_trimming:=1;
+  drawm("^30,?6,3:,!,!3,?O,!,O,n^60,$(6'1):,H,p^15")
+  ++(drawdot A1 withpen pencircle scaled 3bp;
+     drawdot A12 withpen pencircle scaled 3bp;
+      pickup pencircle scaled 0.1bp;
+      for i=0 upto 6:
+        draw (A1+(l*i,l-4bp))--(l*i,l+4bp);
+      endfor
+      draw A1--(A1+(0,1l))--A1+(6l,1l);
+      draw (A1+(-4bp,1l))--(A1+(4bp,1l));
+      draw (A1+(-4bp,0))--(A1+(4bp,0));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Serial number}
+\begin{verbatim}
+6_10 : 6,7,8,9,10
+^30,!14,2'6_10'14:?~bd_r`0.5
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(75mm,12mm) |<(8mm)
+  sw_numbering:=Atom;
+  drawm("^30,!14,2'6_10'14:?~bd_r`0.5")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Change color}
+\index{red}%
+\index{blue}%
+\index{green}%
+\begin{verbatim}
+beginfigm
+  drawm("^30,Ph,2'5:N,3:/NH2,4:/COOH,"&
+         "2:red,5:blue,3=green")
+endfigm
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(50mm,18mm) |<(8mm)
+  drawm("^30,Ph,2'5:N,3:/NH2,4:/COOH,2:red,5:blue,3=green")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Change font}
+\index{atomfont}%
+\begin{verbatim}
+beginfigm
+  %----------------
+  atomfont:="phvro8g";
+  %----------------
+  drawm("^30,Ph,2'5:N,3:/NH2,4:/COOH")
+endfigm
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(50mm,18mm) |<(8mm)
+  atomfont:="phvro8g";
+  drawm("^30,Ph,2'5:N,3:/NH2,4:/COOH")
+endfigm
+\end{mplibcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Option parameter}
+%------------------------------------------------------------------------------
+\subsection{Angle parameter}
+\index{mangle}%
+\begin{verbatim}
+mangle=0   ** default
+
+@(0.2,0.5) drawm("Ph")
+mangle:=30;
+@(0.8,0.5) drawm("Ph")
+\end{verbatim}
+%-----------------------------------------
+%% mangle
+\begin{mplibcode}
+beginfigm
+  #(50mm,15mm) |=(6mm)
+  mangle:=0;
+  @(0.2,0.5) drawm("Ph")
+  ++(drawarrow((A1 shifted (aw,0)) rotated A1ang..A1);)
+  mangle:=30;
+  @(0.8,0.5) drawm("Ph")
+  ++(drawarrow((A1 shifted (aw,0)) rotated A1ang..A1);)
+endfigm
+\end{mplibcode}
+%------------------------------------------------------------------------------
+\subsection{Size/Ratio parameter}
+%-----------------------------------------------------------------------------
+\subsubsection{Bond length [ \textbar={ }]}
+\index{blength}%
+\index{\textbar=()}%
+\begin{verbatim}
+|=(n) : abbreviated form of blength:=n;
+
+(fit to figure size)
+blength=0   ** default
+\end{verbatim}
+%-----------------------------------------
+\begin{mplibcode}
+%%% blength=0
+beginfigm
+  sw_frame:=Bothside;
+  #(40mm,15mm);
+  drawm("^30,Ph")
+  **(pickup pencircle scaled 0.2pt; 
+      for i=0 upto w/mm: draw (i*mm,0)--(i*mm,-.5mm); endfor
+      for i=0 upto h/mm: draw (0,i*mm)--(-.5mm,i*mm); endfor
+      for i=0 upto w/cm: draw (i*cm,0)--(i*cm,-.8mm); endfor
+      for i=0 upto h/cm: draw (0,i*cm)--(-.8mm,i*cm); endfor
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------
+\begin{verbatim}
+(ratio bond/figure width)
+blength=0.1  ** (0<blength<=1)
+blength=60mm(width)*0.1=6mm
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+%% 0<blength=<1
+beginfigm
+  sw_frame:=Bothside;
+  #(40mm,15mm) |=(0.1)
+  drawm("^30,Ph")
+  **(pickup pencircle scaled 0.2pt; 
+      for i=0 upto w/mm: draw (i*mm,0)--(i*mm,-.5mm); endfor
+      for i=0 upto h/mm: draw (0,i*mm)--(-.5mm,i*mm); endfor
+      for i=0 upto w/cm: draw (i*cm,0)--(i*cm,-.8mm); endfor
+      for i=0 upto h/cm: draw (0,i*cm)--(-.8mm,i*cm); endfor
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------
+\begin{verbatim}
+(bond length)
+blength=9mm
+** (blength>1) ignore msize(w,h)
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+%%%% blength>1
+beginfigm
+  sw_frame:=Bothside;
+  #(40mm,15mm) |=(8mm)
+  drawm("^30,Ph")
+  **(pickup pencircle scaled 0.2pt; 
+      for i=0 upto w/mm: draw (i*mm,0)--(i*mm,-.5mm); endfor
+      for i=0 upto h/mm: draw (0,i*mm)--(-.5mm,i*mm); endfor
+      for i=0 upto w/cm: draw (i*cm,0)--(i*cm,-.8mm); endfor
+      for i=0 upto h/cm: draw (0,i*cm)--(-.8mm,i*cm); endfor
+  )
+endfigm
+\end{mplibcode}
+%------------------------------------------------------------------------------
+\subsubsection{Molecular size}
+\index{msize}%
+\index{\#\#}%
+\begin{verbatim}
+##(1,1) : msize=(1,1)  ** default
+## p : abbreviated form of msize:=p;
+\end{verbatim}
+%---------------------------------------------
+%% msize=(1)
+\begin{mplibcode}
+beginfigm
+  sw_frame:=Bothside+Mol;
+  #(40mm,15mm) ##(1,1)
+  drawm("^30,Ph")
+  **(pickup pencircle scaled 0.2pt; 
+      for i=0 upto w/mm: draw (i*mm,0)--(i*mm,-.5mm); endfor
+      for i=0 upto h/mm: draw (0,i*mm)--(-.5mm,i*mm); endfor
+      for i=0 upto w/cm: draw (i*cm,0)--(i*cm,-.8mm); endfor
+      for i=0 upto h/cm: draw (0,i*cm)--(-.8mm,i*cm); endfor
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------
+\begin{verbatim}
+##(0.25,1) : msize=(0.25,1)
+** msize=(40mm-4mm)*0.25=9mm
+\end{verbatim}
+%---------------------------------------------
+%% msize=(0.25,1)
+\begin{mplibcode}
+beginfigm
+  sw_frame:=Bothside+Mol;
+  #(40mm,15mm) ##(0.25,1)
+  drawm("^30,Ph")
+  **(pickup pencircle scaled 0.2pt; 
+      for i=0 upto w/mm: draw (i*mm,0)--(i*mm,-.5mm); endfor
+      for i=0 upto h/mm: draw (0,i*mm)--(-.5mm,i*mm); endfor
+      for i=0 upto w/cm: draw (i*cm,0)--(i*cm,-.8mm); endfor
+      for i=0 upto h/cm: draw (0,i*cm)--(-.8mm,i*cm); endfor
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------
+\begin{verbatim}
+##(11mm,11mm) : msize=(11mm,11mm)
+\end{verbatim}
+%---------------------------------------------
+%% msize=(11mm,11mm)
+\begin{mplibcode}
+beginfigm
+  sw_frame:=Bothside+Mol;
+  #(40mm,15mm) ##(11mm,11mm)
+  drawm("^30,Ph")
+  **(pickup pencircle scaled 0.2pt; 
+      for i=0 upto w/mm: draw (i*mm,0)--(i*mm,-.5mm); endfor
+      for i=0 upto h/mm: draw (0,i*mm)--(-.5mm,i*mm); endfor
+      for i=0 upto w/cm: draw (i*cm,0)--(i*cm,-.8mm); endfor
+      for i=0 upto h/cm: draw (0,i*cm)--(-.8mm,i*cm); endfor
+  )
+endfigm
+\end{mplibcode}
+%------------------------------------------------------------------------------
+\subsubsection{Molecular position}
+\index{mposition}%
+\begin{verbatim}
+@(0.5,0.5) : mposition=(0.5,0.5)  **default
+\end{verbatim}
+%---------------------------------------------
+%% mposition
+\begin{mplibcode}
+beginfigm
+  sw_frame:=Bothside+Mol;
+  #(40mm,15mm) ##(1,0.8)
+  @(0.5,0.5)
+  drawm("^30,Ph")
+endfigm
+\end{mplibcode}
+%--------------------------------------------------------------
+\begin{verbatim}
+@(1,0) : mposition=(1,0)
+\end{verbatim}
+%---------------------------------------------
+%% mposition
+\begin{mplibcode}
+beginfigm
+  sw_frame:=Bothside+Mol;
+  #(40mm,15mm) ##(1,0.8)
+  @(1,0)
+  drawm("^30,Ph")
+endfigm
+\end{mplibcode}
+%--------------------------------------------------------------
+\begin{verbatim}
+@(10mm,4mm) : mposition=(10mm,4mm)
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+beginfigm
+  sw_frame:=sw_frame+Mol;
+  #(40mm,15mm) ##(1,0.8) @(10mm,4mm)
+  drawm("^30,Ph")
+  **(drawdot p1 withpen pencircle scaled 3pt;
+      pickup pencircle scaled 0.2pt; 
+      for i=0 upto w/mm: draw (i*mm,0)--(i*mm,-.5mm); endfor
+      for i=0 upto h/mm: draw (0,i*mm)--(-.5mm,i*mm); endfor
+      for i=0 upto w/cm: draw (i*cm,0)--(i*cm,-.8mm); endfor
+      for i=0 upto h/cm: draw (0,i*cm)--(-.8mm,i*cm); endfor
+  )
+endfigm
+\end{mplibcode}
+%------------------------------------------------------------------------------
+\subsection{Size parameter}
+%-----------------------------------------------------------------------------
+\subsubsection{Figure size [ \#{ }]}
+\index{fsize}%
+\index{\#()}%
+\begin{verbatim}
+fsize=(figure width,figure height)
+** default: (30mm,20mm)
+# p : abbreviated form of fsize:=p;
+
+#(40mm,15mm) : fsize=(40mm,15mm)
+\end{verbatim}
+%---------------------------------------------
+%% Figure size
+\begin{mplibcode}
+beginfigm
+  sw_frame:=Outside;
+  #(40mm,12mm)
+  drawm("^30,Ph")
+  **(pickup pencircle scaled 0.2pt; 
+      for i=0 upto w/mm: draw (i*mm,0)--(i*mm,-.5mm); endfor
+      for i=0 upto h/mm: draw (0,i*mm)--(-.5mm,i*mm); endfor
+      for i=0 upto w/cm: draw (i*cm,0)--(i*cm,-.8mm); endfor
+      for i=0 upto h/cm: draw (0,i*cm)--(-.8mm,i*cm); endfor
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Figure margin [ \#@{ }]}
+\index{fmargin}%
+\index{\#"@()}%
+\begin{verbatim}
+fmargin=(margin left rigth,top bottom)
+** default: (0.4mm,0.4mm)
+#@ p : abbreviated form of fmargin:=p;
+
+#@(10mm,2mm) : fmargin=(10mm,2mm)
+\end{verbatim}
+%---------------------------------------------
+%% fmargin
+\begin{mplibcode}
+beginfigm
+  sw_frame:=Bothside+Mol;
+  #(40mm,12mm) #@(10mm,2mm)
+  drawm("^30,Ph")
+  **(pickup pencircle scaled 0.2pt; 
+      for i=0 upto w/mm: draw (i*mm,0)--(i*mm,-.5mm); endfor
+      for i=0 upto h/mm: draw (0,i*mm)--(-.5mm,i*mm); endfor
+      for i=0 upto w/cm: draw (i*cm,0)--(i*cm,-.8mm); endfor
+      for i=0 upto h/cm: draw (0,i*cm)--(-.8mm,i*cm); endfor
+      drawdot p0 withpen pencircle scaled 3pt;
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Offset thickness of bond}
+\index{offset\_thickness}%
+\begin{verbatim}
+default: offset_thickness=0.25pt
+\end{verbatim}
+%---------------------------------------------
+%%offset_thickness 
+\begin{mplibcode}
+beginfigm
+  #(60mm,12mm);
+  offset_thickness:=0.0pt; @(0.1,0.5) drawm("^30,Ph")
+  offset_thickness:=0.25pt; @(0.55,0.5) drawm("^30,Ph")
+  offset_thickness:=0.5pt; @(1,0.5) drawm("^30,Ph")
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.0pt",(0,1bp));
+    label.urt("0.25pt",(0.36w,1bp));
+    label.urt("0.5pt",(0.7w,1bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Offset of double bond gap}
+\index{offset\_bond\_gap}%
+\begin{verbatim}
+default: offset_bond_gap=0.3pt
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,12mm);
+  offset_bond_gap:=0.0pt; @(0.1, 0.5) drawm("^30,Ph")
+  offset_bond_gap:=0.3pt; @(0.55,0.5) drawm("^30,Ph")  %<<== default
+  offset_bond_gap:=1.0pt; @(1,   0.5) drawm("^30,Ph")
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.0pt",(0,1bp));
+    label.urt("0.3pt",(0.36w,1bp));
+    label.urt("1.0pt",(0.7w,1bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Offset of atom width}
+\index{offset\_atom}%
+\begin{verbatim}
+default: offset_atom=0.8pt
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,12mm);
+  offset_atom:=0.0pt; @(0.1, .5) drawm("^30,?6,3:O")
+  offset_atom:=0.8pt; @(.55, .5) drawm("^30,?6,3:O")   %<<== default
+  offset_atom:=2.0pt; @(1,   .5) drawm("^30,?6,3:O")
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.0pt",(0,1bp));
+    label.urt("0.8pt",(0.36w,1bp));
+    label.urt("2.0pt",(0.7w,1bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Offset of wedge width}
+\index{offset\_wedge}%
+\begin{verbatim}
+default: offset_wedge=0.2pt
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,12mm);
+  offset_wedge:=0.0pt; @(0.1,0.5) drawm("^30,?6,5:?w")
+  offset_wedge:=0.2pt; @(0.55,0.5) drawm("^30,?6,5:?w")  %<<== default
+  offset_wedge:=0.5pt; @(1, 0.5) drawm("^30,?6,5:?w")
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.0pt",(0,1bp));
+    label.urt("0.2pt",(0.36w,1bp));
+    label.urt("0.5pt",(0.7w,1bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Max bond length [ \textbar\textless{ }]}
+\index{max\_blength}%
+\index{\textbar\textless()}%
+\begin{verbatim}
+|<(n): abbreviated form of max_blength:=n;
+default: max_blength=10mm
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,12mm)
+  sw_frame:=sw_frame+Mol;
+  |<(5mm)  @(0, .5) drawm("^45,?4")
+  |<(8mm)  @(.4,.5) drawm("^45,?4")
+  |<(10mm) @(1, .5) drawm("^45,?4")   %<<== default
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label("5mm", (0.075w,0.5h));
+    label("8mm", (0.42w,0.5h));
+    label("10mm",(0.88w,0.5h));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsection{Ratio parameter}
+%-----------------------------------------------------------------------------
+\subsubsection{Thickness/bond length}
+\index{ratio\_thickness\_bond}%
+\begin{verbatim}
+default: ratio_thickness_bond=0.012
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,12mm);
+  ratio_thickness_bond:=0.005;  @(0.1,0.5) drawm("^30,Ph")
+  ratio_thickness_bond:=0.012;  @(.55,0.5) drawm("^30,Ph")  %<<== default
+  ratio_thickness_bond:=0.03;   @(1,  0.5) drawm("^30,Ph")
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.005",(0,1bp));
+    label.urt("0.015",(0.36w,1bp));
+    label.urt("0.030",(0.7w,1bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Atom/bond length}
+\index{ratio\_atom\_bond}%
+\begin{verbatim}
+default: ratio_atom_bond= 0.36
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,12mm);
+  ratio_atom_bond:=0.25;  @(0.1,0.5) drawm("^30,?6,3:O")
+  ratio_atom_bond:=0.33;  @(.55,0.5) drawm("^30,?6,3:O")  %<<== default
+  ratio_atom_bond:=0.45;  @(1,  0.5) drawm("^30,?6,3:O")
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.25",(0,1bp));
+    label.urt("0.33",(0.36w,1bp));
+    label.urt("0.45",(0.7w,1bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Char thickness/Atom width}
+\index{ratio\_char\_atom}%
+\begin{verbatim}
+default: ratio_char_atom=0.12
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,12mm)
+  ratio_char_atom:=0.1;  @(0, 0.5) drawm("^30,?6,6:O,3:NH")
+  ratio_char_atom:=0.12; @(.5,0.5) drawm("^30,?6,6:O,3:NH")  %<<== default
+  ratio_char_atom:=0.15; @( 1,0.5) drawm("^30,?6,6:O,3:NH")
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.1", (0,1bp));
+    label.urt("0.12",(0.36w,1bp));
+    label.urt("0.15",(0.7w,1bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Bond gap/bond length}
+\index{ratio\_bondgap\_bond}%
+\begin{verbatim}
+default: ratio_bondgap_bond= 0.15
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,12mm);
+  ratio_bondgap_bond:=0.10; @(0.1,0.5) drawm("^30,Ph")
+  ratio_bondgap_bond:=0.15; @(.55,0.5) drawm("^30,Ph")  %<<== default
+  ratio_bondgap_bond:=0.20; @(1  ,0.5) drawm("^30,Ph")
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.10",(0,1bp));
+    label.urt("0.15",(0.36w,1bp));
+    label.urt("0.20",(0.7w,1bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Wedge/bond length}
+\index{ratio\_wedge\_bond}%
+\begin{verbatim}
+default: ratio_wedge_bond=0.12
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,12mm);
+  ratio_wedge_bond:=0.1;  @(0.05,.5) drawm("?6,4:?w")
+  ratio_wedge_bond:=0.12; @(.55, .5) drawm("?6,4:?w")  %<<== default
+  ratio_wedge_bond:=0.2;  @(1  , .5) drawm("?6,4:?w")
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.10",(0,1bp));
+    label.urt("0.12",(0.36w,1bp));
+    label.urt("0.20",(0.7w,1bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Figure atom gap/atom length}
+\index{ratio\_atomgap\_atom}%
+\index{readm}%
+\begin{verbatim}
+default:  ratio_atomgap_atom= 0.050
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  readm("^30,!2`0.5,2:O")
+  #(70mm,12mm)
+  sw_frame:=Atom;
+  ratio_atomgap_atom:=0.00;  @(0, .5) drawm(mc)
+  ratio_atomgap_atom:=0.050; @(.5,.5) drawm(mc)  %<<== default
+  ratio_atomgap_atom:=0.12;  @(1, .5) drawm(mc)
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.00",(0.05w,3bp));
+    label.urt("0.05",(0.45w,3bp));
+    label.urt("0.12",(0.85w,3bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Chain/ring length}
+\index{ratio\_chain\_ring}%
+\begin{verbatim}
+default:  ratio_chain_ring= 0.66
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,12mm);
+  ratio_chain_ring:= 0.4;  @(0.05,.5) drawm("^30,?6,4:/!")
+  ratio_chain_ring:= 0.66; @(.45, .5) drawm("^30,?6,4:/!")   %<<== default
+  ratio_chain_ring:= 1;    @(1,   .5) drawm("^30,?6,4:/!")
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.40",(0,1bp));
+    label.urt("0.66",(0.3w,1bp));
+    label.urt("1.0" ,(0.62w,1bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Hash gap/bond length}
+\index{ratio\_hashgap\_bond}%
+\begin{verbatim}
+default:  ratio_hashgap_bond=0.12
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  readm("^30,!2,2:?z`1.5")
+  #(70mm,15mm)
+  ratio_hashgap_bond:=0.06; @(0.08,.5) drawm(mc)
+  ratio_hashgap_bond:=0.12; @( .55,.5) drawm(mc) %<<== default
+  ratio_hashgap_bond:=0.20; @(1,   .5) drawm(mc)
+  **(defaultscale:=0.6; labeloffset:=1bp;
+    label.urt("0.06",(0,1bp));
+    label.urt("0.12",(0.4w,1bp));
+    label.urt("0.20",(0.77w,1bp));
+  )
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+%%%%\newpage
+%-----------------------------------------------------------------------------
+\subsection{Drawing mode}
+%-----------------------------------------------------------------------------
+\subsubsection{Numbering atom,bond}
+\index{sw\_numbering}%
+\index{Atom}%
+\begin{verbatim}
+sw_numbering:=Atom;
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,7mm);
+  ratio_chain_ring:=1;
+  sw_numbering:=Atom; drawm("^-30,!9")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\index{Bond}%
+\begin{verbatim}
+sw_numbering:=Bond;
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,7mm);
+  ratio_chain_ring:=1;
+  sw_numbering:=Bond; drawm("^-30,!9")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\begin{verbatim}
+sw_numbering:=Atom+Bond;
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,7mm);
+  ratio_chain_ring:=1;
+  sw_numbering:=Atom+Bond; drawm("^-30,!9")
+endfigm
+\end{mplibcode}
+%------------------------------------------------------
+\begin{verbatim}
+sw_numbering:=Atom+Bond;
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,12mm);
+  ratio_chain_ring:=1;
+  sw_numbering:=Atom+Bond; drawm("^-30,!9,3'5'7'9:?w`.66")
+endfigm
+\end{mplibcode}
+%------------------------------------------------------
+\begin{verbatim}
+sw_numbering:=Atom+Bond+All;
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,12mm);
+  ratio_chain_ring:=1;
+  sw_numbering:=Atom+Bond+All;
+  drawm("^-30,!9,3'5'7'9:?w`.66")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Trimming mode}
+\index{sw\_trimming}%
+\begin{verbatim}
+sw_trimming:=0;  ** default
+##(1,0.7)
+@(0.2,0.3) drawm("Ph")
+@(0.8,0.7) drawm("Ph")
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,15mm) ##(1,.7)
+  sw_frame:=Bothside+Mol;
+  @(.2,.3) drawm("Ph")
+  @(.8,.7) drawm("Ph")
+endfigm
+\end{mplibcode}
+%------------------------------------------------------
+\begin{verbatim}
+sw_trimming:=1;
+@(0.2,0.3) drawm("Ph")
+@(0.8,0.7) drawm("Ph")
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,15mm) ##(1,.7)
+  sw_frame:=Bothside+Mol;
+  sw_trimming:=1;
+  @(.2,.3) drawm("Ph")
+  @(.8,.7) drawm("Ph")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Omit group}
+\index{Group}%
+\begin{verbatim}
+** default: sw_omit=Group
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  readm("^30,Ph,4:/Cl,3:/F");
+  #(60mm,12mm)
+  @(.15, .5) putm
+  sw_omit:=Group;
+  @(.85, .5) putm
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Omit bond type}
+\index{Bond}%
+\begin{verbatim}
+** default: sw_omit=Bond
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  readm("^30,Ph,4:/Cl,3:/F");
+  #(60mm,12mm)
+  @(.15, .5) putm
+  sw_omit:=Bond;
+  @(.85, .5) putm
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsection{Frame}
+%-----------------------------------------------------------------------------
+\subsubsection{Figure frame}
+\index{sw\_frame}%
+\index{Bothside}%
+\index{Inside}%
+\index{Outside}%
+\begin{verbatim}
+** default:sw_frame=0
+(Draw figure frame)
+fmargin:=(5mm,2mm);
+sw_frame=Outside
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(30mm,10mm) #@(5mm,1.5mm)
+  sw_frame:=Outside;
+  drawm("^30,Ph")
+endfigm
+\end{mplibcode}
+%------------------------------------------------------
+\begin{verbatim}
+(Frame inside margin)
+sw_frame=Inside
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(30mm,10mm) #@(5mm,1.5mm)
+  sw_frame:=Inside;
+  drawm("^30,Ph")
+endfigm
+\end{mplibcode}
+%------------------------------------------------------
+\begin{verbatim}
+(Draw both frame)
+sw_frame=Bothside=Inside+Outside
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(30mm,10mm) #@(5mm,1.5mm)
+  sw_frame:=Bothside;
+  drawm("^30,Ph")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Molecular frame}
+\index{Mol}%
+\begin{verbatim}
+sw_frame=Mol
+** default:sw_frame=0
+\end{verbatim}
+%------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  sw_frame:=Outside;
+  #(40mm,11mm) ##(1,1)
+  sw_frame:=sw_frame+Mol;
+  drawm("^30,Ph")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Atom frame}
+\index{Atom}%
+\begin{verbatim}
+sw_frame=Atom
+** default: sw_frame=0
+
+drawm("^30,COOH,!,COOH")
+\end{verbatim}
+%---------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(60mm,10mm);
+  sw_frame:=Atom;
+  drawm("^30,COOH,!,COOH")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsection{Parameter setting}
+\subsubsection{Local parameter setting}
+\index{beginfigm}%
+\index{endfigm}%
+\begin{verbatim}
+beginfigm
+  drawm("Ph")
+endfigm
+beginfigm
+  %--------------------------
+  ratio_thickness_bond:=0.05;
+  %--------------------------
+  drawm("Ph")
+endfigm
+beginfigm 
+  drawm("Ph")
+endfigm
+\end{verbatim}
+%------------------------------------------------------
+\quad
+\begin{mplibcode}
+fsize:=(15mm,12mm);
+beginfigm
+  drawm("Ph")
+endfigm
+beginfigm
+  ratio_thickness_bond:=0.05;
+  drawm("Ph")
+endfigm
+beginfigm
+  drawm("Ph")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\newpage
+\subsubsection{Global parameter setting}
+\begin{verbatim}
+beginfigm
+  drawm("Ph")
+endfigm
+%--------------------------
+ratio_thickness_bond:=0.05;
+%--------------------------
+beginfigm
+  drawm("Ph")
+endfigm
+beginfigm
+  drawm("Ph")
+endfigm
+beginfigm
+  drawm("Ph")
+endfigm
+\end{verbatim}
+%----------------------------------------------------
+\quad
+\begin{mplibcode}
+save_ratio:=ratio_thickness_bond;
+fsize:=(15mm,12mm);
+beginfigm
+  drawm("Ph")
+endfigm
+ratio_thickness_bond:=0.05;
+beginfigm
+  drawm("Ph")
+endfigm
+beginfigm
+  drawm("Ph")
+endfigm
+beginfigm
+  drawm("Ph")
+endfigm
+ratio_thickness_bond:=save_ratio;
+\end{mplibcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Command of mcf2graph}
+%-----------------------------------------------------------------------------
+\subsection{drawm}
+\index{drawm}%
+\begin{verbatim}
+(Draw molecule)
+
+msize=(a,b)        **default (1,1)
+mposition=(c,d)    **default (0.5,0.5)
+
+a: ratio molecular width/figure width
+b: ratio molecular hight/figure hight
+c: x axis position
+d: y axis position
+
+  drawm("^30,Ph,3:/F,4:/Cl")
+\end{verbatim}
+%------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(40mm,15mm) #@(0.5mm,0.5mm)
+  sw_frame:=Outside+Mol;
+  drawm("^30,Ph,4:/Cl,3:/F")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsection{readm}
+\index{readm()}%
+\begin{verbatim}
+readm(string1,string2, ...);
+** string = mcf code
+
+(example)
+readm("^30,Ph,1'2'6:/O!,-4'-5=?7,",
+   " -1'-4'-6=dl,-2:?O,-3:/O!,   ",
+   " 9:,!,NH,!,?O,!              ");
+putm
+\end{verbatim}
+
+\begin{mplibcode}
+beginfigm
+#(40mm,20mm);
+readm("^30,Ph,1'2'6:/O!,-4'-5=?7,",
+   " -1'-4'-6=dl,-2:?O,-3:/O!,   ",
+   " 9:,!,NH,!,?O,!              ");
+putm
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsection{getm}
+\index{getm}%
+\index{ucount}%
+\begin{verbatim}
+getm(number)
+** number = numeric
+** ucount = molecular data unit count
+
+for i=1 upto ucount:
+  beginfigm
+    getm(i)        % get data unit no=i
+    putm           % put figure
+  endfigm
+endfor
+
+getm("name"): "name"=string
+
+(example)
+ beginfigm
+   getm("Adenine")
+   putm
+ endfigm
+\end{verbatim}
+%-----------------------------------------------------------------------------
+\subsection{putm}
+\index{putm}%
+\begin{verbatim}
+putm : put figure
+
+  if op_row>=1: scantokens(op) fi
+  if mc_row>=1: drawm(mc) fi
+  if ad_row>=1: add(scantokens(ad)) fi
+  if ex_row>=1: ext(scantokens(ex)) fi
+\end{verbatim}
+%-------------------------------------------------------------------------------
+\subsection{allm}
+\index{allm}%
+\begin{verbatim}
+allm : put all loaded molecule
+
+  for i=1 upto ucount:
+    beginfigm getm(i) putm endfigm
+  endfor
+\end{verbatim}
+%===============================================================================
+\newpage
+\subsection{add [ ++ ]}
+\index{add}%
+\index{++}%
+\index{plus}%
+\index{minus}%
+\index{lonepair}%
+\index{lonepairdiam}%
+\index{lonepairspace}%
+\index{circlediam}%
+\index{circlepen}%
+\index{w}%
+\index{h}%
+\index{aw}%
+\index{em}%
+\index{p0}%
+\index{l}%
+\index{/*}%
+\index{**}%
+\index{\textgreater\textgreater}%
+\index{An}%
+\index{A[]}%
+\index{A[]ang}%
+\index{A[]up}%
+\index{A[]left}%
+\index{A[]right}%
+\index{A[]down}%
+\index{Bn}%
+\index{B[]}%
+\index{B[]s}%
+\index{B[]m}%
+\index{B[]e}%
+\index{B[]ang}%
+\index{B[]up}%
+\index{B[]left}%
+\index{B[]right}%
+\index{B[]down}%
+\index{defaultscale}%
+\index{labeloffset}%
+\begin{verbatim}
+(Add label to molecule)
+
+++(): add()
+w:       molecular width
+h:       molecular height
+aw:      atom font size
+em:      label font size
+p0:      origin of molecular structure
+l:       bond length
+
+An:      atom number
+A[m]:    atom position
+A[m]ang: branch angle of A[m]
+A[m]up:    dir A[m]ang
+A[m]left:  dir A[m]ang+90
+A[m]right: dir A[m]ang-90
+A[m]down:  dir A[m]ang+180
+
+Bn:      bond number
+B[m]:    bond(path)
+B[m]s:   bond start position
+B[m]m:   bond middle position
+B[m]e:   bond end position
+B[m]ang: bond angle
+B[m]up:    dir B[m]ang
+B[m]left:  dir B[m]ang+90
+B[m]right: dir B[m]ang-90
+B[m]down:  dir B[m]ang+180
+
+plus  : '+' circled
+minus : '-' circled
+  circlediam = 0.6aw (default)
+  circlepen =  0.2bp (default)
+
+lonepair r: ':' rotated r
+  lonepairdiam  = 0.3aw (default)
+  lonepairspace = 0.7aw (default)
+
+# : scaled
+<< : rotated
+a /* b : point b of a
+
+beginfigm
+ #(70mm,40mm) ##(.91,.9) |<(10mm)
+ sw_frame:=sw_frame+Atom+Mol;
+ @(.5,.85) drawm("^30,?6,2'5:O")
+ ++(
+  defaultscale:=.8;
+  labeloffset:=.3aw;
+  dotlabel.lft("p0",p0);
+  dotlabel.rt( "p0+(w,h)",p0+(w,h));
+  dotlabel.ulft("A1",A1);
+  drawarrow A1..A1+__*l<<A1ang;
+  dotlabel.lrt( "B3s",B3s);
+  dotlabel.rt("B3m",B3m);
+  drawarrow B3m..B3m+__*l<<(B3ang+90);
+  dotlabel.ulft("A6",A6);
+  drawarrow A1{A1down}..A6;
+  dotlabel.urt( "B3e",B3e);
+  label.rt(  "An="&decimal(An)&
+           "  Bn="&decimal(Bn)&
+           "  aw="&decimal(aw)&
+           "  em="&decimal(em),
+           p0+(-9em,-1.5em));
+  label.rt(  "w="&decimal(w)&
+    "  h="&substring (0,6)of decimal(h)&
+    "  l="&substring (0,6)of decimal(l),
+           p0+(-9em,-3em));
+ )
+endfigm
+\end{verbatim}
+%------------------------------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+ #(70mm,40mm) ##(.91,.9) |<(10mm)
+ sw_frame:=sw_frame+Atom+Mol;
+ @(.5,.85) drawm("^30,?6,2'5:O")
+ ++(
+  defaultscale:=.8;
+  labeloffset:=.3aw;
+  dotlabel.lft("p0",p0);
+  dotlabel.rt( "p0+(w,h)",p0+(w,h));
+  dotlabel.ulft("A1",A1);
+  drawarrow A1..A1+__*l<<A1ang;
+  dotlabel.lrt( "B3s",B3s);
+  dotlabel.rt("B3m",B3m);
+  drawarrow B3m..B3m+__*l<<(B3ang+90);
+  dotlabel.ulft("A6",A6);
+  drawarrow A1{A1down}..A6;
+  dotlabel.urt( "B3e",B3e);
+  label.rt(  "An="&decimal(An)&
+           "  Bn="&decimal(Bn)&
+           "  aw="&decimal(aw)&
+           "  em="&decimal(em),
+           p0+(-9em,-1.5em));
+  label.rt(  "w="&substring (0,6)of decimal(w)&
+           "  h="&substring (0,6)of decimal(h)&
+           "  l="&substring (0,6)of decimal(l),
+           p0+(-9em,-3em));
+ )
+endfigm
+\end{mplibcode}
+%------------------------------------------------------------------------------
+\begin{verbatim}
+beginfigm
+ #(60mm,20mm) ##(1,0.85)
+ %---------------------------------------
+ @(0,0) drawm("^30,Ph,3=dl,4:/NH2")
+ %---------------------------------------
+ ++(
+  labeloffset:=.7aw;
+  label.top(lone_pair 90,A7);
+  drawarrow 
+    (A7+up#1.2aw){A7left}
+     ..{B7right}B7/*0.3;
+  drawarrow
+    B3m..A3+B2up#1.5aw..{A3down}A3;
+ )
+ %---------------------------------------
+ @(1,0) drawm("^30,?6,1'5=dl,4://NH2")
+ %---------------------------------------
+ ++(
+  labeloffset:=.7aw;
+  label.top(plus,A7);
+  label.urt(minus,A3);
+  label(lonepair A3ang,A3+A3up#.7aw);
+ )
+ %---------------------------------------
+ **(drawdblarrow (.4w,.4h)..(.55w,.4h);)
+ %---------------------------------------
+endfigm
+\end{verbatim}
+%-------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  #(70mm,20mm) ##(1,0.85)
+  %-------------------------------------------
+  @(0,0) drawm("^30,Ph,3=dl,4:/NH2")
+  %-------------------------------------------
+  ++(labeloffset:=.7aw;
+      label.top(lonepair 90,A7);
+      drawarrow (A7+up#1.2aw){A7left}..{B7right}B7/*0.3;
+      drawarrow B3m..A3+B2up#1.5aw..{A3down}A3;
+  )
+  %-------------------------------------------
+  @(1,0) drawm("^30,?6,1'5=dl,4://NH2")
+  %-------------------------------------------
+  ++(labeloffset:=.7aw;
+      label.top(plus,A7);
+      label.urt(minus,A3);
+      label(lonepair A3ang,A3+A3up#.7aw);
+  )
+  **(drawdblarrow (0.4w,0.4h)..(0.55w,0.4h);)
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\newpage
+\subsection{ext [ ** ]}
+\index{ext}%
+\index{**}%
+\index{w0}%
+\index{h0}%
+\index{aw}%
+\index{em}%
+\index{n}%
+\index{ratio\_thickness\_char}%
+\index{defaultscale}%
+\begin{verbatim}
+(Extra label to figure)
+ 
+**(): ext()
+w:    figure width
+h:    figure height
+w0:   figure width-2xpart(fmargin)
+h0:   figure height-2ypart(fmargin)
+aw:   atom font size
+em:   label font size
+p0:   fmargin
+
+n:    molecular number
+p[m]: molecular origin position
+w[m]: molecular width
+h[m]: molecular height
+
+ratio_thickness_char:
+pen thickness / char width
+%----------------------------------------
+beginfigm
+ #(70mm,30mm)
+ |=(0.065)
+ %---------------------------------------
+ @(0.1,0.5)
+ drawm("^-210,60`1,60`1,60`1,1'3=dl")
+ ++(
+   defaultscale:=0.6;
+   label.bot("Diene",p0+(0.5w,0));
+   )
+ @(0.4,0.5)
+ drawm("^-30,-60`1,1=dm")
+ ++(
+   defaultscale:=0.6;
+   label.bot("Dienophile",p0+(.5w,0));
+   )
+ @(0.9,0.5) drawm("^30,?6,6=dl")
+ %---------------------------------------
+ **(
+  drawarrow (.52w,.5h)..(.6w,.5h);
+  defaultscale:=0.7;
+  label("+",(0.25w,0.5h));
+  ratio_thickness_char:=0.125;
+  label.bot("Diels-Alder Reaction",
+            (.5w,h)
+           );
+ )
+ %---------------------------------------
+endfigm
+\end{verbatim}
+%------------------------------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+ #(70mm,30mm)
+ |=(0.065)
+ %---------------------------------------
+ @(0.1,0.5)
+ drawm("^-210,60`1,60`1,60`1,1'3=dl")
+ ++(
+   defaultscale:=0.6;
+   label.bot("Diene",p0+(0.5w,0));
+ )
+ @(0.4,0.5)
+   drawm("^-30,-60`1,1=dm")
+   ++(defaultscale:=0.6;
+   label.bot("Dienophile",p0+(.5w,0));
+ )
+ @(0.9,0.5) drawm("^30,?6,6=dl")
+ %---------------------------------------
+ **(
+  drawarrow (.52w,.5h)..(.6w,.5h);
+  defaultscale:=0.7;
+  label("+",(0.25w,0.5h));
+  ratio_thickness_char:=0.125;
+  label.bot("Diels-Alder Reaction",
+            (.5w,h));
+ )
+ %---------------------------------------
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Local ext setting}
+\index{\_}%
+\begin{verbatim}
+beginfigm
+  EN:="?3";@(0.5,1) drawm("^30,?3")
+endfigm
+beginfigm
+  EN:="?4";@(0.5,1) drawm("?4")
+  %-------------------------------
+  **(label.top(EN,(0.5w,0));)
+  %-------------------------------
+endfigm
+beginfigm
+  EN:="?5";@(0.5,1) drawm("?5")
+endfigm
+beginfigm
+  EN:="?6";@(0.5,1) drawm("?6")
+endfigm
+\end{verbatim}
+%----------------------------------------------------
+\quad
+\begin{mplibcode}
+beginfigm
+  EN:="?3";#(12mm,15mm)@(0.5,1) drawm("^30,?3")
+endfigm
+beginfigm
+  EN:="?4";#(12mm,15mm)@(0.5,1) drawm("?4")
+  %-------------------------------
+  **(label.top(EN,(0.5w,0));)
+  %-------------------------------
+endfigm
+beginfigm
+  EN:="?5";#(12mm,15mm)@(0.5,1) drawm("?5")
+endfigm
+beginfigm
+  EN:="?6";#(12mm,15mm)@(0.5,1) drawm("?6")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsubsection{Global ext setting}
+\index{ext\_clear}%
+\begin{verbatim}
+ext_clear: reset global ext()
+
+beginfigm
+  EN:="?3";@(0.5,1) drawm("^30,?3")
+endfigm
+%-------------------------------
+ext(label.top(EN,(0.5w,0));)
+%-------------------------------
+beginfigm
+  EN:="?4";@(0.5,1) drawm("?4")
+endfigm
+beginfigm
+  EN:="?5";@(0.5,1) drawm("?5")
+endfigm
+%---------
+ext_clear;
+%---------
+beginfigm
+  EN:="?6";@(0.5,1) drawm("?6")
+endfigm
+\end{verbatim}
+%-------------------------------------
+\quad
+\begin{mplibcode}
+beginfigm
+  EN:="?3";#(12mm,15mm)
+  @(0.5,1) drawm("^30,?3")
+endfigm
+%-------------------------------
+ext(label.top(EN,(0.5w,0));)
+%-------------------------------
+beginfigm
+  EN:="?4";#(12mm,15mm)
+  @(0.5,1) drawm("?4")
+endfigm
+beginfigm
+  EN:="?5";#(12mm,15mm)
+  @(0.5,1) drawm("?5")
+endfigm
+%---------
+ext_clear;
+%---------
+beginfigm
+ EN:="?6";#(12mm,15mm)
+  @(0.5,1) drawm("?6")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\newpage
+%-----------------------------------------------------------------------------
+\onecolumn
+\section{Example}
+%-----------------------------------------------------------------------------
+\subsection{drawm example}
+\paragraph{(Luciferin)}
+\begin{verbatim}
+beginfigm
+  #(50mm,15mm)
+  drawm("^30,Ph,3=?5,8:,!,?5,9'16=dl,"&
+        "9'14:N,7'11:S,1:/OH,-2:*/COOH")
+endfigm
+\end{verbatim}
+%-------------------------------------------
+\begin{mplibcode}
+loadm("EN<>*");
+beginfigm
+  #(50mm,15mm)
+  drawm("^30,Ph,3=?5,8:,!,?5,9'16=dl,"&
+        "9'14:N,7'11:S,1:/OH,-2:*/COOH")
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\subsection{readm example}
+%-----------------------------------------------------------------------------
+\paragraph{(Colchicine)}
+\begin{verbatim}
+beginfigm
+  readm(
+  "^30,Ph,1'2'6:/O!,-4'-5=?7,     ",
+  " -1'-4'-6=dl,-2:?O,-3:/O!,     ",
+  " 9:/NH!'?O!                    ")
+  #(40mm,20mm) putm
+endfigm
+\end{verbatim}
+%---------------------------------------
+% Colchicine MW:385.41
+\begin{mplibcode}
+beginfigm
+  readm(
+  "^30,Ph,1'2'6:/O!,-4'-5=?7,    ",
+  " -1'-4'-6=dl,-2:?O,-3:/O!,    ",
+  " 9:/NH!'?O!                   ")
+  #(40mm,20mm) putm
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\paragraph{(Maltose)}
+\index{arc\_lb}
+\index{arc\_br}
+\begin{verbatim}
+(bond type for glycan)
+arc_lb : arc left > bottom
+arc_br : arc bottom right
+
+beginfigm
+  %"EN:Maltose","MW:342.3",
+  readm(
+  %--------------------------------------------------------
+  "hexose_hp,`.5,1^$270'2^$90'3^$270:/OH,6^$90:/!OH,`,   ",
+  "4:,$310~arc_lb`1,O,$50~arc_br`1,^$0,                  ",
+  "<,hexose_hp,`.5,2^$90'3^$270'4^$270:/OH,6^$90:/!OH    ")
+  %--------------------------------------------------------
+  #(50mm,20mm) putm
+endfigm
+\end{verbatim}
+%-------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  %"EN:Maltose","MW:342.3",
+  readm(
+  %--------------------------------------------------------
+  "hexose_hp,`.5,1^$270'2^$90'3^$270:/OH,6^$90:/!OH,`,   ",
+  "4:,$310~arc_lb`1,O,$50~arc_br`1,^$0,                  ",
+  "<,hexose_hp,`.5,2^$90'3^$270'4^$270:/OH,6^$90:/!OH    ")
+  %--------------------------------------------------------
+  #(50mm,20mm) putm
+endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------------
+\newpage
+\paragraph{(Erythromycin)}
+\begin{verbatim}
+beginfigm
+  EN:=Erythromycin"; MW:="733.93";
+  #(60mm,30mm) @(1,0.5)
+  readm(
+  %-----------------------------------------------------------------------
+    "^30,`1,^-120,60,60,60,-60,60,60,-60,60,60,60,-60,60,60,`,:1,       ",
+    " 14:O,13:/*!,1'9:?O,                                               ",
+    " *2'4'6^-35'8'*10'12^35:?z,                                        ",
+    " 6^35'11'12^-35:*/OH,                                              ",
+    " $3:,!z,O,30~zb,<,?6`.7,6:O,`.5,5~wf'3^35:?,4:/*OH,3^-35:/*O!,`,   ",
+    " $5:,!z^30`1.7,O,!~zb,<,?6`.7,6:O,`.5,5:?z,2:*/OH,3:/*N?!          ")
+  %-----------------------------------------------------------------------
+  putm
+  **(defaultscale:=0.8;
+      label.lrt("EN: "&EN,(0,h));
+      label.lrt("fm: "&fm,(0,h-5mm));
+      label.lrt("mw: "&mw,(0,h-9mm));
+      label.lrt("MW: "&MW,(0,h-13mm));
+  )
+endfigm
+\end{verbatim}
+%----------------------------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  EN:="Erythromycin"; MW:="733.93";
+  #(60mm,30mm) @(1,0.5)
+  readm(
+  %-----------------------------------------------------------------------
+    "^30,`1,^-120,60,60,60,-60,60,60,-60,60,60,60,-60,60,60,`,:1,       ",
+    " 14:O,13:/*!,1'9:?O,                                               ",
+    " *2'4'6^-35'8'*10'12^35:?z,                                        ",
+    " 6^35'11'12^-35:*/OH,                                              ",
+    " $3:,!z,O,30~zb,<,?6`.7,6:O,`.5,5~wf'3^35:?,4:/*OH,3^-35:/*O!,`,   ",
+    " $5:,30~zf`1.7,O,!~zb,<,?6`.7,6:O,`.5,5:?z,2:*/OH,3:/*N?!          ")
+  %-----------------------------------------------------------------------
+  putm
+  **(defaultscale:=0.8;
+      label.lrt("EN: "&EN,(0,h));
+      label.lrt("fm: "&fm,(0,h-5mm));
+      label.lrt("mw: "&mw,(0,h-9mm));
+      label.lrt("MW: "&MW,(0,h-13mm));)
+endfigm
+\end{mplibcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{(Paclitaxel)}
+\noindent%
+\begin{verbatim}
+beginfigm
+  % "EN:Paclitaxel","MW:853.918",
+  readm(
+  %------------------------------------------------------------------
+  "?6,5=dl,3:,`1,36,45,45,45,45,`,:5,-4=?6,-4=?4,-1=wb,-3=wf,-1:O,  ",
+  " 4:??,6:?,3^-60'15:*/OH,8:/*H^-60,9:?w^60,10:?O,                 ",
+  " 1:,!,O,!,?O,!,*/OH,!,/Ph,60~wf,NH,-60,?O,60,Ph,                 ",
+  " 7:,!z,O,-45,?O,60,Ph,11^rl'*12^-15^lr:*/O!'?O!                  ")
+  %------------------------------------------------------------------
+  #(140mm,30mm)
+  @(0,0.5) putm
+  sw_numbering:=Atom+All;
+  @(0.6,0.5) putm
+  sw_numbering:=Bond+All;
+  @(1,0.5) putm
+endfigm
+\end{verbatim}
+%----------------------------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  % "EN:Paclitaxel","MW:853.918",
+  readm(
+  %-------------------------------------------------------------------
+  "?6,5=dl,3:,`1,36,45,45,45,45,`,:5,-4=?6,-4=?4,-1=wb,-3=wf,-1:O,  ",
+  " 4:??,6:?,3^-60'15:*/OH,8:/*H^-60,9:?w^60,10:?O,                 ",
+  " 1:,!,O,!,?O,!,*/OH,!,/Ph,60~wf,NH,-60,?O,60,Ph,                 ",
+  " 7:,!z,O,-45,?O,60,Ph,11^rl'*12^-15^lr:*/O!'?O!                  ")
+  %-------------------------------------------------------------------
+  #(160mm,40mm)
+  @(0,  0.5)                         putm
+  sw_numbering:=Atom+All; @(0.5,0.5) putm
+  sw_numbering:=Bond+All; @(1,  0.5) putm
+endfigm
+\end{mplibcode}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\noindent%
+\newpage
+\subsection{loadm example}
+\index{sw\_comment}%
+\index{loadm()}%
+\paragraph{(Example)}
+\begin{verbatim}
+loadm("CAT=biological","MW>=285","MW<=288","a:EN");
+\end{verbatim}
+%---------------------------------------------------------------
+\paragraph{(output)}
+\begin{verbatim}
+* jobname=mcf_exa_soc
+* numbersystem=double
+* output report file
+* file name=mcf_exa_soc-report.txt)
+* mcf_template 2023.05.07
+* Input  : main_lib.mcf [525]
+* Output : ucount [4]
+* Filter(1): CAT =biological
+* Filter(2): MW >= 285
+* Filter(3): MW <= 288
+* Sort key : EN (ascending)
+[1]:Luteolin
+[2]:Lycorine
+[3]:Morphine
+[4]:Piperine )
+
+row[1][1]="CAT:biological;EN:Luteolin;MW:286.24;LV:-"
+row[1][2]=":"
+row[1][3]="^30,Ph,3=?6,9=dl,10:O,7:?O,9:,!,Ph,2'6'14'15:/OH"
+row[1][4]=";"
+row[2][1]="CAT:biological;EN:Lycorine;MW:287.315;LV:1"
+row[2][2]=":"
+row[2][3]="^30,Ph,-4'-2=?6,6'9--12=?5,13=dl,8:N,15'17:O,"
+row[2][4]="*9^180'10^60:*/H,13'*14:*/OH"
+row[2][5]=";"
+row[3][1]="CAT:biological;EN:Morphine;MW:285.343;LV:1"
+row[3][2]=":"
+row[3][3]="^30,Ph,2'-4=?6,1---12=?5,-1:O,-1=zb,"
+row[3][4]="7:,60~wf`0.75,70~si_`1.3,45,N!,:9~wb,15=dl,6:/OH,8^180:*/H,12:/*OH"
+row[3][5]=";"
+row[4][1]="CAT:biological;EN:Piperine;MW:285.343;LV:1"
+row[4][2]=":"
+row[4][3]="^30,Ph,-1=?5,-1'-3:O,4:,!,!d,!,!d,!,?O,!,?6,-6:N"
+row[4][4]=";"
+%------------------------------------------------------------------------------
+\end{verbatim}
+\paragraph{(Tag)}
+\begin{verbatim}
+CAT : category                          USE : the use
+EN  : english name                      JN  : japanese name
+FM  : formula from data                 MW  : molecular weight from data
+MI  : monoisotopic mass from data       CAS : CAS number
+LV  : level                             LN  : long name
+\end{verbatim}
+\newpage
+\noindent%
+%----------------------------------------------------------------------------
+\newpage
+\subsection{getm example}
+\paragraph{(Chlorophyll a)}
+\noindent%
+\begin{verbatim}
+beginfigm
+  getm("Chlorophyll a")
+  sw_output:=Fig+Mcode;
+  #(80mm,30mm)
+  putm
+  VerbatimTeX("\gdef\EN{"&EN&"}\gdef\MW{"&MW&"}");
+  VerbatimTeX("\gdef\mw{"&mw&"}\gdef\fm{"&fm&"}");
+endfigm
+\end{mplibcode}
+\verbatiminput{temp-mc.aux}            %%%% input temp-mc.aux %%%%
+{\tt ** EN:\EN \quad mw:\MW \quad MW:\mw \quad fm:\fm}%
+\end{verbatim}
+%------------------------------------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  sw_output:=Fig+Mcode;
+  #(80mm,30mm)
+  getm("Chlorophyll a") putm
+  VerbatimTeX("\gdef\EN{"&EN&"}\gdef\MW{"&MW&"}");
+  VerbatimTeX("\gdef\mw{"&mw&"}\gdef\fm{"&fm&"}");
+endfigm
+\end{mplibcode}
+\verbatiminput{temp-mc.aux}            %%%% input temp-mc.aux %%%%
+{\tt ** EN:\EN \quad mw:\MW \quad MW:\mw \quad fm:\fm}%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{(Dinophysistoxin-1)}
+\noindent%
+\begin{verbatim}
+beginfigm
+  sw_output:=Fig+Mcode;               %%%% output temp-mc.aux   %%%%
+  getm("Okadaic acid")                %%%% select Okadaic acid  %%%%
+  readm(",40:?w,65=red")              %%%% add methyl group     %%%%
+  EN:="Dinophysistoxin-1"; #(90mm,20mm) MW:="819";
+  putm
+  VerbatimTeX("\gdef\EN{"&EN&"}\gdef\MW{"&MW&"}");
+  VerbatimTeX("\gdef\mw{"&mw&"}\gdef\fm{"&fm&"}");
+endfigm
+\end{mplibcode}
+\verbatiminput{temp-mc.aux}            %%%% input temp-mc.aux %%%%
+{\tt ** EN:\EN \quad mw:\MW \quad MW:\mw \quad fm:\fm}%
+\end{verbatim}
+%----------------------------------------------------------------------------
+\begin{mplibcode}
+beginfigm
+  sw_output:=Fig+Mcode;          %%%% output temp-mc.aux   %%%%
+  getm("Okadaic acid")           %%%% select Okadaic acid  %%%%
+  readm(",40:?w,65=red")         %%%% add methyl group     %%%%
+  MW:="819"; EN:="Dinophysistoxin-1"; #(90mm,20mm);
+  putm
+  VerbatimTeX("\gdef\EN{"&EN&"}\gdef\MW{"&MW&"}");
+  VerbatimTeX("\gdef\mw{"&mw&"}\gdef\fm{"&fm&"}");
+endfigm
+\end{mplibcode}
+\verbatiminput{temp-mc.aux}            %%%% input temp-mc.aux %%%%
+{\tt ** EN:\EN \quad mw:\MW \quad MW:\mw \quad fm:\fm}%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newpage
+%----------------------------------------------------------------------------
+\paragraph{(Maitotoxin)}
+\noindent%
+%--------------------------------------------------------------------------------
+\begin{verbatim}
+%--------------------------------------------------------------------------------
+\begin{mplibcode}
+  beginfigm
+    getm("Maitotoxin") #(150mm,80mm) #@(3mm,3mm)
+    sw_output:=Fig+Mcode;         %%%% output temp-mc.aux %%%%
+    sw_frame:=Outside;
+    putm
+    VerbatimTeX("\gdef\EN{"&EN&"}\gdef\MW{"&MW&"}");
+    VerbatimTeX("\gdef\mw{"&mw&"}\gdef\fm{"&fm&"}");
+  endfigm
+\end{mplibcode}
+\verbatiminput{temp-mc.aux}            %%%% input temp-mc.aux %%%%
+{\tt ** EN:\EN \quad mw:\MW \quad MW:\mw \quad fm:\fm}%
+%--------------------------------------------------------------------------------
+\end{verbatim}
+%--------------------------------------------------------------------------------
+\begin{mplibcode}
+  beginfigm
+    getm("Maitotoxin") #(150mm,80mm) #@(3mm,3mm) 
+    sw_output:=Fig+Mcode;
+    sw_frame:=Outside; %% mc_length:=40;
+    putm
+    VerbatimTeX("\gdef\EN{"&EN&"}\gdef\MW{"&MW&"}");
+    VerbatimTeX("\gdef\mw{"&mw&"}\gdef\fm{"&fm&"}");
+  endfigm
+\end{mplibcode}
+\verbatiminput{temp-mc.aux}
+{\tt ** EN:\EN \quad mw:\MW \quad MW:\mw \quad fm:\fm}%
+%--------------------------------------------------------------------------------
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%------------------------------------------------------------------------------
+\newpage
+\section{Example to use mcf2graph}
+\subsection{MetaPost souce file}
+\index{mcf2graph.mp}%
+\index{sw\_output}%
+\index{\textbackslash()}%
+\index{plus}%
+\index{getm()}%
+\index{putm}%
+\index{ucount}%
+\begin{verbatim}
+input mcf2graph;                                % input main macro
+#(60mm,40mm);                                   %  (figure width,figure height)         %
+outputformat:="png"; hppp:=vppp:=0.1;           % PNG output
+outputtemplate:="c%3c-%{EN_}.png";              %
+%------------------------------------------------------------------------------
+beginfigm
+  % EN:Ampicillin  MW:349.405
+  drawm("^45,?4,-3=?5,2:N,7:S,"&                        % immediately write
+    "3^45:/*H,1:?O^15,5:/*COOH^-18,6:??,"&
+    "4:,!w^15,NH,!,?O,!,/*NH2,!,Ph")
+endfigm
+%------------------------------------------------------------------------------
+beginfigm
+  % EN:Cholesterol  MW:386.65
+  readm("^30,?6,-4'-2=?6,-4=?5,7=dl,",                        % mc1
+        "10:/*H^180,11:/*H^-60,17:/*H^-54,4'12:?w^60, ",      % mc2
+        "-1:,18,?z,-60,!3,?!")                                % mc3
+  putm                                                        % put figure
+endfigm
+%------------------------------------------------------------------------------
+loadm()                                                 % load all unit
+beginfigm getm("Adenine") putm endfigm                  % get EN=Adenine
+beginfigm getm(4) putm endfigm                          % select No.4
+for i=1 upto ucount:                                    % figure count
+  beginfigm getm(i) putm endfigm                        % select No.i
+endfor
+bye
+\end{verbatim}
+%------------------------------------------------------------------------
+\noindent%
+\subsection{Molecular library file}
+\begin{verbatim}
+% first character of line
+% "%":comment out / ":": start MCF / ";": stop MCF
+% "=":start parameter setting /  "*": start ext(...) / "+": start add(...)
+% CAT : Category,EN : Name,MW : Molecular weight LV : Level
+%------------------------------------------------------------------------
+CAT:-;EN:-;MW:0;LV:-
+=
+ sw_frame:=Atom;
+:
+^30,?6,3=?5,1'3'5'9=dl,2'6'9:N,5:/NH2,7:NH
+*
+ defaultscale:=.5; label.bot(decimal(fig_num)&":"&EN,(.5w,0));
++
+ defaultscale:=.3; label.bot("A2",A2) withcolor red;
+;
+%==============================================================================
+CAT:biological;EN:Adenine;MW:135.13;LV:1
+:
+^30,?6,3=?5,1'3'5'9=dl,2'6'9:N,5:/NH2,7:NH
+;
+%------------------------------------------------------------------------------
+CAT:biological;EN:Guanine;MW:151.13;LV:1
+:
+^30,?6,3=?5,1'3'9=dl,2'9:N,6'7:NH,5:?O,1:/NH2
+;
+%------------------------------------------------------------------------------
+\end{verbatim}
+%------------------------------------------------------------------------
+\noindent%
+\newpage
+\subsection{MCF aux file output}
+\paragraph{(Option parameter setting)}
+\index{Mcode}%
+\begin{verbatim}
+sw_output:=Mcode;         %% output 'temp-mc.aux'
+\end{verbatim}
+\paragraph{(Command line)}
+\begin{verbatim}
+  >mpost -s ahlength=3 FILENAME  (sw_output=Fig Expand mode)
+\end{verbatim}
+\paragraph{(Output mcf file)}
+\begin{verbatim}
+sw_output=Mcode           %% file name = 'temp-mc.aux'
+
+(result)
+^30,?6,3=?5,1'3'5'9=dl,2'6'9:N,5:/NH2,7:NH
+
+\end{verbatim}
+%------------------------------------------------------------------------
+\paragraph{(LuaLaTeX example)}
+%-----------------------------------------------------------------------
+\begin{verbatim}
+%-----------------------------------------------------------------------
+%%  "EN:Vancomycin
+\begin{mplibcode}
+  beginfigm
+    sw_output:=Mcode;     %%%% output temp-mc.aux %%%%
+  endfigm
+\end{mplibcode}
+%-----------------------------------------------------------------------
+\verbatiminput{temp-mc.aux}
+%-----------------------------------------------------------------------
+\end{verbatim}
+%-----------------------------------------------------------------------
+\begin{verbatim}
+(result)
+file name = 'temp-mc.aux'
+
+^30,?6,4:,?6,-4:,!,!3,^-12,?5,-3:@,^-12,?6,-3=?6,-3:,!w,!3,
+ ?6,-4:,?6,6:,!,!,?z^-40,*/OH^20,!,?O,!1,OH,
+ 3=wb,11=dl,15=dr,17'19=wf,38=wb,5'7'16'24'25'33'42:O,
+ 32:*/H^60,10:?,12'31:?w,27:?d,37:?z,28:/OH,3'29:/*OH
+\end{verbatim}
+%------------------------------------------------------------------------
+\newpage
+\noindent%
+\subsection{Report output}
+\paragraph{(Option parameter setting)}
+\index{sw\_output}%
+\index{Report}%
+\begin{verbatim}
+  sw_output:=Report;        %% file name = 'jobname-report.aux'
+\end{verbatim}
+\paragraph{(Command line)}
+\begin{verbatim}
+  >mpost -s ahlength=7 FILENAME
+\end{verbatim}
+\paragraph{(Output)}
+\begin{verbatim}
+===========================================================================
+ No[148],Name<Phenol>,Category<synthetic>,File<main_lib.mcf>
+---------------------------------------------------------------------------
+ Row[1],Length[12],Block[3],BackboneA[6],BackboneB[6],Group[1]
+---------------------------------------------------------------------------
+^30,Ph,3:/OH
+---------------------------------------------------------------------------
+[1  ]  ^30
+[2  ]  Ph
+[3  ]  3:/OH
+---------------------------------------------------------------------------
+---------------------------------------------------------------------------
+ Width[35.80607],Height[24.55503], Shift x[-1.77635],Shift y[-7.54719]
+ Bond length[11.33855],Atom size[4.881881]
+---------------------------------------------------------------------------
+ Atom[7],Bond[7],Ring[1],Hide H[5]
+< NO. ><atom(s) >(  x axis   ,   y axis   )<bond><hideH><chg>
+ A1     C        (         0 ,          0 )    3     1
+ A2     C        (         1 ,         -1 )    3     1
+ A3     C        (         2 ,          0 )    4        
+ A4     C        (         2 ,          1 )    3     1
+ A5     C        (         1 ,          1 )    3     1
+ A6     C        (         0 ,          1 )    3     1
+ A7     OH       (         3 ,          0 )    1        
+---------------------------------------------------------------------------
+< NO. ><  bond   (sdt)><angle +(  +-  )><length (   pt   )>
+ B1     1 ->   2 (  2)     330 (   -30)       1 (      11)
+ B2     2 ->   3 (  1)      30 (    30)       1 (      11)
+ B3     3 ->   4 (  2)      90 (    90)       1 (      11)
+ B4     4 ->   5 (  1)     150 (   150)       1 (      11)
+ B5     5 ->   6 (  2)     210 (  -150)       1 (      11)
+ B6     6 ->   1 (  1)     270 (   -90)       1 (      11)
+ B7     3 ->   7 (  1)     330 (   -30)0.660000 (       7)
+---------------------------------------------------------------------------
+<atom>( atom wt )[ mi wt   ]  < cnt > < sum wt   >[ sum mi wt  ]
+ C    (  12.0107)[       12] *        6    72.0642[          72]
+ H    (1.0079400)[1.0078250] *        6    6.04764[6.0469501933]
+ O    (  15.9994)[15.994914] *        1    15.9994[15.994914619]
+ Molecular Weight [Mono Isotopic] =       94.11123[  94.0418648]
+---------------------------------------------------------------------------
+ Weight Calc: 94.11123 - Input: 94.11 = 0.0012399
+ Fomula Calc: C6H6O
+===========================================================================
+\end{verbatim}
+\newpage
+%------------------------------------------------------------------------
+\noindent%
+\subsection{MOL file output}
+\paragraph{(Option parameter setting)}
+\index{sw\_output}%
+\index{MOL2000}%
+\index{MOL3000}%
+\begin{verbatim}
+  sw_output:=MOL2000;   % MOL(V2000)
+  sw_output:=MOL3000;   % MOL(V3000)
+\end{verbatim}
+\paragraph{(Command line)}
+\begin{verbatim}
+  >mpost -s ahlength=5  FILENAME     % MOL(V2000)
+  >mpost -s ahlength=6  FILENAME     % MOL(V3000)
+\end{verbatim}
+\paragraph{(Output)}
+\begin{verbatim}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  -MCFtoMOL- EN:Caffeine         
+
+ 14 15  0  0  0  0  0  0  0  0999 V2000
+         0         0         0 C   0  0  0  0
+   0.86603      -0.5         0 N   0  0  0  0
+   1.73206         0         0 C   0  0  0  0
+   1.73206         1         0 C   0  0  0  0
+   0.86603       1.5         0 C   0  0  0  0
+         0         1         0 N   0  0  0  0
+    2.6831  -0.30902         0 N   0  0  0  0
+   3.27089       0.5         0 C   0  0  0  0
+    2.6831   1.30902         0 N   0  0  0  0
+   0.86603  -1.36383         0 C   0  0  0  0
+  -0.76894   1.44394         0 C   0  0  0  0
+  -0.76894  -0.44394         0 O   0  0  0  0
+   0.86603   2.36383         0 O   0  0  0  0
+   2.95299    2.1396         0 C   0  0  0  0
+  1  2  1  0     0  0
+  2  3  1  0     0  0
+  3  4  2  0     0  0
+  4  5  1  0     0  0
+  5  6  1  0     0  0
+  6  1  1  0     0  0
+  3  7  1  0     0  0
+  7  8  2  0     0  0
+  8  9  1  0     0  0
+  9  4  1  0     0  0
+  2 10  1  0     0  0
+  6 11  1  0     0  0
+  1 12  2  0     0  0
+  5 13  2  0     0  0
+  9 14  1  0     0  0
+M  END
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{verbatim}
+%----------------------------------------------------------------------------
+\newpage
+\subsection{LuaTeX file example}
+%############################################################################
+\begin{verbatim}
+** file mcf2graph.mp must be in the same directory to typeset
+
+\documentclass{article}
+\usepackage{luamplib}%
+\mplibcodeinherit{enable}%
+\mplibverbatim{enable}%
+\mplibnumbersystem{double}%
+\begin{document}
+\noindent%
+%--------------------------------------------------------------------
+\begin{mplibcode}
+  input mcf2graph;
+  max_blength:=4.5mm;
+  defaultsize:=8bp;
+  defaultscale:=1;
+  %--------------------------------------------------------
+  EN:="Limonin";
+  MW="470.51";
+  beginfigm
+    #(50mm,50mm)
+    readm(
+    %---------------------------------------
+    "^30,?6,-3'-4=?6,                     ",
+    " -5=?3,-2=wf,-1=wb,6=?5,-4=?6,-5=wf, ",
+    " 13'15'17'20:O,3'12'21:?O,           ",
+    " 4~wf^60'8~zf^60'18^35'18^-35:?,     ",
+    " 1^60'5^180'16^60:/*H,               ",
+    " :14,!z,<,?5,1'4=dl,3:O              ")
+    %---------------------------------------
+    putm
+  endfigm
+\end{mplibcode}\\
+%--------------------------------------------------------------------
+\begin{mplibcode}
+  EN:="beta-carotene";
+  MW:="536.87";
+  beginfigm
+    #(80mm,50mm)
+    readm(
+    %-----------------------------------------
+    "^30,?6,3=dl,3'5^35'5^-35:?,           ",
+    " :4,!,<,!18,1'3'5'7'9'11'13'15'17=dr, ",
+    " 3'7'12'16:?,                         ",
+    " <,?6,6=dl,6'2^35'2^-35:?             ")
+    %-----------------------------------------
+    putm
+  endfigm
+\end{mplibcode}\\
+%--------------------------------------------------------------------
+\end{document}
+\end{verbatim}
+%############################################################################
+\newpage
+\subsection{Batch file mcf\_to\_graph.cmd}
+\index{mcf\_to\_graph.cmd}%
+%############################################################################
+Batch file for compile mcf or mp file
+\begin{verbatim}
+** drag and drop mcf or mp file on this batch : >mcf_to_graph filenam
+** file mcf2graph.mp , main_lib.mcf must be in the same directory
+
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+::  Batch file for compile MCF  2025.09.15
+::  <drag and drop library or metapost file on this batch>
+:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+@echo off
+if %~x1 == .mp (
+if %~n1 == mcf2graph goto end
+mkdir %~n1-mp
+mpost -output-directory=./%~n1-mp %~n1
+goto end )
+if not %~x1 == .mcf goto end
+echo **** Select output format / Library file [%~n1] ****
+echo [1:svg 2:png-600dpi 3:png-1200dpi 4:MOL-v2000 5:MOL-v3000 6:report 0:cancel]
+choice /c 1234560
+if %errorlevel% == 7 goto end
+echo input mcf2graph; libm:="%~n1.mcf"; loadm() allm bye> temp_soc.mp
+if %errorlevel% == 1 (mkdir %~n1-svg
+mpost -output-directory=./%~n1-svg temp_soc)
+if %errorlevel% == 2 (mkdir %~n1-pn0600
+mpost -output-directory=./%~n1-pn0600 -s ahangle=1 temp_soc)
+if %errorlevel% == 3 (mkdir %~n1-pn1200
+mpost -output-directory=./%~n1-pn1200 -s ahangle=2 temp_soc)
+if %errorlevel% == 4 (mkdir %~n1-molv2k
+mpost -output-directory=./%~n1-molv2k -s ahlength=5 temp_soc)
+if %errorlevel% == 5 (mkdir %~n1-molv3k
+mpost -output-directory=./%~n1-molv3k -s ahlength=6 temp_soc)
+if %errorlevel% == 6 (mkdir %~n1-report
+mpost -output-directory=./%~n1-report -numbersystem=double -s ahlength=7 temp_soc)
+del temp_soc.mp
+:end
+\end{verbatim}
+%############################################################################
+%------------------------------------------------------------------------
+\texttt{\printindex}
+%------------------------------------------------------------------------
+\end{document}
+----------------------
+\end{document}

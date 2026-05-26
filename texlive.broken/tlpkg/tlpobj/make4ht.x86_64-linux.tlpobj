@@ -1,0 +1,8 @@
+name make4ht.x86_64-linux
+category Package
+revision 37750
+shortdesc x86_64-linux files of make4ht
+containersize 336
+containerchecksum 05f458a5b67c1a30e6632aa4bd5f22aa28799b73722567558715ce0da72d89b34fce923a0e28e548d09857b90f070b7c008d1409b537fe90881a7095b78f1f41
+binfiles arch=x86_64-linux size=1
+ bin/x86_64-linux/make4ht

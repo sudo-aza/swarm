@@ -1,0 +1,30 @@
+name grffile
+category Package
+revision 78101
+shortdesc Extended file name support for graphics (legacy package)
+longdesc The original package extended the file name processing of
+longdesc package graphics to support a larger range of file names. The
+longdesc base LaTeX code now supports multiple dots and spaces, and this
+longdesc package by default is a stub that just loads graphicx. However,
+longdesc \usepackage{grffile}[=v1] may be used to access version 1(.18)
+longdesc of the package if that is needed.
+containersize 3860
+containerchecksum 4180459b6542087fae6345fc5a502c03956ea4187a82767fb969231eb8a93277e3e0f15f0153528f98aa6defd646d10a9939ee3ec213c96902cddeda188fab49
+doccontainersize 350324
+doccontainerchecksum 2321b27796a0183ac41d22ae9c344660157c4be9dc2ba2c3efff560b4ae174c8aa6095d80b798aea249f473fdd5f2fd0fb48c80f04d754afcc6ea3b379c20911
+docfiles size=88
+ texmf-dist/doc/latex/grffile/README.md details="Readme"
+ texmf-dist/doc/latex/grffile/grffile.pdf details="Package documentation"
+srccontainersize 11228
+srccontainerchecksum ddd821c5e08a7ccd9a05013bd845803a251de99c4364dc634b7660b9f23784f191bde5cd613be0ed9bd1cc1312df5087f095080483079fd9941772ab8906b009
+srcfiles size=11
+ texmf-dist/source/latex/grffile/grffile.dtx
+runfiles size=5
+ texmf-dist/tex/latex/grffile/grffile-2017-06-30.sty
+ texmf-dist/tex/latex/grffile/grffile.sty
+catalogue-contact-bugs https://github.com/ho-tex/grffile/issues
+catalogue-contact-repository https://github.com/ho-tex/grffile
+catalogue-ctan /macros/latex/contrib/grffile
+catalogue-license lppl1.3c
+catalogue-topics file-mgmt tagged-pdf
+catalogue-version 2.1

@@ -1,0 +1,35 @@
+name eso-pic
+category Package
+revision 77682
+shortdesc Add picture commands (or backgrounds) to every page
+longdesc The package adds one or more user commands to LaTeX's shipout
+longdesc routine, which may be used to place the output at fixed
+longdesc positions. The grid option may be used to find the correct
+longdesc places.
+containersize 3852
+containerchecksum 43f3ebee0e51c36cf6aaabbefa03461b6b5e313e4f6fbaf898d58c99cf34f5597c5f1894d610577de61ee5e6aa60f7827fc432147defda5e7c50bbda63562209
+doccontainersize 288784
+doccontainerchecksum 6530ac70b821587bf11ca27439a51a7c352883c5e0367a31aa47dd05e4fba48a7caacf2d65fe0a68c99de4710d362075fa4363f73f8326c74a73a4241c833fce
+docfiles size=80
+ texmf-dist/doc/latex/eso-pic/README.md details="Package documentation"
+ texmf-dist/doc/latex/eso-pic/eso-article-test.tex
+ texmf-dist/doc/latex/eso-pic/eso-ex1.tex
+ texmf-dist/doc/latex/eso-pic/eso-ex2.tex
+ texmf-dist/doc/latex/eso-pic/eso-ex4.tex
+ texmf-dist/doc/latex/eso-pic/eso-ex5.tex
+ texmf-dist/doc/latex/eso-pic/eso-memoir-test.tex
+ texmf-dist/doc/latex/eso-pic/eso-pic.pdf details="Package documentation"
+srccontainersize 6524
+srccontainerchecksum 3e792db797519e4b6763b86784d8e1523fe4d38de91913dd71ca78f8e1d231326ddebbbbbc304e18362b90808e92ca4bf0ac72cb02b47232be329921bfe69678
+srcfiles size=7
+ texmf-dist/source/latex/eso-pic/eso-pic.dtx
+ texmf-dist/source/latex/eso-pic/eso-pic.ins
+runfiles size=4
+ texmf-dist/tex/latex/eso-pic/eso-pic.sty
+ texmf-dist/tex/latex/eso-pic/showframe.sty
+catalogue-contact-bugs https://github.com/rolfn/eso-pic/issues
+catalogue-contact-repository https://github.com/rolfn/eso-pic
+catalogue-ctan /macros/latex/contrib/eso-pic
+catalogue-license lppl1.2
+catalogue-topics defer-stuff tagged-pdf-partially
+catalogue-version 3.0d

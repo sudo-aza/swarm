@@ -1,0 +1,20 @@
+\DocumentMetadata{tagging = on}
+\documentclass{ltx-talk}
+
+\usepackage{fancyvrb}
+
+\begin{document}
+
+\begin{frame*}
+  Text
+  \begin{actionenv}<+-|alert@+>
+    \begin{Verbatim}[gobble = 6]
+      Some content
+      %#$_\
+      XXX
+    \end{Verbatim}
+  \end{actionenv}
+  \uncover<+->{More text}
+\end{frame*}
+
+\end{document}
