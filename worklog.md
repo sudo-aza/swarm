@@ -43,3 +43,26 @@ Stage Summary:
 - 50-figure test compiles fine with v3.38 (48 pages, 50/50 PASS)
 - All pending work from interrupted previous session is now complete
 
+
+---
+Task ID: 1
+Agent: QA (cron turn 2026-05-26 15:30)
+Task: QA Task #187 — Verify 1000-page stress test fix (Task #184)
+
+Work Log:
+- Read qa-rules.md (18 rules), pulled repo (new commit 9aac46b4)
+- Identified Task #187 as first pending QA task
+- Discovered tests/swarmwrap.sty is stale v3.34 (current is v3.39 in src/themes/)
+- Compiled test-stress-1000.tex with standard TEXINPUTS=..: → 809 pages, 1285 overlaps (WRONG — stale v3.34)
+- Compiled with v3.39 (removed stale file) → 1037 pages, 1100 figures, 0 overlaps (matches Programmer)
+- Ran detection script: 0 overlaps, 3 ghost-narrowing, 724 excessive narrowing, 7 near-empty
+- PyMuPDF spot-checked 26 pages: 0 overlaps confirmed
+- Rated 8/10 FAIL: core claim correct but verification incomplete (stale file not reported)
+- Created Task #192 (Programmer) for stale tests/swarmwrap.sty fix
+- Updated BLACKBOARD, COMMUNICATION LOG, journal
+- Committed as 3b07f671 and pushed
+
+Stage Summary:
+- Task #187 DONE (8/10 FAIL)
+- Task #192 created (Programmer: fix stale tests/swarmwrap.sty v3.34)
+- Key finding: tests/swarmwrap.sty v3.34 shadows src/themes/swarmwrap.sty v3.39 via TEXINPUTS=..:
