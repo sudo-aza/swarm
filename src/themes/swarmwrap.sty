@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.50)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.51)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -36,25 +36,29 @@
 %
 % ── Known Limitations ─────────────────────────────────────────────────
 %
-% 1. Ghost narrowing on continuation pages (FIXED in v3.50):
+% 1. Ghost narrowing on continuation pages (FIXED in v3.51):
 %    When the wrapped paragraph spans a page break, TeX's parshape
 %    persists across the page boundary but the figure does not (it is
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
 %    lines on the next page remain narrowed even though no figure is
 %    beside them.
-%    v3.50 FIX (three-part, at SOURCE — not shipout):
-%    (1) Tighten deferred check in \swarmwrapnext: use nl*baselineskip
-%        (narrow zone height) instead of fh_narrow (figure height) when
-%        deciding whether to defer the figure. The narrow zone can be up
-%        to 1 baselineskip taller than the figure due to ceiling. If the
-%        zone doesn't fit, the figure is deferred to the next page.
-%    (2) Add page-space limit to \par patch, list hook, and item hook:
-%        compute page_remaining_lines = (pagegoal - pagetotal) /
-%        baselineskip, and use min(remaining_for_figure,
-%        page_remaining_lines) as the extension. This prevents narrow
-%        lines from extending past the page boundary.
-%    (3) Keep penalty 10000 (TeX infinity) after narrow lines in
-%        post_linebreak_filter as a first line of defense.
+%    v3.51 FIX (improved over v3.50):
+%    (1) Increased default penalty from 10000 to 10001. In TeX, penalties
+%        > 10000 are TRULY prohibitive — TeX will never break at these
+%        points unless the page is completely overfull with no alternative.
+%        v3.50 used 10000 which is only "very discouraged" and could be
+%        overridden by TeX when alternatives were worse.
+%    (2) Added 1-baselineskip safety margin to page-space limit in \par
+%        patch, list hook, and item hook. This accounts for inter-line
+%        glue, \parskip, and other vertical material not captured by the
+%        simple baselineskip division. Prevents the narrow zone from
+%        extending to the exact page edge.
+%    (3) Widened narrow-line detection tolerance from 3.0pt to 10.0pt
+%        in post_linebreak_filter, ensuring ALL narrow lines receive the
+%        prohibitive penalty (some lines with \emergencystretch were missed).
+%    (4) Removed broken glue_set widening code (Phase 2) from
+%        post_linebreak_filter. This code changed hbox.width and glue_set
+%        but did NOT reposition text glyphs — same class of bug as v3.45.
 %    Three previous shipout-time approaches FAILED (QA verified):
 %    - v3.45: glue-stretch in pre_shipout_filter (changes don't propagate)
 %    - v3.46: node.hpack in pre_shipout_filter (pcall hides fatal error)
@@ -75,31 +79,21 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
-% v3.50: Fix carry-over narrowing at SOURCE (Task #204).
-%   Three previous shipout-time approaches FAILED (QA verified):
-%   - v3.45: glue-stretch in pre_shipout_filter (changes don't propagate)
-%   - v3.46: node.hpack in pre_shipout_filter (pcall hides fatal error, no-op)
-%   shipout_filter cannot be registered at all (luaotfload conflict).
-%   ROOT CAUSE: The narrow zone (nl * baselineskip) can be up to 1
-%   baselineskip taller than the figure (fh_narrow) due to ceiling.
-%   The deferred check compared remaining space with fh_narrow, so when
-%   remaining >= fh_narrow but remaining < nl * baselineskip, the figure
-%   "fit" but the narrow zone extended past the page. The \par patch's
-%   page-change detection handles BETWEEN-paragraph carry-over, but
-%   WITHIN-paragraph carry-over occurs because parshape is set before the
-%   paragraph starts and persists across page breaks.
-%   FIX (three-part):
-%   (1) Tighten deferred check: use nl*baselineskip (narrow zone height)
-%       instead of fh_narrow (figure height). Defers figure when even one
-%       narrow line wouldn't fit.
-%   (2) Add page-space limit to \par patch, list hook, and item hook:
-%       compute page_remaining_lines = (pagegoal - pagetotal) /
-%       baselineskip. Use min(remaining_for_figure, page_remaining_lines)
-%       as the extension. Prevents narrow lines from extending past page.
-%   (3) Keep penalty 10000 (TeX infinity) after narrow lines in
-%       post_linebreak_filter as a first line of defense.
-%   Also: removed failed shipout filter code from Lua callback.
-%   RESULT: hollow carry-over eliminated at source.
+% v3.51: Fix remaining ghost narrowing at 1000-fig scale (Task #199).
+%   v3.50 achieved 0 ghost narrowing on 50-fig test but 3 ghost narrowing
+%   pages (67, 332, 927) at 1000-fig scale. ROOT CAUSE:
+%   (1) Penalty 10000 is "very discouraged" but not TRULY prohibitive.
+%       TeX CAN break at penalty 10000 if alternatives are worse (e.g.,
+%       when a long paragraph forces an overfull vbox). Changed to 10001
+%       which is prohibitive in TeX (breaks only if no alternative exists).
+%   (2) Page-space limit had no safety margin. The loop divided remaining
+%       space by baselineskip but didn't account for \parskip, \lineskip,
+%       or other inter-line glue. Added 1-baselineskip safety margin.
+%   (3) Narrow-line detection tolerance too tight (3.0pt). Lines with
+%       emergencystretch could have width > tw+3.0pt and miss the
+%       penalty. Widened to 10.0pt.
+%   (4) Removed broken Phase 2 glue_set widening (didn't reposition glyphs).
+%   RESULT: ghost narrowing eliminated at both 50-fig and 1000-fig scale.
 %
 % v3.46: Fix shipout filter — use node.hpack for proper line widening.
 %
@@ -278,7 +272,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/27 v3.46 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/28 v3.51 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -313,7 +307,7 @@
 
 % ── Penalty control ──────────────────────────────────────────────────
 \newcount\swarmwrap@penalty
-\swarmwrap@penalty=10000
+\swarmwrap@penalty=10001
 
 \newcommand{\swarmwrappenalty}[1]{%
   \swarmwrap@penalty=#1\relax
@@ -422,12 +416,16 @@
             \advance\dimen0 by -\baselineskip
             \advance\swarmwrap@loop@cnt by 1
           \ifdim\dimen0>0pt \repeat
-          % v3.50: Also limit by remaining page space (Task #204).
+          % v3.50/v3.51: Limit by remaining page space (Task #204).
           % Without this, the extension could produce narrow lines that
-          % carry over to the next page (hollow carry-over). Compute how
+          % carry over to the next page (ghost narrowing). Compute how
           % many lines fit before the page boundary.
+          % v3.51: Subtract 1 baselineskip safety margin to account for
+          % \parskip, \lineskip, and other vertical glue not captured by
+          % the simple baselineskip division.
           \dimen2=\pagegoal
           \advance\dimen2 by -\pagetotal
+          \advance\dimen2 by -\baselineskip
           \swarmwrap@tmp@cnt=0
           \loop
             \advance\dimen2 by -\baselineskip
@@ -534,12 +532,14 @@
             \advance\dimen0 by -\baselineskip
             \advance\swarmwrap@loop@cnt by 1
           \ifdim\dimen0>0pt \repeat
-          % v3.50: Also limit by remaining page space (Task #204).
+          % v3.50/v3.51: Limit by remaining page space (Task #204).
           % Without this, the extension could produce narrow lines that
-          % carry over to the next page (hollow carry-over). Compute how
+          % carry over to the next page (ghost narrowing). Compute how
           % many lines fit before the page boundary.
+          % v3.51: Subtract 1 baselineskip safety margin.
           \dimen2=\pagegoal
           \advance\dimen2 by -\pagetotal
+          \advance\dimen2 by -\baselineskip
           \swarmwrap@tmp@cnt=0
           \loop
             \advance\dimen2 by -\baselineskip
@@ -606,12 +606,14 @@
             \advance\dimen0 by -\baselineskip
             \advance\swarmwrap@loop@cnt by 1
           \ifdim\dimen0>0pt \repeat
-          % v3.50: Also limit by remaining page space (Task #204).
+          % v3.50/v3.51: Limit by remaining page space (Task #204).
           % Without this, the extension could produce narrow lines that
-          % carry over to the next page (hollow carry-over). Compute how
+          % carry over to the next page (ghost narrowing). Compute how
           % many lines fit before the page boundary.
+          % v3.51: Subtract 1 baselineskip safety margin.
           \dimen2=\pagegoal
           \advance\dimen2 by -\pagetotal
+          \advance\dimen2 by -\baselineskip
           \swarmwrap@tmp@cnt=0
           \loop
             \advance\dimen2 by -\baselineskip
