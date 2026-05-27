@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.44)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.45)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -36,15 +36,19 @@
 %
 % ── Known Limitations ─────────────────────────────────────────────────
 %
-% 1. Ghost narrowing on continuation pages:
+% 1. Ghost narrowing on continuation pages (PARTIALLY FIXED in v3.45):
 %    When the wrapped paragraph spans a page break, TeX's parshape
 %    persists across the page boundary but the figure does not (it is
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
 %    lines on the next page remain narrowed even though no figure is
-%    beside them. This is cosmetic only — no text overlaps the figure.
-%    Mitigation: \swarmwrappenalty{N} inserts a penalty at the
-%    boundary to discourage TeX from breaking there (default: 10000).
-%    Affects only very long paragraphs that span page breaks.
+%    beside them.
+%    v3.45 FIX (two-part):
+%    (1) Insert penalty 10000 after EVERY narrow line in post_linebreak_filter,
+%        preventing TeX from breaking the page within the narrow zone.
+%    (2) Shipout_filter safety net re-packs any carry-over narrow lines
+%        at full linewidth using node.hpack('exactly').
+%    Trade-off: may slightly increase page count when narrow zones are
+%    pushed to the next page instead of straddling page breaks.
 %
 % 2. Parshape leak into list items (PARTIALLY FIXED in v3.16):
 %    When \swarmwrapnext is used before a list, subsequent \item
@@ -60,6 +64,15 @@
 %    eliminates body-text overlaps from continuation text.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.45: Fix carry-over narrowing across page breaks (Task #199).
+%   Two-part fix: (1) Insert penalty 10000 after every narrow line in
+%   post_linebreak_filter, preventing TeX from breaking the page within
+%   the narrow zone. This eliminates carry-over at the source. (2)
+%   Shipout_filter safety net re-packs any narrow hboxes that slip
+%   through on pages without figures, using node.hpack('exactly').
+%   RESULT: carry-over narrowing eliminated on pages without figures.
+%   On pages WITH figures, carry-over prevented by penalty fence.
 %
 % v3.44: Use raw box height for visible content height (swarmwrap-callback.lua).
 %   v3.43 subtracted strutbox.height + strutbox.depth from box.height +
@@ -227,7 +240,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/26 v3.44 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/27 v3.45 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -318,7 +331,7 @@
       tex.dimen["swarmwrap@fh"] = vis_h%
     }%
     \xdef\swarmwrap@fh@narrow@val{\the\swarmwrap@fh}%
-    \wlog{swarmwrap v3.44: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
+    \wlog{swarmwrap v3.45: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
   \fi
 }
 
@@ -689,6 +702,7 @@
     \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+    \directlua{swarmwrap_mark_fig_placed()}%
     \wlog{swarmwrap next: DEFERRED (page eject) — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
     % Figure fits — place inline.
@@ -699,6 +713,7 @@
     \parshape \swarmwrap@pshape\relax
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+    \directlua{swarmwrap_mark_fig_placed()}%
     \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
   \fi
 }%
