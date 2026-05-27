@@ -1,55 +1,119 @@
--- swarmwrap-callback.lua — Lua callbacks for swarmwrap.sty
--- v3.44: Fix visible content height — use raw box height (Task #190).
---   v3.43 subtracted strutbox.height + strutbox.depth from box.height +
---   box.depth. This was WRONG for [t]-minipages with tall figures: the
---   strut is shorter than the rule, so box.height = rule height (not
---   strut height). Subtracting strut_h removed a full baselineskip of
---   actual visible content (caption area), causing caption-text overlap.
---   Debug node traversal confirmed: strut_h = 13.60pt for LM 11pt, but
---   box.height already equals rule height (not strut height). So the
---   subtraction over-counted by 13.6pt, making visible height too small.
---   v3.44 uses raw box.height + box.depth, which covers the full
---   figure + \abovecaptionskip + caption block. The parshape loop's
---   ceil provides at most 1 line of excess (~13.6pt), which is the
---   minimum possible overhead for alignment to baselineskip boundaries.
+-- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
+-- v3.45: Fix carry-over narrowing across page breaks (Task #199).
+--   When a paragraph with active parshape spans a page break, the
+--   remaining narrow lines carry over to the next page. Previously,
+--   these narrow lines stayed narrow, wasting horizontal space.
 --
--- v3.29's hbox widening (setting current.width = tex.dimen["linewidth"]
--- for hboxes after position nl) did NOT modify actual text glyph positions.
--- QA verified via PyMuPDF that text spans remained at 259.7pt (43.6%
--- page width) — only the hbox reference width changed, not the content.
+--   FIX (two-part):
+--   (1) PENALTY APPROACH: Insert a penalty of 10000 (forbidden) after
+--       EVERY narrow line in post_linebreak_filter. Reduces but does
+--       not fully eliminate carry-over.
+--   (2) SHIPOUT FILTER: Compare current page number with the previous
+--       figure page (\swarmwrap@fig@page@prev). If current page >
+--       previous figure page, narrow hboxes before the first wide
+--       hbox are carry-over -- re-pack them at full linewidth.
 --
--- The ghost-narrowing fix is now handled by the trailing full-width
--- parshape entry (0pt \linewidth) in swarmwrap.sty. TeX repeats
--- the last parshape entry for all subsequent lines, so text after
--- nl narrow lines automatically resets to full page width.
---
--- This callback retains the penalty insertion at the narrow/full-width
--- boundary, discouraging page breaks that would cause continuation-page
--- ghost narrowing.
+--   Trade-off: May increase page count slightly. Acceptable per spec.
 
-local debug_mode = false
+local debug_mode = true
+local swarmwrap_shipout_count = 0
 
--- ── Visible content height measurement (v3.44) ──────────────────
--- Uses raw box.height + box.depth as the visible content height.
--- This is the tightest measurement that guarantees the narrow text
--- zone covers the entire figure + caption block without overlap.
---
--- Why NOT subtract strut_h:
---   For [t]-minipages with tall figures (rule > strut), box.height
---   = rule height (strut is hidden behind the taller rule). So
---   box.height already has NO strut overhead to subtract. Subtracting
---   strut_h removes caption content instead, causing overlap.
---
--- Why NOT use max_rule_height (v3.42):
---   That only measured the colored rectangle, missing the caption
---   entirely. Body text overlapped caption on all 50 figures.
---
--- Trade-off:
---   Raw box height includes \abovecaptionskip (10pt of blank space
---   between figure and caption). This adds ~1 extra narrow line per
---   figure compared to an ideal measurement. But it's the ONLY
---   measurement that is both safe (no overlap) and font-independent
---   (doesn't depend on strut dimensions).
+-- -- Carry-over tracking (v3.45) ----------------------------------------
+-- swarmwrap_mark_fig_placed() is called from \swarmwrapnext but is
+-- no longer needed for carry-over detection -- we use fig@page@prev
+-- instead. Kept as no-op for backward compatibility.
+function swarmwrap_mark_fig_placed()
+  -- No-op in v3.45 final. Carry-over detected via fig@page@prev.
+end
+
+-- -- Shipout filter: fix carry-over narrowing (v3.45) --------------------
+-- Logic: If current_page > fig_page_prev, carry-over occurred.
+-- Fix narrow hboxes before the first wide hbox (trailing parshape
+-- entry). After the wide hbox, new figure session begins.
+
+function swarmwrap_shipout(head, groupcode)
+  swarmwrap_shipout_count = swarmwrap_shipout_count + 1
+
+  local tw_sp = tex.dimen["swarmwrap@tw@lua"]
+
+  if tw_sp <= 0 then
+    return head
+  end
+
+  local current_page = tex.count["c@page"]
+  local fig_page_prev = tex.count["swarmwrap@fig@page@prev"]
+
+  -- Only fix carry-over on pages AFTER the previous figure's page
+  if current_page <= fig_page_prev then
+    return head
+  end
+
+  local linewidth = tex.dimen["linewidth"]
+  local tw_val = tw_sp / 65536.0
+  local lw_val = linewidth / 65536.0
+  local fixed = 0
+  local wide_threshold = tw_val + 20.0
+
+  if debug_mode then
+    texio.write_nl(string.format(
+      "swarmwrap shipout page %d: fig_page_prev=%d (CARRY-OVER), tw=%.1f",
+      swarmwrap_shipout_count, fig_page_prev, tw_val))
+  end
+
+  local function fix_carryover_in_list(list_head)
+    local current = list_head
+    local found_trailing_wide = false
+
+    while current do
+      if current.id == 0 then
+        -- hbox
+        local hw = current.width / 65536.0
+
+        if not found_trailing_wide then
+          if hw > wide_threshold and hw > 0 then
+            -- Wide line = trailing full-width parshape entry
+            found_trailing_wide = true
+          elseif hw > 0 and hw < lw_val - 10 and math.abs(hw - tw_val) < 30 then
+            -- Narrow hbox before wide line = carry-over
+            local old_head = current.head
+            if old_head then
+              local new_box = node.hpack(old_head, linewidth, 'exactly')
+              if new_box then
+                current.head = new_box.head
+                current.width = linewidth
+                current.shift = 0
+                current.glue_set = 0
+                current.glue_sign = 0
+                current.glue_order = 0
+                fixed = fixed + 1
+              end
+            end
+          end
+        end
+      elseif current.id == 1 then
+        if current.head then
+          fix_carryover_in_list(current.head)
+        end
+      end
+
+      current = current.next
+    end
+  end
+
+  if head.head then
+    fix_carryover_in_list(head.head)
+  end
+
+  if debug_mode and fixed > 0 then
+    texio.write_nl(string.format(
+      "swarmwrap v3.45: shipout page %d -- fixed %d carry-over narrow lines",
+      swarmwrap_shipout_count, fixed))
+  end
+
+  return head
+end
+
+-- -- Visible content height measurement (v3.44) ------------------------
 
 function swarmwrap_measure_visible_height(box_reg)
   local box = tex.box[box_reg]
@@ -62,12 +126,8 @@ function swarmwrap_measure_visible_height(box_reg)
 
   local bs = tex.skip["baselineskip"].width
   local raw_height = box.height + box.depth
-
-  -- Use raw box height — covers full figure + caption block.
-  -- The parshape loop's ceil adds at most 1 line of overhead.
   local visible = raw_height
 
-  -- Minimum: at least 1 baselineskip
   if visible < bs then
     visible = bs
   end
@@ -76,7 +136,7 @@ function swarmwrap_measure_visible_height(box_reg)
     local strutbox = tex.box["strutbox"]
     local strut_h = strutbox.height + strutbox.depth
     texio.write_nl(string.format(
-      "swarmwrap v3.44: box ht=%.2f dp=%.2f raw=%.2f strut=%.2f visible=%.2f bs=%.1f",
+      "swarmwrap v3.45: box ht=%.2f dp=%.2f raw=%.2f strut=%.2f visible=%.2f bs=%.1f",
       box.height / 65536.0,
       box.depth / 65536.0,
       raw_height / 65536.0,
@@ -88,13 +148,12 @@ function swarmwrap_measure_visible_height(box_reg)
   return visible
 end
 
--- ── Post-linebreak filter (v3.30) ────────────────────────────────────
+-- -- Post-linebreak filter (v3.30 -> v3.45) ----------------------------
 
 function swarmwrap_post_lb(head, groupcode)
   local tw_sp = tex.dimen["swarmwrap@tw@lua"]
   local tw_val = tw_sp / 65536.0
 
-  -- Only process if wrapping is active (tw > 0)
   if tw_sp <= 0 then
     return head
   end
@@ -102,32 +161,42 @@ function swarmwrap_post_lb(head, groupcode)
   local linewidth = tex.dimen["linewidth"] / 65536.0
   local penalty_val = tex.count["swarmwrap@penalty"]
 
-  -- Penalty insertion at parshape boundary (narrow → full-width)
-  -- Insert a penalty after the last narrow hbox to discourage page breaks
-  -- at the transition point where ghost narrowing would occur.
   if penalty_val > 0 then
-    local last_narrow = nil
     local current = head
     while current do
       if current.id == 0 then
         local lw = current.width / 65536.0
         if lw <= tw_val + 3.0 and lw > 0 then
-          last_narrow = current
+          local p = node.new(node.id("penalty"))
+          p.penalty = penalty_val
+          node.insert_after(head, current, p)
         end
       end
       current = current.next
-    end
-    if last_narrow then
-      local p = node.new(node.id("penalty"))
-      p.penalty = penalty_val
-      node.insert_after(head, last_narrow, p)
     end
   end
 
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.44 loaded (penalty + raw box height)")
+texio.write_nl("swarmwrap: callback v3.45 loaded (carry-over penalty + shipout fix + raw box height)")
 luatexbase.add_to_callback("post_linebreak_filter",
-  swarmwrap_post_lb, "swarmwrap: penalty")
-texio.write_nl("swarmwrap: callback registered successfully")
+  swarmwrap_post_lb, "swarmwrap: carry-over penalty")
+local shipout_ok = pcall(function()
+  luatexbase.add_to_callback("shipout_filter",
+    swarmwrap_shipout, "swarmwrap: carry-over fix")
+end)
+if shipout_ok then
+  texio.write_nl("swarmwrap: shipout_filter registered successfully")
+else
+  local pre_ok = pcall(function()
+    luatexbase.add_to_callback("pre_shipout_filter",
+      swarmwrap_shipout, "swarmwrap: carry-over fix")
+  end)
+  if pre_ok then
+    texio.write_nl("swarmwrap: pre_shipout_filter registered (fallback)")
+  else
+    texio.write_nl("swarmwrap: shipout_filter unavailable -- relying on penalty approach only")
+  end
+end
+texio.write_nl("swarmwrap: post_linebreak_filter registered successfully")
