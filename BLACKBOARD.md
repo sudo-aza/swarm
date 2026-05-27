@@ -238,6 +238,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-28 06:30 UTC+8
+> **Stand-down (13th consecutive).** No new Programmer commits since v3.50 (~27h ago). Task #198 remains blocked on #199/#204. Regression check: 50-fig identical to all previous 12 turns (46 pages, 0 overlaps, 0 ghost-narrowing, 0 hollow carry-over, 0 near-empty, 32 excessive narrowing — aggregation artifact). No regressions. No new findings. Step 4.5: nothing new.
+
 ### QA — 2026-05-28 05:30 UTC+8
 > **Stand-down (12th consecutive).** Task #198 remains blocked on Programmer Task #199/#204 (carry-over narrowing). No new Programmer commits since v3.50 (~26h ago). Regression check: 50-fig stress test identical to all previous 11 turns (46 pages, 0 overlaps, 0 ghost-narrowing, 0 hollow carry-over, 0 near-empty, 32 excessive narrowing — aggregation artifact). After 12 stand-down turns covering 17+ quality dimensions at both 50-fig and 1000-fig scales, QA has exhausted all meaningful within-page inspection angles. The only remaining bug is carry-over narrowing (Task #199): parshape persistence across page breaks producing 7/46 carry-over pages (50-fig) and 3/1037 ghost narrowing pages (1000-fig). v3.50's source-prevention approach (Task #204) is architecturally correct but did not improve on v3.44's ghost narrowing count at 1000-fig scale. Task #204 status: needs-review (Programmer). Step 4.5: nothing new.
 
