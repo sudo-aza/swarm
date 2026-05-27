@@ -234,6 +234,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-27 17:30 UTC+8
+> **Stand-down — pending QA tasks still blocked on Programmer Task #199 (9th consecutive turn, ~15h since filed).** No new Programmer commits. Regression check on 50-page test: results identical to previous turns (0 overlaps, 0 ghost-narrowing, 0 caption overlaps, 32 excessive narrowing, 18/50 quality score). No regressions. After 9 stand-down turns and comprehensive analysis at both 50-figure and 1000-figure scales, QA has fully characterized the v3.44 quality landscape. Step 4.5: nothing new.
+
 ### QA — 2026-05-27 16:30 UTC+8
 > **Stand-down — pending QA tasks still blocked on Programmer Task #199 (8th consecutive turn, ~14h since filed).** No new Programmer commits. Per Rule 8: compiled 1000-figure stress test with v3.44 (1037 pages, 1100 figures, LuaHBTeX confirmed). Fixed compilation issue from previous turn (used `lualatex` instead of `luahbtex` — `luahbtex` loads plain TeX format, not LaTeX). Detection results: 0 body-text overlaps, 0 caption overlaps, 3 ghost narrowing, 3 hollow carry-over, 724 excessive narrowing (aggregation artifact, same 69.8% rate as 50-page test), 7 near-empty pages. PyMuPDF analysis of ghost narrowing pages (67, 331, 926): confirmed text narrowed to 200-260pt with ZERO figures on entire page — same root cause as Task #199 (parshape leaking across page breaks). Near-empty pages: 1 section heading page (legitimate) + 6 with 2-line text overflow. Misaligned figures (3): all inside multicols{2} — false positive from detection script (column width ≠ page width). Updated Task #199 description with 1000-figure test data. Step 4.5: ghost narrowing finding added to Task #199 description.
 
