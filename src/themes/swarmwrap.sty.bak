@@ -1,0 +1,419 @@
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.16)
+%
+% Text wrapping using \parshape applied by \swarmwrapnext command.
+% Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
+%
+% Usage:
+%   \usepackage{swarmwrap}
+%
+%   % Simple figure (single content box):
+%   \begin{swarmwrap}%
+%     \includegraphics[width=3cm]{photo}%
+%   \end{swarmwrap}%
+%   \swarmwrapnext
+%   Paragraph text wraps around the figure.
+%
+%   % Multi-line content (figure + caption):
+%   \begin{swarmwrap}%
+%     \begin{minipage}[t]{3cm}
+%       \centering
+%       \includegraphics[width=\linewidth]{photo}
+%       \captionof{figure}{Caption.}
+%     \end{minipage}%
+%   \end{swarmwrap}%
+%   \swarmwrapnext
+%   Paragraph text wraps around the figure.
+%
+%   % Custom page-break penalty (discourage breaks in wrapped zone):
+%   \swarmwrappenalty{500}  % default is 10000 (very discouraged)
+%
+% Zero arguments. Width and height are auto-detected from the rendered
+% content box. The user controls the content width explicitly (e.g.,
+% \includegraphics[width=3cm] or \begin{minipage}[t]{3cm}).
+% Right-side wrapping only. Left-wrap removed in v3.0 (scope reduction).
+%
+% Requirements: LuaLaTeX (errors out on pdfLaTeX/XeLaTeX)
+%
+% ── Known Limitations ─────────────────────────────────────────────────
+%
+% 1. Ghost narrowing on continuation pages:
+%    When the wrapped paragraph spans a page break, TeX's parshape
+%    persists across the page boundary but the figure does not (it is
+%    placed via \smash{\rlap{...}} which is page-local). Continuation
+%    lines on the next page remain narrowed even though no figure is
+%    beside them. This is cosmetic only — no text overlaps the figure.
+%    Mitigation: \swarmwrappenalty{N} inserts a penalty at the
+%    boundary to discourage TeX from breaking there (default: 10000).
+%    Affects only very long paragraphs that span page breaks.
+%
+% 2. Parshape leak into list items (PARTIALLY FIXED in v3.16):
+%    When \swarmwrapnext is used before a list, subsequent \item
+%    paragraphs now correctly maintain parshape narrowing. However,
+%    if \swarmwrapnext is used INSIDE a list item, only that item
+%    wraps — subsequent items are not narrowed (acceptable per spec).
+%
+% 3. Deferred figure placement:
+%    When the figure doesn't fit on the current page, it is deferred to
+%    the top of the next page via \afterpage. Text stays in place with
+%    full parshape. On the next page, the deferred figure appears beside
+%    the continuation (narrowed) text, turning ghost narrowing into real
+%    wrapping. Detection uses \pagegoal - \pagetotal.
+%
+% ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.16: List parshape preservation.
+%   Patched \\list to detect active swarmwrap wrapping and re-inject
+%   the everypar hook after list setup. This fixes body-text overlaps
+%   in itemize contexts (Task #166: 66 overlaps on 1000-page test).
+%   The hook recomputes tw using the list-adjusted linewidth, accounting
+%   for leftmargin, labelwidth, and labelsep. Works for figure-before-
+%   list and figure-inside-list patterns. ~40 lines added.
+%
+% v3.15: Fixed parshape not applied (ROOT CAUSE of most overlaps).
+%   \noindent calls \leavevmode which starts the paragraph via \hbox{}.
+%   Setting \parshape AFTER \noindent is inside the paragraph — TeX
+%   ignores it. Fix: move \parshape before \noindent so it is set in
+%   vertical mode, before the paragraph starts. This single change
+%   should eliminate the majority of body-text overlaps on stress tests.
+%   Also added \noindent in the NORMAL branch to suppress paragraph indent
+%   (previously \noindent was before \parshape, serving dual purpose).
+%
+% v3.14: Multi-paragraph parshape extension via everypar.
+%   Re-injects parshape into subsequent paragraphs after the first one,
+%   using a remaining-line counter decremented by Lua post_linebreak_filter.
+%   ~30 lines added (no FIFO queue, no complex state management).
+%   Reduces body-text overlaps by extending narrowing across paragraph
+%   boundaries — fixes the core issue where only the first paragraph
+%   wrapped around a multi-paragraph figure.
+%
+% v3.13: Reverted to v3.10 base (271 lines) + deferred tw bake fix only.
+%   Removed v3.12 multi-paragraph extension (135 lines of FIFO queue,
+%   everypar injection, remaining counter). v3.12 halved overlaps (74→37)
+%   but added significant complexity. Starting clean from v3.10.
+%   v3.12's deferred tw@val overwriting bug fix preserved (bake tw as
+%   literal dimension into \afterpage token list via tex.sprint).
+
+% v3.10: Deferred figure placement. When the figure doesn't fit on the
+%   current page (\pagegoal - \pagetotal < figure height), it is placed
+%   at the top of the next page via \afterpage instead of being clipped.
+%   Text always stays in place with full parshape. On the next page, the
+%   figure appears beside the ghost-narrowed continuation text, turning
+%   ghost narrowing into real wrapping. Re-added afterpage dependency.
+%
+% v3.7: Reduced figure height padding from \baselineskip (13.6pt) to 4pt.
+%   Eliminates 1 extra narrowed line below each figure that had no
+%   figure beside it (visible empty strip).
+%
+% v3.6: Added \swarmwrappenalty{N} option (default 10000). Uses
+%   LuaTeX post_linebreak_filter to insert a penalty at the boundary
+%   between the last narrowed line and the first full-width line,
+%   discouraging page breaks that cause ghost narrowing.
+%
+% v3.5: Non-LuaLaTeX compilation produces hard error (was silent fallback).
+%   \swarmwrapnext errors on non-LuaLaTeX (was \relax).
+%
+% v3.4: Page-eject fallback replaces zero-height vbox. No more text-
+%   figure overlap on page breaks.
+
+\ProvidesPackage{swarmwrap}[2026/05/23 v3.16 Custom float wrapper]
+
+\RequirePackage{graphicx}
+\RequirePackage{ifluatex}
+\RequirePackage{afterpage}
+
+\newsavebox{\swarmwrap@box}
+\newdimen\swarmwrap@fw       % figure width (auto-detected from box)
+\newdimen\swarmwrap@fh       % figure height (auto-detected from box)
+\newdimen\swarmwrap@tw       % text width (computed for parshape)
+\newcount\swarmwrap@nl       % number of parshape lines (wrapped)
+\newcount\swarmwrap@remaining % remaining narrow lines (multi-paragraph)
+\newcount\swarmwrap@loop@cnt % loop counter
+\swarmwrap@remaining=0
+\newif\ifswarmwrap@luatex
+
+\ifluatex \swarmwrap@luatextrue \else \swarmwrap@luatexfalse \fi
+
+% Global macros to persist values across the environment group boundary.
+\newcommand{\swarmwrap@fw@val}{0pt}  % figure width for parshape
+\newcommand{\swarmwrap@fh@val}{0pt}  % figure height for page break
+
+% ── Penalty control ──────────────────────────────────────────────────
+% \swarmwrappenalty{N}: set the penalty inserted at the boundary between
+% the last narrowed parshape line and the first full-width line.
+% Default: 10000 (strongly discourage page break at boundary).
+% Set to 0 to allow breaks (no penalty). Set to -10000 to force a break.
+\newcount\swarmwrap@penalty
+\swarmwrap@penalty=10000
+
+\newcommand{\swarmwrappenalty}[1]{%
+  \swarmwrap@penalty=#1\relax
+}
+
+% Lua-readable register for the current wrapped text width.
+% Set by \swarmwrapnext; read by the post_linebreak_filter callback.
+\newdimen\swarmwrap@tw@lua
+\swarmwrap@tw@lua=0pt
+
+% ── Lua callback: post_linebreak_filter ───────────────────────────────
+% When a paragraph is broken into lines, this callback checks whether
+% a parshape narrowing is active (swarmwrap@tw@lua > 0). If so, it
+% identifies the boundary between the last narrowed line and the first
+% full-width line, and inserts a penalty node there. This discourages
+% TeX from breaking the page at the transition point, which would cause
+% ghost narrowing on the continuation page.
+
+\ifswarmwrap@luatex
+\directlua{
+  function swarmwrap_post_lb(head, groupcode)
+    local tw_sp = tex.dimen["swarmwrap@tw@lua"]
+    local tw_val = tw_sp / 65536.0
+    local tol = 3.0
+    local narrow_width_max = tw_val + tol
+    -- Multi-paragraph: count narrow lines consumed this paragraph
+    -- and decrement the remaining counter for subsequent paragraphs.
+    local rem = tex.count["swarmwrap@remaining"]
+    if rem > 0 and tw_sp > 0 then
+      local narrow_count = 0
+      local cur = head
+      while cur do
+        if cur.id == 0 then
+          local lw = cur.width / 65536.0
+          if lw <= narrow_width_max and lw > 0 then
+            narrow_count = narrow_count + 1
+          end
+        end
+        cur = cur.next
+      end
+      tex.count["swarmwrap@remaining"] = math.max(0, rem - narrow_count)
+    end
+    -- Penalty insertion at parshape boundary
+    if tw_sp > 0 then
+      local penalty_val = tex.count["swarmwrap@penalty"]
+      if penalty_val > 0 then
+        local last_narrow = nil
+        local current = head
+        while current do
+          if current.id == 0 then
+            local lw = current.width / 65536.0
+            if lw <= narrow_width_max and lw > 0 then
+              last_narrow = current
+            end
+          end
+          current = current.next
+        end
+        if last_narrow then
+          local p = node.new(node.id("penalty"))
+          p.penalty = penalty_val
+          node.insert_after(head, last_narrow, p)
+        end
+      end
+    end
+    return head
+  end
+  luatexbase.add_to_callback("post_linebreak_filter",
+    swarmwrap_post_lb, "swarmwrap: multi-para + penalty at parshape boundary")
+}
+\fi
+
+% ── Environment: capture content into a savebox (zero args) ────────────
+% Content sets its natural width via explicit sizing:
+%   - \includegraphics[width=3cm]{photo}  → box width = 3cm
+%   - \begin{minipage}[t]{3cm}...        → box width = 3cm
+% Width and height are measured from the rendered box after closing.
+
+\newenvironment{swarmwrap}{%
+  \ifswarmwrap@luatex
+    \begin{lrbox}{\swarmwrap@box}%
+  \else
+    \PackageError{swarmwrap}{LuaLaTeX required for wrapping}{}%
+  \fi
+}{%
+  \ifswarmwrap@luatex
+    \end{lrbox}%
+    % CRITICAL: Make the savebox global so it survives the group exit.
+    \global\setbox\swarmwrap@box=\box\swarmwrap@box
+    % Auto-detect width from rendered box
+    \swarmwrap@fw=\wd\swarmwrap@box
+    \xdef\swarmwrap@fw@val{\the\swarmwrap@fw}%
+    % Auto-detect height from rendered box (+ small gap for visual spacing)
+    \swarmwrap@fh=\ht\swarmwrap@box
+    \advance\swarmwrap@fh by \dp\swarmwrap@box
+    \advance\swarmwrap@fh by 4pt
+    \xdef\swarmwrap@fh@val{\the\swarmwrap@fh}%
+  \fi
+}
+
+% ── Helper: place figure centered (v3.2 fallback, kept as reserve) ────
+\newcommand{\swarmwrap@place@centered}{%
+  \begin{center}%
+    \copy\swarmwrap@box%
+  \end{center}%
+  \vspace{-\parskip}%
+}
+
+% ── Multi-paragraph parshape extension ──────────────────────────────
+% TeX's \parshape applies to ONE paragraph. When multiple paragraphs
+% follow \swarmwrapnext, only the first is narrowed. This hook extends
+% narrowing to subsequent paragraphs by re-injecting \parshape at each
+% paragraph start until all narrow lines are consumed. The remaining
+% line count is tracked via Lua post_linebreak_filter (above).
+
+\newcommand{\swarmwrap@everypar@hook}{%
+  \wlog{swarmwrap everypar CALLED: remaining=\the\swarmwrap@remaining, tw@val=\swarmwrap@tw@val}%
+  \ifnum\swarmwrap@remaining>0\relax
+    \swarmwrap@tw=\swarmwrap@tw@val\relax
+    \swarmwrap@loop@cnt=\swarmwrap@remaining
+    \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@remaining+1\relax\space}%
+    \loop
+      \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+      \advance\swarmwrap@loop@cnt by -1
+    \ifnum\swarmwrap@loop@cnt>0 \repeat
+    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
+    \emergencystretch=\fontdimen6\font\relax
+    \noindent
+    \parshape \swarmwrap@pshape\relax
+    \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+  \else
+    \everypar{}% All narrow lines consumed — clear hook
+  \fi
+}
+
+% Helper: set up everypar for deferred figures (called inside \afterpage).
+\newcommand{\swarmwrap@setup@everypar}{%
+  \global\swarmwrap@remaining=\swarmwrap@nl\relax
+  \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+  \everypar{\swarmwrap@everypar@hook}%
+}
+
+% ── List parshape preservation (v3.16) ───────────────────────────
+% Problem: When \swarmwrapnext is followed by \begin{itemize},
+% the list's internal setup resets \everypar, clobbering our multi-
+% paragraph extension. List items then run at full width.
+%
+% Fix: Patch \list to detect active swarmwrap wrapping and re-inject
+% the everypar hook after list setup. The hook recomputes tw using
+% the list-adjusted \linewidth (narrower due to leftmargin).
+
+\newif\ifswarmwrap@list@active
+\swarmwrap@list@activefalse
+
+\let\swarmwrap@orig@list\list
+
+\long\def\list#1#2{%
+  \ifnum\swarmwrap@remaining>0\relax
+    \global\swarmwrap@list@activetrue
+  \fi
+  \swarmwrap@orig@list{#1}{#2}%
+  \ifswarmwrap@list@active
+    \everypar{\swarmwrap@list@everypar@hook}%
+  \fi
+}
+
+% Hook for paragraphs inside lists with active swarmwrap wrapping.
+% Recomputes tw using the list-adjusted linewidth, then applies parshape.
+\newcommand{\swarmwrap@list@everypar@hook}{%
+  \ifnum\swarmwrap@remaining>0\relax
+    \swarmwrap@tw=\linewidth
+    \advance\swarmwrap@tw by -\swarmwrap@fw
+    \advance\swarmwrap@tw by -14pt
+    \ifdim\swarmwrap@tw>10pt\relax
+      \swarmwrap@loop@cnt=\swarmwrap@remaining
+      \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@remaining+1\relax\space}%
+      \loop
+        \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+        \advance\swarmwrap@loop@cnt by -1
+      \ifnum\swarmwrap@loop@cnt>0 \repeat
+      \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
+      \parshape \swarmwrap@pshape\relax
+      \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+      \emergencystretch=\fontdimen6\font\relax
+    \else
+      \global\swarmwrap@remaining=0\relax
+      \swarmwrap@list@activefalse
+      \everypar{}%
+    \fi
+  \else
+    \swarmwrap@list@activefalse
+    \everypar{}%
+  \fi
+}
+
+% ── \swarmwrapnext: compute parshape and place figure ──────────────────
+% All computation happens here so \linewidth is captured at the
+% correct location (inside multicol, itemize, etc.).
+%
+% Figure placement strategy (v3.10):
+%   1. Compute parshape from full figure height (text always stays).
+%   2. Check if figure fits: \pagegoal - \pagetotal >= figure height.
+%   3. If fits → place inline with \smash{\rlap{}}.
+%   4. If doesn't fit → defer to top of next page via \afterpage.
+%      The deferred figure appears beside the continuation text on the
+%      next page, turning ghost narrowing into real wrapping.
+
+\ifswarmwrap@luatex
+\newcommand{\swarmwrapnext}{%
+  \everypar{}% Clear any previous multi-paragraph hook
+  % ── Shared computation: text width and wrapped line count ───────
+  \swarmwrap@fw=\swarmwrap@fw@val\relax
+  \swarmwrap@tw=\linewidth
+  \advance\swarmwrap@tw by -\swarmwrap@fw
+  \advance\swarmwrap@tw by -14pt
+  \swarmwrap@nl=0
+  \swarmwrap@fh=\swarmwrap@fh@val\relax
+  \dimen0=\swarmwrap@fh
+  \loop
+    \advance\swarmwrap@nl by 1
+    \advance\dimen0 by -\baselineskip
+  \ifdim\dimen0>0pt \repeat
+  \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
+  % Set Lua-readable dimension for post_linebreak_filter callback
+  \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+  % ── Build parshape string ──────────────────────────────────────
+  \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
+  \swarmwrap@loop@cnt=\swarmwrap@nl
+  \loop
+    \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+    \advance\swarmwrap@loop@cnt by -1
+  \ifnum\swarmwrap@loop@cnt>0 \repeat
+  \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
+  % ── Apply standard wrapping ────────────────────────────────────
+  % emergencystretch absorbs overfull hbox on narrowed parshape lines
+  \emergencystretch=\fontdimen6\font\relax
+  % CRITICAL FIX (v3.15): parshape MUST be set before the paragraph starts.
+  % \noindent calls \leavevmode which enters hmode, starting the paragraph.
+  % If \parshape is set after that, TeX ignores it (too late). Moving
+  % \parshape before \noindent ensures it applies to the upcoming paragraph.
+  \parshape \swarmwrap@pshape\relax
+  % ── Figure placement: inline or deferred ───────────────────────
+  % Check remaining space on current page.
+  \dimen0=\pagegoal
+  \advance\dimen0 by -\pagetotal
+  \dimen1=\swarmwrap@fh@val\relax
+  \ifdim\dimen0<\dimen1
+    % Figure doesn't fit — defer to top of next page via afterpage.
+    % Set up everypar for CURRENT page (narrow subsequent paragraphs
+    % to match the parshape). The deferred figure appears on the next page.
+    % Deferred: afterpage places figure on next page; \par ends the
+    % empty paragraph that was started by the parshape above.
+    \afterpage{\noindent\smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}}\par
+    \global\swarmwrap@remaining=\swarmwrap@nl\relax
+    \everypar{\swarmwrap@everypar@hook}%
+    \wlog{swarmwrap next: DEFERRED — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
+  \else
+    % Figure fits — place inline. \noindent suppresses paragraph indent.
+    \noindent
+    \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+    % Set up multi-paragraph extension for subsequent paragraphs
+    \global\swarmwrap@remaining=\swarmwrap@nl\relax
+    \everypar{\swarmwrap@everypar@hook}%
+    \wlog{swarmwrap next: NORMAL — set everypar remaining=\the\swarmwrap@remaining}%
+    \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
+  \fi
+}%
+\else
+\newcommand{\swarmwrapnext}{%
+  \PackageError{swarmwrap}{LuaLaTeX required for wrapping. Text wrapping is not supported on pdfLaTeX/XeLaTeX. Either compile with lualatex, or remove swarmwrap.}{}%
+}%
+\fi
+
+\endinput

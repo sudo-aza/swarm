@@ -1,0 +1,156 @@
+
+\input minim-doc.sty
+\closeout0
+
+\newmetapostinstance\hershey
+\runmetapost\hershey{
+    input "hershey";
+    loadHershey timesib;
+}
+
+\def\chapter#1\hfill#2\par{%
+    \startelement{Chapter}%
+    \outline open {#1}%
+    \nextpartag{H}\quitvmode
+    \startelement{Span}%
+    \red{\runmetapostimage\hershey{
+        baseline origin;
+        pickup pencircle scaled .4pt;
+        drawHershey timesib ("hershey.mp") withcolor .75red;
+    }\setactualtext{hershey.mp}%
+    \stopelement{Span}%
+    \hfill#2\bigskip\nobreak}}
+
+\def\mailname{hershey}
+\startmetadata
+    author   {Esger Renkema}
+    title    {hershey.mp}
+    date     {2022-08-24}
+    version  {2022/1.0}
+    keywords {MetaPost; Hershey fonts}
+stopmetadata
+
+\maketitle
+
+This package can read the ⟦jhl⟧ format, used for the well known Hershey Fonts. 
+Use it like so:
+
+⟦% Where to look for font files (this is also the default)
+hersheyFonts := "/usr/share/hershey-fonts/";
+% Load the font you want to use
+loadHershey timesib;
+% Draw a character
+beginfig(1)
+    drawHershey timesib(7) rotated 180 withcolor .75red;
+endfig;
+% Or typeset a string
+beginfig(2)
+    drawHershey timesib("Hello!") withcolor .75red;
+endfig;⟧
+
+This results in the following pictures:
+
+\bigskip\strut\hfill
+\startelement{Figure}
+\setalttext{An upside-down ampersand.}
+\runmetapostimage \hershey {
+baseline origin;
+drawHershey timesib(7) rotated 180 withcolor .75red;}
+\stopelement{Figure}
+\hfill and\hfill
+\startelement{Figure}
+\setalttext{The text ‘Hello!’.}
+\runmetapostimage \hershey {
+baseline origin;
+drawHershey timesib("Hello!") withcolor .75red;}
+\stopelement{Figure}
+\hfill\strut\bigskip
+
+Typesetting a string will only make sense for the latin fonts, where Hershey’s 
+encoding is in ASCII order. For strings, the baseline is adjusted upward by 9~units.
+
+Typical x-height is 14 units (of which 9 are below $y=0$), with an em-space of 21 units.
+
+The paths that make up each character are available to you in the array 
+⟦hershey.<fontname>[<charid>][]⟧. You will rarely need this, however, since the trailing tokens to ⟦drawHershey⟧ will be applied to all paths.
+
+Proof sheets of Hershey’s original fonts are included in the following pages.
+
+\licencesection \stopelement{Section}
+
+\font\fiverm {Latin Modern Roman:script=latn;protrusion=default;} at 5pt
+\runmetapost \hershey {
+vardef testfont suffix name =
+  save c; c := 1;
+  for i = 1 upto 7:  draw (45i+22.5,-22.5) -- (45i+22.5,-45*12-22.5); endfor
+  for j = 1 upto 11: draw (22.5, -45j-22.5) -- (45*8+22.5, -45j-22.5); endfor
+  for i = 1 upto 8:
+    for j = 1 upto 12:
+        drawHershey.name(c) shifted 45(i,-j);
+        draw maketext("{\fiverm "&decimal c&"}") shifted (45(i,-j) + (13,16));
+      c := c + 1;
+    endfor
+  endfor
+  setbounds currentpicture to
+    unitsquare xscaled 8 yscaled -12 scaled 45 shifted (22.5, -22.5);
+enddef; }
+
+\def\testfont#1 #2 {\vfil\break
+\chapter{#1}{#2}%
+\startelement{Figure}
+\setalttext{A listing of the ‘#2’ font.}
+\stoptagging
+\runmetapostimage \hershey { testfont #2; }
+\starttagging
+\stopelement{Figure}}
+
+\def\chapter#1#2{%
+    \ensurestopelement{Section}%
+    \startelement{Chapter}%
+    \outline open {#2}%
+    \nextpartag{H}\quitvmode
+    \vrule depth 20pt height 35pt width 0pt\relax
+    \startelement{Span}%
+    \red{\runmetapostimage\hershey{
+        loadHershey #2;
+        baseline origin;
+        pickup pencircle scaled .4pt;
+        drawHershey #1 ("#2") withcolor .75red;
+    }}\setactualtext{#2}\bigskip
+    \stopelement{Span}\nobreak}
+
+\testfont timesr      timesr
+\testfont timesi      timesi
+\testfont timesrb     timesrb
+\testfont timesib     timesib
+\testfont timesr      timesg
+\testfont timesr      cyrillic
+
+\testfont gothiceng   gothiceng
+\testfont gothicger   gothicger
+\testfont gothicita   gothicita
+
+\testfont rowmans     rowmans
+\testfont rowmand     rowmand
+\testfont rowmant     rowmant
+
+\testfont futural     futural
+\testfont futuram     futuram
+
+\testfont timesr      greeks
+\testfont timesr      greekc
+
+\testfont scripts     scripts
+\testfont scriptc     scriptc
+
+\testfont timesr      mathlow
+\testfont timesr      mathupp
+
+\testfont astrology   astrology
+\testfont meteorology meteorology
+\testfont timesr      symbolic
+\testfont timesr      markers
+\testfont music       music
+
+\vfil\break\end
+

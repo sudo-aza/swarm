@@ -1,0 +1,10 @@
+# In many earlier versions of latexmk, there was a file glossary_latexmrc that
+# originally showed how to use the glossary package with latexmk.  That
+# package is now OBSOLETE, and one should use the glossaries package or the
+# glossaries-extra package.
+
+# The code for using the glossaries package with latexmk is in the file
+# glossaries_latexmkrc.  It also contains (commented out) code for the use
+# of the glossary package, and has some comments on the issues involved.
+
+

@@ -1,0 +1,18 @@
+SUMMARY
+
+This metapost file adds support for reading jhl vector font files, used by 
+(mostly? only?) the so-called Hershey Fonts of the late 1960s.
+
+It does not include the actual font files, which you can probably find in the 
+software repository included with your operating system.
+
+
+COPYING
+
+(c) 2022 Esger Renkema
+
+These files may be distributed under the terms of the European Union Public 
+Licence (EUPL) version 1.2 or later. A copy can be obtained at:
+
+https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12
+

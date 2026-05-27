@@ -1,0 +1,48 @@
+name l3experimental
+category Package
+revision 79001
+shortdesc Experimental LaTeX3 concepts
+longdesc The l3experimental packages are a collection of experimental
+longdesc implementations for aspects of the LaTeX3 kernel, dealing with
+longdesc higher-level ideas such as the Designer Interface. Some of them
+longdesc work as stand alone packages, providing new functionality, and
+longdesc can be used on top of LaTeX2e with no changes to the existing
+longdesc kernel. The present release includes: l3draw, a code-level
+longdesc interface for constructing drawings; xcoffins, which allows the
+longdesc alignment of boxes using a series of 'handle' positions,
+longdesc supplementing the simple TeX reference point;
+depend l3kernel
+containersize 10228
+containerchecksum 546181eb53eacd5dba0138d218f73316d812594265dd1fb07d87c0c1e2410a790c2505c6fbca9fa5d0808c4244e7e3f4cc3134bfbc4fb755bb27dfab9226ee4c
+doccontainersize 1456136
+doccontainerchecksum 8850e20bd3c2a44a5dd693e177b99717617d1eb305e299356fe4788e01ae61d7649aaedbc280e372630f110ef15cf0811027ed1ea0446f9bb9788e87f01eb35e
+docfiles size=397
+ texmf-dist/doc/latex/l3experimental/CHANGELOG.md
+ texmf-dist/doc/latex/l3experimental/README.md details="Readme"
+ texmf-dist/doc/latex/l3experimental/l3draw/l3draw-code.pdf
+ texmf-dist/doc/latex/l3experimental/l3draw/l3draw-code.tex
+ texmf-dist/doc/latex/l3experimental/l3draw/l3draw.pdf details="l3draw documentation"
+ texmf-dist/doc/latex/l3experimental/xcoffins/xcoffins.pdf details="xcoffins documentation"
+srccontainersize 35700
+srccontainerchecksum 3840dd8ab574db4b2ab3e68dd450a5b411fde2c39fb01e62e7cca0508296eb829b2ae54bb0ed57aad92714d194f9390cdd478bd68048e7189c14d0bd7d360b29
+srcfiles size=58
+ texmf-dist/source/latex/l3experimental/l3draw/l3draw-boxes.dtx
+ texmf-dist/source/latex/l3experimental/l3draw/l3draw-layers.dtx
+ texmf-dist/source/latex/l3experimental/l3draw/l3draw-paths.dtx
+ texmf-dist/source/latex/l3experimental/l3draw/l3draw-points.dtx
+ texmf-dist/source/latex/l3experimental/l3draw/l3draw-scopes.dtx
+ texmf-dist/source/latex/l3experimental/l3draw/l3draw-softpath.dtx
+ texmf-dist/source/latex/l3experimental/l3draw/l3draw-state.dtx
+ texmf-dist/source/latex/l3experimental/l3draw/l3draw-transforms.dtx
+ texmf-dist/source/latex/l3experimental/l3draw/l3draw.dtx
+ texmf-dist/source/latex/l3experimental/l3draw/l3draw.ins
+ texmf-dist/source/latex/l3experimental/xcoffins/xcoffins.dtx
+ texmf-dist/source/latex/l3experimental/xcoffins/xcoffins.ins
+runfiles size=19
+ texmf-dist/tex/latex/l3experimental/l3draw/l3draw.sty
+ texmf-dist/tex/latex/l3experimental/xcoffins/xcoffins.sty
+catalogue-also l3kernel l3packages
+catalogue-contact-home https://www.latex-project.org
+catalogue-ctan /macros/latex/contrib/l3experimental
+catalogue-license lppl1.3c
+catalogue-topics macro-supp layout latex3

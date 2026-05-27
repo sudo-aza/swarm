@@ -1,0 +1,10 @@
+\documentclass{article}
+\newif\iftestcond
+\testcondtrue
+\iftestcond
+\directlua{function test_cond_fn() tex.sprint("\\typeout{COND TRUE}") end}
+\directlua{test_cond_fn()}
+\fi
+\begin{document}
+Hello
+\end{document}

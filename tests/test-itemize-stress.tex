@@ -1,0 +1,125 @@
+% Targeted itemize stress test — mirrors 1000-page test patterns
+% Tests Task #166: itemize parshape leak body-text overlaps
+\documentclass[a4paper,11pt]{article}
+\usepackage{swarmwrap}
+\usepackage{lipsum}
+\usepackage{caption}
+
+\begin{document}
+
+% Pattern 1: Figure before itemize (Tests 41, 81, 121 from 1000-page)
+% 3cm x 3cm figure, then lipsum, then itemize
+\section*{Test 1: 3cm x 3cm figure before itemize}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Test 1 (3cm x 3cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[95]
+\begin{itemize}
+  \item \lipsum[96][1-3]
+  \item \lipsum[97][1-3]
+  \item \lipsum[98][1-3]
+  \item \lipsum[99][1-3]
+  \item \lipsum[100][1-3]
+\end{itemize}
+
+\newpage
+
+% Pattern 2: Figure inside itemize on first item (Tests 31, 61, 91)
+% 4cm x 4cm figure, then multiple items
+\section*{Test 2: 4cm x 4cm figure inside itemize}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{4cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Test 2 (4cm x 4cm).}
+  \end{minipage}%
+\end{swarmwrap}
+\begin{itemize}
+  \item \swarmwrapnext\lipsum[17][1-4]
+  \item \lipsum[19][1-3]
+  \item \lipsum[20][1-3]
+  \item \lipsum[21][1-3]
+  \item \lipsum[22][1-3]
+  \item \lipsum[23][1-3]
+\end{itemize}
+
+\newpage
+
+% Pattern 3: 2cm figure inside itemize (matches 1000-page Test 61)
+\section*{Test 3: 2cm x 3cm figure inside itemize}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{2cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Test 3 (2cm x 3cm).}
+  \end{minipage}%
+\end{swarmwrap}
+\begin{itemize}
+  \item \swarmwrapnext\lipsum[141][1-4]
+  \item \lipsum[143][1-3]
+  \item \lipsum[144][1-3]
+\end{itemize}
+
+\newpage
+
+% Pattern 4: Large 4cm x 9cm figure inside itemize (Test 91)
+\section*{Test 4: 4cm x 9cm figure inside itemize}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{4cm}
+    \centering
+    \rule{\linewidth}{9cm}
+    \captionof{figure}{Test 4 (4cm x 9cm).}
+  \end{minipage}%
+\end{swarmwrap}
+\begin{itemize}
+  \item \swarmwrapnext\lipsum[144][1-4]
+  \item \lipsum[146][1-3]
+  \item \lipsum[147][1-3]
+\end{itemize}
+
+\newpage
+
+% Pattern 5: 2cm x 5cm figure before itemize (Test 41 from 1000-page)
+\section*{Test 5: 2cm x 5cm figure before itemize}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{2cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Test 5 (2cm x 5cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[125]
+\begin{itemize}
+  \item \lipsum[126][1-3]
+  \item \lipsum[127][1-3]
+  \item \lipsum[128][1-3]
+\end{itemize}
+
+\newpage
+
+% Pattern 6: 3cm x 5cm figure before itemize with many items (Test 121)
+\section*{Test 6: 3cm x 5cm figure before itemize, many items}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Test 6 (3cm x 5cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[149]
+\begin{itemize}
+  \item \lipsum[150][1-3]
+  \item \lipsum[1][1-3]
+  \item \lipsum[2][1-3]
+  \item \lipsum[3][1-3]
+  \item \lipsum[4][1-3]
+\end{itemize}
+
+\end{document}

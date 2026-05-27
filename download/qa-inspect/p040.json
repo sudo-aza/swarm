@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1. No  \n2. Yes  \n3. Full page  \n4. GHOST NARROWING BUG",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1779394373,
+  "id": "20260522041250482e1fb87be643d5",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "20260522041250482e1fb87be643d5",
+  "usage": {
+    "completion_tokens": 23,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2709,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 2732
+  }
+}

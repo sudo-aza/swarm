@@ -1,0 +1,26 @@
+name gmp
+category Package
+revision 77682
+shortdesc Enable integration between MetaPost pictures and LaTeX
+longdesc The package allows integration between MetaPost pictures and
+longdesc LaTeX. The main feature is that passing parameters to the
+longdesc MetaPost pictures is possible and the picture code can be put
+longdesc inside arguments to commands, including \newcommand.
+containersize 3904
+containerchecksum e1d0df154733e752fd300ca28eb15d299de213f6510dfb56e62396cd7a2332f370d3a3744dc157f0be8f5d8a212606c685e5e6eff5cd884765d1f5b214f63bda
+doccontainersize 801544
+doccontainerchecksum 421fdca46017b5a25dcde5b87cd7cc1ffbdecb3daec8791d56a75b50f726c325e59572c1f2e7d4caf0da60fc46ba29965b9c8e2a26bcc3feb8a0bf9af68c26db
+docfiles size=197
+ texmf-dist/doc/latex/gmp/README details="Readme"
+ texmf-dist/doc/latex/gmp/gmp.pdf details="Package documentation"
+srccontainersize 25888
+srccontainerchecksum 9df16cabca4199416d1b8c6c49c1533d5b56820bee915e22c4b9cffa5eb2509e3ce4316f06d4721ecdc9107792b151bf809eed75a3670464e25f20cc22ab2a42
+srcfiles size=23
+ texmf-dist/source/latex/gmp/gmp.dtx
+ texmf-dist/source/latex/gmp/gmp.ins
+runfiles size=3
+ texmf-dist/tex/latex/gmp/gmp.sty
+catalogue-ctan /macros/latex/contrib/gmp
+catalogue-license lppl1.3
+catalogue-topics mp-supp graphics tagged-pdf-partially
+catalogue-version 1.0
