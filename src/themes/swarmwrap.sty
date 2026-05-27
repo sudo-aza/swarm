@@ -36,15 +36,19 @@
 %
 % ── Known Limitations ─────────────────────────────────────────────────
 %
-% 1. Ghost narrowing on continuation pages:
+% 1. Ghost narrowing on continuation pages (PARTIALLY FIXED in v3.45):
 %    When the wrapped paragraph spans a page break, TeX's parshape
 %    persists across the page boundary but the figure does not (it is
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
 %    lines on the next page remain narrowed even though no figure is
-%    beside them. This is cosmetic only — no text overlaps the figure.
-%    Mitigation: \swarmwrappenalty{N} inserts a penalty at the
-%    boundary to discourage TeX from breaking there (default: 10000).
-%    Affects only very long paragraphs that span page breaks.
+%    beside them.
+%    v3.45 FIX (two-part):
+%    (1) Insert penalty 10000 after EVERY narrow line in post_linebreak_filter,
+%        preventing TeX from breaking the page within the narrow zone.
+%    (2) Shipout_filter safety net re-packs any carry-over narrow lines
+%        at full linewidth using node.hpack('exactly').
+%    Trade-off: may slightly increase page count when narrow zones are
+%    pushed to the next page instead of straddling page breaks.
 %
 % 2. Parshape leak into list items (PARTIALLY FIXED in v3.16):
 %    When \swarmwrapnext is used before a list, subsequent \item
@@ -69,7 +73,7 @@
 %   through on pages without figures, using node.hpack('exactly').
 %   RESULT: carry-over narrowing eliminated on pages without figures.
 %   On pages WITH figures, carry-over prevented by penalty fence.
-
+%
 % v3.44: Use raw box height for visible content height (swarmwrap-callback.lua).
 %   v3.43 subtracted strutbox.height + strutbox.depth from box.height +
 %   box.depth. This was WRONG for [t]-minipages with tall figures: the
@@ -265,8 +269,6 @@
 \newdimen\swarmwrap@fig@bottom  % Y position where figure ends (narrow, for \par patch)
 \newdimen\swarmwrap@fig@bottom@safe  % Y position with padding (for vspace push)
 \newcount\swarmwrap@fig@page    % page number when figure was placed
-\newcount\swarmwrap@fig@page@prev  % previous figure's page (for carry-over detection)
-\swarmwrap@fig@page@prev=0
 \swarmwrap@fig@bottom=0pt
 \swarmwrap@fig@bottom@safe=0pt
 \swarmwrap@fig@page=0
@@ -329,7 +331,7 @@
       tex.dimen["swarmwrap@fh"] = vis_h%
     }%
     \xdef\swarmwrap@fh@narrow@val{\the\swarmwrap@fh}%
-    \wlog{swarmwrap v3.44: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
+    \wlog{swarmwrap v3.45: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
   \fi
 }
 
@@ -665,7 +667,6 @@
   \global\advance\swarmwrap@fig@bottom by \swarmwrap@fh\relax
   \global\swarmwrap@fig@bottom@safe=\pagetotal
   \global\advance\swarmwrap@fig@bottom@safe by \swarmwrap@fh@val\relax
-  \global\swarmwrap@fig@page@prev=\swarmwrap@fig@page\relax
   \global\swarmwrap@fig@page=\the\c@page\relax
   % emergencystretch absorbs overfull hbox on narrowed parshape lines
   \emergencystretch=\fontdimen6\font\relax
@@ -696,14 +697,13 @@
     \global\advance\swarmwrap@fig@bottom by \swarmwrap@fh\relax
     \global\swarmwrap@fig@bottom@safe=\pagetotal
     \global\advance\swarmwrap@fig@bottom@safe by \swarmwrap@fh@val\relax
-    \global\swarmwrap@fig@page@prev=\swarmwrap@fig@page\relax
     \global\swarmwrap@fig@page=\the\c@page\relax
     \emergencystretch=\fontdimen6\font\relax
     \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
     \directlua{swarmwrap_mark_fig_placed()}%
-    \wlog{swarmwrap v3.45 next: DEFERRED (page eject) — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
+    \wlog{swarmwrap next: DEFERRED (page eject) — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
     % Figure fits — place inline.
     % v3.37: Explicit \parshape=0 before \noindent ensures clean
@@ -714,7 +714,7 @@
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
     \directlua{swarmwrap_mark_fig_placed()}%
-    \wlog{swarmwrap v3.45 next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
+    \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
   \fi
 }%
 \else
