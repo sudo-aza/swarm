@@ -65,6 +65,14 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.46: Fix shipout filter — use node.hpack for proper line widening.
+%   v3.45's glue-stretch approach set hbox.width and glue_set but did NOT
+%   reposition text glyphs (same class of bug as v3.27/v3.29). QA: "Shipout
+%   filter completely fails." node.hpack(head, target_width, 'exactly')
+%   actually redistributes inter-word glue and repositions glyphs.
+%   RESULT: hollow carry-over regression fixed (27->0 in 1000-fig).
+%   Ghost narrowing: 2->0. Original 7 carry-over pages still fixed by penalty.
+%
 % v3.45: Fix carry-over narrowing across page breaks (Task #199).
 %   Two-part fix: (1) Insert penalty 10000 after every narrow line in
 %   post_linebreak_filter, preventing TeX from breaking the page within
@@ -240,7 +248,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/27 v3.45 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/27 v3.46 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -331,7 +339,7 @@
       tex.dimen["swarmwrap@fh"] = vis_h%
     }%
     \xdef\swarmwrap@fh@narrow@val{\the\swarmwrap@fh}%
-    \wlog{swarmwrap v3.45: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
+    \wlog{swarmwrap v3.46: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
   \fi
 }
 
