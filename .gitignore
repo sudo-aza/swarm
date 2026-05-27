@@ -64,3 +64,6 @@ Thumbs.db
 !tests/test-stress-1000.pdf
 *.listing
 .install-tl-cache/
+
+# Prevent stale swarmwrap.sty copies at repo root (canonical: src/themes/swarmwrap.sty)
+/swarmwrap.sty

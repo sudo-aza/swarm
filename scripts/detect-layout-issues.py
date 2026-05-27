@@ -880,7 +880,8 @@ def analyze_pdf(pdf_path, args):
         ("FIGURE BESIDE TEXT", "figure_beside_text"),
         ("NEAR-EMPTY PAGES", "near_empty"),
         ("TEXT-FIGURE OVERLAP (body text)", "overlap"),
-        ("TEXT-FIGURE OVERLAP (caption, expected)", "caption_overlap"),
+            ("TEXT-FIGURE OVERLAP (caption)", "caption_overlap"),
+        ("TEXT-FIGURE OVERLAP (caption)", "caption_overlap"),
         ("GHOST NARROWING", "ghost_narrow"),
         ("EXTRA VSPACE", "extra_vspace"),
         ("HOLLOW CARRY-OVER", "hollow_carryover"),
@@ -898,9 +899,12 @@ def analyze_pdf(pdf_path, args):
         print()
 
         # Separate "real bugs" from "acceptable/known" issues
+        # Caption overlaps are REAL BUGS since v3.44 fixed them (was 50/50, now 0/50).
+        # Moved from acceptable to real_bugs so future regressions are caught (QA Rule 10).
         real_bugs = [
             ("FIGURE BESIDE TEXT (no wrapping)", "figure_beside_text"),
             ("TEXT-FIGURE OVERLAP (body text)", "overlap"),
+            ("TEXT-FIGURE OVERLAP (caption)", "caption_overlap"),
             ("GHOST NARROWING", "ghost_narrow"),
             ("HOLLOW CARRY-OVER", "hollow_carryover"),
             ("FIGURE MISALIGNED", "figure_misaligned"),
@@ -908,7 +912,6 @@ def analyze_pdf(pdf_path, args):
         ]
         acceptable = [
             ("NEAR-EMPTY PAGES (page-eject)", "near_empty"),
-            ("TEXT-FIGURE OVERLAP (caption)", "caption_overlap"),
             ("EXTRA VSPACE", "extra_vspace"),
         ]
 

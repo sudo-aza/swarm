@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.42)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.44)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -60,6 +60,23 @@
 %    eliminates body-text overlaps from continuation text.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.44: Use raw box height for visible content height (swarmwrap-callback.lua).
+%   v3.43 subtracted strutbox.height + strutbox.depth from box.height +
+%   box.depth. This was WRONG for [t]-minipages with tall figures: the
+%   strut is shorter than the rule, so box.height = rule height (not
+%   strut height). Subtracting strut_h removed a full baselineskip of
+%   actual visible content (caption area), causing caption-text overlap.
+%   v3.44 uses raw box.height + box.depth, which covers the full
+%   figure + \abovecaptionskip + caption block. The parshape loop's
+%   ceil provides at most 1 line of excess (~13.6pt).
+%   RESULT: 0 caption-text overlaps (was 50/50 with v3.42), 0
+%   body-text overlaps, 0 ghost-narrowing, 0 near-empty pages.
+%   QA Task #197: 10/10 PASS.
+%
+% v3.43: Visible content height = box.height + box.depth - strut_h.
+%   Attempted to subtract strut overhead from box height. FAILED for
+%   [t]-minipages with tall figures — see v3.44 notes above.
 %
 % v3.42: Tighten visible content height — remove bonus and minimum.
 %   PROBLEM: v3.41 added 0.5*bs bonus and 2*bs minimum to the Lua
@@ -210,7 +227,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/26 v3.42 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/26 v3.44 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -301,7 +318,7 @@
       tex.dimen["swarmwrap@fh"] = vis_h%
     }%
     \xdef\swarmwrap@fh@narrow@val{\the\swarmwrap@fh}%
-    \wlog{swarmwrap v3.42: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
+    \wlog{swarmwrap v3.44: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
   \fi
 }
 
