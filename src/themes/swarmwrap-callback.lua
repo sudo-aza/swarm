@@ -3,7 +3,7 @@
 --
 -- STRATEGY: After TeX breaks a paragraph into lines, find the LAST
 -- narrow line (the narrow→full parshape transition point) and insert
--- a negative penalty (-500) after it. This encourages TeX to break
+-- a negative penalty (-2000) after it. This encourages TeX to break
 -- the page at this point rather than in the middle of the narrow zone.
 -- If the paragraph must span a page break, TeX will prefer to break at
 -- the transition — continuation starts with full-width lines.
@@ -92,7 +92,7 @@ function swarmwrap_post_lb(head, groupcode)
   
   -- Insert a negative penalty after the last narrow line.
   -- This encourages TeX to break the page here.
-  -- v3.54: Use -10000 (very strong encouragement).
+  -- v3.54: Use -2000 (strong encouragement).
   if last_narrow then
     local pen = node.new(penalty_id)
     pen.penalty = -2000
