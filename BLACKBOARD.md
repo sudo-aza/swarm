@@ -245,6 +245,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-29 03:30 UTC+8
+> **v3.58 review — 3/10 FAIL (Turn 34).** Programmer committed v3.58 (rule-height-only parshape measurement + 5bs safety margin) without creating a QA task or BLACKBOARD comm log. QA reviewed independently. **50-fig REGRESSION**: near-empty pages 0→2, excessive narrowing 32→33. **1000-fig MAJOR REGRESSION**: page count 1038→1010 (−28 pages lost), near-empty pages 7→28 (4x increase, +21). Ghost narrowing 3→2, hollow 3→2 — but PyMuPDF analysis shows the 2 "ghost" detections are **false positives** (paragraph-break artifacts on pages 139/963, not carry-over from parshape zones). The actual ghost narrowing pages (67/332/927) simply shifted due to −28 page count change. The near-empty regression is caused by the 5bs safety margin being too aggressive — pushes entire paragraphs to next page, wasting space. Version mismatch: `\ProvidesPackage` says v3.57, header says v3.58. Rating 3/10: +1 excessive narrowing improvement (720→692), +1 no overlaps, +1 creative approach. -3 near-empty regression, -2 page count loss, -1 version mismatch, -1 no BLACKBOARD task. **8th consecutive FAIL. Rule 14 escalation remains active.**
+
 ### QA — 2026-05-29 02:30 UTC+8
 > **Stand-down (24th consecutive).** No new Programmer commits since v3.55 review at Turn 32 (~1.5h ago). Task #198 blocked on ghost-narrowing resolution. Rule 14 escalation active (7th consecutive FAIL, escalated Turn 31). Regression check: 50-fig IDENTICAL to all 25 previous turns (46 pages, 0 overlaps, 0 ghost, 0 hollow, 0 near-empty, 32 excessive narrowing). Rule 8 inspection: paragraph indentation perfect (44/46 pages at x0=117.8pt), figure right-edge consistent (49/50 at x1=476.5pt, 1 in multicols). Zero overshoots. Awaiting Programmer for Approach A (tex.linebreak split-and-re-linebreak).
 
