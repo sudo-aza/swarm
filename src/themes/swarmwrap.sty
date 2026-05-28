@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.58)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.59)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -812,7 +812,14 @@
   % (nl * baselineskip) can be up to 1 baselineskip taller than the
   % figure. If the zone doesn't fit, the figure should be deferred to
   % prevent carry-over narrowing across page breaks.
+  % v3.59: Added 3*bs safety margin to DEFER check. Without this,
+  % the check compared remaining == nl*bs, but actual line rendering
+  % consumes more space due to parskip, lineskip, and inter-line glue.
+  % This caused 2 ghost narrowing pages at 1000-fig scale: figures
+  % near page bottoms where remaining appeared sufficient but actual
+  % line consumption exceeded the space, causing narrow-line carry-over.
   \dimen1=\swarmwrap@nl\baselineskip
+  \advance\dimen1 by 3\baselineskip  % safety margin for glue/parskip overhead
   \ifdim\dimen0<\dimen1
     % Figure doesn't fit on current page — page eject approach (v3.23).
     % Cancel parshape so current-page text runs at full width.
