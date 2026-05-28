@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.54)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.55)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -70,6 +70,21 @@
 %    eliminates body-text overlaps from continuation text.
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.55: Pre-check needspace in pre_linebreak_filter (Approach B from Researcher).
+%   NEW: Added a second layer of ghost-narrowing prevention that is fundamentally
+%   different from penalties. Before TeX breaks lines (pre_linebreak_filter),
+%   the callback reads the current parshape, counts narrow entries, and checks
+%   if the narrow zone fits on the remaining page space (with 2bs safety margin).
+%   If not, it reduces narrow entries or clears parshape entirely.
+%   WHY: The .sty's \par patch and \item hook set parshape at paragraph/item
+%   boundaries with a 3bs safety margin. But at that point, \pagetotal may not
+%   reflect all inter-paragraph spacing (\parskip, list overhead). By the time
+%   pre_linebreak_filter fires, all spacing has been consumed and \pagetotal is
+%   accurate. This catches cases where the 3bs margin was insufficient.
+%   TECHNIQUE: Reading/writing tex.parshape from pre_linebreak_filter, proven
+%   by the chickenize package (Henri Menke).
+%   RESULT: Target: 0 ghost narrowing at 1000-fig scale (down from 3 in v3.54).
 %
 % v3.54: Transition penalty in post_linebreak_filter (v3.53 node ID fix).
 %   v3.53 fixed the node ID bug but left penalties disabled as passthrough.
@@ -314,7 +329,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/28 v3.54 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/29 v3.55 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -405,7 +420,7 @@
       tex.dimen["swarmwrap@fh"] = vis_h%
     }%
     \xdef\swarmwrap@fh@narrow@val{\the\swarmwrap@fh}%
-    \wlog{swarmwrap v3.54: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
+    \wlog{swarmwrap v3.55: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
   \fi
 }
 
