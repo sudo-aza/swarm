@@ -147,7 +147,14 @@ function swarmwrap_needspace(head, groupcode)
     return head
   end
 
-  local remaining = tex.dimen["pagegoal"] - tex.dimen["pagetotal"]
+  local remaining
+  local ok, err = pcall(function()
+    remaining = tex.dimen["pagegoal"] - tex.dimen["pagetotal"]
+  end)
+  if not ok then
+    return head  -- Safety: skip needspace check if dimen access fails
+  end
+
   local needed = (narrow_count + 4) * bs
 
   if remaining < needed then
