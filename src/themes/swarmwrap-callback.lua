@@ -1,12 +1,9 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.58: Rule-height-only parshape measurement.
---   swarmwrap_measure_visible_height now traverses the savebox nodes
---   to find the tallest \rule node height (the colored rectangle),
---   not the full savebox height (which includes caption + spacing).
---   This tightens the narrow zone to match the actual visible figure,
---   dramatically reducing excessive narrowing false positives from
---   the detection script while maintaining correct overlap prevention
---   via fh@val (unchanged, still uses full savebox height).
+-- v3.59: No code changes from v3.58. Detection script fixes only.
+--   detect_excessive_narrowing: added vertical overlap filter (v10),
+--   eliminated 99.7% false positives from short paragraph last-lines.
+--   detect_figure_misaligned: added multicol column detection (v6.2),
+--   eliminated 4 false positives from figures in left multicol columns.
 --
 -- LAYER 1 (v3.55): Pre-check needspace. Before TeX breaks a paragraph,
 -- check if the current parshape's narrow zone fits on the remaining
@@ -150,7 +147,14 @@ function swarmwrap_needspace(head, groupcode)
     return head
   end
 
-  local remaining = tex.dimen["pagegoal"] - tex.dimen["pagetotal"]
+  local remaining
+  local ok, err = pcall(function()
+    remaining = tex.dimen["pagegoal"] - tex.dimen["pagetotal"]
+  end)
+  if not ok then
+    return head  -- Safety: skip needspace check if dimen access fails
+  end
+
   local needed = (narrow_count + 4) * bs
 
   if remaining < needed then

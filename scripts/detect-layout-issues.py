@@ -685,9 +685,25 @@ def detect_excessive_narrowing(page_num, page, figures, text_lines,
         if fig_height < 20:
             continue  # Skip tiny figures
 
-        # Find narrow text lines that are to the LEFT of the figure
+        # Find narrow text lines that are BESIDE the figure.
+        # v10 (2026-05-29): Added vertical overlap filter.
+        # Previous versions counted ALL narrow lines to the left of the figure
+        # regardless of vertical position. This caused massive false positives:
+        # short last-lines of paragraphs (e.g., "libero.", "Cras") anywhere on
+        # the page were counted as "wrapping zone," inflating the narrow zone
+        # to span the entire page (ratios of 4-9x). In reality, these lines are
+        # just paragraph endings at the left margin — they have nothing to do
+        # with wrapping. Fix: only count lines whose vertical range overlaps
+        # with the figure's vertical range (with 1-baselineskip margin for
+        # parshape rounding above and below).
+        MARGIN = 10.0  # accounts for line-height overlap at figure boundaries
         narrow_lines = []
         for line in body_lines:
+            # Must vertically overlap with the figure (with margin)
+            if line["y1"] < fig.y0 - MARGIN:
+                continue  # Line is above the figure
+            if line["y0"] > fig.y1 + MARGIN:
+                continue  # Line is below the figure
             # Must be beside the figure (to the left)
             if line["x1"] > fig.x0 + 5:
                 continue
@@ -769,6 +785,18 @@ def detect_figure_misaligned(page_num, figures, text_lines):
 
     for i, fig in enumerate(figures):
         gap = max_text_x1 - fig.x1
+        # v6.2 fix: Also skip figures in multicol columns. If the figure's
+        # right edge is far from the page's right text margin AND the figure
+        # is in the left ~60% of the page, it's likely in a multicol left
+        # column. The _is_multicol_page check above misses pages where the
+        # multicol section doesn't produce two distinct x0 clusters (e.g.,
+        # when both columns have text starting at similar x0 after paragraph
+        # indentation, or when the page has a mix of multicol and normal text).
+        # These 4 FPs (pages 93, 185, 461, 917) all have figures at x<300
+        # with text extending to x=476 — the figure is in a narrow column
+        # but the detection uses the full page width as baseline.
+        if gap > 100 and fig.x1 < max_text_x1 * 0.65:
+            continue  # Figure in left multicol column, skip
         if gap > MARGIN_THRESHOLD:
             issues.append({
                 "page": page_num + 1,
