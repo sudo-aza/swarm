@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.59)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.61)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -329,7 +329,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/29 v3.57 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/29 v3.62 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -380,6 +380,11 @@
 % trailing entry, thus avoiding body-text overlaps).
 \newcount\swarmwrap@nl@lua
 \swarmwrap@nl@lua=0
+% v3.62: Lua-readable flag for buildpage ghost-fix. Set by buildpage_filter
+% when the current page has no figure. The \par patch checks this flag
+% to skip parshape extension on continuation pages, preventing ghost narrowing.
+\newdimen\swarmwrap@ghost@flag
+\swarmwrap@ghost@flag=0pt
 
 % ── Lua callback: post_linebreak_filter ───────────────────────────────
 % Only used for penalty insertion at the parshape boundary (discouraging
@@ -461,6 +466,16 @@
   \swarmwrap@orig@par
   \ifswarmwrap@active
     \ifswarmwrap@list@active\else
+      % v3.62: Ghost-fix — check if buildpage_filter set the flag.
+      % When the current page has no figure (ghost@flag > 0), skip
+      % parshape extension entirely and deactivate. This prevents
+      % ghost narrowing on continuation pages where parshape carried
+      % over from the previous page but no figure is present.
+      \ifdim\swarmwrap@ghost@flag>0pt\relax
+        \swarmwrap@activefalse
+        \global\let\par\swarmwrap@orig@par
+        \parshape=0\relax
+      \else
       % Check: are we still on the same page as the figure?
       % And is there still vertical space remaining?
       \ifnum\swarmwrap@fig@page=\the\c@page\relax
@@ -574,6 +589,9 @@
 }
 
 % Hook for paragraphs inside lists with active swarmwrap wrapping.
+% v3.61: Added hard cap enforcement (narrow_used vs max_narrow) to prevent
+% item/list hooks from bypassing the cap and generating excessive narrow lines
+% that carry over to the next page as ghost narrowing (Task #214).
 \newcommand{\swarmwrap@list@everypar@hook}{%
   \ifswarmwrap@active
     \ifnum\swarmwrap@fig@page=\the\c@page\relax
@@ -601,6 +619,16 @@
           \ifnum\swarmwrap@loop@cnt>\swarmwrap@tmp@cnt
             \swarmwrap@loop@cnt=\swarmwrap@tmp@cnt
           \fi
+          % v3.61: Enforce hard cap on total narrow lines (Task #214).
+          % Without this, list/item hooks bypass the cap, generating excessive
+          % narrow lines that carry over to the next page as ghost narrowing.
+          \swarmwrap@tmp@cnt=\swarmwrap@max@narrow
+          \advance\swarmwrap@tmp@cnt by -\swarmwrap@narrow@used
+          \ifnum\swarmwrap@tmp@cnt>0\relax
+            \ifnum\swarmwrap@loop@cnt>\swarmwrap@tmp@cnt
+              \swarmwrap@loop@cnt=\swarmwrap@tmp@cnt
+            \fi
+          \fi
           \ifnum\swarmwrap@loop@cnt>0\relax
             % v3.30: trailing full-width entry in list hook
             % Count = remaining lines + 1 trailing full-width
@@ -616,6 +644,8 @@
             \parshape \swarmwrap@pshape\relax
             \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
             \emergencystretch=\fontdimen6\font\relax
+            % v3.61: Track total narrow lines used for hard cap
+            \global\advance\swarmwrap@narrow@used by \swarmwrap@loop@cnt
           \else
             \global\swarmwrap@activefalse
             \swarmwrap@list@activefalse
@@ -671,6 +701,14 @@
           \ifnum\swarmwrap@loop@cnt>\swarmwrap@tmp@cnt
             \swarmwrap@loop@cnt=\swarmwrap@tmp@cnt
           \fi
+          % v3.61: Enforce hard cap on total narrow lines (Task #214).
+          \swarmwrap@tmp@cnt=\swarmwrap@max@narrow
+          \advance\swarmwrap@tmp@cnt by -\swarmwrap@narrow@used
+          \ifnum\swarmwrap@tmp@cnt>0\relax
+            \ifnum\swarmwrap@loop@cnt>\swarmwrap@tmp@cnt
+              \swarmwrap@loop@cnt=\swarmwrap@tmp@cnt
+            \fi
+          \fi
           \ifnum\swarmwrap@loop@cnt>0\relax
             % v3.30: trailing full-width entry in item hook
             % Count = remaining lines + 1 trailing full-width
@@ -686,6 +724,8 @@
             \parshape \swarmwrap@pshape\relax
             \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
             \emergencystretch=\fontdimen6\font\relax
+            % v3.61: Track total narrow lines used for hard cap
+            \global\advance\swarmwrap@narrow@used by \swarmwrap@loop@cnt
           \else
             \global\swarmwrap@activefalse
             \parshape=0\relax
