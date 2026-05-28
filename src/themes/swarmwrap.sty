@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.55)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.58)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -329,7 +329,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/29 v3.55 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/29 v3.57 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -420,7 +420,7 @@
       tex.dimen["swarmwrap@fh"] = vis_h%
     }%
     \xdef\swarmwrap@fh@narrow@val{\the\swarmwrap@fh}%
-    \wlog{swarmwrap v3.55: fh_narrow=\the\swarmwrap@fh (visible content height via Lua)}%
+    \wlog{swarmwrap v3.58: fh_narrow=\the\swarmwrap@fh (rule height via Lua node traversal)}%
   \fi
 }
 
@@ -477,10 +477,12 @@
           % Without this, the extension could produce narrow lines that
           % carry over to the next page (ghost narrowing). Compute how
           % many lines fit before the page boundary.
-          % v3.53: Increased safety margin to 2 baselineskip (was 1 in v3.51).
+          % v3.57: Increased safety margin to 5 baselineskip (was 3).
+          % Extra margin reduces narrow lines, preventing ghost narrowing when
+          % the full paragraph (narrow + full-width lines) overflows the page.
           \dimen2=\pagegoal
           \advance\dimen2 by -\pagetotal
-          \advance\dimen2 by -3\baselineskip
+          \advance\dimen2 by -5\baselineskip
           \swarmwrap@tmp@cnt=0
           \loop
             \advance\dimen2 by -\baselineskip
@@ -590,7 +592,7 @@
           % v3.50/v3.51: Limit by remaining page space (Task #204).
           \dimen2=\pagegoal
           \advance\dimen2 by -\pagetotal
-          \advance\dimen2 by -3\baselineskip
+          \advance\dimen2 by -5\baselineskip
           \swarmwrap@tmp@cnt=0
           \loop
             \advance\dimen2 by -\baselineskip
@@ -660,7 +662,7 @@
           % v3.50/v3.51: Limit by remaining page space (Task #204).
           \dimen2=\pagegoal
           \advance\dimen2 by -\pagetotal
-          \advance\dimen2 by -3\baselineskip
+          \advance\dimen2 by -5\baselineskip
           \swarmwrap@tmp@cnt=0
           \loop
             \advance\dimen2 by -\baselineskip

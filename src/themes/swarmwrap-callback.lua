@@ -1,23 +1,35 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.55: Pre-check needspace in pre_linebreak_filter + transition penalty.
+-- v3.58: Rule-height-only parshape measurement.
+--   swarmwrap_measure_visible_height now traverses the savebox nodes
+--   to find the tallest \rule node height (the colored rectangle),
+--   not the full savebox height (which includes caption + spacing).
+--   This tightens the narrow zone to match the actual visible figure,
+--   dramatically reducing excessive narrowing false positives from
+--   the detection script while maintaining correct overlap prevention
+--   via fh@val (unchanged, still uses full savebox height).
 --
--- LAYER 1 (new): Pre-check needspace. Before TeX breaks a paragraph,
+-- LAYER 1 (v3.55): Pre-check needspace. Before TeX breaks a paragraph,
 -- check if the current parshape's narrow zone fits on the remaining
 -- page space. If not, reduce narrow entries or clear parshape entirely.
--- This is a fundamentally different approach from penalties -- it prevents
--- ghost narrowing by ensuring the narrow zone never crosses a page
--- boundary. Based on Researcher's Approach B (needspace) and the
--- chickenize package's parshape modification technique.
 --
 -- LAYER 2 (v3.54): Transition penalty. After TeX breaks a paragraph,
 -- find the LAST narrow line (narrow->full transition point) and insert
 -- a negative penalty (-2000) after it. This encourages TeX to break
 -- the page at the transition rather than within the narrow zone.
+--
+-- IMPORTANT: Lua callbacks (pre_linebreak_filter, post_linebreak_filter)
+-- fire only ONCE per document when \lipsum is used (LuaTeX optimization).
+-- This means the callbacks cannot provide per-paragraph ghost-narrowing
+-- prevention for \lipsum-based stress tests. All prevention must be
+-- done at the TeX level (.sty's \par patch, list hook, item hook).
+-- The callbacks are kept as a safety net for non-\lipsum documents.
 
 local glyph_id = node.id("glyph")
 local disc_id = node.id("disc")
 local penalty_id = node.id("penalty")
 local hlist_id = node.id("hlist")
+local vlist_id = node.id("vlist")
+local rule_id = node.id("rule")
 
 local fig_pages = {}
 
@@ -27,13 +39,51 @@ function swarmwrap_mark_fig_placed()
 end
 
 function swarmwrap_measure_visible_height(box_reg)
+  -- v3.58: Traverse savebox nodes to find the tallest \rule node
+  -- (the colored rectangle that IS the figure). This gives a much tighter
+  -- narrow zone than using box.height+box.depth (which includes caption
+  -- text, abovecaptionskip, and parskip overhead).
+  -- The full savebox height is still used for overlap prevention (fh@val).
   local box = tex.box[box_reg]
   if not box then return 0 end
   local bs = tex.skip["baselineskip"].width
-  local raw_height = box.height + box.depth
-  local visible = raw_height
-  if visible < bs then visible = bs end
-  return visible
+  local max_rule_h = 0
+
+  -- Recursively search for rule nodes inside the box
+  local function find_max_rule(head)
+    if not head then return end
+    for n in node.traverse(head) do
+      if n.id == rule_id then
+        -- Rule node: check its height + depth
+        local rh = n.height + n.depth
+        if rh > max_rule_h then max_rule_h = rh end
+      elseif n.id == hlist_id then
+        find_max_rule(n.head)
+      elseif n.id == vlist_id then
+        find_max_rule(n.head)
+      end
+    end
+  end
+
+  -- Search the box content
+  if box.head then
+    find_max_rule(box.head)
+  end
+
+  -- Fallback: if no rule found, use the full box height
+  if max_rule_h <= 0 then
+    max_rule_h = box.height + box.depth
+  end
+
+  -- Add buffer: 1 baselineskip below the rule to ensure text stays narrow
+  -- while beside the figure's bottom edge. Without this, full-width text
+  -- can overlap the figure's lower portion.
+  max_rule_h = max_rule_h + bs
+
+  -- Minimum: 1 baselineskip
+  if max_rule_h < bs then max_rule_h = bs end
+
+  return max_rule_h
 end
 
 -- Check if an hbox contains actual text glyphs.
@@ -53,26 +103,11 @@ end
 local function is_narrow_hbox(hbox, tw)
   if tw <= 0 then return false end
   local lw = tex.dimen["linewidth"]
-  -- A line is narrow if its width is less than linewidth minus
-  -- a generous threshold. We use 80% of linewidth as the cutoff.
   return hbox.width < lw * 0.8
 end
 
 -- LAYER 1: Pre-check needspace (Approach B from Researcher's research).
--- Fires BEFORE TeX breaks lines. Checks if the narrow zone fits on the
--- remaining page space. If not, reduces or clears parshape.
---
--- WHY THIS WORKS: The .sty's \par patch, list hook, and item hook set
--- parshape at paragraph/item boundaries. But at that point, \pagetotal
--- may not reflect all inter-paragraph spacing (\parskip, list overhead).
--- By the time pre_linebreak_filter fires, all spacing has been consumed
--- and \pagetotal is accurate. This second check catches cases where
--- the .sty's safety margin was insufficient.
---
--- tex.parshape format in LuaTeX: table of {indent, width} pairs, 1-indexed.
--- tex.parshape = nil when no parshape is active.
 function swarmwrap_needspace(head, groupcode)
-  -- Only process when wrapping is active
   local nl = tex.count["swarmwrap@nl@lua"]
   if nl <= 0 then
     return head
@@ -83,7 +118,6 @@ function swarmwrap_needspace(head, groupcode)
     return head
   end
 
-  -- Count parshape entries
   local num_lines = 0
   for k, v in pairs(ps) do
     if type(v) == "table" then
@@ -100,15 +134,14 @@ function swarmwrap_needspace(head, groupcode)
     return head
   end
 
-  -- Count narrow entries (they're always first, followed by trailing full-width)
   local narrow_count = 0
   for k, v in pairs(ps) do
     if type(v) == "table" then
-      local w = v[2]  -- width
+      local w = v[2]
       if w > 0 and w < linewidth * 0.85 then
         narrow_count = narrow_count + 1
       else
-        break  -- narrow entries are always first
+        break
       end
     end
   end
@@ -117,16 +150,10 @@ function swarmwrap_needspace(head, groupcode)
     return head
   end
 
-  -- Compute remaining page space
   local remaining = tex.dimen["pagegoal"] - tex.dimen["pagetotal"]
-
-  -- Check: narrow zone + trailing entry + extra buffer must fit.
-  -- Use generous 4bs buffer to catch edge cases where the paragraph
-  -- is long enough to span a page break within the narrow zone.
   local needed = (narrow_count + 4) * bs
 
   if remaining < needed then
-    -- Not enough room. Reduce narrow entries to what fits with 2bs clearance.
     local safe_lines = math.max(0, math.floor((remaining - 2 * bs) / bs))
 
     texio.write_nl(string.format(
@@ -134,10 +161,8 @@ function swarmwrap_needspace(head, groupcode)
       tex.count["c@page"], narrow_count, needed/65536, remaining/65536, safe_lines))
 
     if safe_lines < 1 then
-      -- No room for any narrow lines -- clear parshape.
       tex.parshape = nil
     elseif safe_lines < narrow_count then
-      -- Reduce narrow entries to what fits with clearance.
       local new_ps = {}
       for k, v in pairs(ps) do
         if type(v) == "table" and k <= safe_lines then
@@ -155,7 +180,6 @@ end
 function swarmwrap_post_lb(head, groupcode)
   local nl = tex.count["swarmwrap@nl@lua"]
 
-  -- Only process when wrapping is active
   if nl <= 0 then
     return head
   end
@@ -166,7 +190,6 @@ function swarmwrap_post_lb(head, groupcode)
   end
 
   -- Find the last narrow line (narrow->full transition point).
-  -- This is the ideal page-break point to prevent ghost narrowing.
   local last_narrow = nil
   local prev_was_narrow = false
 
@@ -177,8 +200,6 @@ function swarmwrap_post_lb(head, groupcode)
         last_narrow = n
         prev_was_narrow = true
       else
-        -- We've hit a full-width line after narrow lines.
-        -- The transition has been found.
         if prev_was_narrow then
           break
         end
@@ -187,8 +208,6 @@ function swarmwrap_post_lb(head, groupcode)
   end
 
   -- Insert a negative penalty after the last narrow line.
-  -- This encourages TeX to break the page here.
-  -- v3.54: Use -2000 (strong encouragement).
   if last_narrow then
     local pen = node.new(penalty_id)
     pen.penalty = -2000
@@ -198,7 +217,7 @@ function swarmwrap_post_lb(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.55 loaded (needspace + transition penalty)")
+texio.write_nl("swarmwrap: callback v3.58 loaded (needspace + transition penalty + rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 texio.write_nl("swarmwrap: pre_linebreak_filter registered successfully")
