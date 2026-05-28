@@ -3,7 +3,7 @@
 > **Project**: All-in-One LaTeX Helper (theme + scripts + Lua tooling)
 > **Repo**: `sudo-aza/swarm`
 > **Agents**: Researcher, Programmer, Quality Assurance
-> **Last updated**: 2026-05-19
+> **Last updated**: 2026-05-28
 
 > **⛔ PROGRAMMER WRAPPING-ONLY LOCK — ACTIVE (2026-05-18 23:27 UTC)**: Set by zoe. The Programmer agent is FORBIDDEN from working on any task that is NOT swarmwrap.sty. No README, no CI/CD, no CTAN, no documentation, no cleanup, no spellcheck. The ONLY files that may be modified are `src/themes/swarmwrap.sty` and its test files in `src/test-wrapfig/`. This lock expires ONLY when zoe explicitly lifts it. All other Programmer tasks (#130, #132, #134-#140) are DEFERRED indefinitely. Violation means the work does not count.
 
@@ -240,6 +240,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 205 | **QA REVIEW**: Verify source-prevention carry-over fix v3.50 (Task #204). — **DONE (7/10 FAIL)**. v3.50 independently verified (commit fafaba85). **50-fig test (46 pages, LuaHBTeX)**: 0 body-text overlaps, 0 caption overlaps, 0 ghost narrowing, 0 hollow carry-over, 0 misaligned, 0 near-empty, 32 excessive narrowing (aggregation artifact). PERFECT — matches v3.44 baseline. **1000-fig test (1038 pages)**: 0 body-text overlaps, 0 caption overlaps, 3 ghost narrowing (pages 67, 332, 927 — SAME as v3.44), 3 hollow carry-over (same pages), 3 misaligned (multicols false positive), 720 excessive narrowing (69.3% rate, same artifact), 7 near-empty. PyMuPDF cross-validation confirmed: page 67 has 6 spans at 203pt with zero figures; page 332 confirmed by VLM; page 927 has 4 spans at 260pt. **Rating 7/10**: +2 correct approach (at source), +2 regression eliminated (27→3 hollow carry-over), +2 perfect 50-fig, +1 clean code. -1 ghost narrowing persists at 1000-fig scale, -1 version header not updated, -1 Programmer didn't test 1000-fig. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | QA | **done** (7/10) | 2026-05-28 |
 
 ---
+| 211 | **FIX (RESEARCH-SUPPORTED)**: swarmwrap.sty — implement non-penalty ghost-narrowing fix using paragraph-splitting approach (see notes/2026-05-28-paragraph-splitting-research.md). Research identified 3 ranked approaches: (A) Split-and-Re-Linebreak using `tex.linebreak()` from `post_linebreak_filter` (HIGH feasibility, based on lua-widow-control package); (B) Pre-Check Needspace — at `\everypar`, check remaining page space vs narrowed zone height, force `\newpage` if insufficient (HIGH feasibility, simplest, 5-10 lines); (C) Hybrid Linebreak Filter wrapping TeX's built-in breaker (MEDIUM feasibility). **Recommended**: Start with Approach B (Pre-Check Needspace) as quickest win — it prevents ghost narrowing by ensuring wrapped paragraphs never start when there's insufficient space. Study lua-widow-control source (https://github.com/gucci-on-fleek/lua-widow-control) for the `tex.linebreak()` technique if Approach B is insufficient. **Verification**: python3 scripts/detect-layout-issues.py tests/test-stress-1000.pdf --quality — expected: PASS GHOST NARROWING: 0 (down from 3). Also: 50-fig must stay PERFECT (0 ghost, 0 hollow, 0 overlaps). See notes/2026-05-28-paragraph-splitting-research.md for full research. | Programmer | **pending** | 2026-05-28 |
 
 ## COMMUNICATION LOG
 
@@ -3461,3 +3462,13 @@ Actions taken:
 
 ### QA — 2026-05-27 00:30 UTC+8
 > **Stand-down — Task #189 still blocked on #186.** No pending QA tasks actionable. Per Rule 3, verified all pending Programmer tasks have QA review tasks (satisfied). Per Rule 8, visual inspection of 6 previously uninspected pages (3, 11, 19, 27, 34, 43) using VLM (glm-4.6v) + PyMuPDF cross-validation. PyMuPDF: pages 3, 43 have figures with normal wrapping; pages 11, 19, 27, 34 have no figures, full-width text. Zero overlaps on all 6 pages. VLM false positive rate: 5/6 pages with figures (83%) — consistent with known unreliability. Cumulative inspection: 38/46 pages across 7 turns. Detection script: 18/50 (36.0%) FAIL — unchanged from v3.39 baseline. **Per Rule 10: Fixed detection script caption overlap blind spot.** `detect-layout-issues.py` classified caption overlaps as "ACCEPTABLE/KNOWN" (not counted in quality score). Since v3.44 fixed caption overlaps (was 50/50, now 0/50), future regressions would be silently missed. Moved `caption_overlap` from `acceptable` to `real_bugs` in quality report, removed "(expected)" from label. Verified: caption overlaps now appear under REAL BUGS with PASS/FAIL status. Step 4.5: detection script fix applied and reported here.
+
+---
+### 2026-05-28 21:39 UTC+8 — Researcher (automated fallback turn)
+**Task**: Paragraph splitting research for Task #209 ghost-narrowing fix
+**Action**: Created notes/2026-05-28-paragraph-splitting-research.md — comprehensive research on non-penalty approaches
+**Key finding**: `lua-widow-control` package (CTAN v3.0.1, 2024) proves `tex.linebreak()` can be called from LuaTeX callbacks — enables "split-and-re-linebreak" approach
+**Approaches identified**: (A) Split-and-Re-Linebreak — HIGH feasibility; (B) Pre-Check Needspace — HIGH feasibility, simplest; (C) Hybrid Linebreak Filter — MEDIUM feasibility
+**Task created**: #211 (Programmer, pending) — concrete implementation guidance with Approach B as recommended start
+**Note**: All Researcher tasks remain done. This was a fallback review pass — reviewed QA journal (21 stand-down turns), Programmer journal (v3.54, 7 penalty attempts exhausted), and previous research. Task #209 was the obvious blocker.
+
