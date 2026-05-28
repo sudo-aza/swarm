@@ -1,12 +1,21 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.51: Fix remaining ghost narrowing at 1000-fig scale (Task #199).
---   v3.50's Phase 2 glue_set widening REMOVED — it changed hbox.width and
---   glue_set but did NOT reposition text glyphs (same class of bug as v3.45).
---   Instead, rely on:
---   (1) Prohibitive penalty (10001, truly prohibitive in TeX) after ALL
---       narrow lines. Widened detection tolerance from 3.0pt to 10.0pt
---       to catch lines with emergencystretch.
---   (2) Page-space limit with 1-baselineskip safety margin (in .sty).
+-- v3.54: Penalty at parshape boundary to prevent ghost narrowing.
+--
+-- STRATEGY: After TeX breaks a paragraph into lines, find the LAST
+-- narrow line (the narrow→full parshape transition point) and insert
+-- a negative penalty (-500) after it. This encourages TeX to break
+-- the page at this point rather than in the middle of the narrow zone.
+-- If the paragraph must span a page break, TeX will prefer to break at
+-- the transition — continuation starts with full-width lines.
+--
+-- CRITICAL: Only insert at the transition point. Do NOT penalize
+-- narrow lines (that caused page count regression in earlier attempt).
+-- The negative penalty is a SUGGESTION, not a requirement.
+
+local glyph_id = node.id("glyph")
+local disc_id = node.id("disc")
+local penalty_id = node.id("penalty")
+local hlist_id = node.id("hlist")
 
 local fig_pages = {}
 
@@ -25,65 +34,75 @@ function swarmwrap_measure_visible_height(box_reg)
   return visible
 end
 
-local function has_text_content(hbox)
-  if not hbox.head then return false end
-  local n = hbox.head
-  while n do
-    if n.id == 37 or n.id == 38 then return true end
-    n = n.next
+-- Check if an hbox contains actual text glyphs.
+local function has_text_content(head)
+  for n in node.traverse(head) do
+    if n.id == glyph_id then return true end
+    if n.id == disc_id then return true end
+    if n.id == hlist_id then
+      if has_text_content(n.head) then return true end
+    end
   end
   return false
 end
 
-function swarmwrap_post_lb(head, groupcode)
-  local tw_sp = tex.dimen["swarmwrap@tw@lua"]
-  local tw_val = tw_sp / 65536.0
-  if tw_sp <= 0 then return head end
-  local linewidth = tex.dimen["linewidth"]
-  local lw_val = linewidth / 65536.0
-  local penalty_val = tex.count["swarmwrap@penalty"]
+-- Check if an hbox is narrow (part of wrapping zone).
+-- Narrow = width significantly less than linewidth.
+local function is_narrow_hbox(hbox, tw)
+  if tw <= 0 then return false end
+  local lw = tex.dimen["linewidth"]
+  -- A line is narrow if its width is less than linewidth minus
+  -- a generous threshold. We use 80% of linewidth as the cutoff.
+  return hbox.width < lw * 0.8
+end
 
-  -- Collect all line info
-  local narrow_lines = {}
-  local total_lines = 0
-  local cur = head
-  while cur do
-    if cur.id == 0 then
-      total_lines = total_lines + 1
-      local w = cur.width / 65536.0
-      -- v3.51: Widened tolerance from 3.0pt to 10.0pt. Some narrow lines
-      -- with emergencystretch had width > tw+3.0 and missed the penalty.
-      -- Also check that width < linewidth (not a full-width line).
-      if w <= tw_val + 10.0 and w > 0 and w < lw_val * 0.95 and has_text_content(cur) then
-        narrow_lines[#narrow_lines + 1] = {
-          node = cur,
-          line_index = total_lines,
-          width = w
-        }
+function swarmwrap_post_lb(head, groupcode)
+  local nl = tex.count["swarmwrap@nl@lua"]
+  
+  -- Only process when wrapping is active
+  if nl <= 0 then
+    return head
+  end
+  
+  local tw = tex.dimen["swarmwrap@tw@lua"]
+  if tw <= 0 then
+    return head
+  end
+  
+  -- Find the last narrow line (narrow→full transition point).
+  -- This is the ideal page-break point to prevent ghost narrowing.
+  local last_narrow = nil
+  local prev_was_narrow = false
+  
+  for n in node.traverse(head) do
+    if n.id == hlist_id and has_text_content(n) then
+      local narrow = is_narrow_hbox(n, tw)
+      if narrow then
+        last_narrow = n
+        prev_was_narrow = true
+      else
+        -- We've hit a full-width line after narrow lines.
+        -- The transition has been found.
+        if prev_was_narrow then
+          break
+        end
       end
     end
-    cur = cur.next
   end
-
-  -- Insert prohibitive penalties after all narrow lines
-  -- Penalty > 10000 is truly prohibitive in TeX — TeX will not break
-  -- at this point unless the page is completely overfull with no
-  -- alternative break point.
-  if penalty_val > 0 and #narrow_lines > 0 then
-    for i = 1, #narrow_lines do
-      local p = node.new(node.id("penalty"))
-      p.penalty = penalty_val
-      node.insert_after(head, narrow_lines[i].node, p)
-    end
-    texio.write_nl(string.format(
-      "swarmwrap post_lb: inserted %d penalties (val=%d) on page %d",
-      #narrow_lines, penalty_val, tex.count["c@page"]))
+  
+  -- Insert a negative penalty after the last narrow line.
+  -- This encourages TeX to break the page here.
+  -- v3.54: Use -10000 (very strong encouragement).
+  if last_narrow then
+    local pen = node.new(penalty_id)
+    pen.penalty = -2000
+    head, last_narrow = node.insert_after(head, last_narrow, pen)
   end
-
+  
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.51 loaded (prohibitive penalty only)")
+texio.write_nl("swarmwrap: callback v3.54 loaded (transition penalty)")
 luatexbase.add_to_callback("post_linebreak_filter",
   swarmwrap_post_lb, "swarmwrap: carry-over penalty")
 texio.write_nl("swarmwrap: post_linebreak_filter registered successfully")
