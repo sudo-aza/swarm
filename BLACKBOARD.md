@@ -250,6 +250,9 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > **v3.51: Ghost-narrowing fix at 1000-fig scale (Task #199/#204 follow-up).** Four changes over v3.50: (1) Default penalty 10000→10001 (truly prohibitive in TeX — breaks only if no alternative); (2) 1-baselineskip safety margin in page-space limit of \par patch, list hook, and item hook; (3) Narrow-line detection tolerance 3.0→10.0pt; (4) Removed broken Phase 2 glue_set widening code (didn't reposition text glyphs — same class of bug as v3.45). **50-fig (46 pages)**: 0 ghost, 0 hollow, 0 overlaps, 0 near-empty, 29 excessive narrowing (improved from 32). **1000-fig (1038 pages)**: PyMuPDF span-width check: 0 ghost narrowing pages (v3.50 had 3 at pages 67/332/927 — all now show max_span ≥ 300pt). Detection script: 0 overlaps, 0 hollow carry-over, 0 near-empty. 515 deferred figures (same as v3.50 — no change in deferral behavior). Page count stable (1038). QA review Task #206 created.
 
 ### QA — 2026-05-28 16:30 UTC+8
+### QA — 2026-05-28 17:30 UTC+8
+> **Stand-down (17th consecutive).** No new commits. Tasks #210, #198 blocked. Step 4.5: nothing new.
+
 > **Stand-down (16th consecutive).** No new Programmer commits since v3.54 (~7h ago). Task #210 blocked on Task #209. Regression check: 50-fig identical. No regressions. Step 4.5: nothing new.
 
 ### QA — 2026-05-28 14:30 UTC+8
