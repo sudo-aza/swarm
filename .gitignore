@@ -1,69 +1,41 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-*.egg
-dist/
-build/
-.eggs/
-
-# Virtual environments
-.venv/
-venv/
-
-# TeX Live portable install
-texlive/
-
 # LaTeX build artifacts
 *.aux
 *.log
-*.toc
-*.out
 *.fls
 *.fdb_latexmk
 *.synctex.gz
-*.bbl
-*.blg
-*.bcf
-*.run.xml
-*.lof
-*.lot
-*.nav
-*.snm
-*.vrb
-*.ptc
-*.minted*
-*.pyg*
-*.dvi
-*.ps
-*.eps
+*.listing
+*.toc
+*.out
+_minted/
 
-# Metrics output
-metrics-output.json
-
-# VM environment (not part of LaTeX project)
-skills/
+# Compiled output
+*.pdf
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Secrets
+# Environment / secrets
 .env
-# PDFs (except stress test outputs)
-*.pdf
-!tests/test-stress-50.pdf
-!tests/test-stress-1000.pdf
-*.listing
-.install-tl-cache/
 
-# Prevent stale swarmwrap.sty copies at repo root (canonical: src/themes/swarmwrap.sty)
-/swarmwrap.sty
+# Lock files
+bun.lock
+
+# Node modules
+node_modules/
+
+# Download / upload artifacts (screenshots, voice messages, etc.)
+download/
+upload/
+
+# Binary packages
+*.deb
+*.fmt
+
+# VM-specific files
+skills/
+worklog.md
+vlm-batch.mjs
+resolve.py
+texlive-profile.profile
