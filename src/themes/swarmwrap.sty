@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.63)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.65)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -493,49 +493,28 @@
             \swarmwrap@loop@cnt=\swarmwrap@tmp@cnt
           \fi
           \ifnum\swarmwrap@loop@cnt>0\relax
-            % v3.41: Hard cap on total narrow lines (Task #190).
-            % Fixed fall-through bug: extension is now nested inside
-            % the capacity check so the else-branch (cap exceeded)
-            % cannot accidentally extend.
-            \swarmwrap@tmp@cnt=\swarmwrap@max@narrow
-            \advance\swarmwrap@tmp@cnt by -\swarmwrap@narrow@used
-            \ifnum\swarmwrap@tmp@cnt>0\relax
-              \ifnum\swarmwrap@loop@cnt>\swarmwrap@tmp@cnt
-                \swarmwrap@loop@cnt=\swarmwrap@tmp@cnt
-              \fi
-              \ifnum\swarmwrap@loop@cnt>0\relax
-              % Extend parshape for the computed remaining lines
-              % v3.30: trailing full-width entry in \par patch extension.
-              % After the computed remaining narrow lines, text resets to
-              % full linewidth. Safe because fig_bottom includes 2*bs padding.
-              \swarmwrap@tw=\swarmwrap@tw@val\relax
-              % Count = remaining lines + 1 trailing full-width
-              \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt+1\relax\space}%
+            % v3.65: Removed hard cap from \par patch (Task #219).
+            % QA proved hard cap caused 14 body-text overlaps.
+            % Page-space check (5bs above) and figure-space check
+            % provide the natural limits on narrow lines.
+            % Extend parshape for the computed remaining lines
+            % v3.30: trailing full-width entry in \par patch extension.
+            % After the computed remaining narrow lines, text resets to
+            % full linewidth. Safe because fig_bottom includes 2*bs padding.
+            \swarmwrap@tw=\swarmwrap@tw@val\relax
+            % Count = remaining lines + 1 trailing full-width
+            \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@loop@cnt+1\relax\space}%
 
-              \swarmwrap@tmp@cnt=\swarmwrap@loop@cnt
-              \loop
-                \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
-                \advance\swarmwrap@tmp@cnt by -1
-              \ifnum\swarmwrap@tmp@cnt>0 \repeat
-              % Trailing full-width entry
-              \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \linewidth\space}%
-              \parshape \swarmwrap@pshape\relax
-              \emergencystretch=\fontdimen6\font\relax
-              \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
-              % Track total narrow lines used for hard cap
-              \global\advance\swarmwrap@narrow@used by \swarmwrap@loop@cnt
-              \else
-                % No vertical space remaining after cap — deactivate
-                \swarmwrap@activefalse
-                \global\let\par\swarmwrap@orig@par
-                \parshape=0\relax
-              \fi
-            \else
-              % Already exceeded cap — deactivate immediately
-              \swarmwrap@activefalse
-              \global\let\par\swarmwrap@orig@par
-              \parshape=0\relax
-            \fi
+            \swarmwrap@tmp@cnt=\swarmwrap@loop@cnt
+            \loop
+              \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\swarmwrap@tw\space}%
+              \advance\swarmwrap@tmp@cnt by -1
+            \ifnum\swarmwrap@tmp@cnt>0 \repeat
+            % Trailing full-width entry
+            \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \linewidth\space}%
+            \parshape \swarmwrap@pshape\relax
+            \emergencystretch=\fontdimen6\font\relax
+            \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
           \else
             % No more vertical space — deactivate
             \swarmwrap@activefalse
@@ -574,9 +553,8 @@
 }
 
 % Hook for paragraphs inside lists with active swarmwrap wrapping.
-% v3.61: Added hard cap enforcement (narrow_used vs max_narrow) to prevent
-% item/list hooks from bypassing the cap and generating excessive narrow lines
-% that carry over to the next page as ghost narrowing (Task #214).
+% v3.65: Removed v3.61 hard cap (Task #219). QA proved it caused 14 overlaps.
+% Page-space check (5bs) and figure-space check provide natural limits.
 \newcommand{\swarmwrap@list@everypar@hook}{%
   \ifswarmwrap@active
     \ifnum\swarmwrap@fig@page=\the\c@page\relax
@@ -604,16 +582,9 @@
           \ifnum\swarmwrap@loop@cnt>\swarmwrap@tmp@cnt
             \swarmwrap@loop@cnt=\swarmwrap@tmp@cnt
           \fi
-          % v3.61: Enforce hard cap on total narrow lines (Task #214).
-          % Without this, list/item hooks bypass the cap, generating excessive
-          % narrow lines that carry over to the next page as ghost narrowing.
-          \swarmwrap@tmp@cnt=\swarmwrap@max@narrow
-          \advance\swarmwrap@tmp@cnt by -\swarmwrap@narrow@used
-          \ifnum\swarmwrap@tmp@cnt>0\relax
-            \ifnum\swarmwrap@loop@cnt>\swarmwrap@tmp@cnt
-              \swarmwrap@loop@cnt=\swarmwrap@tmp@cnt
-            \fi
-          \fi
+          % v3.65: Removed v3.61 hard cap from list hook (Task #219).
+          % QA proved hard cap in list/item hooks caused 14 body-text overlaps.
+          % Page-space check (5bs above) provides the natural limit.
           \ifnum\swarmwrap@loop@cnt>0\relax
             % v3.30: trailing full-width entry in list hook
             % Count = remaining lines + 1 trailing full-width
@@ -629,10 +600,6 @@
             \parshape \swarmwrap@pshape\relax
             \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
             \emergencystretch=\fontdimen6\font\relax
-            % v3.61: Track total narrow lines used for hard cap
-            \global\advance\swarmwrap@narrow@used by \swarmwrap@loop@cnt
-            % v3.64: DEBUG — log everypar hook details
-            \wlog{swarmwrap v3.64 EVERYPAR: page=\the\c@page, pt=\the\pagetotal, fb=\the\swarmwrap@fig@bottom, loop=\the\swarmwrap@loop@cnt, cap=\the\numexpr\swarmwrap@max@narrow-\the\swarmwrap@narrow@used\relax}%
           \else
             \global\swarmwrap@activefalse
             \swarmwrap@list@activefalse
@@ -688,14 +655,8 @@
           \ifnum\swarmwrap@loop@cnt>\swarmwrap@tmp@cnt
             \swarmwrap@loop@cnt=\swarmwrap@tmp@cnt
           \fi
-          % v3.61: Enforce hard cap on total narrow lines (Task #214).
-          \swarmwrap@tmp@cnt=\swarmwrap@max@narrow
-          \advance\swarmwrap@tmp@cnt by -\swarmwrap@narrow@used
-          \ifnum\swarmwrap@tmp@cnt>0\relax
-            \ifnum\swarmwrap@loop@cnt>\swarmwrap@tmp@cnt
-              \swarmwrap@loop@cnt=\swarmwrap@tmp@cnt
-            \fi
-          \fi
+          % v3.65: Removed v3.61 hard cap from item hook (Task #219).
+          % QA proved hard cap caused 14 overlaps. Page-space check is sufficient.
           \ifnum\swarmwrap@loop@cnt>0\relax
             % v3.30: trailing full-width entry in item hook
             % Count = remaining lines + 1 trailing full-width
@@ -711,12 +672,10 @@
             \parshape \swarmwrap@pshape\relax
             \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
             \emergencystretch=\fontdimen6\font\relax
-            % v3.64: DEBUG — log item hook parshape details
-            \wlog{swarmwrap v3.64 ITEM-HOOK: page=\the\c@page, pt=\the\pagetotal, fb=\the\swarmwrap@fig@bottom, loop=\the\swarmwrap@loop@cnt, cap=\the\numexpr\swarmwrap@max@narrow-\swarmwrap@narrow@used\relax, used=\the\swarmwrap@narrow@used}%
+            % v3.65: Removed debug wlog from item hook
           \else
             \global\swarmwrap@activefalse
             \parshape=0\relax
-            \wlog{swarmwrap v3.64 ITEM-HOOK: SKIP (tw too small or cap=0)}%
           \fi
         \else
           \global\swarmwrap@activefalse
