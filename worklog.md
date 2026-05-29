@@ -248,3 +248,35 @@ Stage Summary:
 - Task #145 (ghost narrowing penalty) was already pending
 - All 4 tasks comply with Programmer wrapping-only lock
 - No pending QA tasks — standing down per Rule 5
+---
+Task ID: 1
+Agent: Programmer (cron)
+Task: Task #166 — Fix itemize parshape leak (list patch page-boundary check)
+
+Work Log:
+- Set up git credentials (no gh available)
+- Pull failed due to network timeout
+- Read programmer-rules.md (5 rules, no wrapping lock in this repo state)
+- Read BLACKBOARD.md — identified 2 pending tasks: #166 (itemize parshape leak) and #167 (multicol misalignment)
+- Picked Task #166 per Rule 1 (ONE task only)
+- Installed TeX Live via setup.sh (scheme-small + lipsum)
+- Created tests/test-itemize-stress.tex (6 figures with itemize/enumerate/plain text)
+- Analyzed v3.23.1 list patch code: found root cause at line 324 (remaining@nl > 0 check)
+- Fixed: replaced remaining@nl check with tw@lua > 0 + fig@page == c@page
+- Added \swarmwrap@fig@page counter, set in \swarmwrapnext
+- Compiled test-itemize-stress.tex: 3 pages, 0 errors
+- Compiled test-customwrap.tex: 8 pages, 0 errors (was 9)
+- Compiled test-pagebreak-variations.tex: 15 pages, 0 errors
+- PyMuPDF analysis: 0 overlaps on test-itemize-stress.pdf
+- Updated BLACKBOARD.md with comm log entry
+- Created journal: journals/programmer/2026-05-30.md
+- Committed: 9674bb0
+- Push BLOCKED: network timeout (fetch/pull/push all failed)
+
+Stage Summary:
+- v3.27: Fixed list patch to use tw@lua>0 + fig@page==c@page check
+- Root cause: remaining@nl counter consumed by first paragraph, defeating list patch for subsequent itemize blocks
+- All 3 tests compile with 0 errors
+- PyMuPDF: 0 overlaps on manual itemize test
+- Push blocked by network — will retry next turn
+- QA review still needed with full 1000-page stress test
