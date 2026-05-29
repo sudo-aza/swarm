@@ -1,0 +1,24 @@
+name wrapstuff
+category Package
+revision 78931
+shortdesc Wrapping text around stuff
+longdesc This package provides another implementation of text wrapping.
+longdesc Its implementation benefits from the paragraph hooks available
+longdesc since LaTeX 2021-06-01. English documentation is provided by
+longdesc the wrapstuff-doc-en package.
+containersize 11792
+containerchecksum ca0a359c66412b81dbd6c0470439c0b6e8d1e0ab5a143037b2fbb04d91c700d61eb9a014ae9c8915bd09b4486ee2ba58a9ccd8ad7d58b1ea74a51959eab3a66b
+doccontainersize 437732
+doccontainerchecksum 4468d872bec6b74f1971d4de185816f677626368fdc103367c870fd34ce01d6af3b7a3f6c4d0295c9923c0037fc85b795395170fa521d64daa6d86fe9c5baafd
+srccontainersize 16380
+srccontainerchecksum a171552deae2726e95f24dfd12a8f1f3f24a9e523259375a8698828ec59898bf83a0ef153f484266123c9d199f5e3a1a41b3d6e19d06c092897a981c0ec7d886
+runfiles size=20
+ texmf-dist/tex/latex/wrapstuff/wrapstuff.sty
+catalogue-contact-announce https://github.com/qinglee/wrapstuff/releases
+catalogue-contact-bugs https://github.com/qinglee/wrapstuff/issues
+catalogue-contact-repository https://github.com/qinglee/wrapstuff
+catalogue-contact-support https://github.com/qinglee/wrapstuff/discussions
+catalogue-ctan /macros/latex/contrib/wrapstuff
+catalogue-license lppl1.3c
+catalogue-topics text-flow tagged-pdf-incompatible
+catalogue-version 0.3

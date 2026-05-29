@@ -1,0 +1,24 @@
+name wrapfig2
+category Package
+revision 77682
+shortdesc Wrap text around figures
+longdesc This package is a fork of Donald Arseneau's wrapfig package. It
+longdesc is backwards compatible with the original environments.
+longdesc Therefore this package does not work with LaTeX2e kernels older
+longdesc than about 2018, although a warning is issued if the LaTeX
+longdesc format file is dated with a date older than 1st January 2019.
+depend float
+depend pict2e
+containersize 6684
+containerchecksum 0113a397ebca047a2d6af06604f3fc32089b864e2127de380646408be226b01f56f8dccd6e147d25806fd9ac4727b4c10713abed51832f9cdc679ebda8a51619
+doccontainersize 859356
+doccontainerchecksum 8b0794a641de47c69766c939202ec95ed7aaf307ec8941880656f2a3a39f25b443170d794eb98b11a99116e819cef295ac2b397c5129919267b8e81400bbec2a
+srccontainersize 27500
+srccontainerchecksum 8c4d0537b4aa54fc02f9bd860c651215bedc5f32d64a78f6d91135e6be9bd6f8f139792f73d17d8fee46be080765e830c1bf4ce4c2a57abd78b36be6de2c11c3
+runfiles size=6
+ texmf-dist/tex/latex/wrapfig2/wrapfig2.sty
+catalogue-also cutwin
+catalogue-ctan /macros/latex/contrib/wrapfig2
+catalogue-license lppl1.3c
+catalogue-topics text-flow tagged-pdf-incompatible
+catalogue-version 7.0.2
