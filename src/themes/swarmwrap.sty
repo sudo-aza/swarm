@@ -329,7 +329,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/29 v3.63 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/29 v3.64 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -631,6 +631,8 @@
             \emergencystretch=\fontdimen6\font\relax
             % v3.61: Track total narrow lines used for hard cap
             \global\advance\swarmwrap@narrow@used by \swarmwrap@loop@cnt
+            % v3.64: DEBUG — log everypar hook details
+            \wlog{swarmwrap v3.64 EVERYPAR: page=\the\c@page, pt=\the\pagetotal, fb=\the\swarmwrap@fig@bottom, loop=\the\swarmwrap@loop@cnt, cap=\the\numexpr\swarmwrap@max@narrow-\the\swarmwrap@narrow@used\relax}%
           \else
             \global\swarmwrap@activefalse
             \swarmwrap@list@activefalse
@@ -709,11 +711,12 @@
             \parshape \swarmwrap@pshape\relax
             \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
             \emergencystretch=\fontdimen6\font\relax
-            % v3.61: Track total narrow lines used for hard cap
-            \global\advance\swarmwrap@narrow@used by \swarmwrap@loop@cnt
+            % v3.64: DEBUG — log item hook parshape details
+            \wlog{swarmwrap v3.64 ITEM-HOOK: page=\the\c@page, pt=\the\pagetotal, fb=\the\swarmwrap@fig@bottom, loop=\the\swarmwrap@loop@cnt, cap=\the\numexpr\swarmwrap@max@narrow-\swarmwrap@narrow@used\relax, used=\the\swarmwrap@narrow@used}%
           \else
             \global\swarmwrap@activefalse
             \parshape=0\relax
+            \wlog{swarmwrap v3.64 ITEM-HOOK: SKIP (tw too small or cap=0)}%
           \fi
         \else
           \global\swarmwrap@activefalse
@@ -792,7 +795,18 @@
   % v3.41: Set hard cap on total narrow lines
   \swarmwrap@max@narrow=\swarmwrap@nl
   \advance\swarmwrap@max@narrow by 1  % allow 1 extra line for extension
-  \global\swarmwrap@narrow@used=\swarmwrap@nl  % initial nl lines count
+  % v3.64: Initialize narrow_used to 0 (not nl).
+  % ROOT CAUSE of 14 body-text overlaps (Task #216):
+  % narrow_used counted the initial parshape's nl narrow entries as
+  % "used", leaving only 1 line for extensions (\item hook, \par patch).
+  % When the first paragraph was short (e.g., empty \noindent before
+  % \begin{itemize}), most nl entries were unused but still counted.
+  % The \item hook got cap_remaining=1, so the first \item paragraph
+  % had only 1 narrow line; the 2nd line fell on the trailing
+  % full-width entry, overlapping the figure. Fix: count only
+  % EXTENSION lines, not the initial allocation. The figure-space
+  % and page-space (5bs) checks provide the real limits on extensions.
+  \global\swarmwrap@narrow@used=0
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
   % Set Lua-readable dimension for post_linebreak_filter callback
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
