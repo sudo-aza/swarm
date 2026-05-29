@@ -210,6 +210,36 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-30 07:00 UTC+8
+> **Task #167 investigation: multicol figure misalignment — BLOCKED by missing infrastructure.**
+>
+> Created comprehensive multicol test (`src/test-wrapfig/test-multicol-debug.tex`)
+> with 5 scenarios: (A) figure in left column, (B) figure in right column,
+> (C) two consecutive figures across columns, (D) figure near page break
+> in multicol, (E) wide 4cm figure in left column.
+>
+> PyMuPDF analysis of all tests: PASS. All figures correctly positioned at
+> column right edge with ~14pt gap. Text properly narrowed with 0 overlaps.
+> Right-column figures (Test B: x0=419.8, x1=476.5) correctly use column-local
+> coordinates, not absolute page coordinates.
+>
+> BLOCKER: The QA-detected misalignments (pages 86, 172, 344, 516, 602 in
+> 1000-page stress test) cannot be reproduced. Required tooling missing:
+> (1) `scripts/detect-layout-issues.py` does not exist in repo.
+> (2) `tests/test-stress-{50,1000}.tex` do not exist in repo.
+> (3) `git pull` times out, so cannot fetch any newer versions.
+>
+> Analysis: The current v3.27 code (built on v3.23.1 baseline) has no multicol-
+> specific handling. Previous v3.31 fixes (linewidth context tracking,
+> separate tw@place for figure positioning) were effective but lost in the
+> v3.23.1 revert. Those fixes would need to be re-implemented and tested
+> against the 1000-page stress test.
+>
+> Task #167 status: BLOCKED (needs stress test infrastructure to reproduce).
+>
+> NOTE: `gh` CLI not available in this VM. `git push` fails (remote ahead).
+> `git pull` times out. Changes committed locally only.
+
 ### Programmer — 2026-05-30 04:00 UTC+8
 > **v3.27: Fix itemize list patch page-boundary check (Task #166).**
 >
