@@ -250,7 +250,7 @@
 %
 % v3.26: Fix deferred afterpage catcode bug — figures now appear on next page.
 
-\ProvidesPackage{swarmwrap}[2026/05/22 v3.26.1 revert deferred afterpage fix broken approach documented]
+\ProvidesPackage{swarmwrap}[2026/05/30 v3.27 fix itemize list patch page-boundary check]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -307,22 +307,33 @@
 % LaTeX's \list (latex.ltx:15868) sets \parshape \@ne \@totalleftmargin \linewidth,
 % overriding any swarmwrap narrow parshape. Hooks (para/begin) fire but TeX reads
 % the parshape at a later stage. SOLUTION: When a list starts during an active
-% wrap (remaining@nl > 0), reduce \linewidth by the figure width + gap before
+% wrap (tw@lua > 0), reduce \linewidth by the figure width + gap before
 % calling the original \list. The list's \parshape then uses the reduced
 % \linewidth, producing naturally narrow lines. The reduction is scoped to
 % the list environment using TeX grouping.
+%
+% v3.27 FIX: Removed remaining@nl > 0 check. The previous version only
+% activated the list patch when remaining@nl was positive, but
+% post_linebreak_filter decrements remaining@nl after each paragraph.
+% If any text appeared between \swarmwrapnext and \begin{itemize}, the
+% counter would be 0 when the list starts, defeating the patch. Now we
+% only check tw@lua > 0 (wrapping is active), which correctly covers
+% all paragraphs and lists within the figure zone on the current page.
 \let\swarmwrap@old@list\list
 
 \newif\ifswarmwrap@in@list
 \swarmwrap@in@listfalse
 
-% \renewcommand{\list}: When remaining@nl > 0, reduce \linewidth by
-% figure width + gap so the list's parshape produces narrow lines.
-% The list's own grouping (\begin{itemize}...\end{itemize}) scopes the change.
+% Track which page the figure was placed on, so we can deactivate
+% the list patch across page boundaries (where tw@lua might still
+% be set from the previous page's wrapping).
+\newcount\swarmwrap@fig@page
+\swarmwrap@fig@page=0
+
 \newdimen\swarmwrap@saved@lw
 \renewcommand{\list}[2]{%
-  \ifnum\swarmwrap@remaining@nl>0\relax
-    \ifdim\swarmwrap@tw@lua>0pt\relax
+  \ifdim\swarmwrap@tw@lua>0pt\relax
+    \ifnum\swarmwrap@fig@page=\the\c@page\relax
       \swarmwrap@saved@lw=\linewidth
       \advance\linewidth by -\swarmwrap@fw@val
       \advance\linewidth by -\swarmwrap@gap
@@ -464,6 +475,7 @@
   \ifnum\swarmwrap@loop@cnt>0 \repeat
   \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
   \global\swarmwrap@remaining@nl=\swarmwrap@nl
+  \global\swarmwrap@fig@page=\c@page  % v3.27: track figure page for list patch
   \emergencystretch=\fontdimen6\font\relax
   % ── Page space check ──────────────────────────────────────────
   \dimen0=\pagegoal

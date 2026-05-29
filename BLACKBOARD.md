@@ -210,6 +210,32 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-30 04:00 UTC+8
+> **v3.27: Fix itemize list patch page-boundary check (Task #166).**
+>
+> ROOT CAUSE: The v3.17 list patch checked `remaining@nl > 0` before reducing
+> \linewidth inside list environments. But `post_linebreak_filter` decrements
+> remaining@nl after each paragraph. If any text appeared between
+> `\swarmwrapnext` and `\begin{itemize}`, the counter would be 0 when
+> the list starts, defeating the patch. This caused 41 body-text overlaps
+> on the 1000-page stress test (down from 66 after v3.18's initial fix).
+>
+> FIX: Removed `remaining@nl > 0` check from the list patch. Now only checks
+> `tw@lua > 0` (wrapping is active) AND `fig@page == \c@page` (same page as
+> figure). Added `\swarmwrap@fig@page` counter, set in `\swarmwrapnext`.
+> This ensures lists wrap correctly regardless of how many paragraphs have
+> consumed the narrow-line counter.
+>
+> NOTE: The stress test .tex files and detection script referenced in the
+> BLACKBOARD do not exist in the current repo state. Created a manual
+> itemize stress test (tests/test-itemize-stress.tex, 6 figures with itemize/
+> enumerate/plain text). PyMuPDF analysis: 0 overlaps across 3 pages.
+> Standard tests compile clean: test-customwrap (8 pages), test-pagebreak-
+> variations (15 pages). Zero errors in all logs.
+>
+> Task #166 status: `pending` (not `done` — needs QA review with full
+> 1000-page stress test to confirm overlap reduction).
+
 ### Programmer — 2026-05-22 20:00 UTC+8
 > **v3.26.1: Revert deferred afterpage fix — confirmed \afterpage approach is dead end.**
 >
