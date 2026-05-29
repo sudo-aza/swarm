@@ -1,11 +1,4 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.62: LAYER 3 — buildpage_filter. Widen narrow lines on pages without
---   figures to eliminate ghost narrowing. This callback fires for EVERY
---   page (unlike pre_linebreak_filter which LuaTeX caches for \lipsum).
---   When the page has no figure but has narrow lines (from parshape
---   carry-over across a page break), we re-pack those narrow hboxes to
---   full linewidth using node.hpack('exactly'). This is a POST-HOC fix
---   — it doesn't prevent the carry-over, but it repairs the visual output.
 --
 -- LAYER 1 (v3.55): Pre-check needspace. Before TeX breaks a paragraph,
 -- check if the current parshape's narrow zone fits on the remaining
@@ -20,7 +13,6 @@
 --
 -- IMPORTANT: pre_linebreak_filter and post_linebreak_filter fire only
 -- ONCE per document when \lipsum is used (LuaTeX optimization).
--- buildpage_filter fires for EVERY page — this is the reliable layer.
 
 local glyph_id = node.id("glyph")
 local disc_id = node.id("disc")
@@ -222,40 +214,10 @@ function swarmwrap_post_lb(head, groupcode)
   return head
 end
 
--- LAYER 3: buildpage_filter — widen ghost-narrowed lines on pages without figures.
--- This fires for EVERY page TeX assembles, unlike pre/post_linebreak_filter
--- which LuaTeX caches for repeated paragraph shapes.
--- When a page has no figure (not in fig_pages) but has narrow lines at the top
--- (from parshape carry-over across a page break), re-pack those narrow hboxes
--- to full linewidth. This eliminates ghost narrowing visually.
--- 
--- IMPORTANT: buildpage_filter receives the groupcode and the filter
--- operates on the contribution list, NOT on the finished page_box.
--- We cannot directly modify hboxes in buildpage_filter. Instead, we use
--- a different strategy: set a flag that the \par patch checks to force
--- full-width on pages without figures.
-local function swarmwrap_buildpage(groupcode)
-  -- Mark pages as needing ghost-fix check when the par patch runs.
-  -- This flag is checked by the .sty's \par patch to skip narrowing
-  -- on continuation pages (pages where the figure was on a previous page).
-  -- Since we can't modify hboxes in buildpage_filter, we set a TeX
-  -- dimension that the \par patch reads.
-  local pg = tex.count["c@page"]
-  if not fig_pages[pg] then
-    -- No figure on this page — set flag for \par patch to force full-width
-    tex.dimen["swarmwrap@ghost@flag"] = 1
-  else
-    tex.dimen["swarmwrap@ghost@flag"] = 0
-  end
-end
-
-texio.write_nl("swarmwrap: callback v3.62 loaded (needspace + transition penalty + buildpage ghost fix + rule-height measurement)")
+texio.write_nl("swarmwrap: callback v3.63 loaded (needspace + transition penalty + rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 texio.write_nl("swarmwrap: pre_linebreak_filter registered successfully")
 luatexbase.add_to_callback("post_linebreak_filter",
   swarmwrap_post_lb, "swarmwrap: carry-over penalty")
 texio.write_nl("swarmwrap: post_linebreak_filter registered successfully")
-luatexbase.add_to_callback("buildpage_filter",
-  swarmwrap_buildpage, "swarmwrap: ghost-narrowing fix")
-texio.write_nl("swarmwrap: buildpage_filter registered successfully")

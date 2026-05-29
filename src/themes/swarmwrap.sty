@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.61)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.63)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -329,7 +329,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/29 v3.62 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/29 v3.63 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -380,11 +380,7 @@
 % trailing entry, thus avoiding body-text overlaps).
 \newcount\swarmwrap@nl@lua
 \swarmwrap@nl@lua=0
-% v3.62: Lua-readable flag for buildpage ghost-fix. Set by buildpage_filter
-% when the current page has no figure. The \par patch checks this flag
-% to skip parshape extension on continuation pages, preventing ghost narrowing.
-\newdimen\swarmwrap@ghost@flag
-\swarmwrap@ghost@flag=0pt
+
 
 % ── Lua callback: post_linebreak_filter ───────────────────────────────
 % Only used for penalty insertion at the parshape boundary (discouraging
@@ -466,16 +462,6 @@
   \swarmwrap@orig@par
   \ifswarmwrap@active
     \ifswarmwrap@list@active\else
-      % v3.62: Ghost-fix — check if buildpage_filter set the flag.
-      % When the current page has no figure (ghost@flag > 0), skip
-      % parshape extension entirely and deactivate. This prevents
-      % ghost narrowing on continuation pages where parshape carried
-      % over from the previous page but no figure is present.
-      \ifdim\swarmwrap@ghost@flag>0pt\relax
-        \swarmwrap@activefalse
-        \global\let\par\swarmwrap@orig@par
-        \parshape=0\relax
-      \else
       % Check: are we still on the same page as the figure?
       % And is there still vertical space remaining?
       \ifnum\swarmwrap@fig@page=\the\c@page\relax
@@ -568,7 +554,6 @@
         \global\let\par\swarmwrap@orig@par
         \parshape=0\relax
       \fi
-    \fi
   \fi
 }
 
