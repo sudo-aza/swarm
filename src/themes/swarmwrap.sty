@@ -354,7 +354,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/30 v3.70 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/30 v3.71 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -855,10 +855,11 @@
   % The narrow zone (nl*bs) plus safety margin must fit within remaining
   % page space. If it doesn't, the figure is deferred to prevent
   % carry-over narrowing across page breaks.
-  % v3.69: Reverted from 8bs back to 5bs (Task #224).
+  % v3.71: Reverted from 5bs to 3bs (Task #226).
+  % v3.59/v3.65 used 3bs; v3.69 incorrectly used 5bs per QA Task #224 spec error.
   \dimen1=\swarmwrap@nl\baselineskip
-  % v3.69: Reverted from 8bs back to 5bs (Task #224).
-  \advance\dimen1 by 5\baselineskip  % safety margin for glue/parskip/list overhead
+  % v3.71: Reverted from 5bs to 3bs (Task #226).
+  \advance\dimen1 by 3\baselineskip  % safety margin for glue/parskip/list overhead
   \ifdim\dimen0<\dimen1
     % Figure doesn't fit on current page — page eject approach (v3.23).
     % Cancel parshape so current-page text runs at full width.
