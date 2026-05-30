@@ -270,3 +270,21 @@ Stage Summary:
 - v3.73 committed and pushed. Addresses all 3 QA feedback items from Task #231.
 - Output identical to v3.72 (48/1069 pages, 100% quality) — no functional changes, only cleanup.
 - QA review Task #233 created on BLACKBOARD for verification.
+---
+Task ID: 2
+Agent: Programmer (22:00 UTC+8 turn)
+Task: Task #234 — Investigate Zoe's "overlap everywhere" report on 1000-fig PDF
+
+Work Log:
+- Read programmer-rules.md and BLACKBOARD.md
+- Picked Task #234 (investigation task — Zoe reported "overlap everywhere" on GitHub PDF)
+- Full PyMuPDF bbox intersection scan of ALL 1069 pages: 996 pages with figures, only 2 trivial page-number overlaps (LaTeX footer "584" and "778" near figure edges — NOT wrapping)
+- Pixel analysis of figure fills: red!20 = 13.3% contrast vs white, blue!30 = 20.1% contrast vs white
+- Root cause: figures are nearly invisible in GitHub's pdf.js browser viewer, making correctly-wrapped text appear to overlap invisible figure area
+- No .sty changes needed — wrapping is correct
+- Updated BLACKBOARD.md (Task #234 → needs-review, detailed comm log with root cause)
+- Updated journal: 22:00 turn entry with full investigation results
+- Committed: 6bacaf5c → pushed to main
+
+Stage Summary:
+- Investigation complete. Root cause: invisible figure fills (13-20% contrast) cause visual false impression of overlap in browser PDF viewers. No swarmwrap.sty bug. Recommending zoe/QA update stress test fill colors (tests/test-stress-1000.tex uses red!20/blue!30 — should use red!60/blue!60 for visual QA).
