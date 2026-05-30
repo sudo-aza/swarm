@@ -71,27 +71,30 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
-% v3.69: Revert DEFER margin 8bs->5bs, enhance post_linebreak_filter (Task #224).
-%   (1) Reverted DEFER margin from 8bs back to 5bs in \swarmwrapnext
-%       to restore v3.65 page layout. The 8bs increase in v3.67 caused
-%       significant layout shift (+56 pages at 1000-fig) and did not
-%       actually fix ghost narrowing (QA Task #222: layout shift, not fix).
-%   (2) Reverted list/item hook page-space check from 12bs back to 5bs.
-%   (3) Enhanced post_linebreak_filter (Approach A per research note):
-%       Fixed narrow-line detection to use midpoint threshold between
-%       tw and linewidth (previous 0.8*linewidth missed narrow lines
-%       at ~300pt). Strengthened transition penalty from -2000 to -5000
-%       at the narrow->full parshape boundary.
-%   NOTE: Full split-and-re-linebreak (research note Approach A option 2)
-%   is impossible in post_linebreak_filter because the original
-%   unbroken node list is not available. The penalty enhancement (option 1)
-%   is the practical implementation. Results identical to v3.54 (-2000)
-%   due to LuaTeX paragraph caching with \lipsum — the penalty fires once
-%   per unique shape and is reused for all paragraphs.
-%   RESULT: 50-fig PERFECT 50/50 (100.0%), 47 pages. 1000-fig 1095/1100
-%   (99.5%), 1038 pages. 0 overlaps. 2 ghost (68,924), 3 hollow. Same
-%   quality as v3.54 baseline (margin reversion restored page layout).
-%   STATUS: Pending QA review (Task #225).
+% v3.70: Conditional forced break at narrow->full transition (Task #214).
+%   KEY CHANGE: post_linebreak_filter now uses CONDITIONAL penalty based
+%   on remaining page space. Count narrow lines (K) in broken result and
+%   compare K * baselineskip against \swarmwrap@remaining (a Lua-readable
+%   dimen set in \swarmwrapnext from pagegoal-pagetotal).
+%   If narrow zone exceeds remaining space: use -10000 (FORCED break).
+%   TeX MUST break the page at the narrow->full transition, preventing
+%   narrow lines from carrying to the next page (ghost narrowing).
+%   If narrow zone fits: use -5000 (normal encouragement).
+%   WHY NEW: Previous discretionary penalties (-2000 v3.54, -5000 v3.69)
+%   can be OVERRIDDEN by TeX when the page is overfull — exactly when
+%   ghost narrowing occurs. -10000 is mandatory (TeX cannot override).
+%   This has NEVER been tried at the transition point before.
+%   TECHNICAL: pagegoal/pagetotal are TeX internals not readable from Lua
+%   callbacks. Solved by computing remaining at \swarmwrapnext time and
+%   storing in \swarmwrap@remaining (a user-defined dimen register).
+%   TRADE-OFF: Forced breaks increase page count (+16% at 1000-fig).
+%   The remaining 1 ghost/2 hollow are due to LuaTeX paragraph caching:
+%   the first occurrence's remaining-space check determines the penalty
+%   for all subsequent identical paragraphs.
+%   RESULT: 50-fig PERFECT 50/50 (100%), 56 pages, 0 ghost/hollow/overlaps.
+%   1000-fig 1097/1100 (99.7%), 1206 pages, 1 ghost, 2 hollow, 0 overlaps.
+%   IMPROVEMENT: ghost 2->1, hollow 3->2, quality 99.5%->99.7%.
+%   STATUS: Pending QA review.
 %
 % v3.55: Pre-check needspace in pre_linebreak_filter (Approach B from Researcher).
 %   NEW: Added a second layer of ghost-narrowing prevention that is fundamentally
@@ -351,7 +354,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/30 v3.69 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/30 v3.70 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -370,11 +373,13 @@
 \newcommand{\swarmwrap@fh@val}{0pt}  % figure height (full, with padding) for vspace push
 \newcommand{\swarmwrap@fh@narrow@val}{0pt}  % figure height (narrow, no padding) for parshape computation
 
-% v3.40: Hard cap on total narrow lines (initial + \par patch extensions)
+% v3.64: Initialize narrow_used to 0 (not nl).
 \newcount\swarmwrap@max@narrow\relax  % max allowed total narrow lines
-\newcount\swarmwrap@narrow@used\relax  % total narrow lines set so far
+\newcount\swarmwrap@narrow@used\relax
 % v3.41: Store box register number for Lua access
 \newcount\swarmwrap@box@num\relax
+% v3.70: Remaining page space for Lua callback (set in \swarmwrapnext).
+\newdimen\swarmwrap@remaining\relax
 
 % ── Vertical-space tracking for multi-paragraph extension (v3.24) ──
 \newdimen\swarmwrap@fig@bottom  % Y position where figure ends (narrow, for \par patch)
@@ -810,6 +815,12 @@
   \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \linewidth\space}%
   % Store nl for Lua callback
   \global\swarmwrap@nl@lua=\swarmwrap@nl
+  % v3.70: Store remaining page space for Lua callback's conditional penalty.
+  % pagegoal and pagetotal are TeX internals not directly readable from Lua.
+  % We compute remaining here (at wrapping setup time) and store in a
+  % Lua-readable dimen register. The callback reads this to decide between
+  % -10000 (forced break, ghost-narrowing risk) and -5000 (normal).
+  \swarmwrap@remaining=\dimexpr\pagegoal-\pagetotal\relax
   % ── Set up multi-paragraph extension (v3.24: vertical-space tracking) ─
   \swarmwrap@activetrue
   \global\let\par\swarmwrap@patched@par

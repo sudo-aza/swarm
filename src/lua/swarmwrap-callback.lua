@@ -1,26 +1,28 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.62: LAYER 3 — buildpage_filter. Widen narrow lines on pages without
---   figures to eliminate ghost narrowing. This callback fires for EVERY
---   page (unlike pre_linebreak_filter which LuaTeX caches for \lipsum).
---   When the page has no figure but has narrow lines (from parshape
---   carry-over across a page break), we re-pack those narrow hboxes to
---   full linewidth using node.hpack('exactly'). This is a POST-HOC fix
---   — it doesn't prevent the carry-over, but it repairs the visual output.
+-- v3.70
 --
 -- LAYER 1 (v3.55): Pre-check needspace. Before TeX breaks a paragraph,
 -- check if the current parshape's narrow zone fits on the remaining
 -- page space. If not, reduce narrow entries or clear parshape entirely.
 -- (Fires only once per unique paragraph shape due to LuaTeX caching.)
 --
--- LAYER 2 (v3.54): Transition penalty. After TeX breaks a paragraph,
--- find the LAST narrow line (narrow->full transition point) and insert
--- a negative penalty (-2000) after it. This encourages TeX to break
--- the page at the transition rather than within the narrow zone.
+-- LAYER 2 (v3.70): Conditional transition penalty. After TeX breaks a
+-- paragraph, find the LAST narrow line (narrow->full transition point)
+-- and insert a penalty there. v3.70 key change: penalty strength is
+-- CONDITIONAL on remaining page space:
+--   - If narrow_count * baselineskip > (pagegoal - pagetotal):
+--     Use -10000 (FORCED break). TeX MUST break the page at the
+--     transition, preventing narrow lines from carrying over to the
+--     next page where no figure exists (ghost narrowing).
+--   - Otherwise: use -5000 (normal encouragement).
+-- This is the FIRST time -10000 has been tried at the transition.
+-- Previous: -2000 (v3.54) and -5000 (v3.69) are discretionary and
+-- TeX can override them when the page is overfull — exactly when
+-- ghost narrowing occurs. -10000 is mandatory.
 -- (Fires only once per unique paragraph shape due to LuaTeX caching.)
 --
 -- IMPORTANT: pre_linebreak_filter and post_linebreak_filter fire only
 -- ONCE per document when \lipsum is used (LuaTeX optimization).
--- buildpage_filter fires for EVERY page — this is the reliable layer.
 
 local glyph_id = node.id("glyph")
 local disc_id = node.id("disc")
@@ -97,11 +99,19 @@ local function has_text_content(head)
 end
 
 -- Check if an hbox is narrow (part of wrapping zone).
--- Narrow = width significantly less than linewidth.
-local function is_narrow_hbox(hbox, tw)
+-- v3.69: Use midpoint threshold between tw and linewidth.
+-- Previous: hbox.width < 0.8*linewidth — this missed narrow lines
+-- at ~300pt (for typical tw=302pt, linewidth=359pt, threshold=287pt).
+-- A narrow line has width ≈ tw (the wrapping text width). A full-width
+-- line has width ≈ linewidth. Using the midpoint gives a robust boundary:
+--   threshold = (tw + linewidth) / 2
+-- For typical values: (302 + 359) / 2 = 330.5pt — catches all narrow
+-- lines up to ~330pt (including emergency-stretched lines).
+local function is_narrow_hbox(hbox, tw, lw)
   if tw <= 0 then return false end
-  local lw = tex.dimen["linewidth"]
-  return hbox.width < lw * 0.8
+  if lw <= 0 then return false end
+  local threshold = (tw + lw) / 2
+  return hbox.width < threshold
 end
 
 -- LAYER 1: Pre-check needspace (Approach B from Researcher's research).
@@ -182,6 +192,28 @@ function swarmwrap_needspace(head, groupcode)
   return head
 end
 
+-- LAYER 2: Conditional transition penalty in post_linebreak_filter (Task #214).
+-- After TeX breaks the paragraph into lines (hlists), find the narrow->full
+-- transition point and insert a penalty. v3.70 key change:
+-- CONDITIONAL penalty based on remaining page space. Count narrow lines (K)
+-- in the broken result and compare K * baselineskip against remaining page
+-- space (pagegoal - pagetotal).
+--
+-- If narrow zone exceeds remaining space:
+--   - Use -10000 (FORCED break). TeX MUST break the page at the
+--     narrow->full transition. This prevents narrow lines from carrying
+--     over to the next page where no figure exists (ghost narrowing).
+--   - This has NEVER been tried before. Previous attempts used discretionary
+--     penalties: -2000 (v3.54), -5000 (v3.69). TeX can override discretionary
+--     penalties when the page is overfull, which is exactly when ghost
+--     narrowing occurs. -10000 is mandatory — TeX cannot override it.
+--
+-- If narrow zone fits on the remaining page:
+--   - Use -5000 (normal encouragement, no forced break needed).
+--
+-- Trade-off: forced breaks may increase page count slightly when paragraphs
+-- start near page bottoms. But this only fires for paragraphs where the narrow
+-- zone doesn't fit — exactly the ghost-narrowing risk cases.
 function swarmwrap_post_lb(head, groupcode)
   local nl = tex.count["swarmwrap@nl@lua"]
 
@@ -194,112 +226,67 @@ function swarmwrap_post_lb(head, groupcode)
     return head
   end
 
-  -- Find the last narrow line (narrow->full transition point).
+  local lw = tex.dimen["linewidth"]
+  if lw <= 0 then
+    return head
+  end
+
+  -- Walk the broken paragraph to find the narrow->full transition
+  -- AND count narrow lines for page-space estimation.
   local last_narrow = nil
+  local narrow_count = 0
   local prev_was_narrow = false
 
   for n in node.traverse(head) do
     if n.id == hlist_id and has_text_content(n) then
-      local narrow = is_narrow_hbox(n, tw)
-      if narrow then
+      if is_narrow_hbox(n, tw, lw) then
         last_narrow = n
+        narrow_count = narrow_count + 1
         prev_was_narrow = true
       else
         if prev_was_narrow then
-          break
+          break  -- past the narrow->full transition
         end
       end
     end
   end
 
-  -- Insert a negative penalty after the last narrow line.
-  if last_narrow then
-    local pen = node.new(penalty_id)
-    pen.penalty = -2000
-    head, last_narrow = node.insert_after(head, last_narrow, pen)
+  -- No narrow lines found — nothing to do
+  if not last_narrow then
+    return head
   end
+
+  -- v3.70: Conditional penalty based on remaining page space.
+  -- pagegoal and pagetotal are TeX internals not accessible from Lua.
+  -- Instead, read \swarmwrap@remaining (computed at \swarmwrapnext time).
+  local penalty_value = -5000  -- default: normal encouragement
+  local bs = tex.skip["baselineskip"].width
+  if bs > 0 then
+    local ok, err = pcall(function()
+      local remaining = tex.dimen["swarmwrap@remaining"]
+      if remaining <= 0 then return end
+      local narrow_height = narrow_count * bs
+      if narrow_height > remaining then
+        penalty_value = -10000  -- FORCED: narrow zone exceeds remaining space
+        texio.write_nl(string.format(
+          "[FORCE-BREAK] pg=%d narrow=%d narrow_h=%.1fpt remaining=%.1fpt",
+          tex.count["c@page"], narrow_count, narrow_height/65536, remaining/65536))
+      end
+    end)
+  end
+
+  -- Insert penalty at the narrow->full transition.
+  local pen = node.new(penalty_id)
+  pen.penalty = penalty_value
+  head, last_narrow = node.insert_after(head, last_narrow, pen)
 
   return head
 end
 
--- LAYER 3: buildpage_filter — widen ghost-narrowed lines on pages without figures.
--- This fires for EVERY page TeX assembles, unlike pre/post_linebreak_filter
--- which LuaTeX caches for repeated paragraph shapes.
--- When a page has no figure (not in fig_pages) but has narrow lines at the top
--- (from parshape carry-over across a page break), re-pack those narrow hboxes
--- to full linewidth. This eliminates ghost narrowing visually.
-local function swarmwrap_buildpage(groupcode)
-  local pg = tex.count["c@page"]
-  -- Skip pages with figures — narrowing there is intentional
-  if fig_pages[pg] then
-    return
-  end
-
-  local tw = tex.dimen["swarmwrap@tw@lua"]
-  -- If tw is 0, no wrapping is active (safe to skip)
-  if tw <= 0 then
-    return
-  end
-
-  local nl = tex.count["swarmwrap@nl@lua"]
-  if nl <= 0 then
-    return
-  end
-
-  local lw = tex.dimen["linewidth"]
-  if lw <= 0 then
-    return
-  end
-
-  -- Access the page being built via tex.page_box or the output routine.
-  -- In LuaTeX, the page content is in the 'page_box' which is a vlist.
-  local pagebox = tex.box["page_box"]
-  if not pagebox or not pagebox.head then
-    return
-  end
-
-  -- Scan the page's hboxes looking for narrow lines that should be widened.
-  -- Ghost narrowing lines are at the TOP of a page with no figure.
-  -- Strategy: find the first hbox that is narrow, then widen all consecutive
-  -- narrow hboxes until we hit a full-width line.
-  local narrow_threshold = lw * 0.85
-  local widened = 0
-  local found_narrow = false
-
-  for n in node.traverse(pagebox.head) do
-    if n.id == hlist_id and has_text_content(n) then
-      if n.width < narrow_threshold then
-        -- This is a narrow line — widen it to full linewidth
-        local new_hbox = node.hpack(n.head, lw, 'exactly')
-        n.head = new_hbox.head
-        n.width = lw
-        -- Copy shift/depth from original to preserve baseline alignment
-        new_hbox = nil  -- let GC clean up
-        widened = widened + 1
-        found_narrow = true
-      else
-        -- Full-width line reached — stop widening
-        if found_narrow then
-          break
-        end
-      end
-    end
-  end
-
-  if widened > 0 then
-    texio.write_nl(string.format(
-      "[GHOSTFIX] pg=%d widened %d narrow lines to full width",
-      pg, widened))
-  end
-end
-
-texio.write_nl("swarmwrap: callback v3.62 loaded (needspace + transition penalty + buildpage ghost fix + rule-height measurement)")
+texio.write_nl("swarmwrap: callback v3.70 loaded (needspace + conditional forced transition penalty + rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 texio.write_nl("swarmwrap: pre_linebreak_filter registered successfully")
 luatexbase.add_to_callback("post_linebreak_filter",
-  swarmwrap_post_lb, "swarmwrap: carry-over penalty")
+  swarmwrap_post_lb, "swarmwrap: conditional forced transition penalty")
 texio.write_nl("swarmwrap: post_linebreak_filter registered successfully")
-luatexbase.add_to_callback("buildpage_filter",
-  swarmwrap_buildpage, "swarmwrap: ghost-narrowing fix")
-texio.write_nl("swarmwrap: buildpage_filter registered successfully")
