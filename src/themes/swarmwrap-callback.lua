@@ -1,5 +1,5 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.70
+-- v3.72
 --
 -- LAYER 1 (v3.55): Pre-check needspace. Before TeX breaks a paragraph,
 -- check if the current parshape's narrow zone fits on the remaining
@@ -266,12 +266,21 @@ function swarmwrap_post_lb(head, groupcode)
       local remaining = tex.dimen["swarmwrap@remaining"]
       if remaining <= 0 then return end
       local narrow_height = narrow_count * bs
+      -- v3.72: DISABLED forced breaks (Task #232). QA insight: DEFER 8bs
+      -- alone eliminates ghost narrowing via page-eject deferral (v3.67
+      -- proved: 0 ghost, 1069 pages). Forced breaks (-10000) are too costly:
+      -- 1206+ pages. Disabling forced breaks and relying on DEFER 8bs for
+      -- ghost prevention gives much lower page count. The -5000 default
+      -- penalty remains as light encouragement but won't force page breaks.
+      -- Force-break code intentionally commented out for future tuning.
+      --[[ ENABLE FOR FORCED BREAKS:
       if narrow_height > remaining then
-        penalty_value = -10000  -- FORCED: narrow zone exceeds remaining space
+        penalty_value = -10000
         texio.write_nl(string.format(
           "[FORCE-BREAK] pg=%d narrow=%d narrow_h=%.1fpt remaining=%.1fpt",
           tex.count["c@page"], narrow_count, narrow_height/65536, remaining/65536))
       end
+      --]]
     end)
   end
 
@@ -283,7 +292,7 @@ function swarmwrap_post_lb(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.70 loaded (needspace + conditional forced transition penalty + rule-height measurement)")
+texio.write_nl("swarmwrap: callback v3.72 loaded (needspace + conditional forced transition penalty + rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 texio.write_nl("swarmwrap: pre_linebreak_filter registered successfully")
