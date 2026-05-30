@@ -88,3 +88,26 @@ Stage Summary:
 - v3.77: Lua callback file reduced from 262 to 160 lines (39% reduction)
 - Output byte-identical to v3.76 (no functional changes)
 - Task #241 in needs-review, Task #242 pending for QA
+
+---
+Task ID: 1
+Agent: Programmer (main)
+Task: v3.78 — add active ghost-narrowing prevention callbacks to swarmwrap.sty
+
+Work Log:
+- Read programmer-rules.md, BLACKBOARD.md, wrapping-specs.md, verification guide
+- Implemented Layer 1 fill-ratio guard in pre_linebreak_filter (>60% fill → clear parshape)
+- Implemented Layer 2 pagebreak guard in post_linebreak_filter (narrow zone overflow → -10000 penalty)
+- Attempted DEFER 8bs→5bs to reduce page count: 1069→1038 pages
+- Discovered DEFER 5bs reintroduces ghost narrowing (2 ghost, 3 hollow)
+- Root cause: LuaTeX caches line-breaking results for identical paragraphs — callbacks fire only ONCE per unique paragraph
+- Reverted DEFER to 8bs (only per-figure mechanism, immune to caching)
+- Updated PRODUCTION CONFIGURATION NOTE and KNOWN LIMITATION to document caching
+- Compile tested: 50-fig 48p 144743B 50/50, 1000-fig 1069p 2983406B 1100/1100
+- Committed, pushed, updated BLACKBOARD (Task #243 + QA #244), comm log
+
+Stage Summary:
+- v3.78 adds defense-in-depth ghost-narrowing callbacks for non-cached paragraphs
+- DEFER 8bs confirmed as PRIMARY ghost prevention (immune to LuaTeX paragraph caching)
+- Key finding: pre_linebreak_filter and post_linebreak_filter cannot prevent ghost narrowing with \lipsum due to LuaTeX caching
+- Output identical to v3.77: 100% quality on both stress tests
