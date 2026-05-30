@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.74)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.75)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -375,7 +375,7 @@
 % paragraph, which LuaTeX does not currently provide in post_linebreak_filter.
 % See notes/2026-05-28-paragraph-splitting-research.md for details.
 
-\ProvidesPackage{swarmwrap}[2026/05/31 v3.74 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/31 v3.75 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -396,8 +396,6 @@
 
 % v3.41: Store box register number for Lua access
 \newcount\swarmwrap@box@num\relax
-% v3.70: Remaining page space for Lua callback (set in \swarmwrapnext).
-\newdimen\swarmwrap@remaining\relax
 
 % ── Vertical-space tracking for multi-paragraph extension (v3.24) ──
 \newdimen\swarmwrap@fig@bottom  % Y position where figure ends (narrow, for \par patch)
@@ -822,12 +820,9 @@
   \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \linewidth\space}%
   % Store nl for Lua callback
   \global\swarmwrap@nl@lua=\swarmwrap@nl
-  % v3.70: Store remaining page space for Lua callback's conditional penalty.
-  % pagegoal and pagetotal are TeX internals not directly readable from Lua.
-  % We compute remaining here (at wrapping setup time) and store in a
-  % Lua-readable dimen register. The callback reads this to decide between
-  % -10000 (forced break, ghost-narrowing risk) and -5000 (normal).
-  \swarmwrap@remaining=\dimexpr\pagegoal-\pagetotal\relax
+  % v3.75: Removed \swarmwrap@remaining computation. Was used by disabled
+  % Layer 2 callback (v3.70 conditional penalty). DEFER 8bs handles ghost
+  % prevention — no remaining-space computation needed.
   % ── Set up multi-paragraph extension (v3.24: vertical-space tracking) ─
   \swarmwrap@activetrue
   \global\let\par\swarmwrap@patched@par
@@ -896,7 +891,6 @@
     \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
-    \directlua{swarmwrap_mark_fig_placed()}%
     \wlog{swarmwrap next: DEFERRED (page eject) — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
     % Figure fits — place inline.
@@ -907,7 +901,6 @@
     \parshape \swarmwrap@pshape\relax
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
-    \directlua{swarmwrap_mark_fig_placed()}%
     \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
   \fi
 }%

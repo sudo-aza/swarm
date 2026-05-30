@@ -1,5 +1,5 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.74
+-- v3.75
 --
 -- LAYER 1 (v3.55): Pre-check needspace. Before TeX breaks a paragraph,
 -- check if the current parshape's narrow zone fits on the remaining
@@ -19,6 +19,11 @@
 -- 0 overlaps, 1069 pages at 1000-fig scale). Code retained below as a
 -- documented tunable for future use if DEFER strategy is changed.
 --
+-- v3.75: Removed fig_pages table and swarmwrap_mark_fig_placed() — these
+-- were write-only dead state (fig_pages was populated but never read by
+-- any active code). Also removed swarmwrap@remaining dimen reference from
+-- the disabled Layer 2 penalty function.
+--
 -- IMPORTANT: pre_linebreak_filter and post_linebreak_filter fire only
 -- ONCE per document when \lipsum is used (LuaTeX optimization).
 
@@ -28,13 +33,6 @@ local penalty_id = node.id("penalty")
 local hlist_id = node.id("hlist")
 local vlist_id = node.id("vlist")
 local rule_id = node.id("rule")
-
-local fig_pages = {}
-
-function swarmwrap_mark_fig_placed()
-  local pg = tex.count["c@page"]
-  fig_pages[pg] = true
-end
 
 function swarmwrap_measure_visible_height(box_reg)
   -- v3.58: Traverse savebox nodes to find the tallest \rule node
@@ -245,17 +243,6 @@ function swarmwrap_post_lb(head, groupcode)
   -- To re-enable, uncomment the block below and the callback registration.
   --[[
   local penalty_value = -5000  -- tunable: -5000 light, -10000 forced
-  local bs = tex.skip["baselineskip"].width
-  if bs > 0 then
-    local ok, err = pcall(function()
-      local remaining = tex.dimen["swarmwrap@remaining"]
-      if remaining <= 0 then return end
-      local narrow_height = narrow_count * bs
-      if narrow_height > remaining then
-        penalty_value = -10000
-      end
-    end)
-  end
   local pen = node.new(penalty_id)
   pen.penalty = penalty_value
   head, last_narrow = node.insert_after(head, last_narrow, pen)
@@ -264,11 +251,11 @@ function swarmwrap_post_lb(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.74 loaded (needspace + rule-height measurement)")
+texio.write_nl("swarmwrap: callback v3.75 loaded (needspace + rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 texio.write_nl("swarmwrap: pre_linebreak_filter registered successfully")
--- v3.74: Layer 2 (transition penalty) DISABLED. DEFER 8bs eliminates ghost.
+-- v3.75: Layer 2 (transition penalty) DISABLED. DEFER 8bs eliminates ghost.
 -- Uncomment to re-enable: luatexbase.add_to_callback("post_linebreak_filter",
 --   swarmwrap_post_lb, "swarmwrap: conditional transition penalty")
 texio.write_nl("swarmwrap: post_linebreak_filter DISABLED (DEFER 8bs active)")
