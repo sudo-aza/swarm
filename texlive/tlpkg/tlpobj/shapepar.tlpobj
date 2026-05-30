@@ -1,0 +1,32 @@
+name shapepar
+category Package
+revision 77682
+shortdesc A macro to typeset paragraphs in specific shapes
+longdesc \shapepar is a macro to typeset paragraphs in a specific shape.
+longdesc The size is adjusted automatically so that the entire shape is
+longdesc filled with text. There may not be displayed maths or
+longdesc '\vadjust' material (no \vspace) in the argument of \shapepar.
+longdesc The macros work for both LaTeX and plain TeX. For LaTeX,
+longdesc specify \usepackage{shapepar}; for Plain, \input shapepar.sty.
+longdesc \shapepar works in terms of user-defined shapes, though the
+longdesc package does provide some predefined shapes: so you can form
+longdesc any paragraph into the form of a heart by putting
+longdesc \heartpar{sometext...} inside your document. The tedium of
+longdesc creating these polygon definitions may be alleviated by using
+longdesc the shapepatch extension to transfig which will convert xfig
+longdesc output to \shapepar polygon form.
+containersize 15968
+containerchecksum 5ef251a92ab937f8319c95c8361fc969adf8e687b0b6c28f5a35e7fea49cede0187a8acb4b082395d3659cb977645271d4722c7d3e4f19241c0699c4369845fe
+doccontainersize 169104
+doccontainerchecksum 8ff6558e0413ce0f4b7ea59af893bad1d1a1184ed6744a01c52a91c250227313ea2f164e6253bb4bd1242ce1b0cf1b9dd0e7d0956fb5d7989a982981d29cbe5f
+runfiles size=16
+ texmf-dist/tex/generic/shapepar/Canflagshape.def
+ texmf-dist/tex/generic/shapepar/TeXshape.def
+ texmf-dist/tex/generic/shapepar/candleshape.def
+ texmf-dist/tex/generic/shapepar/dropshape.def
+ texmf-dist/tex/generic/shapepar/shapepar.sty
+ texmf-dist/tex/generic/shapepar/triangleshapes.def
+catalogue-ctan /macros/latex/contrib/shapepar
+catalogue-license other-free
+catalogue-topics parshape text-flow micro-layout tagged-pdf-incompatible
+catalogue-version 2.2

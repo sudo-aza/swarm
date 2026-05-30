@@ -1,0 +1,44 @@
+name tagpdf
+category Package
+revision 78799
+shortdesc Code for PDF tagging using pdfLaTeX and LuaLaTeX
+longdesc The package contains the core code for tagging and
+longdesc accessibility used by the LaTeX kernel in the Tagged PDF
+longdesc project. See https://github.com/latex3/tagging-project for more
+longdesc information.
+containersize 43272
+containerchecksum c14dabe0917b49538ae06d1b10d7d0b801fb7b4f12b9d3c4f38d6fa4ef9cd053ed3a9433e98880046a8a34318e88faef249158b5a5f4364694cb81d86678f77d
+doccontainersize 3048108
+doccontainerchecksum dc1203f14b5ec577f6a9fd6b22aae71f7909bbc8eced0842e82ba7300cb3455e25cc2b8dcb3f1f9bcdf4ea9ba2989f976c9054be18a6267795ec8a3fec2c39fc
+srccontainersize 79452
+srccontainerchecksum 770137edb70e6812f219adc99a24a31241d5fd7e2e5f310e3db4efba27e9034fdf38b3b3b5eb313688bde966acfb549be412e65ddb0f42e666656b063f1b7b97
+runfiles size=84
+ texmf-dist/tex/latex/tagpdf/latex-align-css.html
+ texmf-dist/tex/latex/tagpdf/latex-list-css.html
+ texmf-dist/tex/latex/tagpdf/tagpdf-base.sty
+ texmf-dist/tex/latex/tagpdf/tagpdf-debug-generic.sty
+ texmf-dist/tex/latex/tagpdf/tagpdf-debug-lua.sty
+ texmf-dist/tex/latex/tagpdf/tagpdf-debug.sty
+ texmf-dist/tex/latex/tagpdf/tagpdf-luatex.def
+ texmf-dist/tex/latex/tagpdf/tagpdf-mc-code-generic.sty
+ texmf-dist/tex/latex/tagpdf/tagpdf-mc-code-lua.sty
+ texmf-dist/tex/latex/tagpdf/tagpdf-ns-latex-book.def
+ texmf-dist/tex/latex/tagpdf/tagpdf-ns-latex-inline.def
+ texmf-dist/tex/latex/tagpdf/tagpdf-ns-latex.def
+ texmf-dist/tex/latex/tagpdf/tagpdf-ns-mathml.def
+ texmf-dist/tex/latex/tagpdf/tagpdf-ns-pdf.def
+ texmf-dist/tex/latex/tagpdf/tagpdf-ns-pdf2.def
+ texmf-dist/tex/latex/tagpdf/tagpdf-parent-child-2.csv
+ texmf-dist/tex/latex/tagpdf/tagpdf-parent-child.csv
+ texmf-dist/tex/latex/tagpdf/tagpdf.lua
+ texmf-dist/tex/latex/tagpdf/tagpdf.sty
+ texmf-dist/tex/latex/tagpdf/tagpdfdocu-patches.sty
+ texmf-dist/tex/latex/tagpdf/verbatim-af-latex-lab-testphase.ltx
+ texmf-dist/tex/latex/tagpdf/verbatim-alt-latex-lab-testphase.ltx
+ texmf-dist/tex/latex/tagpdf/verbatim-mo-latex-lab-testphase.ltx
+catalogue-contact-repository https://github.com/latex3/tagpdf
+catalogue-contact-support https://github.com/latex3/tagpdf/issues
+catalogue-ctan /macros/latex/contrib/tagpdf
+catalogue-license lppl1.3c
+catalogue-topics accessible
+catalogue-version 1.0b

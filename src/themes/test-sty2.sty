@@ -1,0 +1,10 @@
+\ProvidesPackage{teststy}
+\RequirePackage{ifluatex}
+\newif\ifmyluatex
+\ifluatex \myluatextrue \else \myluatexfalse \fi
+\ifmyluatex
+  \typeout{STYTEST: luatex is TRUE}
+\else
+  \typeout{STYTEST: luatex is FALSE}
+\fi
+\endinput

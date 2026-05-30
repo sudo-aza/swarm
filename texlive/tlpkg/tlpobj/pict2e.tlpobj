@@ -1,0 +1,41 @@
+name pict2e
+category Package
+revision 77682
+shortdesc New implementation of picture commands
+longdesc This package was described in the 2nd edition of 'LaTeX: A
+longdesc Document Preparation System', but the LaTeX project team
+longdesc declined to produce the package. For a long time, LaTeX
+longdesc included a 'pict2e package' that merely produced an apologetic
+longdesc error message. The new package extends the existing LaTeX
+longdesc picture environment, using the familiar technique (cf. the
+longdesc graphics and color packages) of driver files (at present,
+longdesc drivers for dvips, pdfTeX, LuaTeX, XeTeX, VTeX, dvipdfm, and
+longdesc dvipdfmx are available). The package documentation has a fair
+longdesc number of examples of use, showing where things are improved by
+longdesc comparison with the LaTeX picture environment.
+containersize 7812
+containerchecksum 4774c70514d60da4f2e60ca43edf9d681932ad8cbe42f336d76a97b1eafe58d2a6c7a89c71a66891f23e20ab28ec2a8344693ae65a71d5d9460e206e5cd36df5
+doccontainersize 1109928
+doccontainerchecksum 538a333b0e00a45c31d1ee9a73dc0d6574e0396fb6481b96390e07be5144f4dddfe1db7c836e59ba064ed3a8e9aeec4007b15e998fa8430c0fe51e588e8bcdb1
+srccontainersize 33476
+srccontainerchecksum c344a46aa271dcb2efbbd2968b0be98ff9ed506b3a12c0ac78b31fa46c625240c6c7cf65c6639c46329dc207fe80cb543f876e1f5b158214b1ddfa6cf32ec397
+runfiles size=19
+ texmf-dist/tex/latex/pict2e/p2e-dvipdfm.def
+ texmf-dist/tex/latex/pict2e/p2e-dvipdfmx.def
+ texmf-dist/tex/latex/pict2e/p2e-dvips.def
+ texmf-dist/tex/latex/pict2e/p2e-luatex.def
+ texmf-dist/tex/latex/pict2e/p2e-pctex32.def
+ texmf-dist/tex/latex/pict2e/p2e-pctexps.def
+ texmf-dist/tex/latex/pict2e/p2e-pdftex.def
+ texmf-dist/tex/latex/pict2e/p2e-textures.def
+ texmf-dist/tex/latex/pict2e/p2e-vtex.def
+ texmf-dist/tex/latex/pict2e/p2e-xetex.def
+ texmf-dist/tex/latex/pict2e/pict2e.cfg
+ texmf-dist/tex/latex/pict2e/pict2e.sty
+catalogue-also curve2e xpicture
+catalogue-contact-bugs https://github.com/rolfn/pict2e/issues
+catalogue-contact-home https://github.com/rolfn/pict2e
+catalogue-ctan /macros/latex/contrib/pict2e
+catalogue-license lppl1.3
+catalogue-topics graphics graphics-in-tex tagged-pdf
+catalogue-version 0.4b

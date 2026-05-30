@@ -1,0 +1,104 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{caption}
+\usepackage{swarmwrap}
+\usepackage{xcolor}
+
+\title{swarmwrap — Deferred Figure Remaining-Height Overlap Test}
+\author{Programmer Agent}
+\date{2026-05-21}
+
+\begin{document}
+\maketitle
+
+% ====================================================================
+% TEST 1: Deferred figure followed by REGULAR text (no \swarmwrapnext)
+% The figure is near the page bottom, gets deferred.
+% The wrapped paragraph is short (~3 lines on current page).
+% Regular text follows and should NOT overlap the figure bottom.
+% ====================================================================
+\section*{Test 1: Deferred figure + regular text (no subsequent \swarmwrapnext)}
+
+\vspace{2cm}
+{\bfseries\color{blue} Setup:} Fill page to ~5cm from bottom, then place a tall figure
+(6cm) that will be deferred. The wrapped paragraph is 1 lipsum (~6 lines).
+After the paragraph ends, regular (non-wrapped) text follows.
+
+\vspace{4cm}
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \color{red}\rule{\linewidth}{5.5cm}
+    \captionof{figure}{Test 1: Tall deferred figure (5.5cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+{\bfseries\color{green!50!black} This regular text follows the wrapped paragraph.
+If the figure was deferred and the paragraph was shorter than the figure height,
+this text could overlap the bottom of the red figure on the next page.
+Check the next page for overlap between this green text and the red figure.}
+
+\lipsum[2]
+
+\newpage
+% ====================================================================
+% TEST 2: Deferred figure followed by ANOTHER deferred figure
+% Two consecutive deferred figures with a short paragraph each.
+% ====================================================================
+\section*{Test 2: Two consecutive deferred figures}
+
+\vspace{4cm}
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \color{blue}\rule{\linewidth}{5cm}
+    \captionof{figure}{Test 2a: First deferred figure.}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+{\bfseries\color{orange} Regular text between the two figures.}
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \color{blue}\rule{\linewidth}{5cm}
+    \captionof{figure}{Test 2b: Second deferred figure.}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[2]
+
+\newpage
+% ====================================================================
+% TEST 3: Deferred figure followed by regular text (tall paragraph)
+% The paragraph is long enough to fill most of the figure height.
+% ====================================================================
+\section*{Test 3: Deferred figure + tall wrapped paragraph}
+
+\vspace{4cm}
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \color{red}\rule{\linewidth}{4cm}
+    \captionof{figure}{Test 3: 4cm deferred figure.}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-3]
+
+{\bfseries\color{green!50!black} Regular text after a long wrapped paragraph.
+The paragraph should consume most of the figure height, so minimal remaining.
+Check for any overlap.}
+
+\lipsum[4]
+
+\end{document}

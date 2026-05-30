@@ -1,0 +1,41 @@
+name minted
+category Package
+revision 78270
+shortdesc Highlighted source code for LaTeX
+longdesc The package that facilitates expressive syntax highlighting in
+longdesc LaTeX using the powerful Pygments library. The package also
+longdesc provides options to customize the highlighted source code
+longdesc output using fancyvrb.
+depend catchfile
+depend etoolbox
+depend float
+depend fvextra
+depend latex2pydata
+depend minted.ARCH
+depend newfloat
+depend pdftexcmds
+depend pgf
+depend pgfopts
+depend tools
+depend xcolor
+containersize 1295096
+containerchecksum c1052da89e96fa8daa35f6ad3d691897db58b60b6a426455ce1e647c1efe2679e9a6705788bfba4bbb94207a6f5cbe76ff5efc80c699eb4ad23776fabb4f01e6
+doccontainersize 530324
+doccontainerchecksum 96320b811c7eb5b3bc06005ce98e488ea4824ed14a1bcb592b0af377db5cb2933ecd8fd4035faab5c376677d8685eb0c92c112754e3f909ec947c60a69b41728
+srccontainersize 44452
+srccontainerchecksum ca9cd34cc97779048d23a5e3e21662575f2b127e31115e9145144174c596eea722751477a50396869a90dca42a8cb37633deb3e8329c3ae48016e35f81c684f2
+runfiles size=359
+ texmf-dist/scripts/minted/latex2pydata-0.5.0-py3-none-any.whl
+ texmf-dist/scripts/minted/latexminted-0.7.0-py3-none-any.whl
+ texmf-dist/scripts/minted/latexminted.py
+ texmf-dist/scripts/minted/latexrestricted-0.6.2-py3-none-any.whl
+ texmf-dist/scripts/minted/pygments-2.19.2-py3-none-any.whl
+ texmf-dist/tex/latex/minted/minted.sty
+ texmf-dist/tex/latex/minted/minted1.sty
+ texmf-dist/tex/latex/minted/minted2.sty
+catalogue-also texments verbments
+catalogue-contact-repository https://github.com/gpoore/minted
+catalogue-ctan /macros/latex/contrib/minted
+catalogue-license lppl1.3c lppl1.3 bsd3
+catalogue-topics listing verbatim synt-hlt tagged-pdf-incompatible
+catalogue-version 3.8.0
