@@ -1,5 +1,5 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.73
+-- v3.74
 --
 -- LAYER 1 (v3.55): Pre-check needspace. Before TeX breaks a paragraph,
 -- check if the current parshape's narrow zone fits on the remaining
@@ -264,11 +264,11 @@ function swarmwrap_post_lb(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.73 loaded (needspace + rule-height measurement)")
+texio.write_nl("swarmwrap: callback v3.74 loaded (needspace + rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 texio.write_nl("swarmwrap: pre_linebreak_filter registered successfully")
--- v3.73: Layer 2 (transition penalty) DISABLED. DEFER 8bs eliminates ghost.
+-- v3.74: Layer 2 (transition penalty) DISABLED. DEFER 8bs eliminates ghost.
 -- Uncomment to re-enable: luatexbase.add_to_callback("post_linebreak_filter",
 --   swarmwrap_post_lb, "swarmwrap: conditional transition penalty")
 texio.write_nl("swarmwrap: post_linebreak_filter DISABLED (DEFER 8bs active)")

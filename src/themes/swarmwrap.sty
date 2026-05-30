@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.73)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.74)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -375,7 +375,7 @@
 % paragraph, which LuaTeX does not currently provide in post_linebreak_filter.
 % See notes/2026-05-28-paragraph-splitting-research.md for details.
 
-\ProvidesPackage{swarmwrap}[2026/05/30 v3.73 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/31 v3.74 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -394,9 +394,6 @@
 \newcommand{\swarmwrap@fh@val}{0pt}  % figure height (full, with padding) for vspace push
 \newcommand{\swarmwrap@fh@narrow@val}{0pt}  % figure height (narrow, no padding) for parshape computation
 
-% v3.64: Initialize narrow_used to 0 (not nl).
-\newcount\swarmwrap@max@narrow\relax  % max allowed total narrow lines
-\newcount\swarmwrap@narrow@used\relax
 % v3.41: Store box register number for Lua access
 \newcount\swarmwrap@box@num\relax
 % v3.70: Remaining page space for Lua callback (set in \swarmwrapnext).
@@ -801,21 +798,10 @@
     \advance\swarmwrap@nl by 1
     \advance\dimen0 by -\baselineskip
   \ifdim\dimen0>0pt \repeat
-  % v3.41: Set hard cap on total narrow lines
-  \swarmwrap@max@narrow=\swarmwrap@nl
-  \advance\swarmwrap@max@narrow by 1  % allow 1 extra line for extension
-  % v3.64: Initialize narrow_used to 0 (not nl).
-  % ROOT CAUSE of 14 body-text overlaps (Task #216):
-  % narrow_used counted the initial parshape's nl narrow entries as
-  % "used", leaving only 1 line for extensions (\item hook, \par patch).
-  % When the first paragraph was short (e.g., empty \noindent before
-  % \begin{itemize}), most nl entries were unused but still counted.
-  % The \item hook got cap_remaining=1, so the first \item paragraph
-  % had only 1 narrow line; the 2nd line fell on the trailing
-  % full-width entry, overlapping the figure. Fix: count only
-  % EXTENSION lines, not the initial allocation. The figure-space
-  % and page-space (5bs) checks provide the real limits on extensions.
-  \global\swarmwrap@narrow@used=0
+  % v3.74: Removed vestigial hard cap registers (max@narrow, narrow@used).
+  % These were part of the v3.61 hard cap mechanism, fully removed in
+  % v3.65 (Task #219). The figure-space and page-space (5bs) checks
+  % provide natural limits on narrow-line extensions.
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
   % Set Lua-readable dimension for post_linebreak_filter callback
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
