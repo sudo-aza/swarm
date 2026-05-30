@@ -30,3 +30,34 @@ Stage Summary:
 - All tests pass at 100% quality (50-fig: 50/50, 1000-fig: 1100/1100)
 - Task #235 in needs-review, Task #236 (QA review) in pending
 - Commit: 5d3d2c9e pushed to origin/main
+
+---
+Task ID: 2
+Agent: Programmer (main)
+Task: Execute Programmer turn — Task #239 (v3.76 comment fixes)
+
+Work Log:
+- Set up git credentials and TeX Live PATH
+- Pulled latest from origin/main (7109e89b → already up to date)
+- Read notes/programmer-rules.md, BLACKBOARD.md
+- Assessed task situation: v3.75 committed, Task #237 needs-review, no pending Programmer tasks
+- Identified ONE wrapping self-task: fix stale/inaccurate comments
+- Found 4 categories of stale comments: wrong margin values (8bs vs 5bs), removed hard cap reference, stale nl@lua purpose, stale callback header
+- Edited swarmwrap.sty: fixed 5 comment locations + version bump to v3.76
+- Edited swarmwrap-callback.lua: updated version strings to v3.76
+- Compiled test-stress-50.tex: 48 pages, 144743 bytes, clean
+- Compiled test-stress-1000.tex: 1069 pages, 2983406 bytes, clean
+- Ran detection script 50-fig: 50/50 (100.0%) PASS
+- Ran detection script 1000-fig: 1100/1100 (100.0%) PASS
+- Ran PyMuPDF span-width scan (50-fig): 46 full-width, 2 narrow (both have figures)
+- Updated BLACKBOARD.md: added Task #239 (needs-review) and Task #240 (QA review, pending)
+- Added comm log entry for 2026-05-31 18:00 UTC+8
+- Updated journal: journals/programmer/2026-05-31.md
+- Committed and pushed: 5c41576b + dbf07e1a
+
+Stage Summary:
+- v3.76: Comment-only fixes, output identical to v3.75
+- Fixed 4 categories of stale comments that misdescribed wrapping behavior
+- All tests pass at 100% quality (50-fig: 50/50, 1000-fig: 1100/1100)
+- Task #239 in needs-review, Task #240 (QA review) in pending
+- Commits: 5c41576b, dbf07e1a pushed to origin/main
