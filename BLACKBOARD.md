@@ -73,8 +73,26 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 236 | **QA REVIEWED PASS (Turn 55, 10/10).** v3.74 dead code cleanup verified. All checks passed — registers removed, version consistent, compile clean, detection 50/50. See Task #235 for details. | QA | **done** | 2026-05-31 |
 | 237 | **FIX (v3.75)**: swarmwrap.sty — remove remaining dead state from disabled Layer 2 callback. Removed: (1) `\newdimen\swarmwrap@remaining` declaration and its computation (`pagegoal-pagetotal` in `\swarmwrapnext`). (2) `\directlua{swarmwrap_mark_fig_placed()}` calls from both inline (line 910) and deferred (line 899) figure paths. (3) `fig_pages` table and `swarmwrap_mark_fig_placed()` function from swarmwrap-callback.lua — write-only state, never read by any active code. (4) `swarmwrap@remaining` reference inside disabled penalty block. Output byte-identical to v3.74: 50-fig 48 pages 50/50 (100.0%), 1000-fig 1069 pages 1100/1100 (100.0%), 0 real bugs. **QA review needed.** ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **needs-review** | 2026-05-31 |
 | 238 | **QA REVIEW**: Verify Programmer's v3.75 dead state cleanup (Task #237). Verify: (1) `\swarmwrap@remaining` removed from declarations and computations. (2) `swarmwrap_mark_fig_placed()` calls removed from .sty. (3) `fig_pages` and function removed from .lua. (4) No functional changes — output byte-identical to v3.74. (5) Version consistent v3.75. Detection: `python3 scripts/detect-layout-issues.py tests/test-stress-50.pdf --quality` — expected: 48 pages, 50/50 (100.0%). `python3 scripts/detect-layout-issues.py tests/test-stress-1000.pdf --quality` — expected: 1069 pages, 1100/1100 (100.0%). | QA | **pending** | 2026-05-31 |
+| 239 | **FIX (v3.76)**: swarmwrap.sty — fix stale/inaccurate comments. (1) Fixed page-space margin references: "8bs above" → "5bs margin" in \par patch (line 541) and list hook (line 631) — code uses `5\baselineskip`, not 8. (2) Removed "Hard cap (max_narrow = nl + 1)" reference in parshape build section (line 810) — hard cap was removed in v3.65 (Task #219); replaced with accurate description of page-space check mechanism. (3) Updated `nl@lua` comment to reflect current usage (Layer 1 needspace + disabled Layer 2) instead of stale v3.29 hbox-widening purpose. (4) Updated Lua callback section header to describe both Layer 1 (active) and Layer 2 (disabled) instead of only mentioning post_linebreak_filter. Output identical to v3.75: 50-fig 48 pages 144743 bytes 50/50 (100.0%), 1000-fig 1069 pages 2983406 bytes 1100/1100 (100.0%), 0 real bugs. **QA review needed.** ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **needs-review** | 2026-05-31 |
+| 240 | **QA REVIEW**: Verify Programmer's v3.76 comment fixes (Task #239). Verify: (1) Page-space margin comments now correctly say "5bs" (matching code at 3 locations). (2) No "Hard cap" references remain in active code comments. (3) `nl@lua` comment updated. (4) Callback section header describes both layers. (5) Version consistent v3.76. (6) Output identical to v3.75 — no functional changes. Detection: `python3 scripts/detect-layout-issues.py tests/test-stress-50.pdf --quality` — expected: 48 pages, 50/50 (100.0%). `python3 scripts/detect-layout-issues.py tests/test-stress-1000.pdf --quality` — expected: 1069 pages, 1100/1100 (100.0%). | QA | **pending** | 2026-05-31 |
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-31 18:00 UTC+8
+> **Task #239: v3.76 — fix stale/inaccurate comments in swarmwrap.sty.**
+>
+> Fixed 4 categories of stale comments that misdescribed current wrapping behavior: (1) Page-space margin references in \par patch and list hook said "8bs above" but code uses `5\baselineskip` — corrected to "5bs margin". (2) Parshape build section referenced "Hard cap (max_narrow = nl + 1)" — mechanism removed in v3.65 (Task #219), replaced with accurate description of page-space check. (3) `nl@lua` comment described stale v3.29 hbox-widening purpose — updated to reflect current Layer 1 needspace + disabled Layer 2 usage. (4) Lua callback section header only mentioned post_linebreak_filter — updated to describe both Layer 1 (active) and Layer 2 (disabled).
+>
+> **Changes**: swarmwrap.sty — 5 comment edits + version bump to v3.76. swarmwrap-callback.lua — version string update to v3.76.
+>
+> **Verification** (output identical to v3.75):
+> - 50-fig: 48 pages, 144743 bytes, clean compile, 0 errors
+> - 50-fig detection: 50/50 (100.0%), 0 real bugs
+> - 1000-fig: 1069 pages, 2983406 bytes, clean compile, 0 errors
+> - 1000-fig detection: 1100/1100 (100.0%), 0 real bugs
+> - PyMuPDF span-width scan (50-fig): 46 full-width, 2 narrow (both have figures — correctly wrapped)
+>
+> **QA review task**: #240. Fix task: #239 (status: needs-review).
 
 ### Programmer — 2026-05-31 01:30 UTC+8
 > **Task #237: v3.75 — remove remaining dead state from disabled Layer 2 callback.**
