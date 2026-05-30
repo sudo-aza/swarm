@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.75)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.76)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -375,7 +375,7 @@
 % paragraph, which LuaTeX does not currently provide in post_linebreak_filter.
 % See notes/2026-05-28-paragraph-splitting-research.md for details.
 
-\ProvidesPackage{swarmwrap}[2026/05/31 v3.75 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/31 v3.76 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -418,18 +418,17 @@
 \swarmwrap@tw@lua=0pt
 \newcount\swarmwrap@tmp@cnt
 % v3.29: Lua-readable count for the number of narrow lines (nl).
-% Set in \swarmwrapnext, read by post_linebreak_filter to widen
-% hboxes after position nl (fixing ghost-narrowing without parshape
-% trailing entry, thus avoiding body-text overlaps).
+% Set in \swarmwrapnext. Read by pre_linebreak_filter (Layer 1
+% needspace check, v3.55) and disabled post_linebreak_filter (Layer 2).
 \newcount\swarmwrap@nl@lua
 \swarmwrap@nl@lua=0
 
 
-% ── Lua callback: post_linebreak_filter ───────────────────────────────
-% Only used for penalty insertion at the parshape boundary (discouraging
-% page breaks that would cause ghost narrowing). Line counting removed
-% in v3.24 — parshape extension now uses synchronous vertical-space
-% tracking in the \par patch.
+% ── Lua callbacks ─────────────────────────────────────────────────
+% LAYER 1 (v3.55, active): pre_linebreak_filter — needspace check.
+% LAYER 2 (v3.70, DISABLED in v3.73): post_linebreak_filter —
+% conditional transition penalty. DEFER 8bs eliminates ghost narrowing
+% without penalties; code retained as tunable. See .lua header.
 
 \ifswarmwrap@luatex
 \directlua{dofile(kpse.find_file("swarmwrap-callback.lua") or error("swarmwrap-callback.lua not found"))}%
@@ -538,7 +537,7 @@
           \ifnum\swarmwrap@loop@cnt>0\relax
             % v3.65: Removed hard cap from \par patch (Task #219).
             % QA proved hard cap caused 14 body-text overlaps.
-            % Page-space check (8bs above) and figure-space check
+            % Page-space check (5bs margin above) and figure-space check
             % provide the natural limits on narrow lines.
             % Extend parshape for the computed remaining lines
             % v3.30: trailing full-width entry in \par patch extension.
@@ -628,7 +627,7 @@
           \fi
           % v3.65: Removed v3.61 hard cap from list hook (Task #219).
           % QA proved hard cap in list/item hooks caused 14 body-text overlaps.
-          % Page-space check (8bs above) provides the natural limit.
+          % Page-space check (5bs margin) provides the natural limit.
           \ifnum\swarmwrap@loop@cnt>0\relax
             % v3.30: trailing full-width entry in list hook
             % Count = remaining lines + 1 trailing full-width
@@ -807,8 +806,8 @@
   % v3.30: nl narrow entries + 1 trailing full-width entry.
   % v3.41: nl is computed from visible content height (Lua measurement).
   % Overlap prevention handled separately by vspace push (fh@val).
-  % Hard cap (max_narrow = nl + 1) limits total narrow lines including
-  % \par patch extensions. Fall-through bug fixed (Task #190).
+  % Page-space check (5bs margin) limits narrow-line extensions in
+  % \par patch, list hook, and item hook — no hard cap needed.
   % Count = nl (narrow) + 1 (trailing full-width)
   \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@nl
