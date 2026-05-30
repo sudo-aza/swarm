@@ -255,6 +255,12 @@ def detect_figure_beside_text(page_num, figures, text_lines, min_adjacent):
         n_narrowed = len(narrowed_beside)
         n_fullwidth = len(fullwidth_beside)
 
+        # On multicol pages, a small figure centered within a single column
+        # (no narrowed text beside it) is intentional — the package falls back
+        # to centered placement in narrow columns (v3.79). This is not a bug.
+        if is_multicol and n_narrowed == 0 and fig.width < full_width * 0.5:
+            continue
+
         if n_narrowed < min_adjacent:
             severity = "CRITICAL" if n_narrowed == 0 else "WARNING"
             issues.append({
