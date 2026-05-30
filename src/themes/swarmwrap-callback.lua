@@ -1,25 +1,23 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.72
+-- v3.73
 --
 -- LAYER 1 (v3.55): Pre-check needspace. Before TeX breaks a paragraph,
 -- check if the current parshape's narrow zone fits on the remaining
 -- page space. If not, reduce narrow entries or clear parshape entirely.
 -- (Fires only once per unique paragraph shape due to LuaTeX caching.)
 --
--- LAYER 2 (v3.70): Conditional transition penalty. After TeX breaks a
--- paragraph, find the LAST narrow line (narrow->full transition point)
--- and insert a penalty there. v3.70 key change: penalty strength is
--- CONDITIONAL on remaining page space:
---   - If narrow_count * baselineskip > (pagegoal - pagetotal):
---     Use -10000 (FORCED break). TeX MUST break the page at the
---     transition, preventing narrow lines from carrying over to the
---     next page where no figure exists (ghost narrowing).
---   - Otherwise: use -5000 (normal encouragement).
--- This is the FIRST time -10000 has been tried at the transition.
--- Previous: -2000 (v3.54) and -5000 (v3.69) are discretionary and
--- TeX can override them when the page is overfull — exactly when
--- ghost narrowing occurs. -10000 is mandatory.
--- (Fires only once per unique paragraph shape due to LuaTeX caching.)
+-- LAYER 2 (v3.70, DISABLED in v3.73): Conditional transition penalty.
+-- After TeX breaks a paragraph, find the LAST narrow line (narrow->full
+-- transition point) and insert a penalty there. Investigated over multiple
+-- versions (v3.54=-2000, v3.69=-5000, v3.70=-10000 conditional).
+-- Results: -2000/-5000 discretionary penalties are overridden by TeX when
+-- the page is overfull (exactly when ghost narrowing occurs). -10000
+-- forced breaks prevent ghost but cause massive page count regression
+-- (+168 pages, 116 near-empty pages at 1000-fig scale).
+-- DISABLED: DEFER 8bs in swarmwrap.sty eliminates ghost narrowing via
+-- page-eject deferral without transition penalties (verified 0 ghost,
+-- 0 overlaps, 1069 pages at 1000-fig scale). Code retained below as a
+-- documented tunable for future use if DEFER strategy is changed.
 --
 -- IMPORTANT: pre_linebreak_filter and post_linebreak_filter fire only
 -- ONCE per document when \lipsum is used (LuaTeX optimization).
@@ -192,28 +190,14 @@ function swarmwrap_needspace(head, groupcode)
   return head
 end
 
--- LAYER 2: Conditional transition penalty in post_linebreak_filter (Task #214).
--- After TeX breaks the paragraph into lines (hlists), find the narrow->full
--- transition point and insert a penalty. v3.70 key change:
--- CONDITIONAL penalty based on remaining page space. Count narrow lines (K)
--- in the broken result and compare K * baselineskip against remaining page
--- space (pagegoal - pagetotal).
---
--- If narrow zone exceeds remaining space:
---   - Use -10000 (FORCED break). TeX MUST break the page at the
---     narrow->full transition. This prevents narrow lines from carrying
---     over to the next page where no figure exists (ghost narrowing).
---   - This has NEVER been tried before. Previous attempts used discretionary
---     penalties: -2000 (v3.54), -5000 (v3.69). TeX can override discretionary
---     penalties when the page is overfull, which is exactly when ghost
---     narrowing occurs. -10000 is mandatory — TeX cannot override it.
---
--- If narrow zone fits on the remaining page:
---   - Use -5000 (normal encouragement, no forced break needed).
---
--- Trade-off: forced breaks may increase page count slightly when paragraphs
--- start near page bottoms. But this only fires for paragraphs where the narrow
--- zone doesn't fit — exactly the ghost-narrowing risk cases.
+-- LAYER 2: Conditional transition penalty (DISABLED in v3.73 — see header).
+-- DEFER 8bs eliminates ghost narrowing without penalties. This code is
+-- retained for optional tuning if DEFER strategy changes. To re-enable:
+-- (1) Uncomment the callback registration at the bottom of this file.
+-- (2) Uncomment the penalty insertion block inside the function.
+-- (3) Adjust penalty_value (-5000 light, -10000 forced) as needed.
+-- NOTE: -10000 forced breaks caused +168 pages and 116 near-empty pages
+-- at 1000-fig scale (v3.70). -5000 has 0 measurable effect.
 function swarmwrap_post_lb(head, groupcode)
   local nl = tex.count["swarmwrap@nl@lua"]
 
@@ -256,46 +240,35 @@ function swarmwrap_post_lb(head, groupcode)
     return head
   end
 
-  -- v3.70: Conditional penalty based on remaining page space.
-  -- pagegoal and pagetotal are TeX internals not accessible from Lua.
-  -- Instead, read \swarmwrap@remaining (computed at \swarmwrapnext time).
-  local penalty_value = -5000  -- default: normal encouragement
+  -- v3.73: LAYER 2 DISABLED. DEFER 8bs handles ghost prevention.
+  -- Penalty insertion intentionally removed — see header for rationale.
+  -- To re-enable, uncomment the block below and the callback registration.
+  --[[
+  local penalty_value = -5000  -- tunable: -5000 light, -10000 forced
   local bs = tex.skip["baselineskip"].width
   if bs > 0 then
     local ok, err = pcall(function()
       local remaining = tex.dimen["swarmwrap@remaining"]
       if remaining <= 0 then return end
       local narrow_height = narrow_count * bs
-      -- v3.72: DISABLED forced breaks (Task #232). QA insight: DEFER 8bs
-      -- alone eliminates ghost narrowing via page-eject deferral (v3.67
-      -- proved: 0 ghost, 1069 pages). Forced breaks (-10000) are too costly:
-      -- 1206+ pages. Disabling forced breaks and relying on DEFER 8bs for
-      -- ghost prevention gives much lower page count. The -5000 default
-      -- penalty remains as light encouragement but won't force page breaks.
-      -- Force-break code intentionally commented out for future tuning.
-      --[[ ENABLE FOR FORCED BREAKS:
       if narrow_height > remaining then
         penalty_value = -10000
-        texio.write_nl(string.format(
-          "[FORCE-BREAK] pg=%d narrow=%d narrow_h=%.1fpt remaining=%.1fpt",
-          tex.count["c@page"], narrow_count, narrow_height/65536, remaining/65536))
       end
-      --]]
     end)
   end
-
-  -- Insert penalty at the narrow->full transition.
   local pen = node.new(penalty_id)
   pen.penalty = penalty_value
   head, last_narrow = node.insert_after(head, last_narrow, pen)
+  --]]
 
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.72 loaded (needspace + conditional forced transition penalty + rule-height measurement)")
+texio.write_nl("swarmwrap: callback v3.73 loaded (needspace + rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 texio.write_nl("swarmwrap: pre_linebreak_filter registered successfully")
-luatexbase.add_to_callback("post_linebreak_filter",
-  swarmwrap_post_lb, "swarmwrap: conditional forced transition penalty")
-texio.write_nl("swarmwrap: post_linebreak_filter registered successfully")
+-- v3.73: Layer 2 (transition penalty) DISABLED. DEFER 8bs eliminates ghost.
+-- Uncomment to re-enable: luatexbase.add_to_callback("post_linebreak_filter",
+--   swarmwrap_post_lb, "swarmwrap: conditional transition penalty")
+texio.write_nl("swarmwrap: post_linebreak_filter DISABLED (DEFER 8bs active)")
