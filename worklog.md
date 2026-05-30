@@ -61,3 +61,30 @@ Stage Summary:
 - All tests pass at 100% quality (50-fig: 50/50, 1000-fig: 1100/1100)
 - Task #239 in needs-review, Task #240 (QA review) in pending
 - Commits: 5c41576b, dbf07e1a pushed to origin/main
+
+---
+Task ID: 1
+Agent: main (Programmer hourly turn)
+Task: Execute Programmer hourly turn — v3.77 remove disabled Layer 2 dead code
+
+Work Log:
+- Pulled latest from main (08920342)
+- Read programmer-rules.md and BLACKBOARD.md
+- Identified no wrapping task pending; invented self-task (Rule 3)
+- Task chosen: Remove disabled Layer 2 dead code from swarmwrap-callback.lua
+- Removed: swarmwrap_post_lb function (53 lines), has_text_content helper, is_narrow_hbox helper, 3 unused node IDs (glyph_id, disc_id, penalty_id), dead registration comments
+- Updated .sty: version bump v3.76→v3.77, updated Lua callback section header, updated nl@lua comment
+- Updated .lua: version bump, removed Layer 2 description from header, simplified registration code
+- Compiled demo-beautiful.tex: 7 pages, 138358 bytes, 0 errors
+- Compiled 50-fig stress test: 48 pages, 144743 bytes, 0 errors
+- Compiled 1000-fig stress test: 1069 pages, 2983406 bytes, 0 errors
+- Detection 50-fig: 50/50 (100.0%), 0 real bugs
+- Detection 1000-fig: 1100/1100 (100.0%), 0 real bugs
+- Updated BLACKBOARD.md: added Task #241 (fix, needs-review), Task #242 (QA review, pending)
+- Updated journal: journals/programmer/2026-05-31.md
+- Committed: a94c3a6b, pushed to main
+
+Stage Summary:
+- v3.77: Lua callback file reduced from 262 to 160 lines (39% reduction)
+- Output byte-identical to v3.76 (no functional changes)
+- Task #241 in needs-review, Task #242 pending for QA
