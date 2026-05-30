@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.66)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.73)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -36,25 +36,25 @@
 %
 % ── Known Limitations ─────────────────────────────────────────────────
 %
-% 1. Ghost narrowing on continuation pages (MOSTLY FIXED in v3.54):
+% 1. Ghost narrowing (prevented by DEFER 8bs since v3.67):
 %    When the wrapped paragraph spans a page break, TeX's parshape
 %    persists across the page boundary but the figure does not (it is
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
 %    lines on the next page remain narrowed even though no figure is
-%    beside them.
-%    v3.54 FIX (two-layer prevention):
-%    Layer 1: 2-baselineskip safety margin in \par patch, list hook,
-%    and item hook — limits parshape extension to fit within the page.
-%    Layer 2: Transition penalty (-2000) in post_linebreak_filter —
-%    inserted at the narrow→full parshape boundary, encouraging TeX to
-%    break the page at the transition point.
-%    REMAINING: 3/1038 pages at 1000-fig scale have ghost narrowing
-%    (pages 67, 332, 927). These are edge cases where the first
-%    paragraph is very long and TeX's page breaker is forced to break
-%    within the narrow zone (page overfull). This is an inherent
-%    limitation of TeX's parshape persistence across page breaks
-%    within a single paragraph — no post-hoc fix is possible without
-%    shipout_filter (which fails due to luaotfload conflict).
+%    beside them — "ghost narrowing."
+%    PREVENTION (v3.67+): DEFER 8bs ejects figures to the next page
+%    before parshape carry-over can occur. Verified at 1000-figure
+%    scale: 0 ghost, 0 overlaps, 0 hollow carry-over.
+%    ROOT CAUSE: This is an inherent TeX limitation — parshape
+%    specification persists within a paragraph across page breaks.
+%    No post-hoc fix is possible without tex.linebreak() access to
+%    the original unbroken paragraph (unavailable in post_linebreak_filter).
+%    Penalty-based approaches (-2000/-5000/-10000) were investigated
+%    over v3.54–v3.72: discretionary penalties are overridden when the
+%    page is overfull; forced breaks prevent ghost but cause massive
+%    page count regression (+168 pages, 116 near-empty at 1000-fig).
+%    See PRODUCTION CONFIGURATION NOTE below and
+%    notes/2026-05-28-paragraph-splitting-research.md for details.
 %
 % 2. Parshape leak into list items (PARTIALLY FIXED in v3.16):
 %    When \swarmwrapnext is used before a list, subsequent \item

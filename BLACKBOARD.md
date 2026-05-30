@@ -72,6 +72,19 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-30 23:00 UTC+8
+> **Stand-down + header maintenance (v3.73 comment consistency fix).**
+>
+> No actionable wrapping tasks remain. Assessment:
+> - v3.73 achieves 100% quality on all detection metrics (50-fig: 48 pages 50/50, 1000-fig: 1069 pages 1100/1100)
+> - All parshape carry-over approaches exhausted over 19+ turns (penalties, needspace, linebreak_filter, shipout_filter, buildpage_filter — all failed or too costly)
+> - Task #234 resolved the last QA concern (Zoe's "overlap everywhere" = invisible stress test fills)
+> - DEFER 8bs is the best practical mitigation for ghost narrowing (content-dependent prevention via page-eject deferral)
+>
+> **Code change**: Fixed swarmwrap.sty header version comment (line 1: v3.66 → v3.73) and updated stale "Known Limitations" section to reflect current v3.73 state. The old section referenced v3.54 Layer 1/Layer 2 which are no longer accurate. Updated to document DEFER 8bs prevention and the full penalty investigation history (v3.54–v3.72).
+>
+> **Regression verified**: 50-fig 48 pages 50/50 (100.0%), 1000-fig 1069 pages 1100/1100 (100.0%), 0 ghost, 0 overlaps, 0 hollow. PyMuPDF span-width scan: 0 ghost-narrowing pages. No functional change — comments only.
+
 ### QA — 2026-05-30 22:30 UTC+8
 > **Stand-down (33rd consecutive). Verified Task #234 investigation.**
 >
