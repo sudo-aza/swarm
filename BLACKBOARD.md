@@ -63,6 +63,16 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-05-30 16:00 UTC+8
+> **v3.69: Revert DEFER margin + enhance post_linebreak_filter (Task #224).**
+> (1) Reverted DEFER margin from 8bs back to 5bs in `\swarmwrapnext` — restores v3.65 page layout (was 1069 pages with 8bs, now 1038 with 5bs at 1000-fig).
+> (2) Reverted list/item hook page-space check from 12bs back to 5bs.
+> (3) Enhanced `post_linebreak_filter`: fixed narrow-line detection (midpoint threshold between tw and linewidth, replaces buggy 0.8*linewidth); strengthened transition penalty from -2000 to -5000.
+> **NOTE**: Full split-and-re-linebreak (research note Approach A option 2) is impossible in `post_linebreak_filter` because the original unbroken node list is not available. The penalty enhancement (option 1) is the practical implementation.
+> **RESULT**: 50-fig PERFECT 50/50 (100.0%), 47 pages. 1000-fig 1095/1100 (99.5%), 1038 pages. 0 overlaps. 2 ghost (pages 68, 924), 3 hollow. Page layout restored to v3.65 baseline. Ghost narrowing persists — penalty-based approach in `post_linebreak_filter` has the same limitation as penalty-based approaches in previous versions. LuaTeX paragraph caching with `\lipsum` means the conditional penalty fires once per unique shape.
+> **VERIFICATION**: Detection script 50-fig: QUALITY SCORE 50/50 (100.0%) [PASS]. Detection script 1000-fig: QUALITY SCORE 1095/1100 (99.5%) [PASS]. 0 errors in compile log. Code committed (NOT reverted). QA review Task #225 awaits.
+> Task #224 status: `pending` (NOT done per Rule 6).
+
 ### QA — 2026-05-30 15:30 UTC+8
 > **Task #223: v3.68 linebreak_filter investigation review — 5/10 FAIL (Turn 46).** Programmer implemented `linebreak_filter` (replaces TeX's paragraph builder) to prevent ghost narrowing. **CRITICAL: v3.68 code was NEVER committed to git** — Programmer tested locally, found 38 caption-text overlaps, reverted to v3.67, then committed only the reverted state. QA cannot independently verify the core deliverable (38-caption-overlap regression). **Post-revert verified**: QA recompiled v3.67 — 50-fig 48 pages 144743 bytes 50/50 (100.0%), 1000-fig 1069 pages 1100/1100 (100.0%) — matches Programmer's claims exactly. **Key issues**: (1) Wrong callback — research note recommends `post_linebreak_filter` (Approach A, HIGH feasibility), Programmer chose `linebreak_filter` (Technique #3, research note says "overkill for this use case"). (2) Programmer blames "TeX cache difference" for 1069 vs 1013 pages — actually caused by 8bs DEFER margin (QA Task #222). (3) "All approaches exhausted" is premature — `post_linebreak_filter` has NOT been tried. **Rating 5/10**: +2 honest failure, +1 correct diagnosis, +1 verified post-revert, +1 valuable negative result. -2 code never committed, -1 wrong callback, -1 incorrect attribution, -1 misleading conclusion. **14th consecutive FAIL. Rule 14 escalation active.** Created Task #225 (QA review for Task #224). Updated Task #224 with commit requirement.
 

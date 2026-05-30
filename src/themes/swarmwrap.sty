@@ -71,25 +71,27 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
-% v3.67: Investigate ghost narrowing page 67 — increase DEFER margin (Task #214).
-%   Increased DEFER safety margin from 5bs to 8bs in \swarmwrapnext.
-%   Systematically tested margin increases: 5bs→8bs DEFER, 5bs→8bs→12bs
-%   page-space check. ALL produced IDENTICAL results: 1096/1100 (99.6%),
-%   2 ghost (pages 67, 903), 2 hollow, 6 near-empty, 0 overlaps.
-%   The 8bs DEFER correctly deferred the nl=22 figure (remaining=385 < 407),
-%   but ghost on page 67 is from a DIFFERENT figure whose narrow zone
-%   carries over within a SINGLE TeX paragraph across a page break.
-%   Root cause: TeX's \parshape persists within a single paragraph
-%   across page breaks. The DEFER check and page-space check prevent
-%   \par patch extensions from carrying over, but cannot prevent the
-%   INITIAL parshape from carrying over when a very long paragraph
-%   spans a page boundary within the narrow zone.
-%   CONCLUSION: 2 ghost pages (0.2%) are an inherent TeX limitation
-%   of the parshape-based approach. Eliminating them requires
-%   Approach A (Split-and-Re-Linebreak via tex.linebreak in
-%   post_linebreak_filter, proven by lua-widow-control package).
-%   RESULT: 1096/1100 (99.6%) — unchanged from v3.65 baseline.
-%   STATUS: Pending QA review.
+% v3.69: Revert DEFER margin 8bs->5bs, enhance post_linebreak_filter (Task #224).
+%   (1) Reverted DEFER margin from 8bs back to 5bs in \swarmwrapnext
+%       to restore v3.65 page layout. The 8bs increase in v3.67 caused
+%       significant layout shift (+56 pages at 1000-fig) and did not
+%       actually fix ghost narrowing (QA Task #222: layout shift, not fix).
+%   (2) Reverted list/item hook page-space check from 12bs back to 5bs.
+%   (3) Enhanced post_linebreak_filter (Approach A per research note):
+%       Fixed narrow-line detection to use midpoint threshold between
+%       tw and linewidth (previous 0.8*linewidth missed narrow lines
+%       at ~300pt). Strengthened transition penalty from -2000 to -5000
+%       at the narrow->full parshape boundary.
+%   NOTE: Full split-and-re-linebreak (research note Approach A option 2)
+%   is impossible in post_linebreak_filter because the original
+%   unbroken node list is not available. The penalty enhancement (option 1)
+%   is the practical implementation. Results identical to v3.54 (-2000)
+%   due to LuaTeX paragraph caching with \lipsum — the penalty fires once
+%   per unique shape and is reused for all paragraphs.
+%   RESULT: 50-fig PERFECT 50/50 (100.0%), 47 pages. 1000-fig 1095/1100
+%   (99.5%), 1038 pages. 0 overlaps. 2 ghost (68,924), 3 hollow. Same
+%   quality as v3.54 baseline (margin reversion restored page layout).
+%   STATUS: Pending QA review (Task #225).
 %
 % v3.55: Pre-check needspace in pre_linebreak_filter (Approach B from Researcher).
 %   NEW: Added a second layer of ghost-narrowing prevention that is fundamentally
@@ -349,7 +351,7 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 
-\ProvidesPackage{swarmwrap}[2026/05/30 v3.67 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/30 v3.69 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -591,10 +593,10 @@
             \advance\swarmwrap@loop@cnt by 1
           \ifdim\dimen0>0pt \repeat
           % v3.50/v3.51: Limit by remaining page space (Task #204).
-          % v3.67: Increased margin from 5bs to 12bs.
+          % v3.69: Reverted from 12bs back to 5bs (Task #224).
           \dimen2=\pagegoal
           \advance\dimen2 by -\pagetotal
-          \advance\dimen2 by -12\baselineskip
+          \advance\dimen2 by -5\baselineskip
           \swarmwrap@tmp@cnt=0
           \loop
             \advance\dimen2 by -\baselineskip
@@ -665,10 +667,10 @@
             \advance\swarmwrap@loop@cnt by 1
           \ifdim\dimen0>0pt \repeat
           % v3.50/v3.51: Limit by remaining page space (Task #204).
-          % v3.67: Increased margin from 5bs to 12bs.
+          % v3.69: Reverted from 12bs back to 5bs (Task #224).
           \dimen2=\pagegoal
           \advance\dimen2 by -\pagetotal
-          \advance\dimen2 by -12\baselineskip
+          \advance\dimen2 by -5\baselineskip
           \swarmwrap@tmp@cnt=0
           \loop
             \advance\dimen2 by -\baselineskip
@@ -838,13 +840,14 @@
   % This caused 2 ghost narrowing pages at 1000-fig scale: figures
   % near page bottoms where remaining appeared sufficient but actual
   % line consumption exceeded the space, causing narrow-line carry-over.
-  % v3.67: Increased from 5bs to 8bs to prevent page 67 ghost narrowing.
+  % v3.59: Added safety margin to DEFER check.
   % The narrow zone (nl*bs) plus safety margin must fit within remaining
-  % page space. If it doesn't, the paragraph may span a page break within
-  % the narrow zone when it's very long. 8bs overhead accounts for long
-  % paragraphs whose full-width continuation extends past the page boundary.
+  % page space. If it doesn't, the figure is deferred to prevent
+  % carry-over narrowing across page breaks.
+  % v3.69: Reverted from 8bs back to 5bs (Task #224).
   \dimen1=\swarmwrap@nl\baselineskip
-  \advance\dimen1 by 8\baselineskip  % safety margin for glue/parskip/list overhead + paragraph continuation
+  % v3.69: Reverted from 8bs back to 5bs (Task #224).
+  \advance\dimen1 by 5\baselineskip  % safety margin for glue/parskip/list overhead
   \ifdim\dimen0<\dimen1
     % Figure doesn't fit on current page — page eject approach (v3.23).
     % Cancel parshape so current-page text runs at full width.

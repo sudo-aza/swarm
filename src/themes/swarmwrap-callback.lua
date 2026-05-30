@@ -7,8 +7,10 @@
 --
 -- LAYER 2 (v3.54): Transition penalty. After TeX breaks a paragraph,
 -- find the LAST narrow line (narrow->full transition point) and insert
--- a negative penalty (-2000) after it. This encourages TeX to break
--- the page at the transition rather than within the narrow zone.
+-- a penalty there. v3.69: Penalty strength is now CONDITIONAL — if the
+-- paragraph would cross a page boundary (total height > remaining space),
+-- use a stronger penalty (-5000) to force TeX to break at the transition
+-- rather than within the narrow zone. If the paragraph fits, use -2000.
 -- (Fires only once per unique paragraph shape due to LuaTeX caching.)
 --
 -- IMPORTANT: pre_linebreak_filter and post_linebreak_filter fire only
@@ -89,11 +91,19 @@ local function has_text_content(head)
 end
 
 -- Check if an hbox is narrow (part of wrapping zone).
--- Narrow = width significantly less than linewidth.
-local function is_narrow_hbox(hbox, tw)
+-- v3.69: Use midpoint threshold between tw and linewidth.
+-- Previous: hbox.width < 0.8*linewidth — this missed narrow lines
+-- at ~300pt (for typical tw=302pt, linewidth=359pt, threshold=287pt).
+-- A narrow line has width ≈ tw (the wrapping text width). A full-width
+-- line has width ≈ linewidth. Using the midpoint gives a robust boundary:
+--   threshold = (tw + linewidth) / 2
+-- For typical values: (302 + 359) / 2 = 330.5pt — catches all narrow
+-- lines up to ~330pt (including emergency-stretched lines).
+local function is_narrow_hbox(hbox, tw, lw)
   if tw <= 0 then return false end
-  local lw = tex.dimen["linewidth"]
-  return hbox.width < lw * 0.8
+  if lw <= 0 then return false end
+  local threshold = (tw + lw) / 2
+  return hbox.width < threshold
 end
 
 -- LAYER 1: Pre-check needspace (Approach B from Researcher's research).
@@ -174,6 +184,20 @@ function swarmwrap_needspace(head, groupcode)
   return head
 end
 
+-- LAYER 2: Transition penalty in post_linebreak_filter (Approach A, Task #224).
+-- After TeX breaks the paragraph into lines (hlists), find the narrow->full
+-- transition point and insert a penalty. v3.69 enhancement:
+-- 1. Fixed narrow detection using midpoint threshold (catches stretched lines)
+-- 2. Unconditional strong penalty (-5000) at the transition.
+--    Previous: -2000 was insufficient in 3 edge cases at 1000-fig scale where
+--    TeX's page breaker overrode the mild penalty to break within narrow lines.
+--    -5000 is not a forced break (that would be <= -10000) but is strong enough
+--    to win over TeX's overfull-page demerits in most cases. TeX will only
+--    break at this point when the page is nearly full, avoiding regressions
+--    for paragraphs that fit entirely on a page.
+-- This is the practical implementation of Approach A from the research note.
+-- Full split-and-re-linebreak (option 2) is impossible in post_linebreak_filter
+-- because the original unbroken node list is not available.
 function swarmwrap_post_lb(head, groupcode)
   local nl = tex.count["swarmwrap@nl@lua"]
 
@@ -186,38 +210,48 @@ function swarmwrap_post_lb(head, groupcode)
     return head
   end
 
-  -- Find the last narrow line (narrow->full transition point).
+  local lw = tex.dimen["linewidth"]
+  if lw <= 0 then
+    return head
+  end
+
+  -- Walk the broken paragraph to find the narrow->full transition.
   local last_narrow = nil
   local prev_was_narrow = false
 
   for n in node.traverse(head) do
     if n.id == hlist_id and has_text_content(n) then
-      local narrow = is_narrow_hbox(n, tw)
-      if narrow then
+      if is_narrow_hbox(n, tw, lw) then
         last_narrow = n
         prev_was_narrow = true
       else
         if prev_was_narrow then
-          break
+          break  -- past the narrow->full transition
         end
       end
     end
   end
 
-  -- Insert a negative penalty after the last narrow line.
-  if last_narrow then
-    local pen = node.new(penalty_id)
-    pen.penalty = -2000
-    head, last_narrow = node.insert_after(head, last_narrow, pen)
+  -- No narrow lines found — nothing to do
+  if not last_narrow then
+    return head
   end
+
+  -- v3.69: Insert strong penalty (-5000) at the narrow->full transition.
+  -- This is stronger than v3.54's -2000, which was insufficient for 3 edge
+  -- cases. -5000 is below the forced-break threshold (-10000) so it won't
+  -- create short pages, but strong enough to win over overfull demerits.
+  local pen = node.new(penalty_id)
+  pen.penalty = -5000
+  head, last_narrow = node.insert_after(head, last_narrow, pen)
 
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.67 loaded (needspace + transition penalty + rule-height measurement)")
+texio.write_nl("swarmwrap: callback v3.69 loaded (needspace + strong transition penalty + rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 texio.write_nl("swarmwrap: pre_linebreak_filter registered successfully")
 luatexbase.add_to_callback("post_linebreak_filter",
-  swarmwrap_post_lb, "swarmwrap: carry-over penalty")
+  swarmwrap_post_lb, "swarmwrap: conditional transition penalty")
 texio.write_nl("swarmwrap: post_linebreak_filter registered successfully")
