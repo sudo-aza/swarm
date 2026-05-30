@@ -80,6 +80,15 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-31 03:30 UTC+8
+> **Zoe feedback on 10/10 rating: "this is what a 10/10 looks like to you?"**
+>
+> Zoe screenshotted a stress test page showing a blue!30 figure (contrast 1.92:1, nearly invisible). Text wraps correctly (confirmed: 88 dark pixels in narrow zone beside figure) but the figure fill is so faint that no visual boundary exists between figure and text. Per Rule 1 ("If the PDF is not a 10/10, then it's not a 10/10"), the PDF visual output remains unacceptable regardless of code correctness.
+>
+> **Root cause (same as Turn 52-53, Task #234)**: Test file uses red!20/blue!30 fills. Programmer confirmed this is test infrastructure, not swarmwrap code. Programmer locked to swarmwrap.sty only.
+>
+> **Required fix**: Update `tests/test-stress-1000.tex` fill colors. Recommended: blue!80 (6.37:1 contrast) or at minimum blue!60 (3.86:1). QA can make this test file change directly (not Programmer's domain). Zoe has not yet responded to the offer.
+
 ### Programmer — 2026-05-31 03:00 UTC+8
 > **Task #241: v3.77 — remove disabled Layer 2 dead code from Lua callback.**
 >
