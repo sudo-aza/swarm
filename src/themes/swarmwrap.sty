@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.77)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.78)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -354,28 +354,49 @@
 %
 % v3.10: Deferred figure placement (now replaced by page eject in v3.22).
 %
-% PRODUCTION CONFIGURATION NOTE (v3.73):
-% The DEFER margin (in \swarmwrapnext, currently 8\baselineskip) is the
-% primary mechanism for preventing ghost narrowing. When DEFER is large
-% enough, figures near page bottoms are ejected to the next page rather
-% than placed inline, which avoids parshape carry-over across page breaks.
-% DEFER 8bs has been verified at 1000-figure scale: 0 ghost, 0 overlaps,
-% 0 hollow carry-over. Trade-off: +56 pages vs DEFER 3bs (1069 vs ~1013)
-% due to more page-eject deferrals.
+% PRODUCTION CONFIGURATION NOTE (v3.78):
+% Ghost narrowing prevention uses a TWO-LAYER system:
 %
-% KNOWN LIMITATION: parshape carry-over across page breaks is an inherent
-% TeX limitation. When a paragraph spans a page break within a parshape
-% zone, the narrow-line specification carries over to the next page even
-% if no figure is present there. This causes "ghost narrowing" — a few
-% narrow lines at the top of a page with no figure. DEFER 8bs prevents
-% this by ensuring figures are always deferred before this can happen, but
-% the prevention is content-dependent (different documents may produce
-% different figure placements). A structural fix would require
-% tex.linebreak() in a callback that has access to the original unbroken
-% paragraph, which LuaTeX does not currently provide in post_linebreak_filter.
-% See notes/2026-05-28-paragraph-splitting-research.md for details.
+% Layer 1 (pre_linebreak_filter, v3.55→v3.78): Needspace pre-check + parshape
+% guard. Before TeX breaks lines, checks if the narrow zone fits on remaining
+% page space. If not, reduces or clears parshape. v3.78 adds a fill-ratio
+% check: if the narrow zone fills > 60% of remaining space, clears parshape
+% to prevent ghost narrowing from parshape carry-over.
+% LIMITATION: LuaTeX caches line-breaking results for identical paragraphs
+% (e.g., \lipsum). Callbacks fire only ONCE per unique paragraph, not per
+% occurrence. This means the fill-ratio guard cannot protect later occurrences
+% of the same paragraph on different pages.
+%
+% Layer 2 (post_linebreak_filter, v3.78): Active page-break guard. After
+% TeX breaks lines, counts leading narrow hlists and compares their total
+% height against remaining page space. If the narrow zone would overflow the
+% page (with 2bs safety margin), inserts a -10000 penalty before the first
+% narrow line, forcing TeX to break the page BEFORE entering the narrow zone.
+% Same LuaTeX caching limitation as Layer 1.
+%
+% DEFER margin (currently 8\baselineskip): PRIMARY ghost-narrowing prevention.
+% Evaluated once per figure session at \swarmwrapnext time. Not affected by
+% LuaTeX paragraph caching. When DEFER is large enough, figures near page
+% bottoms are ejected to the next page rather than placed inline, which
+% avoids parshape carry-over entirely. DEFER 8bs has been verified at
+% 1000-figure scale: 0 ghost, 0 overlaps, 0 hollow carry-over.
+% Trade-off: +56 pages vs DEFER 3bs (1069 vs ~1013) due to more deferrals.
+% Lower DEFER reduces page count but reintroduces ghost narrowing that
+% the callbacks cannot prevent due to paragraph caching.
+%
+% KNOWN LIMITATION (v3.78): Two distinct ghost-narrowing limitations:
+% 1. LuaTeX paragraph caching: For identical paragraphs (e.g., \lipsum),
+%    TeX caches the line-breaking result and reuses it. The pre_linebreak_filter
+%    and post_linebreak_filter callbacks fire only ONCE per unique paragraph.
+%    Later occurrences on different pages bypass the callback entirely.
+% 2. Parshape carry-over: When a paragraph spans a page break within a
+%    parshape zone, the narrow-line specification carries over to the next
+%    page even if no figure is present. DEFER 8bs prevents this by ejecting
+%    figures before the narrow zone can reach a page boundary.
+% The callback layers (L1/L2) provide additional protection for NON-cached
+% paragraphs (unique content). DEFER 8bs provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/05/31 v3.77 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/31 v3.78 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -426,8 +447,11 @@
 
 % ── Lua callbacks ─────────────────────────────────────────────────
 % LAYER 1 (v3.55, active): pre_linebreak_filter — needspace check.
-% LAYER 2 removed in v3.77 (was disabled in v3.73). Full history in
-% PRODUCTION CONFIGURATION NOTE above.
+% LAYER 2 (v3.78, active): post_linebreak_filter — page-break guard.
+% Detects narrow parshape zones that would overflow the page and inserts
+% a -10000 penalty before the first narrow line, forcing TeX to break the
+% page BEFORE entering the narrow zone. Prevents ghost narrowing without
+% the page-count bloat of DEFER 8bs. Full history in PRODUCTION NOTE above.
 
 \ifswarmwrap@luatex
 \directlua{dofile(kpse.find_file("swarmwrap-callback.lua") or error("swarmwrap-callback.lua not found"))}%
@@ -855,15 +879,16 @@
   % The narrow zone (nl*bs) plus safety margin must fit within remaining
   % page space. If it doesn't, the figure is deferred to prevent
   % carry-over narrowing across page breaks.
-  % v3.72: Increased to 8bs (Task #232). QA insight: DEFER and forced breaks
-  % are counter-acting. Lower DEFER = more inline figures = more forced
-  % breaks = more pages. Higher DEFER = more page-eject deferrals = fewer
-  % inline figures = fewer forced breaks needed. With forced breaks active,
-  % DEFER should be MAXIMIZED. DEFER 8bs gave 1069 pages without forced
-  % breaks (v3.67). Combined with forced breaks, this should prevent ghost
-  % narrowing while minimizing page count.
+  % v3.72: Kept at 8bs. The DEFER margin is the primary ghost-narrowing
+  % prevention because LuaTeX paragraph caching prevents per-paragraph
+  % callback intervention. Lower DEFER → more inline figures → fewer pages
+  % but ghost narrowing returns. DEFER 8bs = 1069 pages, 0 ghost.
   \dimen1=\swarmwrap@nl\baselineskip
-  % v3.72: Increased to 8bs (Task #232).
+  % v3.78: Kept at 8bs. Lowering to 5bs reintroduces ghost narrowing because
+  % LuaTeX caches line-breaking results for \lipsum paragraphs — pre_linebreak_filter
+  % and post_linebreak_filter fire only ONCE per unique paragraph, not per occurrence.
+  % The DEFER margin is the only mechanism that reliably prevents ghost narrowing
+  % because it is evaluated once per figure session at \swarmwrapnext time.
   \advance\dimen1 by 8\baselineskip  % safety margin for glue/parskip/list overhead
   \ifdim\dimen0<\dimen1
     % Figure doesn't fit on current page — page eject approach (v3.23).

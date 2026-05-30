@@ -1,5 +1,5 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.77
+-- v3.78
 --
 -- LAYER 1 (v3.55): Pre-check needspace. Before TeX breaks a paragraph,
 -- check if the current parshape's narrow zone fits on the remaining
@@ -74,7 +74,14 @@ function swarmwrap_measure_visible_height(box_reg)
   return max_rule_h
 end
 
--- LAYER 1: Pre-check needspace (Approach B from Researcher's research).
+-- LAYER 1 (v3.55→v3.78): Pre-check needspace + parshape guard.
+-- Before TeX breaks a paragraph, check if the current parshape's narrow zone
+-- fits on the remaining page space. If not, reduce narrow entries or clear
+-- parshape entirely.
+-- v3.78 enhancement: Also check if the FULL paragraph (narrow + full-width)
+-- would cause a page break within the narrow zone. If remaining space is less
+-- than narrow_height + full_width_continuation_height, clear parshape entirely
+-- to prevent ghost narrowing from parshape carry-over across page breaks.
 function swarmwrap_needspace(head, groupcode)
   local nl = tex.count["swarmwrap@nl@lua"]
   if nl <= 0 then
@@ -136,6 +143,9 @@ function swarmwrap_needspace(head, groupcode)
       tex.count["c@page"], narrow_count, needed/65536, remaining/65536, safe_lines))
 
     if safe_lines < 1 then
+      texio.write_nl(string.format(
+        "[NEEDSPACE] pg=%d CLEARING parshape — insufficient space for any narrow lines",
+        tex.count["c@page"]))
       tex.parshape = nil
     elseif safe_lines < narrow_count then
       local new_ps = {}
@@ -147,12 +157,128 @@ function swarmwrap_needspace(head, groupcode)
       new_ps[safe_lines + 1] = {0, linewidth}
       tex.parshape = new_ps
     end
+  else
+    -- v3.78: Check if the paragraph would cause a page break within the
+    -- narrow zone even though the narrow zone itself fits.
+    -- If remaining space is tight (narrow zone fills > 60% of page),
+    -- the full-width continuation after the narrow zone may force TeX to
+    -- break the page within the narrow zone when it tries to fit both.
+    -- In that case, clear parshape to prevent ghost carry-over.
+    local fill_ratio = needed / (remaining + 0.001)
+    if fill_ratio > 0.60 then
+      -- Remaining space is tight. The paragraph is likely long enough
+      -- that TeX will break the page within the narrow zone.
+      -- Clear parshape to make entire paragraph full-width.
+      -- The \par patch will re-apply parshape for subsequent paragraphs.
+      texio.write_nl(string.format(
+        "[NEEDSPACE] pg=%d narrow=%d fill=%.0f%% — CLEARING parshape to prevent ghost narrowing",
+        tex.count["c@page"], narrow_count, fill_ratio * 100))
+      tex.parshape = nil
+    end
   end
 
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.77 loaded (needspace + rule-height measurement)")
+-- LAYER 2 (v3.78): Active page-break guard in post_linebreak_filter.
+-- After TeX breaks lines, count the resulting narrow hlists (width < 85% of
+-- linewidth). If narrow lines exist AND remaining page space is less than
+-- the narrow zone height + a safety margin, insert a strong penalty before
+-- the first narrow line to force a page break BEFORE the narrow zone.
+-- This prevents parshape carry-over (ghost narrowing) across page breaks.
+-- The penalty is inserted into the broken node list; TeX's page breaker
+-- will see it and break the page there instead of within the narrow zone.
+function swarmwrap_pagebreak_guard(head, groupcode)
+  local tw = tex.dimen["swarmwrap@tw@lua"]
+  if tw <= 0 then
+    return head
+  end
+
+  local linewidth = tex.dimen["linewidth"]
+  if linewidth <= 0 then
+    return head
+  end
+
+  -- The broken head is a vlist of hlists. Count leading narrow hlists.
+  local narrow_count = 0
+  local total_lines = 0
+  for n in node.traverse(head) do
+    if n.id == hlist_id then
+      total_lines = total_lines + 1
+      -- Compare hlist width against the text width (tw).
+      -- Narrow lines have width approximately = tw.
+      -- Full-width lines have width approximately = linewidth.
+      -- Use tw + 14pt as the narrow threshold (14pt gap between text and figure).
+      if n.width > 0 and n.width < (linewidth * 0.85) then
+        narrow_count = narrow_count + 1
+      else
+        break  -- Stop counting at first full-width line
+      end
+    elseif n.id == node.id("penalty") then
+      -- Skip penalty nodes (inter-line penalties)
+    elseif n.id == node.id("glue") then
+      -- Skip inter-line glue
+    elseif n.id == node.id("kern") then
+      -- Skip kern nodes
+    end
+  end
+
+  if narrow_count == 0 then
+    return head
+  end
+
+  -- Check remaining page space
+  local remaining
+  local ok, err = pcall(function()
+    remaining = tex.dimen["pagegoal"] - tex.dimen["pagetotal"]
+  end)
+  if not ok then
+    return head
+  end
+
+  local bs = tex.skip["baselineskip"].width
+  if bs <= 0 then
+    return head
+  end
+
+  -- The narrow zone height = narrow_count * baselineskip
+  -- If this exceeds remaining space (with 2bs safety margin),
+  -- the page breaker will likely break within the narrow zone.
+  -- Insert a penalty before the first narrow line to force break BEFORE.
+  local narrow_height = narrow_count * bs
+  local threshold = remaining - 2 * bs
+
+  if narrow_height > threshold and threshold > 0 then
+    -- Find the first narrow hlist and insert penalty before it
+    local prev = nil
+    for n in node.traverse(head) do
+      if n.id == hlist_id and n.width > 0 and n.width < (linewidth * 0.85) then
+        -- Insert penalty -10000 before this hlist
+        local pen = node.new(node.id("penalty"))
+        pen.penalty = -10000
+        if prev then
+          node.insert_after(head, prev, pen)
+        else
+          -- Insert at head
+          pen.next = head
+          head = pen
+        end
+        texio.write_nl(string.format(
+          "[PAGEBREAK-GUARD] pg=%d narrow=%d height=%.1fpt remaining=%.1fpt -> PENALTY INSERTED",
+          tex.count["c@page"], narrow_count, narrow_height/65536, remaining/65536))
+        return head
+      end
+      prev = n
+    end
+  end
+
+  return head
+end
+
+texio.write_nl("swarmwrap: callback v3.78 loaded (needspace + pagebreak-guard + rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
+luatexbase.add_to_callback("post_linebreak_filter",
+  swarmwrap_pagebreak_guard, "swarmwrap: pagebreak guard")
 texio.write_nl("swarmwrap: pre_linebreak_filter registered successfully")
+texio.write_nl("swarmwrap: post_linebreak_filter registered successfully")
