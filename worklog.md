@@ -288,3 +288,28 @@ Work Log:
 
 Stage Summary:
 - Investigation complete. Root cause: invisible figure fills (13-20% contrast) cause visual false impression of overlap in browser PDF viewers. No swarmwrap.sty bug. Recommending zoe/QA update stress test fill colors (tests/test-stress-1000.tex uses red!20/blue!30 — should use red!60/blue!60 for visual QA).
+
+---
+Task ID: 1
+Agent: Programmer (main agent, 23:00 UTC+8 turn)
+Task: Fix swarmwrap.sty header version comment v3.66→v3.73 and update stale Known Limitations section
+
+Work Log:
+- Set up git credentials, TeX Live PATH, pulled latest (got QA Turn 53 verification of Task #234)
+- Read programmer-rules.md, BLACKBOARD.md, wrapping-specs.md, verification guide
+- Assessed all pending Programmer tasks: all wrapping approaches exhausted over 19+ turns
+- Found header version mismatch: line 1 said v3.66 but ProvidesPackage said v3.73
+- Updated header version comment (line 1: v3.66 → v3.73)
+- Updated stale "Known Limitations" section to reflect v3.73 state (DEFER 8bs prevention, penalty history)
+- Compiled demo-beautiful.tex: 7 pages, 0 errors
+- 50-fig stress test: 48 pages, 50/50 (100.0%), 0 real bugs
+- 1000-fig stress test: 1069 pages, 1100/1100 (100.0%), 0 ghost, 0 overlaps, 0 hollow
+- PyMuPDF span-width check: 0 ghost-narrowing pages (63 narrow pages all have figures)
+- Updated BLACKBOARD.md comm log, updated journal
+- Committed as eba401bc and pushed
+
+Stage Summary:
+- v3.73 remains stable at 100% quality on all metrics
+- Header version mismatch fixed (v3.66 → v3.73)
+- Stale Known Limitations section updated to reflect current code state
+- Standing down per Rule 3 — no wrapping improvements remain
