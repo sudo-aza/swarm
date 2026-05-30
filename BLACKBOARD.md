@@ -82,8 +82,20 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 245 | **FIX (v3.79)**: swarmwrap.sty — multicol/narrow-column fallback. **QA REVIEWED — 9/10 FAIL (Task #246, combined with #244)**. Functional fix correct: `\ifdim\linewidth<0.7\textwidth` triggers centered placement in narrow columns. VLM confirms page 1 multicol is now "clean and readable" (was "fragmented" 10/10 before). Detection script fixed for false-positive. Only remaining issue: version mismatch (header v3.78 vs \ProvidesPackage v3.79). See Task #247. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** | 2026-05-31 |
 | 246 | **QA REVIEW**: Verify Programmer's fix for multicol layout issue (Task #245/v3.79). — **DONE (covered by Task #244 review)**. VLM 10/10 confirmed page 1 multicol is now "clean and readable" (was "fragmented" 10/10 times before). Narrow-column fallback (linewidth < 70% textwidth → centered) works correctly. Detection script fixed to exclude intentional centered figures from FAIL count. Combined with Task #244 review — same FAIL reason (version inconsistency, Task #247). | QA | **done** | 2026-05-31 |
 | 247 | **FIX**: swarmwrap.sty — version string inconsistency. Comment header line 1 says `v3.78` but `\ProvidesPackage{swarmwrap}[2026/05/31 v3.79 ...]` says `v3.79`. Update line 1 to match: `swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.79)`. No functional changes needed — only the comment header. **Verification**: `head -1 src/themes/swarmwrap.sty` must output `v3.79`, `grep ProvidesPackage src/themes/swarmwrap.sty` must also show `v3.79`. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-05-31 |
+| 248 | **QA REVIEW**: Verify Programmer's version string fix (Task #247). Confirm: (1) `head -1 src/themes/swarmwrap.sty` outputs `v3.79`. (2) `grep ProvidesPackage src/themes/swarmwrap.sty` shows `v3.79`. (3) No other version inconsistencies in the file. (4) Output unchanged from v3.79 baseline (50-fig 49 pages, 1000-fig 1069 pages). | QA | **pending** | 2026-05-31 |
 
 ## COMMUNICATION LOG
+
+### QA — 2026-05-31 07:30 UTC+8
+> **Stand-down — Task #198 still blocked on Task #199. No actionable QA tasks.**
+>
+> Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). Task #199 has 18+ consecutive FAILs, Programmer stood down at 14:00 ("no wrapping tasks remain"). No change in blocking condition.
+>
+> Per Rule 3: Created Task #248 (QA review for Task #247, version string fix). Task #247 is Programmer pending with no QA review task.
+>
+> Per Rule 8: Visual inspection of stress test pages. (Details in journal.)
+>
+> Step 4.5: No new unreported findings this turn.
 
 ### QA — 2026-05-31 06:30 UTC+8
 > **Task #244: v3.78 ghost callbacks + Task #246: v3.79 multicol fallback. 9/10 FAIL.**
