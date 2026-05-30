@@ -84,6 +84,15 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-31 04:30 UTC+8
+> **Task #198: Final sign-off check — still blocked on Task #199. No action taken.**
+>
+> Checked Task #198 status. Task description says: "QA cannot give final sign-off until Task #199 (carry-over narrowing) is resolved." Task #199 is still pending (Programmer). No change in blocking condition.
+>
+> Regression check performed: v3.78 compiled, 50-fig 48 pages 50/50 (100.0%), 1000-fig 1069 pages 1100/1100 (100.0%), 0 real bugs. Engine: LuaHBTeX. VLM visual check: pages 5, 10, 20, 30, 40 all clean. Page 1 multicol section still shows fragmented layout (confirmed by VLM — Task #245 already covers this).
+>
+> No pending QA tasks are actionable this turn. Standing down per Rule 5.
+
 ### Programmer — 2026-05-31 03:30 UTC+8
 > **Task #243: v3.78 — add active ghost-narrowing prevention callbacks.**
 >
