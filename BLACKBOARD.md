@@ -61,6 +61,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+<<<<<<< HEAD
 ### Programmer — 2026-05-30 14:00 UTC+8
 > **v3.68 investigation: Approach A linebreak_filter — FAILED AND REVERTED (Task #214).** Implemented `linebreak_filter` callback (swarmwrap-callback.lua) that replaces TeX's paragraph builder. The callback: (1) calls `tex.linebreak()` to break lines normally, (2) finds narrow->full transition, (3) estimates remaining page space, (4) if narrow zone >60% of page space, inserts forced break (penalty -10000 + vfill) at transition. SAFETY: pcall wrapper, recursion guard, delegation for non-wrapped paragraphs.
 >
@@ -90,6 +91,15 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > Task #214 status: `pending` (NOT done per Rule 6). QA review Task #222 created.
 >
 > Also resolved 6 merge conflicts from git pull (skills deletions, tlpdb rename).
+
+### QA — 2026-05-30 13:30 UTC+8
+> **Stand-down (32nd consecutive).** No new Programmer commits since Turn 43 (~1h ago). No pending QA tasks. Regression check: 50-fig PERFECT — 46 pages, 50/50 (100.0%), 0 real issues, 2439 spans, 142344 bytes (content identical to all prior turns since v3.65). Rule 8 inspection: text color consistency — all 2,439 spans are pure black (0x000000, RGB 0,0,0). 1 unique color. Zero anomalies. VLM spot-check: 8 pages (50-fig p33-36, 1000-fig p300-303) all clean — proper wrapping, no overlaps, no ghost narrowing. No new bugs found. Rule 14 escalation remains active (12th consecutive FAIL). Awaiting Programmer for Task #214 (Approach A).
+
+### QA — 2026-05-30 12:30 UTC+8
+> **Stand-down (31st consecutive).** No new Programmer commits since Turn 42 (~2h ago). No pending QA tasks. Regression check: 50-fig PERFECT — 46 pages, 50/50 (100.0%), 0 real issues, 2439 spans (content identical to Turns 40-42). SHA256 differs from prior turns due to non-content metadata. Rule 8 inspection: paragraph spacing distribution — 87.3% of 1,918 inter-line gaps at exactly 13.55pt (baselineskip), 1.3% at 29.89pt (paragraph breaks), remaining 11.4% are figure-zone transitions (0-12pt gaps between wrapping text, captions, and figure labels — all within figure zones). Zero anomalous gaps. VLM spot-check: 8 pages (50-fig p25-28, 1000-fig p150-153) all clean — text wraps properly, no overlaps, no ghost narrowing. No new bugs found. Rule 14 escalation remains active (12th consecutive FAIL). Awaiting Programmer for Task #214 (Approach A: Split-and-Re-Linebreak via tex.linebreak()).
+
+### QA — 2026-05-30 10:30 UTC+8
+> **Stand-down (30th consecutive).** New commits since Turn 41: 2 Programmer commits (stand-down at 08:00, Task #167 multicol investigation — no code changes). No new swarmwrap.sty deliverable. No pending QA tasks. Regression check: 50-fig PERFECT — 46 pages, 50/50 (100.0%), 0 real issues, 2439 spans (identical content to Turn 41). SHA256 differs due to git merge metadata, not content. Rule 8 inspection: page margin consistency — left margin 117.8pt ±0.0pt (zero variance), top margin 121.4-125.5pt (4.1pt spread, normal), right edge 476.5-478.3pt (1.8pt spread), bottom edge 753.4-765.2pt (11.8pt, normal). All dimensions 595.3x841.9pt (A4). VLM spot-check: 4 pages (10-13) all clean — text wraps properly, no overlaps, no anomalies. No new bugs found. Rule 14 escalation remains active (12th consecutive FAIL). Awaiting Programmer for Task #214 (Approach A).
 
 ### QA — 2026-05-30 05:30 UTC+8
 > **Stand-down (29th consecutive).** No new Programmer commits since Turn 40 (~3h ago). No pending QA tasks. Task #214 (Approach A: Split-and-Re-Linebreak, Programmer pending) and Task #198 (final sign-off, blocked on ghost narrowing) remain. Regression check: 50-fig PERFECT — 46 pages, 50/50 (100.0%), 0 real issues, SHA256 identical to Turn 40. Rule 8 inspection: font size consistency across both stress tests — 50-fig has 2 unique sizes (10.91pt body=99.92%, 14.35pt section header=0.08%), 1000-fig has 2 unique sizes (10.91pt=99.9%, 14.35pt=0.1%). Zero anomalies. VLM visual inspection: 6 pages from 50-fig + 5 pages from 1000-fig (pages 64-68 around ghost narrowing). VLM flagged "caption misalignment" as potential issue on 4 of 6 50-fig pages — PyMuPDF verified FALSE POSITIVE (captions correctly positioned in wrapping zone below figures). Page 67 ghost narrowing confirmed by VLM (narrow text, no figure). No new bugs found. Rule 14 escalation remains active (12th consecutive FAIL).
