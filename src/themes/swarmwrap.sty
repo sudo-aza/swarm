@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.76)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.77)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -375,7 +375,7 @@
 % paragraph, which LuaTeX does not currently provide in post_linebreak_filter.
 % See notes/2026-05-28-paragraph-splitting-research.md for details.
 
-\ProvidesPackage{swarmwrap}[2026/05/31 v3.76 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/31 v3.77 Custom float wrapper]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -419,16 +419,15 @@
 \newcount\swarmwrap@tmp@cnt
 % v3.29: Lua-readable count for the number of narrow lines (nl).
 % Set in \swarmwrapnext. Read by pre_linebreak_filter (Layer 1
-% needspace check, v3.55) and disabled post_linebreak_filter (Layer 2).
+% needspace check, v3.55).
 \newcount\swarmwrap@nl@lua
 \swarmwrap@nl@lua=0
 
 
 % ── Lua callbacks ─────────────────────────────────────────────────
 % LAYER 1 (v3.55, active): pre_linebreak_filter — needspace check.
-% LAYER 2 (v3.70, DISABLED in v3.73): post_linebreak_filter —
-% conditional transition penalty. DEFER 8bs eliminates ghost narrowing
-% without penalties; code retained as tunable. See .lua header.
+% LAYER 2 removed in v3.77 (was disabled in v3.73). Full history in
+% PRODUCTION CONFIGURATION NOTE above.
 
 \ifswarmwrap@luatex
 \directlua{dofile(kpse.find_file("swarmwrap-callback.lua") or error("swarmwrap-callback.lua not found"))}%

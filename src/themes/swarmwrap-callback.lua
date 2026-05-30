@@ -1,38 +1,30 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.76
+-- v3.77
 --
 -- LAYER 1 (v3.55): Pre-check needspace. Before TeX breaks a paragraph,
 -- check if the current parshape's narrow zone fits on the remaining
 -- page space. If not, reduce narrow entries or clear parshape entirely.
 -- (Fires only once per unique paragraph shape due to LuaTeX caching.)
 --
--- LAYER 2 (v3.70, DISABLED in v3.73): Conditional transition penalty.
--- After TeX breaks a paragraph, find the LAST narrow line (narrow->full
--- transition point) and insert a penalty there. Investigated over multiple
--- versions (v3.54=-2000, v3.69=-5000, v3.70=-10000 conditional).
--- Results: -2000/-5000 discretionary penalties are overridden by TeX when
--- the page is overfull (exactly when ghost narrowing occurs). -10000
--- forced breaks prevent ghost but cause massive page count regression
--- (+168 pages, 116 near-empty pages at 1000-fig scale).
--- DISABLED: DEFER 8bs in swarmwrap.sty eliminates ghost narrowing via
--- page-eject deferral without transition penalties (verified 0 ghost,
--- 0 overlaps, 1069 pages at 1000-fig scale). Code retained below as a
--- documented tunable for future use if DEFER strategy is changed.
---
 -- v3.75: Removed fig_pages table and swarmwrap_mark_fig_placed() — these
 -- were write-only dead state (fig_pages was populated but never read by
--- any active code). Also removed swarmwrap@remaining dimen reference from
--- the disabled Layer 2 penalty function.
+-- any active code). Also removed swarmwrap@remaining dimen reference.
+--
+-- v3.77: Removed disabled Layer 2 (swarmwrap_post_lb function + dead
+-- is_narrow_hbox/has_text_content helpers). Layer 2 transition penalty
+-- was investigated over v3.54-v3.72 and disabled in v3.73 because DEFER
+-- 8bs eliminates ghost narrowing without penalties. The disabled function
+-- was 53 lines of dead code in the hot Lua callback path. Full history
+-- is documented in swarmwrap.sty header (PRODUCTION CONFIGURATION NOTE).
 --
 -- IMPORTANT: pre_linebreak_filter and post_linebreak_filter fire only
 -- ONCE per document when \lipsum is used (LuaTeX optimization).
 
-local glyph_id = node.id("glyph")
-local disc_id = node.id("disc")
-local penalty_id = node.id("penalty")
 local hlist_id = node.id("hlist")
 local vlist_id = node.id("vlist")
 local rule_id = node.id("rule")
+-- v3.77: Removed glyph_id, disc_id, penalty_id — were used only by
+-- disabled Layer 2 (swarmwrap_post_lb) and its helpers (has_text_content).
 
 function swarmwrap_measure_visible_height(box_reg)
   -- v3.58: Traverse savebox nodes to find the tallest \rule node
@@ -80,34 +72,6 @@ function swarmwrap_measure_visible_height(box_reg)
   if max_rule_h < bs then max_rule_h = bs end
 
   return max_rule_h
-end
-
--- Check if an hbox contains actual text glyphs.
-local function has_text_content(head)
-  for n in node.traverse(head) do
-    if n.id == glyph_id then return true end
-    if n.id == disc_id then return true end
-    if n.id == hlist_id then
-      if has_text_content(n.head) then return true end
-    end
-  end
-  return false
-end
-
--- Check if an hbox is narrow (part of wrapping zone).
--- v3.69: Use midpoint threshold between tw and linewidth.
--- Previous: hbox.width < 0.8*linewidth — this missed narrow lines
--- at ~300pt (for typical tw=302pt, linewidth=359pt, threshold=287pt).
--- A narrow line has width ≈ tw (the wrapping text width). A full-width
--- line has width ≈ linewidth. Using the midpoint gives a robust boundary:
---   threshold = (tw + linewidth) / 2
--- For typical values: (302 + 359) / 2 = 330.5pt — catches all narrow
--- lines up to ~330pt (including emergency-stretched lines).
-local function is_narrow_hbox(hbox, tw, lw)
-  if tw <= 0 then return false end
-  if lw <= 0 then return false end
-  local threshold = (tw + lw) / 2
-  return hbox.width < threshold
 end
 
 -- LAYER 1: Pre-check needspace (Approach B from Researcher's research).
@@ -188,74 +152,7 @@ function swarmwrap_needspace(head, groupcode)
   return head
 end
 
--- LAYER 2: Conditional transition penalty (DISABLED in v3.73 — see header).
--- DEFER 8bs eliminates ghost narrowing without penalties. This code is
--- retained for optional tuning if DEFER strategy changes. To re-enable:
--- (1) Uncomment the callback registration at the bottom of this file.
--- (2) Uncomment the penalty insertion block inside the function.
--- (3) Adjust penalty_value (-5000 light, -10000 forced) as needed.
--- NOTE: -10000 forced breaks caused +168 pages and 116 near-empty pages
--- at 1000-fig scale (v3.70). -5000 has 0 measurable effect.
-function swarmwrap_post_lb(head, groupcode)
-  local nl = tex.count["swarmwrap@nl@lua"]
-
-  if nl <= 0 then
-    return head
-  end
-
-  local tw = tex.dimen["swarmwrap@tw@lua"]
-  if tw <= 0 then
-    return head
-  end
-
-  local lw = tex.dimen["linewidth"]
-  if lw <= 0 then
-    return head
-  end
-
-  -- Walk the broken paragraph to find the narrow->full transition
-  -- AND count narrow lines for page-space estimation.
-  local last_narrow = nil
-  local narrow_count = 0
-  local prev_was_narrow = false
-
-  for n in node.traverse(head) do
-    if n.id == hlist_id and has_text_content(n) then
-      if is_narrow_hbox(n, tw, lw) then
-        last_narrow = n
-        narrow_count = narrow_count + 1
-        prev_was_narrow = true
-      else
-        if prev_was_narrow then
-          break  -- past the narrow->full transition
-        end
-      end
-    end
-  end
-
-  -- No narrow lines found — nothing to do
-  if not last_narrow then
-    return head
-  end
-
-  -- v3.73: LAYER 2 DISABLED. DEFER 8bs handles ghost prevention.
-  -- Penalty insertion intentionally removed — see header for rationale.
-  -- To re-enable, uncomment the block below and the callback registration.
-  --[[
-  local penalty_value = -5000  -- tunable: -5000 light, -10000 forced
-  local pen = node.new(penalty_id)
-  pen.penalty = penalty_value
-  head, last_narrow = node.insert_after(head, last_narrow, pen)
-  --]]
-
-  return head
-end
-
-texio.write_nl("swarmwrap: callback v3.76 loaded (needspace + rule-height measurement)")
+texio.write_nl("swarmwrap: callback v3.77 loaded (needspace + rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 texio.write_nl("swarmwrap: pre_linebreak_filter registered successfully")
--- v3.73: Layer 2 (transition penalty) DISABLED. DEFER 8bs eliminates ghost.
--- Uncomment to re-enable: luatexbase.add_to_callback("post_linebreak_filter",
---   swarmwrap_post_lb, "swarmwrap: conditional transition penalty")
-texio.write_nl("swarmwrap: post_linebreak_filter DISABLED (DEFER 8bs active)")
