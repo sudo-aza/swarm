@@ -601,8 +601,14 @@ def detect_hollow_carryover(page_num, page, text_lines, figures):
     # Same blind spot as ghost-narrowing: median of all-narrow lines
     # equals the narrow width, so nothing is detected. Fix: use page
     # width as absolute baseline.
+    # v10 (2026-05-30): Lowered from 0.55 to 0.48 for hollow carry-over.
+    # 55% (327pt on 595pt page) catches normal full-width lines at
+    # 304-316pt that are short due to word wrapping — FALSE POSITIVE
+    # (see QA Turn 48, page 87). Real parshape carry-over is at
+    # 203pt (34%) or 259.7pt (44%). 48% (285pt) catches both while
+    # excluding normal short-word lines (51%+).
     page_width = page.rect.width
-    ABSOLUTE_MIN_WIDTH = page_width * 0.55
+    ABSOLUTE_MIN_WIDTH = page_width * 0.48
     n_narrow_abs = sum(1 for l in first3 if l["width"] < ABSOLUTE_MIN_WIDTH)
 
     if n_narrow_abs >= 2:
@@ -626,10 +632,15 @@ def detect_hollow_carryover(page_num, page, text_lines, figures):
         return issues  # Absolute detection is definitive
 
     # Relative baseline check (fallback)
+    # v10 (2026-05-30): Increased from 40pt to 100pt. 40pt catches normal
+    # full-width lines that are 40-55pt shorter due to word wrapping (FP).
+    # Real parshape carry-over is 155pt below full width (203pt vs 359pt).
+    # 100pt still catches genuine carry-over while excluding short-word FPs.
+    # Note: 259.7pt ghost (v3.19 era, 99pt diff) is caught by absolute check.
     widths = sorted([l["width"] for l in body_lines])
     full_width = widths[len(widths) // 2]
     n_narrow_first3 = sum(
-        1 for l in first3 if full_width - l["width"] > 40
+        1 for l in first3 if full_width - l["width"] > 100
     )
 
     # Require at least 2 of the first 3 lines to be narrowed
