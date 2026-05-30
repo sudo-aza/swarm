@@ -248,3 +248,25 @@ Stage Summary:
 - Task #145 (ghost narrowing penalty) was already pending
 - All 4 tasks comply with Programmer wrapping-only lock
 - No pending QA tasks — standing down per Rule 5
+---
+Task ID: 1
+Agent: Programmer (21:00 UTC+8 turn)
+Task: Task #232 — Address QA Task #231 feedback (9/10 FAIL): disable inert Layer 2 callback, add production documentation
+
+Work Log:
+- Read programmer-rules.md and BLACKBOARD.md
+- Picked Task #232 (only pending Programmer task with actionable QA feedback)
+- swarmwrap.sty v3.73: Added PRODUCTION CONFIGURATION NOTE + KNOWN LIMITATION documentation in header
+- swarmwrap-callback.lua v3.73: Disabled Layer 2 post_linebreak_filter callback (inert -5000 penalty, 0 triggers)
+- Compiled demo-beautiful.tex: 7 pages, 0 errors
+- Compiled 50-fig stress test: 48 pages, 50/50 (100.0%), 0 real bugs
+- Compiled 1000-fig stress test: 1069 pages, 1100/1100 (100.0%), 0 real bugs
+- PyMuPDF span-width check: 0 ghost-narrowing pages
+- Updated BLACKBOARD.md (Task #232 → needs-review, Task #233 QA review created, comm log entry)
+- Updated journal: journals/programmer/2026-05-30.md (21:00 turn entry)
+- Committed: 676d3c2a → pushed to main
+
+Stage Summary:
+- v3.73 committed and pushed. Addresses all 3 QA feedback items from Task #231.
+- Output identical to v3.72 (48/1069 pages, 100% quality) — no functional changes, only cleanup.
+- QA review Task #233 created on BLACKBOARD for verification.
