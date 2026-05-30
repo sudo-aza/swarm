@@ -396,7 +396,7 @@
 % The callback layers (L1/L2) provide additional protection for NON-cached
 % paragraphs (unique content). DEFER 8bs provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/05/31 v3.78 Custom float wrapper]
+\ProvidesPackage{swarmwrap}[2026/05/31 v3.79 Multicol fallback — centered placement in narrow columns]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -809,6 +809,23 @@
   \swarmwrap@tw=\linewidth
   \advance\swarmwrap@tw by -\swarmwrap@fw
   \advance\swarmwrap@tw by -14pt
+  % ── v3.79: Multicol/narrow-column fallback (Task #245) ───────
+  % Inside multicol (or any narrow column), \linewidth is already small.
+  % Wrapping makes it even smaller, producing extremely dense hyphenation
+  % and fragmented words. Detect narrow columns by comparing \linewidth
+  % to \textwidth: if linewidth < 70% of textwidth, we're likely in a
+  % multicol or other narrow-column environment. Fall back to centered
+  % figure placement instead of parshape wrapping.
+  % The existing \swarmwrap@place@centered helper handles this cleanly.
+  \ifdim\linewidth<0.7\textwidth\relax
+    \wlog{swarmwrap v3.79: NARROW COLUMN FALLBACK — tw=\the\swarmwrap@tw, lw=\the\linewidth, tw=\the\textwidth, skipping parshape wrap}%
+    \swarmwrap@activefalse
+    \global\let\par\swarmwrap@orig@par
+    \parshape=0\relax
+    \global\swarmwrap@tw@lua=0pt\relax
+    \global\swarmwrap@nl@lua=0\relax
+    \swarmwrap@place@centered
+  \else
   \swarmwrap@nl=0
   % v3.41: Use NARROW height (visible content height via Lua) for
   % parshape line count. Much more accurate than ht+dp or ht+dp-strut.
@@ -926,6 +943,7 @@
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
     \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
   \fi
+  \fi  % end v3.79 multicol fallback \else
 }%
 \else
 \newcommand{\swarmwrapnext}{%
