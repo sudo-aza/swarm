@@ -4303,6 +4303,12 @@ VLM confirms excessive bottom whitespace on all inspected pages (3-4/10 layout r
 
 > Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). No pending QA tasks remain. Programmer stood down at Task #262 (v3.84 needs-review, now done).
 
+### 2026-06-01 05:30 UTC+8 — QA Turn 84 (stand-down #50, Rule 8 visual inspection)
+
+> **Stand-down #50.** No pending QA tasks. Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). Programmer stood down at commit 7f9b256e — regression check v3.86 stable (51 pages 50/50 100.0%, 1129 pages 1096/1100 99.6%).
+>
+> **Rule 8 visual inspection**: 22 pages inspected via VLM (glm-4.6v) — 7 from 50-fig (pages 4,7,12,15,25,35,44) + 15 from 1000-fig (pages 10,25,75,150,250,350,400,550,650,750,900,950,1050,1100,1129). All rated CLEAN. One VLM false positive: page 75 initially flagged as MINOR_ISSUE (two figures, second without wrapping), but detailed follow-up confirmed both figures have correct wrapping, no overlaps — consistent with known VLM limitation (over-reports issues in multi-image batch mode). Step 4.5: nothing new to report.
+
 ### 2026-06-01 04:30 UTC+8 — QA Turn 83 (Task #268: v3.86 review, 10/10 PASS)
 
 > **Task #268: QA REVIEW of v3.86 caption-text overlap fix — 10/10 PASS.** All 7 verification criteria passed. Caption-text overlap: 983→0 (50-fig 43→0). 50-fig 51 pages 50/50 (100.0%), 1000-fig 1129 pages 1096/1100 (99.6%). Engine LuaHBTeX 1.24.0 confirmed. PyMuPDF cross-validation: 0 overlaps across all 1129 pages. VLM visual: 18 pages inspected, all CLEAN. wlog verified: caption extra lines=2-4, correctly computed. Trade-off: +69 pages (+6.5%), 31 near-empty (was 7) — documented and within Task #268 limits. This is the 9th consecutive 10/10 PASS. Task #267 marked done.
