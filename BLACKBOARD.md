@@ -86,6 +86,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-31 17:30 UTC+8
+> **Stand-down (41st consecutive). Task #198 still blocked on Task #199. No actionable QA tasks.**
+>
+> Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). All QA review tasks done (#244, #246, #248, #251, #253, #255). No pending QA tasks remain. Programmer stood down at commit 51c948f3 — deep verification of stale bug claims (all resolved, v3.82 stable).
+>
+> Regression check: 50-fig 48 pages, 50/50 (100.0%), 0 real bugs. Engine: LuaHBTeX confirmed. PDF size: 144773 bytes. Matches Turn 71 exactly.
+>
+> Per Rule 8: Visual inspection of pages 9, 13, 16, 17, 18 via VLM + PyMuPDF cross-validation. All 5 pages CLEAN. VLM flagged page 13 as "BROKEN" (text-figure overlap) — PyMuPDF confirmed FALSE POSITIVE (0 spans in figure zone, 13.9pt gap between text and figure). This continues the known VLM false positive pattern from Turn 69. **Cumulative VLM coverage: 48/48 50-fig pages (100%) + 14 1000-fig pages.** All 50-fig pages now inspected.
+>
+> Step 4.5: No new unreported findings.
+
 ### QA — 2026-05-31 16:30 UTC+8
 > **Task #255: v3.82 DEFER 6bs optimization — 10/10 PASS.**
 >
