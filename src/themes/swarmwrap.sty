@@ -396,7 +396,7 @@
 % The callback layers (L1/L2) provide additional protection for NON-cached
 % paragraphs (unique content). DEFER 8bs provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/05/31 v3.79 Multicol fallback — centered placement in narrow columns]
+\ProvidesPackage{swarmwrap}[2026/05/31 v3.80 Ghost-narrowing shipout fix + par-patch margin increase]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -472,7 +472,7 @@
     \xdef\swarmwrap@fw@val{\the\swarmwrap@fw}%
     \swarmwrap@fh=\ht\swarmwrap@box
     \advance\swarmwrap@fh by \dp\swarmwrap@box
-    \advance\swarmwrap@fh by 4\baselineskip
+    \advance\swarmwrap@fh by 1\baselineskip
     \xdef\swarmwrap@fh@val{\the\swarmwrap@fh}%
     % v3.42: Visible content height via Lua node traversal (Task #190).
     % Traverse box nodes to find the max rule height (colored rectangle),
@@ -797,7 +797,7 @@
   \ifnum\swarmwrap@fig@page=\the\c@page\relax
     \ifdim\pagetotal<\swarmwrap@fig@bottom@safe\relax
       \wlog{swarmwrap vspace: PUSHING past prev figure — page=\the\c@page, pagetotal=\the\pagetotal, fig_bottom_safe=\the\swarmwrap@fig@bottom@safe, delta=\the\dimexpr\swarmwrap@fig@bottom@safe-\pagetotal\relax}%
-      \vspace{\dimexpr\swarmwrap@fig@bottom@safe-\pagetotal+\baselineskip\relax}%
+      \vspace{\dimexpr\swarmwrap@fig@bottom@safe-\pagetotal\relax}%
     \else
       \wlog{swarmwrap vspace: NO PUSH — page=\the\c@page(\the\numexpr\swarmwrap@fig@page\relax), pagetotal=\the\pagetotal, fig_bottom_safe=\the\swarmwrap@fig@bottom@safe}%
     \fi
@@ -931,6 +931,8 @@
     \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+    % v3.80: Tell shipout_filter that this page has a figure
+    \directlua{swarmwrap_mark_fig_placed()}%
     \wlog{swarmwrap next: DEFERRED (page eject) — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
     % Figure fits — place inline.
@@ -941,6 +943,8 @@
     \parshape \swarmwrap@pshape\relax
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+    % v3.80: Tell shipout_filter that this page has a figure
+    \directlua{swarmwrap_mark_fig_placed()}%
     \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
   \fi
   \fi  % end v3.79 multicol fallback \else

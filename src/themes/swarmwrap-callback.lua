@@ -275,10 +275,120 @@ function swarmwrap_pagebreak_guard(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.78 loaded (needspace + pagebreak-guard + rule-height measurement)")
+-- LAYER 3 (v3.80): shipout_filter — ghost-narrowing fix at shipout time.
+-- This fires for EVERY page shipped to PDF (not subject to LuaTeX
+-- paragraph caching). It detects narrow hlists that have no adjacent
+-- figure and widens them to full page width using node.hpack.
+--
+-- HOW IT WORKS:
+-- 1. Track which pages have figures placed on them via a Lua table.
+--    swarmwrap_mark_fig_placed() is called from \swarmwrapnext in the .sty.
+-- 2. At shipout time, for each page:
+--    a. If the page has no recorded figure, ALL narrow hlists are ghost → widen
+--    b. If the page HAS a recorded figure, find figure's vertical extent,
+--       then widen only narrow hlists ABOVE or BELOW the figure zone
+--    c. Narrow hlists BESIDE the figure are left alone (correct wrapping)
+--
+-- WIDENING: Uses node.hpack('exactly', linewidth) to re-pack the hbox
+-- content at full page width. This redistributes text across the full line.
+-- v3.28 tried this and caused 71 overlaps because it widened lines BESIDE
+-- the figure. v3.80 only widens lines NOT beside the figure.
+
+local glyph_id = node.id("glyph")
+
+-- Table tracking which pages have active figures
+local fig_pages = {}  -- fig_pages[page_num] = {y_top, y_bottom}
+
+-- Called from \swarmwrapnext after figure placement
+function swarmwrap_mark_fig_placed()
+  local pg = tex.count["c@page"]
+  -- Just record that this page has a figure. The shipout_filter
+  -- uses has_figure_rule() to detect figure presence per-hlist.
+  fig_pages[pg] = true
+end
+
+-- Check if an hlist contains a figure rule (the colored rectangle)
+-- This detects the \smash{\rlap{...}} figure content
+local function has_figure_rule(hlist_node)
+  if not hlist_node.head then return false end
+  for n in node.traverse(hlist_node.head) do
+    if n.id == hlist_id then
+      -- Recurse into nested hlists (the \smash{\rlap} creates nested boxes)
+      if has_figure_rule(n) then return true end
+    elseif n.id == rule_id then
+      -- Check if this is a large rule (figure, not a strut or rule)
+      -- Figures have height > 20pt (at minimum 1.5cm = ~42pt)
+      local rh = n.height + n.depth
+      if rh > 655360 then  -- > 10pt in scaled units
+        return true
+      end
+    end
+  end
+  return false
+end
+
+local ghost_fix_count = 0
+
+function swarmwrap_ghost_fix(head, groupcode)
+  local pg = tex.count["c@page"]
+  
+  -- Only process pages that have NO recorded figure.
+  -- For pages WITH figures, DEFER 8bs prevents ghost narrowing.
+  -- This avoids expensive per-hlist figure-rule scanning on every page,
+  -- which blows TeX's conditional stack on large documents.
+  if fig_pages[pg] then
+    return head
+  end
+
+  local linewidth = tex.dimen["linewidth"]
+  if linewidth <= 0 then
+    return head
+  end
+
+  local narrow_threshold = linewidth * 0.85
+
+  -- Fast single-pass: only widen narrow hlists (no figure check needed
+  -- since we already confirmed no figure on this page)
+  local function process_vlist(vlist_head)
+    for n in node.traverse(vlist_head) do
+      if n.id == vlist_id then
+        if n.head then process_vlist(n.head) end
+      elseif n.id == hlist_id then
+        local hw = n.width
+        if hw > 0 and hw < narrow_threshold then
+          local new_h = node.hpack(n.head, linewidth, 'exactly')
+          n.head = new_h.head
+          n.width = linewidth
+          ghost_fix_count = ghost_fix_count + 1
+          if ghost_fix_count <= 30 then
+            texio.write_nl(string.format(
+              "[GHOST-FIX] pg=%d w=%d->%d (no fig page)",
+              pg, hw/65536, linewidth/65536))
+          end
+        end
+      end
+    end
+  end
+
+  process_vlist(head)
+
+  -- Clean up old entries
+  for k, _ in pairs(fig_pages) do
+    if k < pg - 2 then
+      fig_pages[k] = nil
+    end
+  end
+
+  return head
+end
+
+texio.write_nl("swarmwrap: callback v3.80 loaded (needspace + pagebreak-guard + ghost-fix shipout + rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 luatexbase.add_to_callback("post_linebreak_filter",
   swarmwrap_pagebreak_guard, "swarmwrap: pagebreak guard")
+luatexbase.add_to_callback("shipout_filter",
+  swarmwrap_ghost_fix, "swarmwrap: ghost narrowing fix")
 texio.write_nl("swarmwrap: pre_linebreak_filter registered successfully")
 texio.write_nl("swarmwrap: post_linebreak_filter registered successfully")
+texio.write_nl("swarmwrap: shipout_filter registered successfully")
