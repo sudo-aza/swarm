@@ -36,13 +36,13 @@
 %
 % ── Known Limitations ─────────────────────────────────────────────────
 %
-% 1. Ghost narrowing (prevented by DEFER 8bs since v3.67):
+% 1. Ghost narrowing (prevented by DEFER margin since v3.67):
 %    When the wrapped paragraph spans a page break, TeX's parshape
 %    persists across the page boundary but the figure does not (it is
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
 %    lines on the next page remain narrowed even though no figure is
 %    beside them — "ghost narrowing."
-%    PREVENTION (v3.67+): DEFER 8bs ejects figures to the next page
+%    PREVENTION (v3.67+): DEFER margin ejects figures to the next page
 %    before parshape carry-over can occur. Verified at 1000-figure
 %    scale: 0 ghost, 0 overlaps, 0 hollow carry-over.
 %    ROOT CAUSE: This is an inherent TeX limitation — parshape
@@ -374,13 +374,13 @@
 % narrow line, forcing TeX to break the page BEFORE entering the narrow zone.
 % Same LuaTeX caching limitation as Layer 1.
 %
-% DEFER margin (currently 8\baselineskip): PRIMARY ghost-narrowing prevention.
+% DEFER margin (currently 6\baselineskip): PRIMARY ghost-narrowing prevention.
 % Evaluated once per figure session at \swarmwrapnext time. Not affected by
 % LuaTeX paragraph caching. When DEFER is large enough, figures near page
 % bottoms are ejected to the next page rather than placed inline, which
-% avoids parshape carry-over entirely. DEFER 8bs has been verified at
+% avoids parshape carry-over entirely. DEFER 6bs has been verified at
 % 1000-figure scale: 0 ghost, 0 overlaps, 0 hollow carry-over.
-% Trade-off: +56 pages vs DEFER 3bs (1069 vs ~1013) due to more deferrals.
+% Trade-off: moderate page count increase vs lower DEFER values due to more deferrals.
 % Lower DEFER reduces page count but reintroduces ghost narrowing that
 % the callbacks cannot prevent due to paragraph caching.
 %
@@ -391,12 +391,12 @@
 %    Later occurrences on different pages bypass the callback entirely.
 % 2. Parshape carry-over: When a paragraph spans a page break within a
 %    parshape zone, the narrow-line specification carries over to the next
-%    page even if no figure is present. DEFER 8bs prevents this by ejecting
+%    page even if no figure is present. DEFER margin prevents this by ejecting
 %    figures before the narrow zone can reach a page boundary.
 % The callback layers (L1/L2) provide additional protection for NON-cached
-% paragraphs (unique content). DEFER 8bs provides universal protection.
+% paragraphs (unique content). DEFER margin provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/05/31 v3.82 Reduce DEFER 8bs to 6bs for page count optimization]
+\ProvidesPackage{swarmwrap}[2026/05/31 v3.82 Updated stale DEFER comments to match current 6bs value]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -451,7 +451,7 @@
 % Detects narrow parshape zones that would overflow the page and inserts
 % a -10000 penalty before the first narrow line, forcing TeX to break the
 % page BEFORE entering the narrow zone. Prevents ghost narrowing without
-% the page-count bloat of DEFER 8bs. Full history in PRODUCTION NOTE above.
+% the page-count bloat of high DEFER values. Full history in PRODUCTION NOTE above.
 
 \ifswarmwrap@luatex
 \directlua{dofile(kpse.find_file("swarmwrap-callback.lua") or error("swarmwrap-callback.lua not found"))}%
@@ -860,7 +860,7 @@
   % Store nl for Lua callback
   \global\swarmwrap@nl@lua=\swarmwrap@nl
   % v3.75: Removed \swarmwrap@remaining computation. Was used by disabled
-  % Layer 2 callback (v3.70 conditional penalty). DEFER 8bs handles ghost
+  % Layer 2 callback (v3.70 conditional penalty). DEFER margin handles ghost
   % prevention — no remaining-space computation needed.
   % ── Set up multi-paragraph extension (v3.24: vertical-space tracking) ─
   \swarmwrap@activetrue
@@ -899,7 +899,7 @@
   % v3.72: Kept at 8bs. The DEFER margin is the primary ghost-narrowing
   % prevention because LuaTeX paragraph caching prevents per-paragraph
   % callback intervention. Lower DEFER → more inline figures → fewer pages
-  % but ghost narrowing returns. DEFER 8bs = 1069 pages, 0 ghost.
+  % but ghost narrowing returns. DEFER 6bs = 1060 pages, 0 ghost (v3.82).
   \dimen1=\swarmwrap@nl\baselineskip
   % v3.78: Kept at 8bs. Lowering to 5bs reintroduces ghost narrowing because
   % LuaTeX caches line-breaking results for \lipsum paragraphs — pre_linebreak_filter
