@@ -41,51 +41,22 @@ local rule_id = node.id("rule")
 -- disabled Layer 2 (swarmwrap_post_lb) and its helpers (has_text_content).
 
 function swarmwrap_measure_visible_height(box_reg)
-  -- v3.58: Traverse savebox nodes to find the tallest \rule node
-  -- (the colored rectangle that IS the figure). This gives a much tighter
-  -- narrow zone than using box.height+box.depth (which includes caption
-  -- text, abovecaptionskip, and parskip overhead).
-  -- The full savebox height is still used for overlap prevention (fh@val).
+  -- v3.83: Use full box height (box.height + box.depth) for narrow zone.
+  -- v3.58's approach of finding the tallest rule only measured the colored
+  -- rectangle, MISSING captions that extend below the figure. This caused
+  -- text to switch to full width while still beside the caption — overlap.
+  -- The full box height covers figure + \abovecaptionskip + caption text.
+  -- Add 0.5*bs buffer to account for text descenders (g, p, y) that extend
+  -- below the baseline and beyond box.depth in some configurations.
   local box = tex.box[box_reg]
   if not box then return 0 end
   local bs = tex.skip["baselineskip"].width
-  local max_rule_h = 0
-
-  -- Recursively search for rule nodes inside the box
-  local function find_max_rule(head)
-    if not head then return end
-    for n in node.traverse(head) do
-      if n.id == rule_id then
-        -- Rule node: check its height + depth
-        local rh = n.height + n.depth
-        if rh > max_rule_h then max_rule_h = rh end
-      elseif n.id == hlist_id then
-        find_max_rule(n.head)
-      elseif n.id == vlist_id then
-        find_max_rule(n.head)
-      end
-    end
-  end
-
-  -- Search the box content
-  if box.head then
-    find_max_rule(box.head)
-  end
-
-  -- Fallback: if no rule found, use the full box height
-  if max_rule_h <= 0 then
-    max_rule_h = box.height + box.depth
-  end
-
-  -- Add buffer: 1 baselineskip below the rule to ensure text stays narrow
-  -- while beside the figure's bottom edge. Without this, full-width text
-  -- can overlap the figure's lower portion.
-  max_rule_h = max_rule_h + bs
+  local vis_h = box.height + box.depth + 0.5 * bs
 
   -- Minimum: 1 baselineskip
-  if max_rule_h < bs then max_rule_h = bs end
+  if vis_h < bs then vis_h = bs end
 
-  return max_rule_h
+  return vis_h
 end
 
 -- LAYER 1 (v3.55->v3.78): Pre-check needspace + parshape guard.
@@ -289,7 +260,7 @@ function swarmwrap_pagebreak_guard(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.81 loaded (needspace + pagebreak-guard + rule-height measurement)")
+texio.write_nl("swarmwrap: callback v3.83 loaded (needspace + pagebreak-guard + full-box-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 luatexbase.add_to_callback("post_linebreak_filter",
