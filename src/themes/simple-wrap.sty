@@ -1,131 +1,145 @@
-% simple-wrap.sty — Simplistic right-side float wrapper (v1.0)
+% simple-wrap.sty — Minimal right-side float wrapper
+% Works with pdfLaTeX, XeLaTeX, and LuaLaTeX
 %
-% Minimal text wrapping using \parshape. No Lua, no callbacks,
-% no multi-paragraph extension, no ghost-narrowing prevention.
-% Just the basics: capture a box, narrow text beside it, done.
+% HOW IT WORKS:
+%   1. \begin{simplewrap}...\end{simplewrap} captures your figure
+%   2. \end{simplewrap} places it top-right and sets up parshape
+%   3. Text immediately after \end{simplewrap} wraps around the figure
+%   4. Wrapping stops when text passes the figure or crosses a page
 %
-% Usage:
+% QUICK START:
 %   \usepackage{simple-wrap}
+%   \begin{simplewrap}
+%     \includegraphics[width=4cm]{photo}
+%     \captionof{figure}{My photo}
+%   \end{simplewrap}
+%   Lorem ipsum — this text wraps around the figure automatically.
 %
-%   \begin{simplewrap}%
-%     \begin{minipage}[t]{3cm}
-%       \centering
-%       \rule{\linewidth}{4cm}%
-%       \captionof{figure}{Caption.}
-%     \end{minipage}%
-%   \end{simplewrap}%
-%   \simplewrapnext
-%   Text wraps around the figure on the right side.
-%
-% Zero arguments. Width and height are auto-detected from the
-% rendered content box. The user controls the content width
-% explicitly (e.g., \includegraphics[width=3cm] or
-% \begin{minipage}[t]{3cm}).
-%
-% BUG PREVENTION (v1.0):
-%   1. Figure width is capped at \linewidth to prevent figures
-%      from extending beyond the page boundary.
-%   2. Parshape line count uses box.height + box.depth +
-%      1*baselineskip padding to prevent text from extending
-%      into the figure zone.
-%   3. A trailing full-width parshape entry resets text to full
-%      linewidth after the figure zone ends.
-%
-% Works with pdfLaTeX, XeLaTeX, and LuaLaTeX.
+% ONE environment. No extra commands.
 
-\ProvidesPackage{simple-wrap}[2026/05/31 v1.0 Simplistic right-side float wrapper]
-
+\ProvidesPackage{simple-wrap}[2026/05/31 v0.3]
 \RequirePackage{graphicx}
 
-\newsavebox{\simplewrap@box}
-\newdimen\simplewrap@fw       % figure width
-\newdimen\simplewrap@fh       % figure height (with padding for parshape)
-\newdimen\simplewrap@tw       % text width (for parshape)
-\newcount\simplewrap@nl        % number of narrow parshape lines
-\newcount\simplewrap@loop@cnt   % loop counter
+% ─── Internal state ──────────────────────────────────────────────
 
-% Global macros to persist across the environment group boundary.
-\newcommand{\simplewrap@fw@val}{0pt}
-\newcommand{\simplewrap@fh@val}{0pt}
-\newcommand{\simplewrap@tw@val}{0pt}
-\newcommand{\simplewrap@pshape@val}{} % pre-built parshape string
+\newbox\swrap@box          % holds the captured figure
+\newdimen\swrap@fw         % figure width
+\newdimen\swrap@fh         % figure height (ht + dp)
+\newdimen\swrap@tw         % text width beside figure
+\newcount\swrap@nl         % narrow lines remaining in current parshape
+\newcount\swrap@figpage    % page number where figure was placed
+\newif\ifswrap@active      % is wrapping currently active?
 
-% ── Environment: capture content into a savebox ────────────────────
+\let\swrap@origpar\par    % save original \par
+
+% ─── \begin{simplewrap}...\end{simplewrap} ──────────────────────
+% Begin: start capturing figure content into a box.
+% End: measure it, check page space, place figure, set parshape.
+
 \newenvironment{simplewrap}{%
-  \begin{lrbox}{\simplewrap@box}%
+  \global\setbox\swrap@box=\vbox\bgroup
+  \hsize=4cm\relax        % default figure width, user can override
+  \centering
 }{%
-  \end{lrbox}%
-  \global\setbox\simplewrap@box=\box\simplewrap@box
-  % BUG FIX #1: Cap figure width at \linewidth to prevent
-  % figures from extending beyond the page boundary.
-  \simplewrap@fw=\wd\simplewrap@box
-  \ifdim\simplewrap@fw>\linewidth\relax
-    \simplewrap@fw=\linewidth\relax
-    \PackageWarning{simple-wrap}{Figure width capped at \string\linewidth}%
+  \egroup
+  % ── Measure the captured figure ─────────────────────────────────
+  \swrap@fw=\wd\swrap@box
+  % BUG FIX: Cap figure width at linewidth so it never extends past
+  % the right page boundary.
+  \ifdim\swrap@fw>\linewidth\relax
+    \swrap@fw=\linewidth\relax
   \fi
-  \xdef\simplewrap@fw@val{\the\simplewrap@fw}%
-  % BUG FIX #2: Use box.height + box.depth + 1*baselineskip
-  % for parshape line count. The extra baselineskip provides
-  % clearance so text never extends into the figure zone.
-  \simplewrap@fh=\ht\simplewrap@box
-  \advance\simplewrap@fh by \dp\simplewrap@box
-  \advance\simplewrap@fh by 1\baselineskip
-  \xdef\simplewrap@fh@val{\the\simplewrap@fh}%
-  % Compute text width: full linewidth minus figure minus gap.
-  \simplewrap@tw=\linewidth
-  \advance\simplewrap@tw by -\simplewrap@fw
-  \advance\simplewrap@tw by -10pt  % 10pt gap between text and figure
-  % BUG FIX #1 (continued): If text width would be negative,
-  % the figure is too wide. Clamp it.
-  \ifdim\simplewrap@tw<0pt\relax
-    \simplewrap@tw=0pt\relax
+  \swrap@fh=\ht\swrap@box
+  \advance\swrap@fh by \dp\swrap@box
+  % BUG FIX: Add 1*baselineskip padding to figure height for parshape
+  % line count. Without this, the last narrow line's baseline sits
+  % right at the figure bottom, allowing text to visually extend
+  % into the figure zone. The extra baselineskip gives clearance.
+  \advance\swrap@fh by 1\baselineskip
+  %
+  % ── Clean up any previous wrapping ──────────────────────────────
+  \swrap@activefalse
+  \let\par\swrap@origpar
+  \parshape=0\relax
+  %
+  % ── Compute text width (page width minus figure minus gap) ───────
+  \swrap@tw=\linewidth
+  \advance\swrap@tw by -\swrap@fw
+  \advance\swrap@tw by -10pt   % gap between text and figure
+  % Clamp: if figure is too wide, text width goes to zero
+  \ifdim\swrap@tw<0pt\relax
+    \swrap@tw=0pt\relax
   \fi
-  \xdef\simplewrap@tw@val{\the\simplewrap@tw}%
-  % Compute number of narrow lines from figure height.
-  \simplewrap@nl=0
-  \dimen0=\simplewrap@fh
+  %
+  % ── How many narrow lines fit beside the figure? ────────────────
+  \swrap@nl=0
+  \dimen0=\swrap@fh
   \loop
-    \advance\simplewrap@nl by 1
     \advance\dimen0 by -\baselineskip
+    \advance\swrap@nl by 1
   \ifdim\dimen0>0pt \repeat
-  % Build parshape string: nl narrow entries + 1 trailing full-width.
-  % BUG FIX #3: Trailing full-width entry ensures text resets to
-  % full linewidth after the figure zone. Without this, TeX repeats
-  % the last narrow entry for ALL subsequent lines permanently.
-  \xdef\simplewrap@pshape@val{\the\numexpr\simplewrap@nl+1\relax\space}%
-  \simplewrap@loop@cnt=\simplewrap@nl
-  \loop
-    \xdef\simplewrap@pshape@val{\simplewrap@pshape@val 0pt \the\simplewrap@tw\space}%
-    \advance\simplewrap@loop@cnt by -1
-  \ifnum\simplewrap@loop@cnt>0 \repeat
-  % Trailing full-width entry
-  \xdef\simplewrap@pshape@val{\simplewrap@pshape@val 0pt \linewidth\space}%
-  \typeout{simple-wrap v1.0: fw=\the\simplewrap@fw, fh=\the\simplewrap@fh, tw=\the\simplewrap@tw, nl=\the\simplewrap@nl}%
-}
-
-% ── \simplewrapnext: apply parshape and place figure ──────────────────
-\newcommand{\simplewrapnext}{%
-  % Restore values from the environment (global macros survive the group).
-  \simplewrap@fw=\simplewrap@fw@val\relax
-  \simplewrap@tw=\simplewrap@tw@val\relax
-  % Check remaining space on current page.
+  %
+  % ── Newpage detection: does it fit on current page? ──────────────
   \dimen0=\pagegoal
   \advance\dimen0 by -\pagetotal
-  \simplewrap@fh=\simplewrap@fh@val\relax
-  \ifdim\dimen0<\simplewrap@fh
-    % Figure doesn't fit on current page — eject to next page.
-    % Text on the current page runs at full width (no wrapping).
-    % On the next page, the figure wraps at the top-right.
-    \parshape 1 0pt \linewidth\relax
+  \dimen1=\swrap@nl\baselineskip
+  \advance\dimen1 by 2\baselineskip  % 2-line safety margin
+  %
+  \ifdim\dimen0<\dimen1
+    % ── NOT ENOUGH SPACE — eject to new page ─────────────────────
     \newpage
   \fi
-  % Apply parshape for wrapped text.
-  \parshape \simplewrap@pshape@val\relax
-  % Place figure at the right margin using smash/rlap overlay.
-  % The figure is positioned to the right of the narrowed text zone.
+  %
+  % ── Record figure page and place it ────────────────────────────
+  \global\swrap@figpage=\c@page
   \noindent
-  \smash{\rlap{\hskip\simplewrap@tw@val\hskip10pt\raise\dimexpr\ht\strutbox-\ht\simplewrap@box\relax\hbox{\copy\simplewrap@box}}}%
-  \typeout{simple-wrap next: placed figure, tw=\the\simplewrap@tw, nl from pshape applied}%
+  \smash{%
+    \rlap{%
+      \hskip\swrap@tw
+      \hskip10pt
+      \raise\dimexpr\ht\strutbox-\ht\swrap@box\relax
+      \hbox{\copy\swrap@box}%
+    }%
+  }%
+  %
+  % ── Build parshape: nl narrow lines + 1 trailing full-width ──────
+  \xdef\swrap@pshape{\the\numexpr\swrap@nl+1\relax\space}%
+  \newcount\swrap@tmp
+  \swrap@tmp=0
+  \loop
+    \xdef\swrap@pshape{\swrap@pshape 0pt \the\swrap@tw\space}%
+    \advance\swrap@tmp by 1
+  \ifnum\swrap@tmp<\swrap@nl \repeat
+  \xdef\swrap@pshape{\swrap@pshape 0pt \linewidth\space}%
+  \parshape\swrap@pshape\relax
+  %
+  % ── Activate wrapping ─────────────────────────────────────────
+  \swrap@activetrue
+  \emergencystretch=\fontdimen6\font\relax
+  \let\par\swrap@patchedpar
+}
+
+% ─── Patched \par — stops wrapping when done ─────────────────────
+% After each paragraph break, check if we should deactivate:
+%   a) crossed to a new page → figure is behind us
+%   b) ran out of narrow lines → passed the figure
+
+\def\swrap@patchedpar{%
+  \ifswrap@active
+    \ifnum\c@page>\swrap@figpage\relax
+      \swrap@activefalse
+      \let\par\swrap@origpar
+      \parshape=0\relax
+    \else
+      \global\advance\swrap@nl by -1
+      \ifnum\swrap@nl<1\relax
+        \swrap@activefalse
+        \let\par\swrap@origpar
+        \parshape=0\relax
+      \fi
+    \fi
+  \fi
+  \swrap@origpar
 }
 
 \endinput
