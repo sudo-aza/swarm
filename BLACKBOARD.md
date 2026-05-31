@@ -86,6 +86,39 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-31 19:30 UTC+8
+> **Stand-down (43rd consecutive). Task #198 still blocked on Task #199. No actionable QA tasks.**
+>
+> Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). All QA review tasks done. No pending QA tasks remain. Programmer stood down at commit `67d0cf4e` — "v3.82 QA 10/10 PASS confirmed." No new code changes.
+>
+> Regression check: 50-fig 48 pages, 50/50 (100.0%), 0 real bugs. Engine: LuaHBTeX confirmed. PDF size: 144773 bytes. Matches Turns 71-73.
+>
+> Per Rule 8: Visual inspection of 15 new 1000-fig pages via VLM (pages 47, 153, 232, 256, 382, 422, 584, 621, 843, 940, 961, 1000, 1015, 1043, 1046). All 15 CLEAN — 12 with figures (correct wrapping, no overlaps), 3 text-only (full-width, no ghost). Zero VLM false positives this turn. **Cumulative VLM coverage: 48/48 50-fig (100%) + 42 1000-fig pages (4.0% of 1060).**
+>
+> Step 4.5: No new unreported findings. Rule 14 escalation remains active.
+
+### QA — 2026-05-31 18:30 UTC+8
+> **Stand-down (42nd consecutive). Task #198 still blocked on Task #199. No actionable QA tasks.**
+>
+> Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). All QA review tasks done. No pending QA tasks remain. No new Programmer commits since last turn (commit 51c948f3).
+>
+> Regression check: 50-fig 48 pages, 50/50 (100.0%), 0 real bugs. Engine: LuaHBTeX confirmed. PDF size: 144773 bytes. Matches previous turns exactly. 1000-fig: 1060 pages, 1097/1100 (99.7%), 0 ghost, 0 hollow, 0 overlaps. 3 "no wrapping" = multicols FPs (pages 192/481/773, confirmed by PyMuPDF).
+>
+> Per Rule 8: Visual inspection of 5 pages from 50-fig + 13 pages from 1000-fig via VLM. 50-fig: all 5 CLEAN. 1000-fig: VLM flagged page 701 as "ghost narrowing" — PyMuPDF cross-validated FALSE POSITIVE (25 full-width spans at x0=117.8 w=358.6pt, 0 drawings, 0 images). Continues known VLM FP pattern from Turn 69. **Cumulative VLM coverage: 48/48 50-fig (100%) + 27 1000-fig pages.**
+>
+> Step 4.5: No new unreported findings. Rule 14 escalation remains active.
+
+### QA — 2026-05-31 17:30 UTC+8
+> **Stand-down (41st consecutive). Task #198 still blocked on Task #199. No actionable QA tasks.**
+>
+> Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). All QA review tasks done (#244, #246, #248, #251, #253, #255). No pending QA tasks remain. Programmer stood down at commit 51c948f3 — deep verification of stale bug claims (all resolved, v3.82 stable).
+>
+> Regression check: 50-fig 48 pages, 50/50 (100.0%), 0 real bugs. Engine: LuaHBTeX confirmed. PDF size: 144773 bytes. Matches Turn 71 exactly.
+>
+> Per Rule 8: Visual inspection of pages 9, 13, 16, 17, 18 via VLM + PyMuPDF cross-validation. All 5 pages CLEAN. VLM flagged page 13 as "BROKEN" (text-figure overlap) — PyMuPDF confirmed FALSE POSITIVE (0 spans in figure zone, 13.9pt gap between text and figure). This continues the known VLM false positive pattern from Turn 69. **Cumulative VLM coverage: 48/48 50-fig pages (100%) + 14 1000-fig pages.** All 50-fig pages now inspected.
+>
+> Step 4.5: No new unreported findings.
+
 ### QA — 2026-05-31 16:30 UTC+8
 > **Task #255: v3.82 DEFER 6bs optimization — 10/10 PASS.**
 >
@@ -4108,6 +4141,26 @@ DEFER 6bs is strictly better: fewer pages, higher quality, zero ghost, zero holl
 **PyMuPDF verification**: 0 ghost-narrowing pages in both 50-fig (1 FP is figure page with all-narrow text) and 1000-fig (1 FP is section break page with short text).
 
 **Created QA review task**: #255. Fix task: #254 (status: needs-review).
+
+### 2026-05-31 17:00 UTC — Programmer Turn (deep verification, stand-down #7)
+
+Context: Session continuation from a previous conversation that ran out of context. The summary claimed Zoe identified 4 real PDF quality issues (text-figure overlaps from page 2, huge gap on page 25, ghost narrowing on 35 pages, figure extending past page on page 25). Performed independent PyMuPDF verification on the v3.82 output.
+
+**Findings**: All 4 claims are stale. (1) Overlaps: resolved by Task #240 (fills updated from invisible red!20/blue!30 to visible red!60/blue!60/green!60). PyMuPDF confirms 14pt gap between text and figure on page 2. (2) Gap on page 25: 45pt gap is normal paragraph-end behavior beside figure (text ends at y=315.1, figure at y=355.0). (3) Ghost narrowing: DEFER 6bs (v3.82) prevents all ghost narrowing. (4) Figure extending past page: all figures fit within page boundaries (max y=674.8, page bottom=841.89).
+
+**Detection results** (v3.82, fresh compile): 50-fig 48 pages 50/50 (100.0%). 1000-fig 1060 pages 1095/1100 (99.5%). All 5 detection failures are multicols false positives (pages 195/485/778 = FBT flag on multicols figures, page 584 = ghost+hollow flag on multicols two-column page).
+
+**Compilation**: demo-beautiful.tex 7 pages, test-stress-50.tex 48 pages, test-stress-1000.tex 1060 pages. All clean, 0 errors.
+
+No wrapping improvements remain. v3.82 pending QA review (Task #255). Standing down per Rule 3.
+
+### 2026-05-31 19:00 UTC — Programmer Turn (stand-down #8)
+
+QA Turn 71 gave Task #255 (v3.82 DEFER 6bs) 10/10 PASS. Task #254 marked `done` on BLACKBOARD. QA stood down Turns 72-73 with 48/48 VLM coverage on 50-fig. No new Programmer tasks.
+
+**Regression check**: demo-beautiful.tex 7 pages, 138358 bytes, 0 errors.
+
+No wrapping improvements remain. Standing down per Rule 3.
 
 ### 2026-05-31 11:30 UTC — QA Turn 66 (Task #253: v3.81, 10/10 PASS)
 
