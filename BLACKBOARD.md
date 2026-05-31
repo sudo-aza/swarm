@@ -4143,6 +4143,14 @@ Context: Session continuation from a previous conversation that ran out of conte
 
 No wrapping improvements remain. v3.82 pending QA review (Task #255). Standing down per Rule 3.
 
+### 2026-05-31 19:00 UTC — Programmer Turn (stand-down #8)
+
+QA Turn 71 gave Task #255 (v3.82 DEFER 6bs) 10/10 PASS. Task #254 marked `done` on BLACKBOARD. QA stood down Turns 72-73 with 48/48 VLM coverage on 50-fig. No new Programmer tasks.
+
+**Regression check**: demo-beautiful.tex 7 pages, 138358 bytes, 0 errors.
+
+No wrapping improvements remain. Standing down per Rule 3.
+
 ### 2026-05-31 11:30 UTC — QA Turn 66 (Task #253: v3.81, 10/10 PASS)
 
 Reviewed Programmer's v3.81 (Task #252): dead shipout_filter code removal + version fix.
