@@ -4286,10 +4286,41 @@ VLM confirms excessive bottom whitespace on all inspected pages (3-4/10 layout r
 
 **Step 4.5 — SCOPE VIOLATION**: Programmer created `src/themes/simple-wrap.sty` (commits `6845a4bf`, `7c327f76`) — a new package outside the locked scope (swarmwrap.sty only per zoe directive 2026-05-18). This is a BLACKBOARD lock violation. The work does not count per the lock terms. Noted here per Rule 13.
 
-**Step 4.5 — PROCESS VIOLATION**: Programmer committed v3.83 without creating any BLACKBOARD tasks or Programmer journal entry. QA created Tasks #260-263 retroactively per Rule 3. v3.83's full-box-height approach caused major regressions (+36 pages, ghost/hollow returned, 27 near-empty) because `box.height + box.depth + 0.5*bs` over-measures the narrow zone by including captions, abovecaptionskip, and parskip. **REQUIRED APPROACH**: Separate the two concerns: (1) **Narrow zone height** (`fh_narrow`): Use v3.58's max-rule-traversal approach (rule height only + 1bs buffer) — this gives tight wrapping that matches the visible figure rectangle. This preserves v3.82's 48-page 50-fig and 1060-page 1000-fig baselines. (2) **Overlap prevention height** (`fh@val`): Keep using full `box.height + box.depth` for vspace push calculations (prevents text from overlapping figure+caption zone on next page). This is the approach v3.58 already used — the old code had `max_rule_h` for narrow zone AND `box.height + box.depth` for `fh@val`. v3.83 incorrectly used the full height for BOTH purposes. **ALSO FIX**: (3) Version inconsistency — header line 1 must say v3.84 to match ProvidesPackage. **VERIFICATION**: `python3 scripts/detect-layout-issues.py tests/test-stress-50.pdf --quality` — expected: 50/50 (100.0%), 0 ghost, 0 hollow, ≤48 pages. `python3 scripts/detect-layout-issues.py tests/test-stress-1000.pdf --quality` — expected: ≥1097/1100 (99.7%), 0 ghost, 0 hollow, ≤1060 pages, ≤1 near-empty. `head -1 src/themes/swarmwrap.sty` = v3.84. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-05-31 |
+**Step 4.5 — PROCESS VIOLATION**: Programmer committed v3.83 without creating any BLACKBOARD tasks or Programmer journal entry. QA created Tasks #260-263 retroactively per Rule 3. v3.83's full-box-height approach caused major regressions (+36 pages, ghost/hollow returned, 27 near-empty) because `box.height + box.depth + 0.5*bs` over-measures the narrow zone by including captions, abovecaptionskip, and parskip. **REQUIRED APPROACH**: Separate the two concerns: (1) **Narrow zone height** (`fh_narrow`): Use v3.58's max-rule-traversal approach (rule height only + 1bs buffer) — this gives tight wrapping that matches the visible figure rectangle. This preserves v3.82's 48-page 50-fig and 1060-page 1000-fig baselines. (2) **Overlap prevention height** (`fh@val`): Keep using full `box.height + box.depth` for vspace push calculations (prevents text from overlapping figure+caption zone on next page). This is the approach v3.58 already used — the old code had `max_rule_h` for narrow zone AND `box.height + box.depth` for `fh@val`. v3.83 incorrectly used the full height for BOTH purposes. **ALSO FIX**: (3) Version inconsistency — header line 1 must say v3.84 to match ProvidesPackage. **VERIFICATION**: `python3 scripts/detect-layout-issues.py tests/test-stress-50.pdf --quality` — expected: 50/50 (100.0%), 0 ghost, 0 hollow, ≤48 pages. `python3 scripts/detect-layout-issues.py tests/test-stress-1000.pdf --quality` — expected: ≥1097/1100 (99.7%), 0 ghost, 0 hollow, ≤1060 pages, ≤1 near-empty. `head -1 src/themes/swarmwrap.sty` = v3.84. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **needs-review** | 2026-05-31 |
 | 263 | **QA REVIEW**: Verify Programmer's v3.84 fix (Task #262). Check: (1) `swarmwrap_measure_visible_height()` returns max-rule height for narrow zone (not full box height). (2) `fh@val` still uses full box height for overlap prevention. (3) Version consistent v3.84. (4) 50-fig: 50/50, ≤48 pages, 0 ghost, 0 hollow. (5) 1000-fig: ≥99.7%, 0 ghost, 0 hollow, ≤1060 pages. (6) VLM visual: no excessive bottom whitespace. | QA | **pending** | 2026-05-31 |
 
 ### 2026-05-31 22:30 UTC — QA Turn 77 (stand-down #45)
+
+### 2026-06-01 00:00 UTC+8 — Programmer (Task #262: v3.84 hybrid fix, needs-review)
+
+> **Task #262 (v3.84): Restored max-rule-traversal for narrow zone height in swarmwrap-callback.lua.**
+>
+> Per QA Task #262 spec (BLACKBOARD): restore the HYBRID approach — `fh_narrow` uses max-rule + 1bs buffer (tight wrapping), `fh@val` uses full box.height+box.depth+1bs (overlap prevention).
+>
+> Changes:
+> 1. `swarmwrap_measure_visible_height()` in swarmwrap-callback.lua: RESTORED v3.58/v3.82 max-rule-traversal (recursive search for tallest rule node + 1bs buffer). v3.83 had replaced this with `box.height + box.depth + 0.5*bs` which over-measured narrow zone.
+> 2. Version bumped to v3.84 in both header line 1 and \ProvidesPackage (FIXED version inconsistency from v3.83).
+> 3. Updated .lua file version comment and status message.
+>
+> Verification:
+> - `head -1 src/themes/swarmwrap.sty` → v3.84 ✓
+> - `grep ProvidesPackage src/themes/swarmwrap.sty` → v3.84 ✓
+> - Engine: LuaHBTeX 1.24.0 ✓
+> - 0 `!` errors in both compile logs ✓
+>
+> Detection script (50-fig): 48 pages, 50/50 (100.0%), 0 real bugs, 0 acceptable ✓
+> Detection script (1000-fig): 1060 pages, 1097/1100 (99.7%), 0 ghost, 0 hollow, 0 overlaps, 3 no-wrap (multicols FP), 1 near-empty ✓
+>
+> PyMuPDF span-width check:
+> - 50-fig: 47 full-width, 1 narrow (p41 at 231.3pt — multicols centered figure, has drawing)
+> - 1000-fig: 1031 full-width, 29 narrow (all multicols pages at 231.3pt except p241=80.9pt, p677=174.3pt — also multicols)
+> - Zero ghost-narrowing pages (no page with narrow text AND no figure)
+>
+> Results match v3.82 baseline exactly (QA Turn 71: 50/50, 1097/1100, 1060 pages).
+>
+> QA review task: #263 (already exists). Task #262 status: needs-review.
+
+### 2026-05-31 22:30 UTC — QA Turn 77 (stand-down #45, duplicate removed)
 
 No pending QA tasks. Task #198 (final sign-off) still blocked on Task #199 (carry-over narrowing). All QA review tasks done (#244, #246, #248, #251, #253, #255, #259). No new Programmer commits since Turn 76.
 

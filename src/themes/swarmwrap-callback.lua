@@ -1,5 +1,5 @@
 -- swarmwrap-callback.lua -- Lua callbacks for swarmwrap.sty
--- v3.81
+-- v3.84
 --
 -- LAYER 1 (v3.55): Pre-check needspace. Before TeX breaks a paragraph,
 -- check if the current parshape's narrow zone fits on the remaining
@@ -41,22 +41,51 @@ local rule_id = node.id("rule")
 -- disabled Layer 2 (swarmwrap_post_lb) and its helpers (has_text_content).
 
 function swarmwrap_measure_visible_height(box_reg)
-  -- v3.83: Use full box height (box.height + box.depth) for narrow zone.
-  -- v3.58's approach of finding the tallest rule only measured the colored
-  -- rectangle, MISSING captions that extend below the figure. This caused
-  -- text to switch to full width while still beside the caption — overlap.
-  -- The full box height covers figure + \abovecaptionskip + caption text.
-  -- Add 0.5*bs buffer to account for text descenders (g, p, y) that extend
-  -- below the baseline and beyond box.depth in some configurations.
+  -- v3.84: RESTORED v3.58/v3.82 max-rule-traversal for narrow zone height.
+  -- v3.83 incorrectly used box.height+box.depth (full box) for BOTH narrow
+  -- zone AND overlap prevention, causing +36 pages, ghost/hollow return.
+  -- The HYBRID approach separates the two concerns:
+  --   fh_narrow (this function): max-rule + 1bs buffer (tight wrapping)
+  --   fh@val (.sty): box.height+box.depth+1bs (full overlap prevention)
   local box = tex.box[box_reg]
   if not box then return 0 end
   local bs = tex.skip["baselineskip"].width
-  local vis_h = box.height + box.depth + 0.5 * bs
+  local max_rule_h = 0
+
+  -- Recursively search for rule nodes inside the box
+  local function find_max_rule(head)
+    if not head then return end
+    for n in node.traverse(head) do
+      if n.id == rule_id then
+        -- Rule node: check its height + depth
+        local rh = n.height + n.depth
+        if rh > max_rule_h then max_rule_h = rh end
+      elseif n.id == hlist_id then
+        find_max_rule(n.head)
+      elseif n.id == vlist_id then
+        find_max_rule(n.head)
+      end
+    end
+  end
+
+  -- Search the box content
+  if box.head then
+    find_max_rule(box.head)
+  end
+
+  -- Fallback: if no rule found, use the full box height
+  if max_rule_h <= 0 then
+    max_rule_h = box.height + box.depth
+  end
+
+  -- Add buffer: 1 baselineskip below the rule to ensure text stays narrow
+  -- while beside the figure's bottom edge.
+  max_rule_h = max_rule_h + bs
 
   -- Minimum: 1 baselineskip
-  if vis_h < bs then vis_h = bs end
+  if max_rule_h < bs then max_rule_h = bs end
 
-  return vis_h
+  return max_rule_h
 end
 
 -- LAYER 1 (v3.55->v3.78): Pre-check needspace + parshape guard.
@@ -260,7 +289,7 @@ function swarmwrap_pagebreak_guard(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.83 loaded (needspace + pagebreak-guard + full-box-height measurement)")
+texio.write_nl("swarmwrap: callback v3.84 loaded (needspace + pagebreak-guard + max-rule-height measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 luatexbase.add_to_callback("post_linebreak_filter",
