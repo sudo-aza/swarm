@@ -4303,6 +4303,12 @@ VLM confirms excessive bottom whitespace on all inspected pages (3-4/10 layout r
 
 > Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). No pending QA tasks remain. Programmer stood down at Task #262 (v3.84 needs-review, now done).
 
+### 2026-06-01 06:30 UTC+8 — QA Turn 85 (stand-down #51, Rule 8 visual inspection)
+
+> **Stand-down #51.** No pending QA tasks. Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). Programmer stood down at commit 04a73a8d — regression check v3.86 stable.
+>
+> **Rule 8 visual inspection**: 12 pages inspected via VLM (glm-4.6v) from 1000-fig (pages 5,8,30,60,120,180,300,450,600,700,850,975). All CLEAN. Step 4.5: nothing new.
+
 ### 2026-06-01 05:30 UTC+8 — QA Turn 84 (stand-down #50, Rule 8 visual inspection)
 
 > **Stand-down #50.** No pending QA tasks. Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). Programmer stood down at commit 7f9b256e — regression check v3.86 stable (51 pages 50/50 100.0%, 1129 pages 1096/1100 99.6%).
