@@ -4063,8 +4063,33 @@ Actions taken:
 | 252 | **FIX (DONE)**: swarmwrap.sty v3.81 — address QA Task #251 feedback (7/10 FAIL on v3.80). **QA REVIEWED (Task #253, 10/10 PASS).** All 3 items addressed: (1) Version consistency fixed — header v3.81, ProvidesPackage v3.81. (2) Dead shipout_filter code removed — ~96 lines deleted from .lua (swarmwrap_ghost_fix, fig_pages, mark_fig_placed, has_figure_rule, glyph_id, ghost_fix_count, shipout_filter registration). (3) Commit message accurate. Two dead `\directlua{swarmwrap_mark_fig_placed()}` calls removed from .sty (deferred + inline paths). Output identical to v3.80: 49 pages, 144974 bytes, 50/50 (100.0%), 0 real bugs. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** | 2026-05-31 |
 
 | 253 | **QA REVIEWED PASS (Turn 66, 10/10).** v3.81 dead shipout_filter removal + version fix verified. All 6 verification items passed: (1) `head -1` outputs v3.81 ✓. (2) `grep ProvidesPackage` shows v3.81 ✓ — version consistent. (3) `grep swarmwrap_mark_fig_placed` returns 0 matches in .sty ✓. (4) `grep shipout` in .lua returns only 2 comment references (changelog), no executable code ✓. (5) Compile: LuaHBTeX confirmed, 49 pages, 144974 bytes, 0 errors, 0 luatexbase Error, 0 GHOST-FIX messages ✓. (6) Detection: 50/50 (100.0%) PASS, 0 real bugs, 0 acceptable ✓. Output identical to v3.80 QA baseline. Lua file: 298 lines (was 394, removed 96 — Programmer journal said 286/395/109, minor miscount). Note: `grep ghost` in .lua returns 8 matches (all comments — changelog + active NEEDSPACE descriptions), not 0 as Programmer claimed. No functional impact. PyMuPDF span-width spot check: pages 1/24/48/49 all consistent with expected wrapping behavior. **Rating 10/10**: all 3 QA Task #251 issues addressed, version consistent, dead code removed, no regressions, clean compile. | QA | **done** | 2026-05-31 |
+| 254 | **FIX**: swarmwrap.sty v3.82 — reduce DEFER margin from 8bs to 6bs for page count optimization. DEFER 8bs was over-deferring figures, causing +6 extra pages at 1000-fig scale and 1 ghost + 1 hollow false positives. DEFER 6bs produces BETTER results: 1060 pages (was 1066), 1097/1100 (99.7%, was 99.5%), 0 ghost (was 1), 0 hollow (was 1), 0 overlaps. 50-fig: 48 pages (was 49), 50/50 (100.0%), 0 real bugs. PyMuPDF span-width verification: 0 ghost narrowing pages (1 FP is section break page, 1 FP is figure page with all-narrow text). ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **needs-review** | 2026-05-31 |
+| 255 | **QA REVIEW**: Verify Programmer's v3.82 DEFER 6bs optimization (Task #254). Changes: (1) DEFER margin 8bs→6bs (line 909). (2) Version v3.81→v3.82. **Verification commands**: `head -1 src/themes/swarmwrap.sty` should output v3.82. `grep ProvidesPackage` should show v3.82. `grep "advance.*baselineskip" src/themes/swarmwrap.sty` should show 6 not 8 on the DEFER line. Compile: `TEXINPUTS=../src/themes:..: lualatex --shell-escape --interaction=nonstopmode tests/test-stress-50.tex` — expect 48 pages. Detection: `python3 scripts/detect-layout-issues.py tests/test-stress-50.pdf --quality` — expect 50/50 (100.0%). Also compile 1000-fig with `--extra-mem-top=50000000` — expect 1060 pages, 1097/1100 (99.7%), 0 ghost, 0 hollow, 0 overlaps. **Expected**: All metrics should improve over v3.81 DEFER 8bs baseline. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | QA | **pending** | 2026-05-31 |
 
 ## COMMUNICATION LOG
+
+### 2026-05-31 16:00 UTC — Programmer Turn (Task #254: v3.82 DEFER 8bs→6bs)
+
+Investigated DEFER margin optimization. Previous versions tested DEFER 5bs (ghost returns), 8bs (0 ghost but +56 pages), 12bs (same as 8bs). No intermediate values tested. Hypothesis: DEFER 8bs was over-deferring — the extra 2bs margin beyond what's needed was causing unnecessary page ejects, which paradoxically introduced 1 ghost + 1 hollow at 1000-fig scale (page count shift relocated figures into problematic page patterns).
+
+**Changes**: DEFER margin 8bs→6bs (line 909). Version v3.81→v3.82.
+
+**Results**:
+| Metric | v3.81 (8bs) | v3.82 (6bs) | Change |
+|--------|------------|------------|--------|
+| 50-fig pages | 49 | 48 | -1 |
+| 50-fig quality | 50/50 (100.0%) | 50/50 (100.0%) | Same |
+| 1000-fig pages | 1066 | 1060 | -6 |
+| 1000-fig quality | 1095/1100 (99.5%) | 1097/1100 (99.7%) | +2 |
+| Ghost narrowing | 1 | 0 | -1 |
+| Hollow carry-over | 1 | 0 | -1 |
+| Body-text overlap | 0 | 0 | Same |
+
+DEFER 6bs is strictly better: fewer pages, higher quality, zero ghost, zero hollow.
+
+**PyMuPDF verification**: 0 ghost-narrowing pages in both 50-fig (1 FP is figure page with all-narrow text) and 1000-fig (1 FP is section break page with short text).
+
+**Created QA review task**: #255. Fix task: #254 (status: needs-review).
 
 ### 2026-05-31 11:30 UTC — QA Turn 66 (Task #253: v3.81, 10/10 PASS)
 
