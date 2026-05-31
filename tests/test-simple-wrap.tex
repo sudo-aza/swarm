@@ -1,0 +1,80 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{xcolor}
+
+% Copy simple-wrap.sty to current dir so TeX finds it
+\usepackage{simple-wrap}
+
+\begin{document}
+
+\section{Test 1: Small figure (2cm x 2cm)}
+\begin{simplewrap}%
+  \begin{minipage}[t]{2cm}
+    \centering
+    \textcolor{blue!60}{\rule{\linewidth}{2cm}}
+    \captionof{figure}{Fig 1 (2cmx2cm)}
+  \end{minipage}%
+\end{simplewrap}%
+\simplewrapnext\lipsum[1]\lipsum[2]
+
+\section{Test 2: Medium figure (4cm x 5cm)}
+\begin{simplewrap}%
+  \begin{minipage}[t]{4cm}
+    \centering
+    \textcolor{red!60}{\rule{\linewidth}{5cm}}
+    \captionof{figure}{Fig 2 (4cmx5cm)}
+  \end{minipage}%
+\end{simplewrap}%
+\simplewrapnext\lipsum[1]\lipsum[2]\lipsum[3]
+
+\section{Test 3: Tall figure (3cm x 10cm)}
+\begin{simplewrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \textcolor{green!60!black}{\rule{\linewidth}{10cm}}
+    \captionof{figure}{Fig 3 (3cmx10cm)}
+  \end{minipage}%
+\end{simplewrap}%
+\simplewrapnext\lipsum[1]\lipsum[2]\lipsum[3]\lipsum[4]
+
+\section{Test 4: Wide figure (10cm x 3cm)}
+\begin{simplewrap}%
+  \begin{minipage}[t]{10cm}
+    \centering
+    \textcolor{orange}{\rule{\linewidth}{3cm}}
+    \captionof{figure}{Fig 4 (10cmx3cm)}
+  \end{minipage}%
+\end{simplewrap}%
+\simplewrapnext\lipsum[1]\lipsum[2]
+
+\section{Test 5: Oversized figure (20cm x 3cm) — should be capped}
+\begin{simplewrap}%
+  \begin{minipage}[t]{20cm}
+    \centering
+    \textcolor{purple}{\rule{\linewidth}{3cm}}
+    \captionof{figure}{Fig 5 (20cmx3cm — should be capped)}
+  \end{minipage}%
+\end{simplewrap}%
+\simplewrapnext\lipsum[1]
+
+\section{Test 6: Consecutive wraps}
+\begin{simplewrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \textcolor{cyan!60!black}{\rule{\linewidth}{3cm}}
+    \captionof{figure}{Fig 6a (3cmx3cm)}
+  \end{minipage}%
+\end{simplewrap}%
+\simplewrapnext\lipsum[1]
+\begin{simplewrap}%
+  \begin{minipage}[t]{5cm}
+    \centering
+    \textcolor{yellow!80!black}{\rule{\linewidth}{4cm}}
+    \captionof{figure}{Fig 6b (5cmx4cm)}
+  \end{minipage}%
+\end{simplewrap}%
+\simplewrapnext\lipsum[1]\lipsum[2]
+
+\end{document}
