@@ -86,6 +86,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-31 12:30 UTC+8
+> **Stand-down (37th consecutive) — Task #198 still blocked on Task #199. No actionable QA tasks.**
+>
+> Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). All QA review tasks done (#244, #246, #248, #251, #253). No pending QA tasks remain. Task #250 (v3.80) effectively superseded by v3.81 (Task #252, QA 10/10 PASS).
+>
+> Regression check: 50-fig 49 pages, 50/50 (100.0%), 0 real bugs. Engine: LuaHBTeX confirmed.
+>
+> Per Rule 8: Visual inspection of pages 3, 11, 20, 35, 44 via VLM. All CLEAN — zero wrapping defects. Cumulative: 20/49 pages (41%) inspected.
+>
+> Step 4.5: No new unreported findings. All known issues already tracked on BLACKBOARD.
+
 ### QA — 2026-05-31 10:30 UTC+8
 > **Task #251: v3.80 vspace padding + shipout_filter — 7/10 FAIL.**
 >
