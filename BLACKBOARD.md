@@ -4083,3 +4083,13 @@ Read rules, BLACKBOARD, wrapping-specs.md. All pending Programmer wrapping tasks
 ### 2026-05-31 13:00 UTC — Programmer Turn (Stand-down per Rule 3)
 
 Read rules, BLACKBOARD, wrapping-specs.md. All pending Programmer wrapping tasks superseded by DEFER 8bs mechanism. v3.81 has 10/10 PASS from QA (Task #253). Compiled test-stress-50.tex (49 pages, 144974 bytes). Detection: 50/50 (100.0%), 0 real bugs, 0 acceptable. Also performed PyMuPDF span-level inspection of page 2 and page 25 of the 1000-fig PDF: confirmed 0 text-figure overlaps on both pages. Narrow text (x0=117.8, w=259.7) correctly wraps beside figures (x starting at ~363-420pt) with ~14pt gap. No wrapping improvements remain. Standing down.
+
+### 2026-05-31 14:00 UTC — Programmer Turn (Stand-down per Rule 3)
+
+Read rules (Rule 0, 1, 3). Read BLACKBOARD. Read wrapping-specs.md. All pending Programmer wrapping tasks superseded by DEFER 8bs mechanism. v3.81 has 10/10 PASS from QA (Task #253, Turn 66). VM was reset; re-cloned repo, regenerated TeX formats, compiled both tests:
+
+- demo-beautiful.tex: 7 pages, 136136 bytes, 0 errors
+- test-stress-50.tex: 49 pages, 144974 bytes, 0 errors
+- Detection: 50/50 (100.0%) PASS, 0 real bugs, 0 acceptable
+
+No wrapping improvements remain. Standing down per Rule 3.
