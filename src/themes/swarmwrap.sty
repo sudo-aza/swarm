@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.85)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.86)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -396,7 +396,7 @@
 % The callback layers (L1/L2) provide additional protection for NON-cached
 % paragraphs (unique content). DEFER margin provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/06/01 v3.85 Fix stale DEFER 8bs comments (lines 899,904)]
+\ProvidesPackage{swarmwrap}[2026/06/01 v3.86 Fix caption-text overlap (Task #267)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -835,6 +835,23 @@
     \advance\swarmwrap@nl by 1
     \advance\dimen0 by -\baselineskip
   \ifdim\dimen0>0pt \repeat
+  % v3.86: Add extra narrow lines to cover caption zone (Task #267).
+  % fh_narrow covers only the figure rule height. The caption text is
+  % below the rule and extends the visual zone. Without these extra lines,
+  % the trailing full-width parshape entry at nl+1 causes text to go
+  % full-width within the caption area of the first paragraph.
+  % Extra lines = ceil((fh@val - fh_narrow) / baselineskip).
+  % This adds ~1-4 lines depending on caption length, much less than
+  % v3.83's full box height approach (which caused +36 pages).
+  \swarmwrap@fh=\swarmwrap@fh@val\relax
+  \advance\swarmwrap@fh by -\swarmwrap@fh@narrow@val\relax
+  \swarmwrap@loop@cnt=0
+  \loop
+    \advance\swarmwrap@fh by -\baselineskip
+    \advance\swarmwrap@loop@cnt by 1
+  \ifdim\swarmwrap@fh>0pt \repeat
+  \advance\swarmwrap@nl by \swarmwrap@loop@cnt
+  \wlog{swarmwrap v3.86: caption extra lines=\the\swarmwrap@loop@cnt, total nl=\the\swarmwrap@nl}%
   % v3.74: Removed vestigial hard cap registers (max@narrow, narrow@used).
   % These were part of the v3.61 hard cap mechanism, fully removed in
   % v3.65 (Task #219). The figure-space and page-space (5bs) checks
@@ -866,10 +883,14 @@
   \swarmwrap@activetrue
   \global\let\par\swarmwrap@patched@par
   % Record the figure's vertical extent on the current page
-  % v3.39: fig@bottom uses NARROW height for \par patch extension.
+  % v3.86: fig@bottom uses FULL box height (fh@val) for \par patch extension.
+  % This ensures wrapping continues through caption zone. Previously used
+  % fh_narrow (rule height only), causing caption-text overlap when \par
+  % fires within the figure zone (Task #267). nl stays based on fh_narrow
+  % for tight wrapping (no page count regression).
   % fig@bottom@safe uses FULL height (with padding) for vspace push.
   \global\swarmwrap@fig@bottom=\pagetotal
-  \global\advance\swarmwrap@fig@bottom by \swarmwrap@fh\relax
+  \global\advance\swarmwrap@fig@bottom by \swarmwrap@fh@val\relax
   \global\swarmwrap@fig@bottom@safe=\pagetotal
   \global\advance\swarmwrap@fig@bottom@safe by \swarmwrap@fh@val\relax
   \global\swarmwrap@fig@page=\the\c@page\relax
@@ -921,9 +942,9 @@
     \parshape \swarmwrap@pshape\relax
     \swarmwrap@activetrue
     \global\let\par\swarmwrap@patched@par
-    % Re-record figure extent on the NEW page
+    % v3.86: Re-record figure extent on the NEW page (using fh@val, same as NORMAL)
     \global\swarmwrap@fig@bottom=\pagetotal
-    \global\advance\swarmwrap@fig@bottom by \swarmwrap@fh\relax
+    \global\advance\swarmwrap@fig@bottom by \swarmwrap@fh@val\relax
     \global\swarmwrap@fig@bottom@safe=\pagetotal
     \global\advance\swarmwrap@fig@bottom@safe by \swarmwrap@fh@val\relax
     \global\swarmwrap@fig@page=\the\c@page\relax
