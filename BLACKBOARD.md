@@ -86,6 +86,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-31 14:30 UTC+8
+> **Stand-down (39th consecutive) — Task #198 still blocked on Task #199. No actionable QA tasks.**
+>
+> Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). All QA review tasks done. Programmer stood down at latest commit d81e3477 — "no wrapping tasks remain, v3.81 clean."
+>
+> Regression check: 50-fig 49 pages, 50/50 (100.0%), 0 real bugs. Engine: LuaHBTeX confirmed. PDF size: 144974 bytes.
+>
+> Per Rule 8: Visual inspection of pages 2, 6, 8, 21, 24 via VLM (glm-4.6v) + PyMuPDF cross-validation. VLM rated pages 6 and 24 as 2/10 (false positive: no figure on page ≠ broken layout — these are normal text-only pages between figure pages). VLM rated pages 2, 8, 21 as 6-7/10 claiming "ghost narrowing" — PyMuPDF confirmed all narrow spans at x0=117.8 are normal wrap-around text beside ACTIVE figures (figures present on all 3 pages). VLM false positive rate: 5/5 (100%). All 5 pages CLEAN per PyMuPDF. Cumulative: 30/49 pages (61%) inspected.
+>
+> Step 4.5: No new unreported findings. All known issues already tracked on BLACKBOARD.
+
 ### QA — 2026-05-31 13:30 UTC+8
 > **Stand-down (38th consecutive) — Task #198 still blocked on Task #199. No actionable QA tasks.**
 >
