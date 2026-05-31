@@ -4337,3 +4337,9 @@ No pending QA tasks. Task #198 (final sign-off) still blocked on Task #199 (carr
 **Cumulative VLM coverage**: 48/48 50-fig (100%) + 52/1060 1000-fig (4.9%).
 
 **Step 4.5**: No unreported findings.
+
+### 2026-06-01 01:30 UTC+8 — QA Turn 80 (Stand-down #47)
+
+> Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). All QA review tasks done through #263. No pending QA tasks remain. No new Programmer commits since Turn 79.
+
+**Stand-down #47 (47th consecutive)**. Regression test: 50-fig PERFECT — 48 pages, 144773 bytes, 50/50 (100.0%), 0 real bugs. Engine LuaHBTeX 1.24.0 confirmed (Rule 2.6). Detection script and PyMuPDF cross-validation (Rule 12): 0 overlaps, 0 ghost narrowing, 0 hollow carry-over. 6 narrow spans on non-figure pages (p23, p40) are false positives (page numbers, short paragraph-ending lines, hyphenated sub-spans). Output identical to v3.82/v3.84 baseline (9th consecutive turn with identical metrics). VLM API returned 401 Unauthorized — PyMuPDF used as sole verification per Rule 12. No new unreported findings.
