@@ -343,6 +343,94 @@ def _is_caption_text(text):
     return False
 
 
+def get_figure_caption_zones(page, figures, text_lines):
+    """Get figure caption text zones associated with each figure box.
+
+    v11 (2026-06-01): NEW FUNCTION. Finds caption text lines below each
+    figure box and returns their bounding rectangles. This fixes the
+    critical blind spot where body text going full-width through a
+    figure caption was not detected — the old detect_overlaps() only
+    checked against figure BOX rectangles, missing caption text zones.
+
+    Caption text is identified by matching _CAPTION_PATTERNS and being
+    within 80pt vertically below the figure box and within the figure's
+    horizontal extent (plus 30pt margin).
+
+    Returns list of (caption_rect, fig_rect) tuples.
+    """
+    caption_zones = []
+    for fig in figures:
+        caption_lines = []
+        for line in text_lines:
+            # Caption is typically below the figure box, within ~80pt
+            if line["rect"].y0 > fig.y1 - 10 and line["rect"].y0 < fig.y1 + 80:
+                if line["rect"].x0 > fig.x0 - 30 and line["rect"].x1 < fig.x0 + fig.width + 50:
+                    if _is_caption_text(line["text"]):
+                        caption_lines.append(line)
+        if caption_lines:
+            cap_y0 = min(l["rect"].y0 for l in caption_lines)
+            cap_y1 = max(l["rect"].y1 for l in caption_lines)
+            cap_x0 = min(l["rect"].x0 for l in caption_lines)
+            cap_x1 = max(l["rect"].x1 for l in caption_lines)
+            caption_rect = fitz.Rect(cap_x0, cap_y0, cap_x1, cap_y1)
+            caption_zones.append((caption_rect, fig))
+    return caption_zones
+
+
+def detect_caption_text_overlap(page_num, caption_zones, text_lines, tolerance):
+    """Detect body text going full-width through figure caption zones.
+
+    v11 (2026-06-01): NEW DETECTION CATEGORY. This fixes the critical
+    blind spot that caused QA to give false 10/10 PASS ratings on
+    versions with 1016/1060 pages having caption-text overlap.
+
+    The bug: swarmwrap.sty's parshape wrapping zone covers the figure
+    BOX height but not the figure CAPTION. When a paragraph break
+    occurs within the figure zone, the new paragraph starts at
+    full-width, extending through the caption text.
+
+    Detection: for each caption zone, find body text lines that:
+    1. Are NOT caption text themselves
+    2. Extend INTO the caption zone horizontally (x1 > caption_x0)
+    3. Have sufficient overlap area with the caption zone
+    """
+    issues = []
+    for caption_rect, fig_rect in caption_zones:
+        for line in text_lines:
+            # Skip caption text
+            if _is_caption_text(line["text"]):
+                continue
+            # Skip short lines (headers, footers)
+            if line["width"] < 150 or line["fontsize"] < 9.0:
+                continue
+            # Check vertical overlap with caption zone
+            vert_overlap = (line["rect"].y1 > caption_rect.y0 + 2) and (
+                line["rect"].y0 < caption_rect.y1 - 2
+            )
+            if not vert_overlap:
+                continue
+            # Check horizontal penetration into caption zone
+            penetration = line["rect"].x1 - caption_rect.x0
+            if penetration < 8.0:
+                continue
+            overlap_rect = line["rect"] & caption_rect
+            if overlap_rect.get_area() > tolerance:
+                issues.append({
+                    "page": page_num + 1,
+                    "desc": (
+                        f"  CAPTION TEXT OVERLAP page {page_num + 1}: "
+                        f"\"{line['text'][:40]}\" overlaps figure caption "
+                        f"(area: {overlap_rect.width:.0f}x{overlap_rect.height:.0f}pt, "
+                        f"penetration: {penetration:.0f}pt). "
+                        f"Caption zone: y={caption_rect.y0:.0f}-{caption_rect.y1:.0f}, "
+                        f"x={caption_rect.x0:.0f}-{caption_rect.x1:.0f}. "
+                        f"Figure box: y={fig_rect.y0:.0f}-{fig_rect.y1:.0f}"
+                    ),
+                })
+                break  # One report per caption zone
+    return issues
+
+
 def detect_overlaps(page_num, figures, text_lines, tolerance):
     """Detect text lines overlapping figure rectangles.
 
@@ -841,6 +929,7 @@ def analyze_pdf(pdf_path, args):
         "near_empty": [],
         "overlap": [],
         "caption_overlap": [],
+        "caption_text_overlap": [],
         "ghost_narrow": [],
         "extra_vspace": [],
         "hollow_carryover": [],
@@ -871,6 +960,11 @@ def analyze_pdf(pdf_path, args):
         fbt = detect_figure_beside_text(pn, figs, lines, args.min_adjacent_lines)
         ne = detect_near_empty_pages(pn, page, lines, args.empty_threshold)
         body_ol, caption_ol = detect_overlaps(pn, figs, lines, args.overlap_tolerance)
+        # v11: detect caption-text overlap (body text through caption zone)
+        cap_zones = get_figure_caption_zones(page, figs, lines)
+        cap_text_ol = detect_caption_text_overlap(
+            pn, cap_zones, lines, args.overlap_tolerance
+        )
         gn = detect_ghost_narrowing(pn, page, lines, figs)
         ev = detect_extra_vspace(pn, figs, lines, args.extra_vspace)
         hc = detect_hollow_carryover(pn, page, lines, figs)
@@ -882,6 +976,7 @@ def analyze_pdf(pdf_path, args):
         results["near_empty"].extend(ne)
         results["overlap"].extend(body_ol)
         results["caption_overlap"].extend(caption_ol)
+        results["caption_text_overlap"].extend(cap_text_ol)
         results["ghost_narrow"].extend(gn)
         results["extra_vspace"].extend(ev)
         results["hollow_carryover"].extend(hc)
@@ -895,6 +990,7 @@ def analyze_pdf(pdf_path, args):
                 "fbt": len(fbt),
                 "body_ol": len(body_ol),
                 "cap_ol": len(caption_ol),
+                "cap_text_ol": len(cap_text_ol),
                 "gn": len(gn),
                 "ev": len(ev),
                 "hc": len(hc),
@@ -925,8 +1021,8 @@ def analyze_pdf(pdf_path, args):
         ("FIGURE BESIDE TEXT", "figure_beside_text"),
         ("NEAR-EMPTY PAGES", "near_empty"),
         ("TEXT-FIGURE OVERLAP (body text)", "overlap"),
-            ("TEXT-FIGURE OVERLAP (caption)", "caption_overlap"),
         ("TEXT-FIGURE OVERLAP (caption)", "caption_overlap"),
+        ("CAPTION TEXT OVERLAP (body text through caption)", "caption_text_overlap"),
         ("GHOST NARROWING", "ghost_narrow"),
         ("EXTRA VSPACE", "extra_vspace"),
         ("HOLLOW CARRY-OVER", "hollow_carryover"),
@@ -950,6 +1046,7 @@ def analyze_pdf(pdf_path, args):
             ("FIGURE BESIDE TEXT (no wrapping)", "figure_beside_text"),
             ("TEXT-FIGURE OVERLAP (body text)", "overlap"),
             ("TEXT-FIGURE OVERLAP (caption)", "caption_overlap"),
+            ("CAPTION TEXT OVERLAP (body thru caption)", "caption_text_overlap"),
             ("GHOST NARROWING", "ghost_narrow"),
             ("HOLLOW CARRY-OVER", "hollow_carryover"),
             ("FIGURE MISALIGNED", "figure_misaligned"),
