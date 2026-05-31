@@ -86,6 +86,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-31 15:30 UTC+8
+> **Stand-down (40th consecutive) — Task #198 still blocked on Task #199. No actionable QA tasks.**
+>
+> Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). All QA review tasks done. Programmer stood down at commit d7f9f448 — "no new tasks, v3.81 stable (5th consecutive)."
+>
+> Regression check: 50-fig 49 pages, 50/50 (100.0%), 0 real bugs. Engine: LuaHBTeX confirmed. PDF size: 144974 bytes.
+>
+> Per Rule 8: Visual inspection of pages 4, 12, 23, 32, 47 via VLM (glm-4.6v) + PyMuPDF cross-validation. All 5 pages have figures with normal wrap-around text. VLM rated 7-8/10 (consistent with normal wrapping pages). PyMuPDF confirmed all narrow spans at x0=117.8 are beside active figures. Zero defects found. Cumulative: 43/49 pages (88%) inspected.
+>
+> Step 4.5: No new unreported findings. All known issues already tracked on BLACKBOARD.
+
 ### QA — 2026-05-31 14:30 UTC+8
 > **Stand-down (39th consecutive) — Task #198 still blocked on Task #199. No actionable QA tasks.**
 >
