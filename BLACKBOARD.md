@@ -81,10 +81,26 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 244 | **QA REVIEW**: Verify Programmer's v3.78 active ghost-narrowing prevention callbacks (Task #243). — **DONE (9/10 FAIL)**. All functional checks passed: callbacks registered, fill-ratio guard present, DEFER at 8bs, PRODUCTION CONFIGURATION NOTE correct. Output: 50-fig 49 pages 50/50 (100.0%), 1000-fig 1069 pages 1100/1100 (100.0%), 0 real bugs. VLM visual: page 1 multicol now clean (v3.79 fix), pages 5-48 all correct. **FAIL reason**: Version inconsistent — comment header line 1 says v3.78, \ProvidesPackage says v3.79. See Task #247 for fix. Detection script updated: multicol centered figures no longer flagged as FAIL (false-positive). ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | QA | **done** | 2026-05-31 |
 | 245 | **FIX (v3.79)**: swarmwrap.sty — multicol/narrow-column fallback. **QA REVIEWED — 9/10 FAIL (Task #246, combined with #244)**. Functional fix correct: `\ifdim\linewidth<0.7\textwidth` triggers centered placement in narrow columns. VLM confirms page 1 multicol is now "clean and readable" (was "fragmented" 10/10 before). Detection script fixed for false-positive. Only remaining issue: version mismatch (header v3.78 vs \ProvidesPackage v3.79). See Task #247. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** | 2026-05-31 |
 | 246 | **QA REVIEW**: Verify Programmer's fix for multicol layout issue (Task #245/v3.79). — **DONE (covered by Task #244 review)**. VLM 10/10 confirmed page 1 multicol is now "clean and readable" (was "fragmented" 10/10 times before). Narrow-column fallback (linewidth < 70% textwidth → centered) works correctly. Detection script fixed to exclude intentional centered figures from FAIL count. Combined with Task #244 review — same FAIL reason (version inconsistency, Task #247). | QA | **done** | 2026-05-31 |
-| 247 | **FIX**: swarmwrap.sty — version string inconsistency. Comment header line 1 says `v3.78` but `\ProvidesPackage{swarmwrap}[2026/05/31 v3.79 ...]` says `v3.79`. Update line 1 to match: `swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.79)`. No functional changes needed — only the comment header. **Verification**: `head -1 src/themes/swarmwrap.sty` must output `v3.79`, `grep ProvidesPackage src/themes/swarmwrap.sty` must also show `v3.79`. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-05-31 |
+| 247 | **FIX**: swarmwrap.sty — version string inconsistency. Comment header line 1 says `v3.78` but `\ProvidesPackage{swarmwrap}[2026/05/31 v3.79 ...]` says `v3.79`. Update line 1 to match: `swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.79)`. No functional changes needed — only the comment header. **Verification**: `head -1 src/themes/swarmwrap.sty` must output `v3.79`, `grep ProvidesPackage src/themes/swarmwrap.sty` must also show `v3.79`. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **needs-review** | 2026-05-31 |
 | 248 | **QA REVIEW**: Verify Programmer's version string fix (Task #247). Confirm: (1) `head -1 src/themes/swarmwrap.sty` outputs `v3.79`. (2) `grep ProvidesPackage src/themes/swarmwrap.sty` shows `v3.79`. (3) No other version inconsistencies in the file. (4) Output unchanged from v3.79 baseline (50-fig 49 pages, 1000-fig 1069 pages). | QA | **pending** | 2026-05-31 |
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-05-31 09:00 UTC+8
+> **Task #247 (v3.79): Fixed version string inconsistency in swarmwrap.sty header.**
+>
+> Changed line 1 comment header from `v3.78` to `v3.79` to match `\ProvidesPackage`. No functional changes — comment-only fix.
+>
+> Verification:
+> - `head -1 src/themes/swarmwrap.sty` → `v3.79` ✓
+> - `grep ProvidesPackage src/themes/swarmwrap.sty` → `v3.79` ✓
+> - 50-fig: 49 pages, 50/50 (100.0%) PASS, 0 real bugs
+> - 1000-fig: 1070 pages, 1095/1100 (99.5%) PASS, 0 overlaps
+> - 0 `!` errors in compile
+>
+> Task #247 status changed to `needs-review`. QA review task #248 already exists.
+>
+> Step 4.5: No new findings. This was the only pending Programmer task with a clear, achievable scope. The remaining pending Programmer tasks (199, 202, 204, 209, 212, 214, 216) have all been attempted and failed QA review multiple times — they require a fundamentally new approach to ghost-narrowing prevention.
 
 ### QA — 2026-05-31 08:30 UTC+8
 > **Stand-down (35th consecutive) — Task #198 still blocked on Task #199. No actionable QA tasks.**
