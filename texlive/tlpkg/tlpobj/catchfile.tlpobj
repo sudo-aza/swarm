@@ -1,0 +1,21 @@
+name catchfile
+category Package
+revision 77682
+shortdesc Catch an external file into a macro
+longdesc This package catches the contents of a file and puts it in a
+longdesc macro. It requires e-TeX. Both LaTeX and plain TeX are
+longdesc supported.
+containersize 2740
+containerchecksum 10c5d7ade4017e643c68cf84212ff0e1668262dfd79f8f2672bedd4c14119db83bf6a6920ba16e989c5b83a91ddb2ec743eae7904a5fd6cac793f68c5e73c6ce
+doccontainersize 297392
+doccontainerchecksum f2ae39dbc262138a8ba5e16146b21e1fe44842d0b3d5b4dfb84d41b633cb862552fbb8e53260c1e3175c5a140f6c3a2321f43a6a6e91cf55915f6bdb71f71186
+srccontainersize 6168
+srccontainerchecksum d44227b510c3789953a831a00e9b9a0209bfe3c5f0d8d468b3dc6c28fba947e2aece237dd776c3137a4404afdd50263688abcc0611e54c0cc5116552556fdf00
+runfiles size=3
+ texmf-dist/tex/generic/catchfile/catchfile.sty
+catalogue-contact-bugs https://github.com/ho-tex/catchfile/issues
+catalogue-contact-repository https://github.com/ho-tex/catchfile
+catalogue-ctan /macros/latex/contrib/catchfile
+catalogue-license lppl1.3
+catalogue-topics macro-supp tagged-pdf
+catalogue-version 1.8

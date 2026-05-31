@@ -1,0 +1,23 @@
+name paracol
+category Package
+revision 77682
+shortdesc Multiple columns with texts "in parallel"
+longdesc The package provides yet another multi-column typesetting
+longdesc mechanism by which you produce multi-column (e.g., bilingual)
+longdesc document switching and synchronizing each corresponding part in
+longdesc "parallel".
+containersize 19536
+containerchecksum 524171a31a8ec56bf75658eee47a23894212d5ff05d683851c1e0c9891923be8239527b23b8837c61fe33652e7770aacfa44ce4f6d5ca08dabe28b17b35baa1a
+doccontainersize 2466588
+doccontainerchecksum 4da06bbebe89d561041748ae8ab9f7863dee2e3c07349b4db3f8aac975265475e4a2b81a4c9d1890e94423722eb055010ae87d33f53d1d7ad6de8d9b7cab1e45
+srccontainersize 211620
+srccontainerchecksum 0e3786a5989faa7227235aa13e7dcb63bbd8b96fcd5208cb0fd2831806b8fb6ebffdaa87633db4429ad0a660c5d424b3f1e96a1ca9e6044806a0fce5711d3d7f
+runfiles size=53
+ texmf-dist/tex/latex/paracol/paracol-2018-12-31.sty
+ texmf-dist/tex/latex/paracol/paracol.sty
+catalogue-also parallel parcolumns
+catalogue-contact-repository https://codeberg.org/mgkurtz/paracol
+catalogue-ctan /macros/latex/contrib/paracol
+catalogue-license lppl
+catalogue-topics parallel linguistic tagged-pdf-incompatible
+catalogue-version 1.37

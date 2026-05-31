@@ -1,0 +1,8 @@
+name minted.x86_64-linux
+category Package
+revision 72375
+shortdesc x86_64-linux files of minted
+containersize 340
+containerchecksum 25a7fdd0f15ffa9d1cc8a7af6c54ee11892f0f47032224277983988a0f2f5f000e3a271f0512b59130fc8513adb3cbd366fcae071659c4a475783a13bca4f527
+binfiles arch=x86_64-linux size=1
+ bin/x86_64-linux/latexminted

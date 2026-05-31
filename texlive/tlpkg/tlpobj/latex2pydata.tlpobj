@@ -1,0 +1,24 @@
+name latex2pydata
+category Package
+revision 78166
+shortdesc Write data to file in Python literal format
+longdesc This package writes data to file using Python literal syntax.
+longdesc The data may be loaded safely in Python using the
+longdesc ast.literal_eval() function or the latex2pydata Python package.
+longdesc The data can also be hashed within LaTeX (mdfivesum) so that it
+longdesc is possible to check for the existence of external cached
+longdesc content generated with the data.
+containersize 3956
+containerchecksum 0036ab313704873ad0ecb17f5a13a5adc2c289688ded1993bc8486aa96fc0dcc3e4ed2b7f199fb632a703cada0e6dcfee21041fb9399f843652709db104cfe31
+doccontainersize 317712
+doccontainerchecksum fd1955a2bb773fb1159841e72be1cccbe5b147f389bd1db5ff75fd8dfff1462b0741bd5c365e51f06fc857d157da52e09806f63154fbe1cc833ba4c7673daae2
+srccontainersize 13292
+srccontainerchecksum 2562dc53c4220908b83ffc355d502309a1cdaf864b1008c28d6dff08725aff05f5c45defb240589d9e86ae2600b96cdf062ff196f8cc5e57bd7e2aeed283e9a2
+runfiles size=5
+ texmf-dist/tex/latex/latex2pydata/latex2pydata.sty
+catalogue-contact-bugs https://github.com/gpoore/latex2pydata/issues
+catalogue-contact-repository https://github.com/gpoore/latex2pydata
+catalogue-ctan /macros/latex/contrib/latex2pydata
+catalogue-license lppl1.3c
+catalogue-topics data-manip tagged-pdf
+catalogue-version 0.7.0

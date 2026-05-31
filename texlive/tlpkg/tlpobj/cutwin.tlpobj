@@ -1,0 +1,22 @@
+name cutwin
+category Package
+revision 77682
+shortdesc Cut a window in a paragraph, typeset material in it
+longdesc The package provides facilities to cut windows out of
+longdesc paragraphs, and to typeset text or other material in the
+longdesc window. The window may be rectangular, or may have other sorts
+longdesc of shape.
+containersize 2856
+containerchecksum 63fb6f5fc0fcf6c362699cf5e6d258a66846e34756c7bf5674629e9cd3e79167348b0b89dc799b5b30d85bddb7e9e9c46e6ebafbe44edaac1bc715da8f0fbecc
+doccontainersize 334220
+doccontainerchecksum cfe59acd0c40cda410bf44dcaca16af204d66159b982ae1b39b3432c476f469d0879fdf77a3f19c82daba45538518a396176c89c824026ebe2a69d8100e27790
+srccontainersize 9420
+srccontainerchecksum a41f33ce801509930b9abfc4e4784f5794beba22a41271b20fe89331c58364b3fb597605ff5f9db5ced5435e41227a79e250683cba7f147909e206c905369f88
+runfiles size=3
+ texmf-dist/tex/latex/cutwin/cutwin.sty
+catalogue-contact-bugs https://github.com/LaTeX-Package-Repositories/cutwin/issues
+catalogue-contact-repository https://github.com/LaTeX-Package-Repositories/cutwin
+catalogue-ctan /macros/latex/contrib/cutwin
+catalogue-license lppl1.3
+catalogue-topics text-flow tagged-pdf-incompatible
+catalogue-version 0.2

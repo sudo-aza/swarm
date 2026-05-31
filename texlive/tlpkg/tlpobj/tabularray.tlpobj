@@ -1,0 +1,29 @@
+name tabularray
+category Package
+revision 78251
+shortdesc Typeset tabulars and arrays with LaTeX3
+longdesc LaTeX tables are implemented using TeX commands such as
+longdesc \halign, \noalign, \span, and \omit. In order to implement new
+longdesc features, many macro packages have modified the inner table
+longdesc commands inside LaTeX. This makes package code complicated,
+longdesc difficult to maintain, and often conflicts with each other. At
+longdesc present, the LaTeX3 programming layer is basically mature. This
+longdesc tabularray package will discard the old \halign commands and
+longdesc directly use LaTeX3 functions to parse the table, and then
+longdesc typeset the entire table. Under the premise of being compatible
+longdesc with the basic syntax of LaTeX2 tables, this macro package will
+longdesc completely separate the content and style of the table, and the
+longdesc style of the table can be completely set in keyval way.
+depend ninecolors
+containersize 49772
+containerchecksum e5a43ee0bc74212539547282534f9a5a442c0bd68ab01082a350d9c82e6ff7bd5a20cb120d48f5267e03aa075b20b650a3df29dadec3825f2ed19cf1cf7f7883
+doccontainersize 775492
+doccontainerchecksum c0e0fa276bd456cff4e51f813e76eeb488262ba4d0dc05c1e92333466a08b16ea7abe6c7a2822153db95a2e5dce047bc810f372e32b4fe09ddcfab401a12eef0
+runfiles size=194
+ texmf-dist/tex/latex/tabularray/tabularray-2021.sty
+ texmf-dist/tex/latex/tabularray/tabularray-2024.sty
+ texmf-dist/tex/latex/tabularray/tabularray.sty
+catalogue-ctan /macros/latex/contrib/tabularray
+catalogue-license lppl1.3c
+catalogue-topics table table-long tagged-pdf-incompatible
+catalogue-version 2025C

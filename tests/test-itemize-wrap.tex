@@ -1,0 +1,54 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage{swarmwrap}
+
+\begin{document}
+
+\section{Test 1: Figure before itemize (4cmx4cm)}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{4cm}
+    \centering
+    \textcolor{green!30}{\rule{\linewidth}{4cm}}
+    \captionof{figure}{Fig 1 (4cmx4cm before itemize)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\begin{itemize}
+  \item \lipsum[1][1-3]
+  \item \lipsum[2][1-3]
+  \item \lipsum[3][1-3]
+  \item \lipsum[4][1-3]
+  \item \lipsum[5][1-3]
+\end{itemize}
+
+\newpage
+\section{Test 2: Figure before itemize (3cmx3cm)}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \textcolor{green!30}{\rule{\linewidth}{3cm}}
+    \captionof{figure}{Fig 2 (3cmx3cm before itemize)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\begin{itemize}
+  \item \lipsum[1][1-3]
+  \item \lipsum[2][1-3]
+  \item \lipsum[3][1-3]
+\end{itemize}
+
+\newpage
+\section{Test 3: Normal wrap (no itemize, 4cmx4cm)}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{4cm}
+    \centering
+    \textcolor{green!30}{\rule{\linewidth}{4cm}}
+    \captionof{figure}{Fig 3 (normal wrap, no itemize)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext\lipsum[1]\lipsum[2]\lipsum[3]\lipsum[4]\lipsum[5]
+
+\end{document}

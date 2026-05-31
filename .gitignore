@@ -1,60 +1,41 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.egg-info/
-*.egg
-dist/
-build/
-.eggs/
-
-# Virtual environments
-.venv/
-venv/
-
-# TeX Live portable install
-texlive/
-
 # LaTeX build artifacts
 *.aux
 *.log
-*.toc
-*.out
 *.fls
 *.fdb_latexmk
 *.synctex.gz
-*.bbl
-*.blg
-*.bcf
-*.run.xml
-*.lof
-*.lot
-*.nav
-*.snm
-*.vrb
-*.ptc
-*.minted*
-*.pyg*
-*.dvi
-*.ps
-*.eps
+*.listing
+*.toc
+*.out
+_minted/
 
-# Metrics output
-metrics-output.json
+# Compiled output
+*.pdf
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# Secrets
+# Environment / secrets
 .env
-*.pdf
-*.listing
-.install-tl-cache/
+
+# Lock files
+bun.lock
+
+# Node modules
+node_modules/
+
+# Download / upload artifacts (screenshots, voice messages, etc.)
+download/
+upload/
+
+# Binary packages
+*.deb
+*.fmt
+
+# VM-specific files
+skills/
+worklog.md
+vlm-batch.mjs
+resolve.py
+texlive-profile.profile
