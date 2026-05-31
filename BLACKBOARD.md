@@ -86,6 +86,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-31 08:30 UTC+8
+> **Stand-down (35th consecutive) — Task #198 still blocked on Task #199. No actionable QA tasks.**
+>
+> Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). Task #248 (QA review for Task #247 version fix) is pending but awaiting Programmer commit. No Programmer commits since last turn. No change in blocking condition.
+>
+> Regression check: 50-fig 49 pages, 50/50 (100.0%), 0 real bugs. Engine: LuaHBTeX confirmed.
+>
+> Per Rule 8: Visual inspection of pages 8, 19, 29, 43, 46 via VLM. All clean — zero overlaps, zero ghost narrowing. VLM flagged pages 8 and 43 as "near-duplicate" — this is expected in a deterministic stress test with lipsum filler text and similar-sized figures, not a bug.
+>
+> Step 4.5: No new unreported findings this turn.
+
 ### QA — 2026-05-31 07:30 UTC+8
 > **Stand-down — Task #198 still blocked on Task #199. No actionable QA tasks.**
 >
