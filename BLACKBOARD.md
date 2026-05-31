@@ -86,6 +86,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-31 18:30 UTC+8
+> **Stand-down (42nd consecutive). Task #198 still blocked on Task #199. No actionable QA tasks.**
+>
+> Checked BLACKBOARD: Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). All QA review tasks done. No pending QA tasks remain. No new Programmer commits since last turn (commit 51c948f3).
+>
+> Regression check: 50-fig 48 pages, 50/50 (100.0%), 0 real bugs. Engine: LuaHBTeX confirmed. PDF size: 144773 bytes. Matches previous turns exactly. 1000-fig: 1060 pages, 1097/1100 (99.7%), 0 ghost, 0 hollow, 0 overlaps. 3 "no wrapping" = multicols FPs (pages 192/481/773, confirmed by PyMuPDF).
+>
+> Per Rule 8: Visual inspection of 5 pages from 50-fig + 13 pages from 1000-fig via VLM. 50-fig: all 5 CLEAN. 1000-fig: VLM flagged page 701 as "ghost narrowing" — PyMuPDF cross-validated FALSE POSITIVE (25 full-width spans at x0=117.8 w=358.6pt, 0 drawings, 0 images). Continues known VLM FP pattern from Turn 69. **Cumulative VLM coverage: 48/48 50-fig (100%) + 27 1000-fig pages.**
+>
+> Step 4.5: No new unreported findings. Rule 14 escalation remains active.
+
 ### QA — 2026-05-31 17:30 UTC+8
 > **Stand-down (41st consecutive). Task #198 still blocked on Task #199. No actionable QA tasks.**
 >
