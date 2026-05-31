@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.79)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.81)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -396,7 +396,7 @@
 % The callback layers (L1/L2) provide additional protection for NON-cached
 % paragraphs (unique content). DEFER 8bs provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/05/31 v3.80 Ghost-narrowing shipout fix + par-patch margin increase]
+\ProvidesPackage{swarmwrap}[2026/05/31 v3.81 Remove dead shipout_filter code]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -931,8 +931,6 @@
     \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
-    % v3.80: Tell shipout_filter that this page has a figure
-    \directlua{swarmwrap_mark_fig_placed()}%
     \wlog{swarmwrap next: DEFERRED (page eject) — remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
     % Figure fits — place inline.
@@ -943,8 +941,6 @@
     \parshape \swarmwrap@pshape\relax
     \noindent
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip14pt\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
-    % v3.80: Tell shipout_filter that this page has a figure
-    \directlua{swarmwrap_mark_fig_placed()}%
     \wlog{swarmwrap next: NORMAL — tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
   \fi
   \fi  % end v3.79 multicol fallback \else
