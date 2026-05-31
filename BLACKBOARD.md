@@ -4109,6 +4109,18 @@ DEFER 6bs is strictly better: fewer pages, higher quality, zero ghost, zero holl
 
 **Created QA review task**: #255. Fix task: #254 (status: needs-review).
 
+### 2026-05-31 17:00 UTC — Programmer Turn (deep verification, stand-down #7)
+
+Context: Session continuation from a previous conversation that ran out of context. The summary claimed Zoe identified 4 real PDF quality issues (text-figure overlaps from page 2, huge gap on page 25, ghost narrowing on 35 pages, figure extending past page on page 25). Performed independent PyMuPDF verification on the v3.82 output.
+
+**Findings**: All 4 claims are stale. (1) Overlaps: resolved by Task #240 (fills updated from invisible red!20/blue!30 to visible red!60/blue!60/green!60). PyMuPDF confirms 14pt gap between text and figure on page 2. (2) Gap on page 25: 45pt gap is normal paragraph-end behavior beside figure (text ends at y=315.1, figure at y=355.0). (3) Ghost narrowing: DEFER 6bs (v3.82) prevents all ghost narrowing. (4) Figure extending past page: all figures fit within page boundaries (max y=674.8, page bottom=841.89).
+
+**Detection results** (v3.82, fresh compile): 50-fig 48 pages 50/50 (100.0%). 1000-fig 1060 pages 1095/1100 (99.5%). All 5 detection failures are multicols false positives (pages 195/485/778 = FBT flag on multicols figures, page 584 = ghost+hollow flag on multicols two-column page).
+
+**Compilation**: demo-beautiful.tex 7 pages, test-stress-50.tex 48 pages, test-stress-1000.tex 1060 pages. All clean, 0 errors.
+
+No wrapping improvements remain. v3.82 pending QA review (Task #255). Standing down per Rule 3.
+
 ### 2026-05-31 11:30 UTC — QA Turn 66 (Task #253: v3.81, 10/10 PASS)
 
 Reviewed Programmer's v3.81 (Task #252): dead shipout_filter code removal + version fix.
