@@ -17,59 +17,75 @@
 %
 % ONE environment. No extra commands.
 
-\ProvidesPackage{simple-wrap}[2026/05/31 v0.3]
+\ProvidesPackage{simple-wrap}[2026/05/31 v0.6]
 \RequirePackage{graphicx}
 
 % ─── Internal state ──────────────────────────────────────────────
 
-\newbox\swrap@box          % holds the captured figure
+\newsavebox{\swrap@box}
 \newdimen\swrap@fw         % figure width
 \newdimen\swrap@fh         % figure height (ht + dp)
 \newdimen\swrap@tw         % text width beside figure
-\newcount\swrap@nl         % narrow lines remaining in current parshape
+\newcount\swrap@nl         % narrow lines for parshape
 \newcount\swrap@figpage    % page number where figure was placed
-\newif\ifswrap@active      % is wrapping currently active?
+\newif\ifswrap@active
+\newif\ifswrap@neednewpage
 
-\let\swrap@origpar\par    % save original \par
+\let\swrap@origpar\par
 
-% ─── \begin{simplewrap}...\end{simplewrap} ──────────────────────
-% Begin: start capturing figure content into a box.
-% End: measure it, check page space, place figure, set parshape.
+% ─── Environment ─────────────────────────────────────────────────
+% ARCHITECTURE (v0.6):
+% \parshape is LOCAL to the current TeX group. \newenvironment's
+% implicit \begingroup/\endgroup kills it. Previous attempts with
+% \aftergroup partially worked but had ~7-35pt discrepancy between
+% the parshape spec and actual text width.
+%
+% ROOT CAUSE of discrepancy: \noindent inside \swrap@setup starts
+% a paragraph in horizontal mode. The paragraph uses parshape, but
+% the \smash{\rlap{...}} box (zero width) occupies the line-start.
+% When TeX breaks lines, it counts the \noindent line as line 1 of
+% the parshape, consuming one narrow entry. The user's text starts
+% on line 1 (same line, after the zero-width box) and overflows the
+% parshape width because TeX already allocated space for the \noindent.
+%
+% FIX (v0.6): Don't start a paragraph in \swrap@setup. Instead:
+% 1. Place the figure in vertical mode using \rlap overlay at
+%    the top of the page, BEFORE any paragraph starts.
+% 2. Set parshape for the NEXT paragraph.
+% 3. Let the user's text naturally start the paragraph, which
+%    picks up the parshape.
+% 4. Use \leavevmode\vadjust to place the figure box at the
+%    current vertical position without starting horizontal mode.
 
 \newenvironment{simplewrap}{%
-  \global\setbox\swrap@box=\vbox\bgroup
-  \hsize=4cm\relax        % default figure width, user can override
-  \centering
+  \begin{lrbox}{\swrap@box}%
 }{%
-  \egroup
+  \end{lrbox}%
+  \global\setbox\swrap@box=\box\swrap@box
   % ── Measure the captured figure ─────────────────────────────────
   \swrap@fw=\wd\swrap@box
-  % BUG FIX: Cap figure width at linewidth so it never extends past
-  % the right page boundary.
+  % Cap figure width at linewidth to prevent overflow.
   \ifdim\swrap@fw>\linewidth\relax
     \swrap@fw=\linewidth\relax
   \fi
   \swrap@fh=\ht\swrap@box
   \advance\swrap@fh by \dp\swrap@box
-  % BUG FIX: Add 1*baselineskip padding to figure height for parshape
-  % line count. Without this, the last narrow line's baseline sits
-  % right at the figure bottom, allowing text to visually extend
-  % into the figure zone. The extra baselineskip gives clearance.
   \advance\swrap@fh by 1\baselineskip
   %
   % ── Clean up any previous wrapping ──────────────────────────────
   \swrap@activefalse
-  \let\par\swrap@origpar
+  \global\let\par\swrap@origpar
   \parshape=0\relax
+  \swrap@neednewpagefalse
   %
   % ── Compute text width (page width minus figure minus gap) ───────
   \swrap@tw=\linewidth
   \advance\swrap@tw by -\swrap@fw
-  \advance\swrap@tw by -10pt   % gap between text and figure
-  % Clamp: if figure is too wide, text width goes to zero
+  \advance\swrap@tw by -20pt   % gap between text and figure
   \ifdim\swrap@tw<0pt\relax
     \swrap@tw=0pt\relax
   \fi
+  \xdef\swrap@tw@val{\the\swrap@tw}%  % survive group boundary
   %
   % ── How many narrow lines fit beside the figure? ────────────────
   \swrap@nl=0
@@ -79,30 +95,19 @@
     \advance\swrap@nl by 1
   \ifdim\dimen0>0pt \repeat
   %
-  % ── Newpage detection: does it fit on current page? ──────────────
+  % ── Newpage detection ──────────────────────────────────────────
   \dimen0=\pagegoal
   \advance\dimen0 by -\pagetotal
   \dimen1=\swrap@nl\baselineskip
-  \advance\dimen1 by 2\baselineskip  % 2-line safety margin
-  %
+  \advance\dimen1 by 2\baselineskip
   \ifdim\dimen0<\dimen1
-    % ── NOT ENOUGH SPACE — eject to new page ─────────────────────
-    \newpage
+    \global\swrap@neednewpagetrue
   \fi
   %
-  % ── Record figure page and place it ────────────────────────────
+  % ── Record figure page ────────────────────────────────────────
   \global\swrap@figpage=\c@page
-  \noindent
-  \smash{%
-    \rlap{%
-      \hskip\swrap@tw
-      \hskip10pt
-      \raise\dimexpr\ht\strutbox-\ht\swrap@box\relax
-      \hbox{\copy\swrap@box}%
-    }%
-  }%
   %
-  % ── Build parshape: nl narrow lines + 1 trailing full-width ──────
+  % ── Build parshape string (global via \xdef) ──────────────────
   \xdef\swrap@pshape{\the\numexpr\swrap@nl+1\relax\space}%
   \newcount\swrap@tmp
   \swrap@tmp=0
@@ -111,19 +116,51 @@
     \advance\swrap@tmp by 1
   \ifnum\swrap@tmp<\swrap@nl \repeat
   \xdef\swrap@pshape{\swrap@pshape 0pt \linewidth\space}%
-  \parshape\swrap@pshape\relax
   %
-  % ── Activate wrapping ─────────────────────────────────────────
+  % ── Push setup outside the group via \aftergroup ────────────
+  \aftergroup\swrap@setup
+}
+
+% ─── Setup: figure placement + parshape + activation ──────────────
+% Runs in document body scope (after \endgroup).
+% KEY CHANGE (v0.6): Place figure using \vadjust, NOT \noindent.
+% \vadjust inserts vertical material at the current line's top
+% without starting a paragraph. The figure appears at the right
+% margin, and the user's text starts a NEW paragraph that picks
+% up the parshape.
+\def\swrap@setup{%
+  \ifswrap@neednewpage
+    \newpage
+    \global\swrap@neednewpagefalse
+    \global\swrap@figpage=\c@page
+  \fi
+  % Set parshape BEFORE any paragraph starts.
+  \parshape\swrap@pshape\relax
+  % Activate wrapping.
   \swrap@activetrue
   \emergencystretch=\fontdimen6\font\relax
   \let\par\swrap@patchedpar
+  % Place figure at the right margin.
+  % Use \smash{\llap{...}} which works in vertical mode:
+  % it produces a zero-height, zero-width box that overlays
+  % the figure at the right margin position.
+  \smash{%
+    \llap{%
+      \vbox to 0pt{%
+        \offinterlineskip
+        \rlap{%
+          \hskip\swrap@tw@val
+          \hskip20pt
+          \raise\dimexpr\ht\strutbox-\ht\swrap@box\relax
+          \hbox{\copy\swrap@box}%
+        }%
+        \vss
+      }%
+    }%
+  }%
 }
 
 % ─── Patched \par — stops wrapping when done ─────────────────────
-% After each paragraph break, check if we should deactivate:
-%   a) crossed to a new page → figure is behind us
-%   b) ran out of narrow lines → passed the figure
-
 \def\swrap@patchedpar{%
   \ifswrap@active
     \ifnum\c@page>\swrap@figpage\relax
