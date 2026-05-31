@@ -86,6 +86,24 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-05-31 16:30 UTC+8
+> **Task #255: v3.82 DEFER 6bs optimization — 10/10 PASS.**
+>
+> Reviewed Programmer's Task #254 (v3.82 DEFER 8bs→6bs). All Programmer claims independently verified:
+>
+> **50-fig**: 48 pages, 50/50 (100.0%) PASS, 0 real bugs. Engine: LuaHBTeX confirmed.
+> **1000-fig**: 1060 pages, 1097/1100 (99.7%) PASS, 0 ghost, 0 hollow, 0 overlaps. 3 "no wrapping" (pages 192/481/773) = known multicols FP. 1 near-empty (page 241) = acceptable.
+>
+> Version consistent: header v3.82, ProvidesPackage v3.82. DEFER line 909 confirmed 6\baselineskip.
+> PyMuPDF cross-validation (Rule 12): 0 ghost narrowing pages in both 50-fig and 1000-fig.
+> VLM visual inspection (Rule 6): 14 pages (7 from 50-fig: 1/5/12/24/35/47/48, 7 from 1000-fig: 100/200/350/500/700/900/1060) — all 14 rated CLEAN.
+>
+> Strict improvement over v3.81 (DEFER 8bs): -6 pages (-0.6%), +2 quality (1095→1097), ghost 1→0, hollow 1→0.
+>
+> **Rating 10/10**: All verification items passed. No regressions. Clean compile. Genuine quality improvement.
+>
+> QA review task: #255 (done). Fix task: #254 (done after QA approval). Task #198 (final sign-off) still blocked on #199.
+
 ### QA — 2026-05-31 15:30 UTC+8
 > **Stand-down (40th consecutive) — Task #198 still blocked on Task #199. No actionable QA tasks.**
 >
@@ -4063,8 +4081,33 @@ Actions taken:
 | 252 | **FIX (DONE)**: swarmwrap.sty v3.81 — address QA Task #251 feedback (7/10 FAIL on v3.80). **QA REVIEWED (Task #253, 10/10 PASS).** All 3 items addressed: (1) Version consistency fixed — header v3.81, ProvidesPackage v3.81. (2) Dead shipout_filter code removed — ~96 lines deleted from .lua (swarmwrap_ghost_fix, fig_pages, mark_fig_placed, has_figure_rule, glyph_id, ghost_fix_count, shipout_filter registration). (3) Commit message accurate. Two dead `\directlua{swarmwrap_mark_fig_placed()}` calls removed from .sty (deferred + inline paths). Output identical to v3.80: 49 pages, 144974 bytes, 50/50 (100.0%), 0 real bugs. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** | 2026-05-31 |
 
 | 253 | **QA REVIEWED PASS (Turn 66, 10/10).** v3.81 dead shipout_filter removal + version fix verified. All 6 verification items passed: (1) `head -1` outputs v3.81 ✓. (2) `grep ProvidesPackage` shows v3.81 ✓ — version consistent. (3) `grep swarmwrap_mark_fig_placed` returns 0 matches in .sty ✓. (4) `grep shipout` in .lua returns only 2 comment references (changelog), no executable code ✓. (5) Compile: LuaHBTeX confirmed, 49 pages, 144974 bytes, 0 errors, 0 luatexbase Error, 0 GHOST-FIX messages ✓. (6) Detection: 50/50 (100.0%) PASS, 0 real bugs, 0 acceptable ✓. Output identical to v3.80 QA baseline. Lua file: 298 lines (was 394, removed 96 — Programmer journal said 286/395/109, minor miscount). Note: `grep ghost` in .lua returns 8 matches (all comments — changelog + active NEEDSPACE descriptions), not 0 as Programmer claimed. No functional impact. PyMuPDF span-width spot check: pages 1/24/48/49 all consistent with expected wrapping behavior. **Rating 10/10**: all 3 QA Task #251 issues addressed, version consistent, dead code removed, no regressions, clean compile. | QA | **done** | 2026-05-31 |
+| 254 | **FIX (DONE)**: swarmwrap.sty v3.82 — reduce DEFER margin from 8bs to 6bs for page count optimization. **QA REVIEWED (Task #255, 10/10 PASS, Turn 70).** All Programmer claims independently verified: 50-fig 48 pages 50/50 (100.0%), 1000-fig 1060 pages 1097/1100 (99.7%), 0 ghost, 0 hollow, 0 overlaps. Version consistent v3.82. DEFER line 909 confirmed 6\baselineskip. PyMuPDF cross-validation: 0 ghost narrowing pages. VLM: 14/14 pages CLEAN. Strict improvement over v3.81 (DEFER 8bs): -6 pages, +2 quality, -1 ghost, -1 hollow. 3 "no wrapping" (pages 192/481/773) = known multicols FP. 1 near-empty (page 241) = acceptable. ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** | 2026-05-31 |
+| 255 | **QA REVIEWED PASS (Turn 70, 10/10).** v3.82 DEFER 6bs optimization verified. All 6 verification items passed: (1) `head -1` outputs v3.82 ✓. (2) `grep ProvidesPackage` shows v3.82 ✓ — version consistent. (3) DEFER line 909 confirmed `6\baselineskip` ✓. (4) Compile: LuaHBTeX confirmed, 50-fig 48 pages 144773 bytes, 1000-fig 1060 pages 2981457 bytes, 0 errors ✓. (5) Detection: 50/50 (100.0%) PASS, 1000-fig 1097/1100 (99.7%) PASS, 0 ghost, 0 hollow, 0 overlaps ✓. (6) PyMuPDF cross-validation (Rule 12): 0 ghost narrowing pages in both PDFs. VLM visual inspection (Rule 6): 14 pages (7 from 50-fig, 7 from 1000-fig) all CLEAN. Strict improvement over v3.81 DEFER 8bs: -6 pages, +2 quality score, ghost 1→0, hollow 1→0. — Original: **QA REVIEW**: Verify Programmer's v3.82 DEFER 6bs optimization (Task #254). | QA | **done** | 2026-05-31 |
 
 ## COMMUNICATION LOG
+
+### 2026-05-31 16:00 UTC — Programmer Turn (Task #254: v3.82 DEFER 8bs→6bs)
+
+Investigated DEFER margin optimization. Previous versions tested DEFER 5bs (ghost returns), 8bs (0 ghost but +56 pages), 12bs (same as 8bs). No intermediate values tested. Hypothesis: DEFER 8bs was over-deferring — the extra 2bs margin beyond what's needed was causing unnecessary page ejects, which paradoxically introduced 1 ghost + 1 hollow at 1000-fig scale (page count shift relocated figures into problematic page patterns).
+
+**Changes**: DEFER margin 8bs→6bs (line 909). Version v3.81→v3.82.
+
+**Results**:
+| Metric | v3.81 (8bs) | v3.82 (6bs) | Change |
+|--------|------------|------------|--------|
+| 50-fig pages | 49 | 48 | -1 |
+| 50-fig quality | 50/50 (100.0%) | 50/50 (100.0%) | Same |
+| 1000-fig pages | 1066 | 1060 | -6 |
+| 1000-fig quality | 1095/1100 (99.5%) | 1097/1100 (99.7%) | +2 |
+| Ghost narrowing | 1 | 0 | -1 |
+| Hollow carry-over | 1 | 0 | -1 |
+| Body-text overlap | 0 | 0 | Same |
+
+DEFER 6bs is strictly better: fewer pages, higher quality, zero ghost, zero hollow.
+
+**PyMuPDF verification**: 0 ghost-narrowing pages in both 50-fig (1 FP is figure page with all-narrow text) and 1000-fig (1 FP is section break page with short text).
+
+**Created QA review task**: #255. Fix task: #254 (status: needs-review).
 
 ### 2026-05-31 11:30 UTC — QA Turn 66 (Task #253: v3.81, 10/10 PASS)
 
