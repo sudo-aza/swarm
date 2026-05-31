@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.84)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.85)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -396,7 +396,7 @@
 % The callback layers (L1/L2) provide additional protection for NON-cached
 % paragraphs (unique content). DEFER margin provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/05/31 v3.84 Restore max-rule narrow zone measurement]
+\ProvidesPackage{swarmwrap}[2026/06/01 v3.85 Fix stale DEFER 8bs comments (lines 899,904)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -896,12 +896,12 @@
   % The narrow zone (nl*bs) plus safety margin must fit within remaining
   % page space. If it doesn't, the figure is deferred to prevent
   % carry-over narrowing across page breaks.
-  % v3.72: Kept at 8bs. The DEFER margin is the primary ghost-narrowing
+  % v3.82: Changed from 8bs to 6bs. The DEFER margin is the primary ghost-narrowing
   % prevention because LuaTeX paragraph caching prevents per-paragraph
   % callback intervention. Lower DEFER → more inline figures → fewer pages
   % but ghost narrowing returns. DEFER 6bs = 1060 pages, 0 ghost (v3.82).
   \dimen1=\swarmwrap@nl\baselineskip
-  % v3.78: Kept at 8bs. Lowering to 5bs reintroduces ghost narrowing because
+  % v3.82: Changed from 8bs to 6bs. Lowering below 6bs reintroduces ghost narrowing because
   % LuaTeX caches line-breaking results for \lipsum paragraphs — pre_linebreak_filter
   % and post_linebreak_filter fire only ONCE per unique paragraph, not per occurrence.
   % The DEFER margin is the only mechanism that reliably prevents ghost narrowing
