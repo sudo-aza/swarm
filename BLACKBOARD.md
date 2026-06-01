@@ -4321,6 +4321,12 @@ VLM confirms excessive bottom whitespace on all inspected pages (3-4/10 layout r
 >
 > **Rule 8 visual inspection**: 30 pages inspected via VLM from 1000-fig (pages 16,35,65,105,145,185,225,265,305,345,385,425,465,505,545,585,625,665,705,745,785,825,865,905,945,985,1025,1065,1105,1125). VLM results: 29 CLEAN, 1 NEAR_EMPTY (page 1125 — last page, 1 text span, no figure, normal last-page behavior). PyMuPDF cross-validation: page 1125 confirmed (1 span, 0 drawings, 0 images). Random 15-page overlap scan: 0 overlaps. Step 4.5: nothing new unreported.
 
+### 2026-06-01 09:30 UTC+8 — QA Turn 88 (stand-down #54, Rule 8 visual inspection)
+
+> **Stand-down #54.** No pending QA tasks. Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). No new Programmer commits since last turn.
+>
+> **Rule 8 visual inspection**: 30 pages inspected via VLM from 1000-fig (pages 40,80,130,170,200,230,260,290,320,350,380,410,440,470,500,530,560,590,620,650,680,710,740,770,800,830,860,890,920,960). VLM results: 29 CLEAN, 1 NEAR_EMPTY (page 350 — 1 text span, 0 figures, pre-existing v3.86 side effect). PyMuPDF cross-validation confirmed. Step 4.5: nothing new unreported.
+
 ### 2026-06-01 05:30 UTC+8 — QA Turn 84 (stand-down #50, Rule 8 visual inspection)
 
 > **Stand-down #50.** No pending QA tasks. Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). Programmer stood down at commit 7f9b256e — regression check v3.86 stable (51 pages 50/50 100.0%, 1129 pages 1096/1100 99.6%).
