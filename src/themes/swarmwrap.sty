@@ -396,7 +396,7 @@
 % The callback layers (L1/L2) provide additional protection for NON-cached
 % paragraphs (unique content). DEFER margin provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/06/02 v3.90 Revert caption zone to v3.86 TeX computation (Task \#274)]
+\ProvidesPackage{swarmwrap}[2026/06/02 v3.91 Task #274 investigation: caption zone over-extension inherent, cannot reduce (Task #274)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -875,6 +875,11 @@
   % height (fh_narrow) to estimate caption zone. fh@val includes
   % box.h+box.d+bs (full minipage content). fh_narrow includes
   % max_rule+bs (just the rule). The difference is the caption zone.
+  % Node-level measurement (LuaTeX API, Task #274) confirmed that
+  % box.h+d - max_rule_h is already the precise caption zone — no
+  % strut/padding inflation exists. The over-extension (~1.5 lines) is
+  % inherent to the ceiling approach and cannot be reduced without
+  % causing caption-text overlap regression (v3.91 investigation).
   \swarmwrap@fh=\swarmwrap@fh@val\relax
   \advance\swarmwrap@fh by -\swarmwrap@fh@narrow@val\relax
   \ifdim\swarmwrap@fh>0pt\relax
@@ -884,7 +889,7 @@
       \advance\swarmwrap@loop@cnt by 1
     \ifdim\swarmwrap@fh>0pt \repeat
     \advance\swarmwrap@nl by \swarmwrap@loop@cnt
-    \wlog{swarmwrap v3.90: caption extra lines=\the\swarmwrap@loop@cnt, total nl=\the\swarmwrap@nl}%
+    \wlog{swarmwrap v3.91: caption extra lines=\the\swarmwrap@loop@cnt, total nl=\the\swarmwrap@nl (Task #274: over-extension inherent)}%
   \fi
   % v3.74: Removed vestigial hard cap registers (max@narrow, narrow@used).
   % These were part of the v3.61 hard cap mechanism, fully removed in
