@@ -4327,6 +4327,12 @@ VLM confirms excessive bottom whitespace on all inspected pages (3-4/10 layout r
 >
 > **Rule 8 visual inspection**: 30 pages inspected via VLM from 1000-fig (pages 40,80,130,170,200,230,260,290,320,350,380,410,440,470,500,530,560,590,620,650,680,710,740,770,800,830,860,890,920,960). VLM results: 29 CLEAN, 1 NEAR_EMPTY (page 350 — 1 text span, 0 figures, pre-existing v3.86 side effect). PyMuPDF cross-validation confirmed. Step 4.5: nothing new unreported.
 
+### 2026-06-01 11:30 UTC+8 — QA Turn 89 (stand-down #55, Rule 8 visual inspection)
+
+> **Stand-down #55.** No pending QA tasks. Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). Programmer stood down at commit e2f9a57d — regression check v3.86 stable.
+>
+> **Rule 8 visual inspection**: 31 pages inspected via VLM from 1000-fig (pages 45,95,155,195,215,245,275,295,315,335,365,395,415,435,455,485,515,535,555,575,605,635,655,675,695,725,755,795,815,845,875). VLM results: 30 CLEAN, 1 GHOST_NARROWING (page 515). PyMuPDF cross-validation confirmed page 515 is multicols layout (5 different x0 positions, 3-column pattern) — NOT ghost narrowing. VLM false positive, same pattern as page 903. Step 4.5: nothing new unreported.
+
 ### 2026-06-01 05:30 UTC+8 — QA Turn 84 (stand-down #50, Rule 8 visual inspection)
 
 > **Stand-down #50.** No pending QA tasks. Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). Programmer stood down at commit 7f9b256e — regression check v3.86 stable (51 pages 50/50 100.0%, 1129 pages 1096/1100 99.6%).
