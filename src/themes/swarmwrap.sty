@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.88)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.89)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -396,7 +396,7 @@
 % The callback layers (L1/L2) provide additional protection for NON-cached
 % paragraphs (unique content). DEFER margin provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/06/01 v3.88 Stacking gap defer for consecutive figures (Task \#269)]
+\ProvidesPackage{swarmwrap}[2026/06/02 v3.89 Precise caption zone measurement via LuaTeX node API (Task \#274)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -864,23 +864,33 @@
     \advance\swarmwrap@nl by 1
     \advance\dimen0 by -\baselineskip
   \ifdim\dimen0>0pt \repeat
-  % v3.86: Add extra narrow lines to cover caption zone (Task #267).
-  % fh_narrow covers only the figure rule height. The caption text is
-  % below the rule and extends the visual zone. Without these extra lines,
-  % the trailing full-width parshape entry at nl+1 causes text to go
-  % full-width within the caption area of the first paragraph.
-  % Extra lines = ceil((fh@val - fh_narrow) / baselineskip).
-  % This adds ~1-4 lines depending on caption length, much less than
-  % v3.83's full box height approach (which caused +36 pages).
-  \swarmwrap@fh=\swarmwrap@fh@val\relax
-  \advance\swarmwrap@fh by -\swarmwrap@fh@narrow@val\relax
-  \swarmwrap@loop@cnt=0
-  \loop
-    \advance\swarmwrap@fh by -\baselineskip
-    \advance\swarmwrap@loop@cnt by 1
-  \ifdim\swarmwrap@fh>0pt \repeat
-  \advance\swarmwrap@nl by \swarmwrap@loop@cnt
-  \wlog{swarmwrap v3.86: caption extra lines=\the\swarmwrap@loop@cnt, total nl=\the\swarmwrap@nl}%
+  % v3.89: Use LuaTeX node API to measure caption zone (Task #274).
+  % Replaces v3.86's crude (fh@val - fh_narrow) / baselineskip estimate.
+  % swarmwrap_measure_caption_zone() computes: box_total - max_rule_h - bs.
+  % This gives the actual content height below the rule (caption + glue),
+  % subtracting one baselineskip buffer already in fh_narrow.
+  % For bare images (no caption), this returns ~0 — no extra lines needed.
+  \swarmwrap@box@num=\swarmwrap@box
+  \directlua{%
+    local box_num = tex.count["swarmwrap@box@num"]%
+    local cap_h = swarmwrap_measure_caption_zone(box_num)%
+    tex.dimen["swarmwrap@fh"] = cap_h%
+  }%
+  % v3.89: Guard — only add extra lines if caption zone > 0.
+  % For bare images (no caption), caption zone = 0 and no extra
+  % lines are needed. The base nl from fh_narrow already has 1bs
+  % buffer below the rule (from swarmwrap_measure_visible_height).
+  \ifdim\swarmwrap@fh>0pt\relax
+    \swarmwrap@loop@cnt=0
+    \loop
+      \advance\swarmwrap@fh by -\baselineskip
+      \advance\swarmwrap@loop@cnt by 1
+    \ifdim\swarmwrap@fh>0pt \repeat
+    \advance\swarmwrap@nl by \swarmwrap@loop@cnt
+  \else
+    \swarmwrap@loop@cnt=0\relax
+  \fi
+  \wlog{swarmwrap v3.89: caption zone=\the\swarmwrap@fh (LuaTeX node measurement), extra lines=\the\swarmwrap@loop@cnt, total nl=\the\swarmwrap@nl}%
   % v3.74: Removed vestigial hard cap registers (max@narrow, narrow@used).
   % These were part of the v3.61 hard cap mechanism, fully removed in
   % v3.65 (Task #219). The figure-space and page-space (5bs) checks

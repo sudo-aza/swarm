@@ -37,6 +37,8 @@
 local hlist_id = node.id("hlist")
 local vlist_id = node.id("vlist")
 local rule_id = node.id("rule")
+local glue_id = node.id("glue")
+local kern_id = node.id("kern")
 -- v3.77: Removed glyph_id, disc_id, penalty_id — were used only by
 -- disabled Layer 2 (swarmwrap_post_lb) and its helpers (has_text_content).
 
@@ -289,7 +291,54 @@ function swarmwrap_pagebreak_guard(head, groupcode)
   return head
 end
 
-texio.write_nl("swarmwrap: callback v3.84 loaded (needspace + pagebreak-guard + max-rule-height measurement)")
+function swarmwrap_measure_caption_zone(box_reg)
+  -- v3.89: Measure the vertical extent of content BELOW the tallest rule.
+  -- Used for precise caption zone height instead of the crude
+  -- fh@val - fh_narrow estimate (v3.86, Task #267).
+  --
+  -- Simple and robust approach: box total height minus max rule height
+  -- gives the caption zone. The box contains the minipage which holds
+  -- the figure + caption. fh_narrow already includes 1bs buffer below
+  -- the rule, so we subtract fh_narrow from the box total.
+  --
+  -- box.h+d = total minipage content (rule + caption + padding/struts)
+  -- fh_narrow = max_rule_h + 1bs (already computed by measure_visible_height)
+  -- caption_zone ≈ box.h+d - fh_narrow - 1bs (subtract extra bs from box top strut)
+  --
+  -- For bare images (no caption), box.h+d ≈ fh_narrow + small padding,
+  -- so caption_zone ≈ 0 (or small). The \ifdim guard in the .sty handles this.
+  local box = tex.box[box_reg]
+  if not box then return 0 end
+
+  local max_rule_h = 0
+  local function find_max_rule_h(head)
+    if not head then return end
+    for n in node.traverse(head) do
+      if n.id == rule_id then
+        local rh = n.height + n.depth
+        if rh > max_rule_h then max_rule_h = rh end
+      elseif n.id == hlist_id or n.id == vlist_id then
+        if n.head then find_max_rule_h(n.head) end
+      end
+    end
+  end
+  if box.head then find_max_rule_h(box.head) end
+  if max_rule_h <= 0 then return 0 end
+
+  -- The box total height minus the rule height gives the "extra" content
+  -- below the rule (caption + inter-line glue + minipage padding).
+  -- Subtract 1bs to account for the baseline skip already in fh_narrow.
+  local bs = tex.skip["baselineskip"].width
+  local caption_h = (box.height + box.depth) - max_rule_h - bs
+  if caption_h < 0 then caption_h = 0 end
+
+  texio.write_nl(string.format("[CAPTION-ZONE] max_rule=%.1fpt caption_zone=%.1fpt box=%.1fpt",
+    max_rule_h/65536, caption_h/65536, (box.height+box.depth)/65536))
+
+  return caption_h
+end
+
+texio.write_nl("swarmwrap: callback v3.89 loaded (needspace + pagebreak-guard + caption-zone measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 luatexbase.add_to_callback("post_linebreak_filter",
