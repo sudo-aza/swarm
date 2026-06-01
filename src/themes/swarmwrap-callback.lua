@@ -327,9 +327,12 @@ function swarmwrap_measure_caption_zone(box_reg)
 
   -- The box total height minus the rule height gives the "extra" content
   -- below the rule (caption + inter-line glue + minipage padding).
-  -- Subtract 1bs to account for the baseline skip already in fh_narrow.
+  -- NOTE: Do NOT subtract bs here. The .sty loop divides by bs and uses
+  -- ceiling (loop while >0), so (box - rule) / bs matches v3.86's
+  -- (fh@val - fh_narrow) / bs exactly. Subtracting bs would undercount
+  -- by 1 line, causing caption-text overlap regression (v3.89 bug).
   local bs = tex.skip["baselineskip"].width
-  local caption_h = (box.height + box.depth) - max_rule_h - bs
+  local caption_h = (box.height + box.depth) - max_rule_h
   if caption_h < 0 then caption_h = 0 end
 
   texio.write_nl(string.format("[CAPTION-ZONE] max_rule=%.1fpt caption_zone=%.1fpt box=%.1fpt",
@@ -338,7 +341,7 @@ function swarmwrap_measure_caption_zone(box_reg)
   return caption_h
 end
 
-texio.write_nl("swarmwrap: callback v3.89 loaded (needspace + pagebreak-guard + caption-zone measurement)")
+texio.write_nl("swarmwrap: callback v3.90 loaded (needspace + pagebreak-guard + caption-zone measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 luatexbase.add_to_callback("post_linebreak_filter",
