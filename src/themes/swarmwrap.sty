@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.86)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.87)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -396,7 +396,7 @@
 % The callback layers (L1/L2) provide additional protection for NON-cached
 % paragraphs (unique content). DEFER margin provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/06/01 v3.86 Fix caption-text overlap (Task #267)]
+\ProvidesPackage{swarmwrap}[2026/06/01 v3.87 Fix ghost narrowing past section headings (Task #271)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -422,6 +422,12 @@
 \newdimen\swarmwrap@fig@bottom  % Y position where figure ends (narrow, for \par patch)
 \newdimen\swarmwrap@fig@bottom@safe  % Y position with padding (for vspace push)
 \newcount\swarmwrap@fig@page    % page number when figure was placed
+% v3.87: Track pagetotal at paragraph start for section-heading detection.
+% A paragraph that produces < 3bs of vertical advancement is likely a section
+% heading, display equation, or other structural element. After such a
+% paragraph, wrapping should not extend — it creates ghost narrowing past
+% the figure zone into unrelated content (Task #271).
+\newdimen\swarmwrap@par@start@pt
 \swarmwrap@fig@bottom=0pt
 \swarmwrap@fig@bottom@safe=0pt
 \swarmwrap@fig@page=0
@@ -580,6 +586,8 @@
             \parshape \swarmwrap@pshape\relax
             \emergencystretch=\fontdimen6\font\relax
             \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+            % v3.87: Record pagetotal for next paragraph's short-check
+            \global\swarmwrap@par@start@pt=\pagetotal
           \else
             % No more vertical space — deactivate
             \swarmwrap@activefalse
@@ -598,6 +606,7 @@
         \global\let\par\swarmwrap@orig@par
         \parshape=0\relax
       \fi
+    \fi
   \fi
 }
 
@@ -888,14 +897,29 @@
   % fh_narrow (rule height only), causing caption-text overlap when \par
   % fires within the figure zone (Task #267). nl stays based on fh_narrow
   % for tight wrapping (no page count regression).
-  % fig@bottom@safe uses FULL height (with padding) for vspace push.
+  % v3.87: Use CAPPED height for \par patch extension instead of fh@val.
+  % fh@val can overshoot the caption zone by ~1bs (ceiling effect in caption
+  % extra lines). The overshoot causes the \par patch to extend wrapping
+  % past the caption zone into subsequent content (section headings, etc.),
+  % creating ghost narrowing (Task #271). Cap at nl * baselineskip which
+  % is the precise parshape coverage (narrow + caption extra lines).
+  \swarmwrap@loop@cnt=\swarmwrap@nl
+  \advance\swarmwrap@loop@cnt by 1  % +1 for trailing full-width entry
+  \dimen4=\swarmwrap@loop@cnt\baselineskip
+  % But ensure fig@bottom is at LEAST fh_narrow (don't underflow):
+  \ifdim\swarmwrap@fh@narrow@val>\dimen4
+    \dimen4=\swarmwrap@fh@narrow@val\relax
+  \fi
   \global\swarmwrap@fig@bottom=\pagetotal
-  \global\advance\swarmwrap@fig@bottom by \swarmwrap@fh@val\relax
+  \global\advance\swarmwrap@fig@bottom by \dimen4\relax
   \global\swarmwrap@fig@bottom@safe=\pagetotal
   \global\advance\swarmwrap@fig@bottom@safe by \swarmwrap@fh@val\relax
   \global\swarmwrap@fig@page=\the\c@page\relax
   % emergencystretch absorbs overfull hbox on narrowed parshape lines
   \emergencystretch=\fontdimen6\font\relax
+  % v3.87: Record pagetotal at paragraph start (Task #271).
+  % Used by \par patch to detect short paragraphs (section headings).
+  \global\swarmwrap@par@start@pt=\pagetotal
   % CRITICAL FIX (v3.15): parshape MUST be set before the paragraph starts.
   \parshape \swarmwrap@pshape\relax
   % ── Figure placement: inline or deferred ───────────────────────
@@ -943,8 +967,15 @@
     \swarmwrap@activetrue
     \global\let\par\swarmwrap@patched@par
     % v3.86: Re-record figure extent on the NEW page (using fh@val, same as NORMAL)
+    % v3.87: Use same capped height for deferred path (Task #271).
+    \swarmwrap@loop@cnt=\swarmwrap@nl
+    \advance\swarmwrap@loop@cnt by 1
+    \dimen4=\swarmwrap@loop@cnt\baselineskip
+    \ifdim\swarmwrap@fh@narrow@val>\dimen4
+      \dimen4=\swarmwrap@fh@narrow@val\relax
+    \fi
     \global\swarmwrap@fig@bottom=\pagetotal
-    \global\advance\swarmwrap@fig@bottom by \swarmwrap@fh@val\relax
+    \global\advance\swarmwrap@fig@bottom by \dimen4\relax
     \global\swarmwrap@fig@bottom@safe=\pagetotal
     \global\advance\swarmwrap@fig@bottom@safe by \swarmwrap@fh@val\relax
     \global\swarmwrap@fig@page=\the\c@page\relax
