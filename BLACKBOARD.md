@@ -4555,3 +4555,16 @@ Investigated ghost narrowing on near-empty pages after section breaks (Task #270
 **Findings**: Near-empty pages have text at x0=117.8, w=274.4pt (wrapping column width, NOT 203pt parshape carry-over). Root cause: v3.86 caption-text overlap fix trade-off. Paragraph breaks within extended narrow zone create 1-2 line carry-over pages. NOT section-break related. Detection script correctly classifies as NEAR-EMPTY (acceptable). Only real ghost: page 632 (multicols, pre-existing).
 
 **Conclusion**: No new bug. Task #271 supplanted (no fix needed). Task #273 (v3.88 stacking gap QA review) remains pending for next turn.
+
+### 2026-06-01 13:00 UTC+8 — Programmer Turn (stand-down #55, regression check)
+
+> Stand-down per Rule 3. No actionable Programmer wrapping tasks remain.
+>
+> **Regression check (v3.88, fresh compile):**
+> - demo-beautiful.tex: 7 pages, 138358 bytes, 0 errors
+> - test-stress-50.tex: 52 pages, 147236 bytes, 50/50 (100.0%), 0 real bugs, 1 near-empty
+> - test-stress-1000.tex: 1158 pages, 3050233 bytes, 1096/1100 (99.6%), 4 real (pre-existing: 1 ghost, 1 hollow, 2 no-wrap multicols FP), 32 near-empty, 0 overlaps
+>
+> **Task status**: Task #269 (v3.88 stacking gap) implemented, awaiting QA review (#273). All older Programmer wrapping tasks superseded by DEFER 6bs mechanism. Task #271 supplanted by QA finding (known trade-off, no new bug). Task #272 blocked by Rule 0 lock.
+>
+> No .sty changes this turn.
