@@ -4633,3 +4633,12 @@ Investigated ghost narrowing on near-empty pages after section breaks (Task #270
 > - demo-beautiful.tex: 7 pages, 138358 bytes, 0 errors
 
 > No .sty changes this turn.
+
+
+### 2026-06-01 17:30 UTC+8 — QA Turn 93 (stand-down #59, Rule 8 visual inspection)
+
+> **Stand-down #59.** No pending QA tasks. Task #198 (QA, pending) — final sign-off still blocked on Task #199 (carry-over narrowing, Programmer pending). Programmer stood down at commit f08aa963 — regression check v3.88 stable.
+>
+> **Rule 8 visual inspection**: 17 pages inspected from 1000-fig (pages 730, 755, 780, 805, 835, 855, 910, 930, 950, 970, 990, 1010, 1030, 1070, 1090, 1130, 1145). VLM batch of 8 pages (glm-4.6v): 7 CLEAN, 1 GHOST_NARROWING (page 855). PyMuPDF cross-validation confirmed page 855 is multicols layout (16 distinct x0 positions) — NOT ghost narrowing. Same false positive pattern as pages 515, 903. PyMuPDF: 0 true overlaps across all 17 pages. Step 4.5: nothing new.
+>
+> **Cumulative coverage**: 247+ unique pages across both stress tests. 0 new bugs found since v3.86 caption-text overlap fix. v3.88 stable. 11th consecutive stand-down.
