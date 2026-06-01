@@ -196,7 +196,7 @@ function swarmwrap_needspace(head, groupcode)
   return head
 end
 
--- LAYER 2 (v3.78→v3.91): Active page-break guard in post_linebreak_filter.
+-- LAYER 2 (v3.78): Active page-break guard in post_linebreak_filter.
 -- After TeX breaks lines, count the resulting narrow hlists (width < 85% of
 -- linewidth). If narrow lines exist AND remaining page space is less than
 -- the narrow zone height + a safety margin, insert a strong penalty before
@@ -204,16 +204,6 @@ end
 -- This prevents parshape carry-over (ghost narrowing) across page breaks.
 -- The penalty is inserted into the broken node list; TeX's page breaker
 -- will see it and break the page there instead of within the narrow zone.
---
--- v3.91 enhancement: Also check TOTAL paragraph height. If the full
--- paragraph (narrow + full-width) exceeds remaining space AND there are
--- narrow lines, insert a penalty at the narrow→full transition point.
--- This forces TeX to break at the transition rather than within the narrow
--- zone, preventing near-empty carry-over pages (1-2 narrow lines, no figure).
--- Without this, a long paragraph that overflows the page mid-narrow-zone
--- creates a carry-over page with just 1-2 narrow lines — classified as
--- NEAR-EMPTY by the detection script. The penalty at the transition
--- ensures the carry-over is full-width text (no narrow, no ghost).
 function swarmwrap_pagebreak_guard(head, groupcode)
   local tw = tex.dimen["swarmwrap@tw@lua"]
   if tw <= 0 then
@@ -225,24 +215,18 @@ function swarmwrap_pagebreak_guard(head, groupcode)
     return head
   end
 
-  -- The broken head is a vlist of hlists. Count leading narrow hlists
-  -- and compute total paragraph height.
+  -- The broken head is a vlist of hlists. Count leading narrow hlists.
   local narrow_count = 0
   local total_lines = 0
-  local total_height = 0
-  local narrow_end_prev = nil  -- node before last narrow hlist (for transition penalty)
-
   for n in node.traverse(head) do
     if n.id == hlist_id then
       total_lines = total_lines + 1
-      total_height = total_height + n.height + n.depth
       -- Compare hlist width against the text width (tw).
       -- Narrow lines have width approximately = tw.
       -- Full-width lines have width approximately = linewidth.
       -- Use tw + 14pt as the narrow threshold (14pt gap between text and figure).
       if n.width > 0 and n.width < (linewidth * 0.85) then
         narrow_count = narrow_count + 1
-        narrow_end_prev = n  -- track last narrow line for transition penalty
       else
         break  -- Stop counting at first full-width line
       end
@@ -304,37 +288,6 @@ function swarmwrap_pagebreak_guard(head, groupcode)
     end
   end
 
-  -- v3.91: Near-empty carry-over prevention (Task #275).
-  -- Check if the TOTAL paragraph height exceeds remaining page space.
-  -- If so, TeX will break the paragraph somewhere on the page.
-  -- If the break happens within the narrow zone, the carry-over is
-  -- 1-2 narrow lines on a page with no figure — a NEAR-EMPTY page.
-  -- Fix: insert a penalty at the narrow→full transition point.
-  -- This encourages TeX to break AFTER the narrow zone (in the full-width
-  -- portion), so the carry-over is full-width text, not narrow.
-  -- The carry-over page starts with full-width text and no ghost.
-  if total_height > remaining and remaining > 0 and narrow_end_prev then
-    -- Find the narrow→full transition: the point after the last narrow
-    -- hlist before the first full-width hlist.
-    -- Insert penalty AFTER the last narrow line.
-    local inserted = false
-    for n in node.traverse(head) do
-      if n.id == hlist_id and n.width > 0 and n.width < (linewidth * 0.85) then
-        narrow_end_prev = n
-      elseif n.id == hlist_id and n.width >= (linewidth * 0.85) then
-        -- This is the first full-width line. Insert penalty before it.
-        local pen = node.new(node.id("penalty"))
-        pen.penalty = -10000
-        node.insert_after(head, narrow_end_prev, pen)
-        texio.write_nl(string.format(
-          "[NEAR-EMPTY-GUARD] pg=%d narrow=%d total=%.1fpt remaining=%.1fpt -> TRANSITION PENALTY",
-          tex.count["c@page"], narrow_count, total_height/65536, remaining/65536))
-        head = head  -- unchanged, but modified in-place
-        return head
-      end
-    end
-  end
-
   return head
 end
 
@@ -388,7 +341,7 @@ function swarmwrap_measure_caption_zone(box_reg)
   return caption_h
 end
 
-texio.write_nl("swarmwrap: callback v3.91 loaded (needspace + pagebreak-guard + caption-zone measurement)")
+texio.write_nl("swarmwrap: callback v3.90 loaded (needspace + pagebreak-guard + caption-zone measurement)")
 luatexbase.add_to_callback("pre_linebreak_filter",
   swarmwrap_needspace, "swarmwrap: needspace pre-check")
 luatexbase.add_to_callback("post_linebreak_filter",
