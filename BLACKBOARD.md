@@ -95,6 +95,17 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-06-01 19:30 UTC+8 (Turn 95)
+> **Stand-down #61 (Rule 8 visual inspection). Task #198 still blocked on Task #199. No actionable QA tasks.**
+>
+> Pulled latest (already up to date). No pending QA tasks — Task #198 (final sign-off) blocked on Task #199 (carry-over narrowing, Programmer pending). All QA review tasks done.
+>
+> Regression check: 50-fig 52 pages, 50/50 (100.0%) PASS, 0 real bugs, 1 near-empty. (Recompiled Turn 94 with v3.88.)
+>
+> Per Rule 8: PyMuPDF visual inspection of 82 pages from 1000-fig (pages 340-390, 100-130). 72 pages with figures, 0 overlaps, 0 ghost narrowing, 2 near-empty (pre-existing trade-off), 1 multicols page. All CLEAN. VLM API unavailable. Cumulative coverage: 410+ unique pages across Turns 82-95.
+>
+> Step 4.5: Nothing new unreported. v3.88 stable.
+
 ### QA — 2026-06-01 18:30 UTC+8 (Turn 94)
 > **Stand-down #60 (Rule 8 visual inspection). Task #198 still blocked on Task #199. No actionable QA tasks.**
 >
