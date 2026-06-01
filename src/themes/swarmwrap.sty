@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.87)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.88)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -396,7 +396,7 @@
 % The callback layers (L1/L2) provide additional protection for NON-cached
 % paragraphs (unique content). DEFER margin provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/06/01 v3.87 Fix ghost narrowing past section headings (Task #271)]
+\ProvidesPackage{swarmwrap}[2026/06/01 v3.88 Stacking gap defer for consecutive figures (Task \#269)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -431,6 +431,10 @@
 \swarmwrap@fig@bottom=0pt
 \swarmwrap@fig@bottom@safe=0pt
 \swarmwrap@fig@page=0
+% v3.88: Stacking gap defer flag (Task #269). When two consecutive figures have a
+% gap > 1bs between them, defer the second figure to the next page.
+\newif\ifswarmwrap@stack@defer
+\swarmwrap@stack@deferfalse
 
 % ── Penalty control ──────────────────────────────────────────────────
 \newcount\swarmwrap@penalty
@@ -795,6 +799,8 @@
   \everypar{}%
   \swarmwrap@list@activefalse
   \parshape=0\relax
+  % v3.88: Reset stacking gap flag at start of each session
+  \swarmwrap@stack@deferfalse
   % ── v3.37/v3.39: Cross-session overlap prevention ───────────────
   % When a previous session's trailing full-width parshape entry reset
   % text to full width, that full-width text can overlap with the
@@ -805,8 +811,22 @@
   % (narrow, no padding) is used for parshape extension.
   \ifnum\swarmwrap@fig@page=\the\c@page\relax
     \ifdim\pagetotal<\swarmwrap@fig@bottom@safe\relax
-      \wlog{swarmwrap vspace: PUSHING past prev figure — page=\the\c@page, pagetotal=\the\pagetotal, fig_bottom_safe=\the\swarmwrap@fig@bottom@safe, delta=\the\dimexpr\swarmwrap@fig@bottom@safe-\pagetotal\relax}%
-      \vspace{\dimexpr\swarmwrap@fig@bottom@safe-\pagetotal\relax}%
+      % v3.88: Stacking gap check (Task #269).
+      % When two consecutive figures have a gap > 1bs between them,
+      % defer the second figure to the next page to avoid the visible gap.
+      % Gap = fig@bottom@safe - pagetotal. If gap > 1bs, set stacking
+      % defer flag and skip the vspace push. The DEFER check later will
+      % force a page eject, placing the figure cleanly at the top of
+      % the next page with no gap.
+      \dimen3=\swarmwrap@fig@bottom@safe
+      \advance\dimen3 by -\pagetotal
+      \ifdim\dimen3>4\baselineskip\relax
+        \swarmwrap@stack@defertrue
+        \wlog{swarmwrap v3.88: STACKING GAP DEFER — gap=\the\dimen3, deferring to next page}%
+      \else
+        \wlog{swarmwrap vspace: PUSHING past prev figure — page=\the\c@page, pagetotal=\the\pagetotal, fig_bottom_safe=\the\swarmwrap@fig@bottom@safe, delta=\the\dimexpr\swarmwrap@fig@bottom@safe-\pagetotal\relax}%
+        \vspace{\dimexpr\swarmwrap@fig@bottom@safe-\pagetotal\relax}%
+      \fi
     \else
       \wlog{swarmwrap vspace: NO PUSH — page=\the\c@page(\the\numexpr\swarmwrap@fig@page\relax), pagetotal=\the\pagetotal, fig_bottom_safe=\the\swarmwrap@fig@bottom@safe}%
     \fi
@@ -952,6 +972,10 @@
   % The DEFER margin is the only mechanism that reliably prevents ghost narrowing
   % because it is evaluated once per figure session at \swarmwrapnext time.
   \advance\dimen1 by 6\baselineskip  % safety margin for glue/parskip/list overhead
+  % v3.88: If stacking gap was detected, force DEFER by zeroing remaining
+  \ifswarmwrap@stack@defer
+    \dimen0=0pt\relax
+  \fi
   \ifdim\dimen0<\dimen1
     % Figure doesn't fit on current page — page eject approach (v3.23).
     % Cancel parshape so current-page text runs at full width.

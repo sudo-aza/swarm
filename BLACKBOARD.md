@@ -91,6 +91,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 270 | **QA INVESTIGATION (use VLM)**: Ghost narrowing on nearly-empty pages after section breaks (pages 51 and 64 of 1000-fig PDF). **Reported by zoe (2026-06-01).** Pages 51 and 64 are nearly empty after a section heading AND have ghost narrowing (text is narrowed but no figure is present on those pages). These were NOT caught by the detection script — the automated QA reported these pages as "clean" but zoe identified the ghost narrowing visually. **Page references**: Page 51 and Page 64 of `tests/test-stress-1000.pdf` (v3.86, 1129 pages). **QA INSTRUCTIONS**: (1) Use VLM to inspect pages 51 and 64 — render them as images and examine the text width and layout. (2) Use PyMuPDF to measure span widths on these pages — look for spans at x0≈117.8 with w≈203pt (narrow wrapping signature) in the absence of any figure. (3) Determine if this is the same parshape carry-over ghost pattern (Task #199/#214) or a different root cause related to section breaks. (4) Report findings in a new QA REVIEW task so Programmer can fix. | QA | pending | 2026-06-01 |
 | 271 | **FIX**: swarmwrap.sty — ghost narrowing on nearly-empty pages after section breaks (pages 51 and 64). **Reported by zoe (2026-06-01). Depends on QA investigation (Task #270).** After a `\section{}` command, the next page is nearly empty AND has ghost narrowing (text narrowed as if a figure is present, but no figure exists). This may be a variant of the parshape carry-over bug (Tasks #199, #204, #209, #212, #214) or a new issue specific to section-break page boundaries. Root cause unknown until QA investigates with VLM + PyMuPDF (Task #270). **Possible causes**: (1) Section break triggers a page break, but parshape from the PREVIOUS page's figure session carries over to the nearly-empty post-section page. (2) `\par` patch at section boundary does not reset parshape properly. (3) DEFER mechanism defers a figure across the section break, leaving narrow parshape on the section page. **CONSTRAINT**: Must not regress 50-fig (currently 50/50 100.0%) or 1000-fig (currently 1096/1100 99.6%). **VERIFICATION**: After fix, use VLM to visually confirm pages 51 and 64 have full-width text (no ghost narrowing). PyMuPDF span-width check: all spans on post-section pages should be ≥300pt (or a figure should be present). ⛽ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-01 |
 | 272 | **FIX**: simple-wrap.sty — `\captionof{figure}{...}` does not work directly inside `\begin{simplewrap}...\end{simplewrap}` without a minipage. **From previous session (2026-05-31). Unresolved.** Zoe explicitly rejected the minipage workaround. The `\captionof` command (from the `capt-of` package) should work inside the simplewrap environment to allow floating figure captions in non-float contexts. Currently, `\captionof` inside simplewrap without a minipage causes TeX errors or incorrect output. **NOTE**: This task is for `simple-wrap.sty` (NOT `swarmwrap.sty`). This is OUTSIDE the Programmer wrapping-only lock (Rule 0: only swarmwrap.sty). This task CANNOT be assigned to the Programmer agent until zoe lifts or expands the lock. **File**: `/home/z/my-project/src/themes/simple-wrap.sty`. | Programmer | pending (blocked by Rule 0 lock) | 2026-06-01 |
+| 273 | **QA REVIEW**: Verify v3.88 stacking gap defer for consecutive figures (Task #269). **Page reference**: Page 26 of `tests/test-stress-1000.pdf` (v3.88, 1158 pages). **Changes**: Added stacking gap detection in `\swarmwrapnext`: when a previous figure's `fig@bottom@safe` extends past the current position by > 4bs, the second figure is deferred to the next page instead of being placed inline with a visible gap. Uses `\newif\ifswarmwrap@stack@defer` flag; set at start of `\swarmwrapnext`, checked in vspace push section, forces DEFER path when triggered. **VERIFICATION**: (1) `head -1 src/themes/swarmwrap.sty` → v3.88. (2) Version consistent (header + ProvidesPackage). (3) 50-fig: 50/50 (100.0%) PASS, ≤54 pages. (4) 1000-fig: ≥1095/1100 (99.5% PASS, ≥99% threshold). (5) Page count ≤1200. (6) Use VLM to inspect page 26: Figure 24 should be alone on page 26, Figure 25 should be at the top-right of page 27 with text wrapping beside it. The visible gap between the two figures should be eliminated. (7) No new regressions: 0 overlaps, ghost/hollow should not increase. (8) `grep -c "STACKING GAP DEFER" test-stress-1000.log` — should be >0 (confirming defers are happening). **Expected**: 1158 pages (was 1129 in v3.87, +29 pages from stacking defers). 37 stacking gap defers. Trade-off: +2.6% page count for eliminated stacking gaps. | QA | pending | 2026-06-01 |
 
 ## COMMUNICATION LOG
 
@@ -4512,3 +4513,37 @@ No wrapping improvements remain. Standing down per Rule 3. No .sty changes this 
 > **Task #271 (Programmer, pending)**: Fix ghost narrowing on near-empty pages after section breaks (pages 51, 64). Depends on QA investigation from Task #270. Possible causes: section break triggers page break with parshape carry-over, \par patch not resetting at section boundary, or DEFER mechanism deferring figure across section break.
 >
 > **Task #272 (Programmer, pending, blocked by Rule 0 lock)**: simple-wrap.sty \captionof{figure}{...} does not work inside simplewrap without minipage. From previous session, unresolved. OUTSIDE Programmer wrapping-only lock (swarmwrap.sty only).
+
+### 2026-06-01 12:00 UTC+8 — Programmer Turn (Task #269: v3.88 stacking gap defer)
+
+> **Task #269: FIX figure stacking gap between consecutive figures (page 26).**
+>
+> v3.88 adds stacking gap detection in `\swarmwrapnext`. When a previous figure's
+> `fig@bottom@safe` extends past the current `\pagetotal` by > 4\baselineskip (~55pt),
+> the second figure is deferred to the next page instead of being placed inline
+> with a visible gap. This implements zoe's requested approach: "remember the second
+> figure in variable and insert it once you have space."
+>
+> **Implementation**: 4 code changes to `swarmwrap.sty`:
+> (1) New `\newif\ifswarmwrap@stack@defer` flag declaration.
+> (2) Flag reset (`\swarmwrap@stack@deferfalse`) at start of `\swarmwrapnext`.
+> (3) Stacking gap check in vspace push section: compute `gap = fig@bottom_safe - pagetotal`,
+>     if > 4bs, set flag and skip vspace push.
+> (4) Before DEFER check: if flag set, force `\dimen0=0pt` to trigger DEFER path.
+>
+> **Results**:
+> - demo-beautiful.tex: 7 pages, 0 errors
+> - test-stress-50.tex: 52 pages (was 51), 50/50 (100.0%) PASS, 0 real bugs, 1 near-empty
+> - test-stress-1000.tex: 1158 pages (was 1129), 1096/1100 (99.6%) PASS, 4 real bugs (same
+>   as v3.87: 1 ghost, 1 hollow, 2 no-wrap pre-existing), 32 near-empty, 0 overlaps
+> - 37 stacking gap defers triggered (from wlog)
+> - Page 26 verified: Figure 24 alone on page 26, Figure 25 at top-right of page 27 with
+>   correct wrapping (17 narrow spans at 259.7pt beside figure). Gap eliminated.
+>
+> **Trade-off**: +29 pages (+2.6%) on 1000-fig from stacking gap defers. Each defer pushes
+> a figure to a new page, adding ~0.78 pages per defer on average. The 4bs threshold
+> (~55pt, ~4 lines of text) was chosen to catch visible gaps while minimizing unnecessary
+> defers. Lower thresholds (1bs, 2bs) caused 73/39 defers respectively with similar or
+> worse page count increases.
+>
+> QA review task #273 created. Task #269 status remains `pending` (Rule 6).
