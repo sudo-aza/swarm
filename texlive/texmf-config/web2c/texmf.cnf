@@ -1,0 +1,4 @@
+% Custom texmf.cnf overrides for swarm project
+% Adds src/themes and src/templates to search path for LaTeX packages
+
+TEXINPUTS.latex = ./src/themes:./src/templates:./tests:$TEXMFDOTDIR;$TEXMF/tex/{latex,}//

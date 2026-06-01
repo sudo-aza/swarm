@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.92)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.90)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -396,7 +396,7 @@
 % The callback layers (L1/L2) provide additional protection for NON-cached
 % paragraphs (unique content). DEFER margin provides universal protection.
 
-\ProvidesPackage{swarmwrap}[2026/06/02 v3.92 Page-fill deferred figures reduce near-empty pages (Task 275)]
+\ProvidesPackage{swarmwrap}[2026/06/02 v3.90 Revert caption zone to v3.86 TeX computation (Task \#274)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -435,23 +435,6 @@
 % gap > 1bs between them, defer the second figure to the next page.
 \newif\ifswarmwrap@stack@defer
 \swarmwrap@stack@deferfalse
-% v3.92: Page-fill deferred registers (Task 275). Stores a copy of the deferred
-% figure box and metadata so it survives until placed on the next page.
-\newsavebox{\swarmwrap@fill@box}
-\newdimen\swarmwrap@fill@tw\relax
-\swarmwrap@fill@tw=0pt
-\newdimen\swarmwrap@fill@fh@val\relax
-\swarmwrap@fill@fh@val=0pt
-\newdimen\swarmwrap@fill@fh@narrow\relax
-\swarmwrap@fill@fh@narrow=0pt
-\newcount\swarmwrap@fill@nl\relax
-\swarmwrap@fill@nl=0
-\newdimen\swarmwrap@fill@fig@bottom\relax
-\swarmwrap@fill@fig@bottom=0pt
-\newif\ifswarmwrap@fill@pending
-\swarmwrap@fill@pendingfalse
-\newcount\swarmwrap@fill@pg\relax
-\swarmwrap@fill@pg=0
 
 % ── Penalty control ──────────────────────────────────────────────────
 \newcount\swarmwrap@penalty
@@ -892,11 +875,6 @@
   % height (fh_narrow) to estimate caption zone. fh@val includes
   % box.h+box.d+bs (full minipage content). fh_narrow includes
   % max_rule+bs (just the rule). The difference is the caption zone.
-  % Node-level measurement (LuaTeX API, Task #274) confirmed that
-  % box.h+d - max_rule_h is already the precise caption zone — no
-  % strut/padding inflation exists. The over-extension (~1.5 lines) is
-  % inherent to the ceiling approach and cannot be reduced without
-  % causing caption-text overlap regression (v3.91 investigation).
   \swarmwrap@fh=\swarmwrap@fh@val\relax
   \advance\swarmwrap@fh by -\swarmwrap@fh@narrow@val\relax
   \ifdim\swarmwrap@fh>0pt\relax
@@ -906,7 +884,7 @@
       \advance\swarmwrap@loop@cnt by 1
     \ifdim\swarmwrap@fh>0pt \repeat
     \advance\swarmwrap@nl by \swarmwrap@loop@cnt
-    \wlog{swarmwrap v3.91: caption extra lines=\the\swarmwrap@loop@cnt, total nl=\the\swarmwrap@nl (Task #274: over-extension inherent)}%
+    \wlog{swarmwrap v3.90: caption extra lines=\the\swarmwrap@loop@cnt, total nl=\the\swarmwrap@nl}%
   \fi
   % v3.74: Removed vestigial hard cap registers (max@narrow, narrow@used).
   % These were part of the v3.61 hard cap mechanism, fully removed in
@@ -998,10 +976,7 @@
   % and post_linebreak_filter fire only ONCE per unique paragraph, not per occurrence.
   % The DEFER margin is the only mechanism that reliably prevents ghost narrowing
   % because it is evaluated once per figure session at \swarmwrapnext time.
-  % v3.92: Reduced from 6bs to 3bs (Task 275). Allows more inline figures,
-  % reducing near-empty page ejects. Lua callbacks (L1/L2) handle ghost
-  % prevention for edge cases that the lower margin might miss.
-  \advance\dimen1 by 3\baselineskip  % safety margin for glue/parskip/list overhead
+  \advance\dimen1 by 6\baselineskip  % safety margin for glue/parskip/list overhead
   % v3.88: If stacking gap was detected, force DEFER by zeroing remaining
   \ifswarmwrap@stack@defer
     \dimen0=0pt\relax
