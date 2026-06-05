@@ -1,0 +1,14 @@
+{
+  "created": 1780539743,
+  "id": "202606041022211cd6648b717a4abb",
+  "request_id": "202606041022211cd6648b717a4abb",
+  "text": "Okay, so what I said in my last voice message which you failed to read was that your last task was a stand down because you said there were no tasks for you to do and if I scrolled up two messages from that, you said that after the news push before you had thirty eight percent of pages had",
+  "usage": {
+    "completion_tokens": 65,
+    "prompt_tokens": 437,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 502
+  }
+}
