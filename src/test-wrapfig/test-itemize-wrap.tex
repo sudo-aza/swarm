@@ -1,0 +1,55 @@
+% Test: swarmwrap with itemize — Task #166
+\documentclass{article}
+\usepackage{swarmwrap}
+\usepackage{lipsum}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+\newcommand{\testfig}[1][3cm]{%
+  \fcolorbox{red}{yellow!30}{\parbox[c][#1][c]{2.5cm}{\centering\bfseries FIGURE}}%
+}
+
+\begin{document}
+\section*{Test 1: Figure followed by itemize}
+\begin{swarmwrap}%
+  \testfig[3cm]%
+\end{swarmwrap}%
+\swarmwrapnext
+\begin{itemize}
+  \item First item with some text that should wrap around the figure if parshape works correctly.
+  \item Second item with more text to continue wrapping.
+  \item Third item with enough text to fill several lines.
+  \item Fourth item with additional content.
+  \item Fifth item at the end of the list.
+\end{itemize}
+
+\lipsum[1]
+
+\section*{Test 2: Figure followed by enumerate}
+\begin{swarmwrap}%
+  \testfig[3cm]%
+\end{swarmwrap}%
+\swarmwrapnext
+\begin{enumerate}
+  \item First enumerated item with text that should wrap.
+  \item Second enumerated item with more text.
+  \item Third enumerated item with additional text content.
+  \item Fourth enumerated item for more coverage.
+  \item Fifth item completing the test.
+\end{enumerate}
+
+\lipsum[2]
+
+\section*{Test 3: Figure followed by description list}
+\begin{swarmwrap}%
+  \testfig[3cm]%
+\end{swarmwrap}%
+\swarmwrapnext
+\begin{description}
+  \item[First] Description list item with text.
+  \item[Second] Another description item.
+  \item[Third] A third description item with more text.
+\end{description}
+
+\lipsum[3]
+\end{document}

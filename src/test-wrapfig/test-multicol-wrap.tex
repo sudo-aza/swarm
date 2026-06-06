@@ -1,0 +1,64 @@
+% Test: swarmwrap inside multicol environment
+% Task #167: figures inside multicol should be placed at correct x-position
+\documentclass{article}
+\usepackage{swarmwrap}
+\usepackage{lipsum}
+\usepackage{multicol}
+\usepackage{graphicx}
+\usepackage{xcolor}
+
+% Use a visible test figure (red box)
+\newcommand{\testfig}[1][3cm]{%
+  \fcolorbox{red}{yellow!30}{\parbox[c][#1][c]{2.5cm}{\centering\bfseries FIGURE}}%
+}
+
+\begin{document}
+\section*{Test 1: Figure inside multicol (2 columns)}
+\begin{multicols}{2}
+\begin{swarmwrap}%
+  \testfig[2cm]%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+\begin{swarmwrap}%
+  \testfig[4cm]%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[3-4]
+
+\begin{swarmwrap}%
+  \testfig[3cm]%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[5-6]
+\end{multicols}
+
+\section*{Test 2: Figure near page break in multicol}
+\begin{multicols}{2}
+\begin{swarmwrap}%
+  \testfig[8cm]%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[7-15]
+\end{multicols}
+
+\section*{Test 3: Multiple figures in sequence in multicol}
+\begin{multicols}{2}
+\begin{swarmwrap}%
+  \testfig[2cm]%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[16]
+\begin{swarmwrap}%
+  \testfig[2cm]%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[17]
+\begin{swarmwrap}%
+  \testfig[2cm]%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[18]
+\end{multicols}
+\end{document}
