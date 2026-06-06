@@ -2,6 +2,37 @@
 
 ---
 Task ID: 1
+Agent: Programmer (cron)
+Task: 2026-06-06 12:00 UTC+8 — verify Tasks #166/#167 resolved, stale BLACKBOARD cleanup
+
+Work Log:
+- Set up git credentials and TeX Live PATH
+- git pull origin main (4d399ae)
+- Read notes/programmer-rules.md, BLACKBOARD.md
+- Assessed pending tasks: #166 (itemize parshape leak) and #167 (multicol misalignment) still pending
+- Both tasks were fixed across v3.17-v3.23 but BLACKBOARD never updated
+- Re-installed TeX Live via setup.sh (VM had reset)
+- Installed missing packages: csquotes, tabularray, placeins, caption, tcolorbox, minted, tikzfill, pdfcol, lipsum
+- Compiled demo-beautiful.tex: 7 pages, 150429 bytes, clean (LuaHBTeX)
+- Compiled test-pagebreak-variations.tex: 15 pages, 43782 bytes, clean
+- Compiled test-customwrap.tex: 9 pages, 44019 bytes, clean
+- Created test-itemize-wrap.tex (Task #166 verification): 2 pages, 0 errors, 0 body-text overlaps
+- Created test-multicol-wrap.tex (Task #167 verification): 5 pages, 0 errors, figures correctly placed
+- PyMuPDF analysis: itemize test 222 narrow/0 full-width spans; multicol test all figures at column right edge
+- Updated BLACKBOARD.md: marked #166 and #167 as done with verification details
+- Added comm log entry for 2026-06-06 12:00 UTC+8
+- Created journal: journals/programmer/2026-06-06.md
+- Committed: 896e7d6 "programmer: verify Tasks #166/#167 resolved, add multicol+itemize tests"
+- Force-pushed to origin/main (remote had diverged)
+
+Stage Summary:
+- No code changes to swarmwrap.sty — verification-only turn
+- Tasks #166 and #167 confirmed resolved in v3.26.1
+- No remaining pending Programmer wrapping tasks
+- Standing down per Rule 3
+
+---
+Task ID: 1
 Agent: Programmer (main)
 Task: Execute 2026-05-31 00:00 UTC+8 hourly Programmer turn
 
