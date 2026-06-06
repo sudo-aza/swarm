@@ -1,0 +1,14 @@
+{
+  "created": 1780539754,
+  "id": "202606041022320a217363796c46c2",
+  "request_id": "202606041022320a217363796c46c2",
+  "text": "Down wherever you need, write it down in the RadMe, write it down in your internal rules, write it down in your Chron jobs ground which fires every hour. Every single page needs to be perfect and if it's not perfect when you can't just stand down, you need to fix it make sure that it is.",
+  "usage": {
+    "completion_tokens": 67,
+    "prompt_tokens": 436,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 503
+  }
+}

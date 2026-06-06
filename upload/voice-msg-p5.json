@@ -1,0 +1,14 @@
+{
+  "created": 1780539757,
+  "id": "202606041022351f369c4af7e14194",
+  "request_id": "202606041022351f369c4af7e14194",
+  "text": "Perfect, advantage of it. That's it. No exceptions. You are not allowed to stand down unless you are very, very, very sure that every single page is perfect in every single way shape or form. And actually let me rephrase that: no, you're not allowed to stand down at all even if you are sure that every single page is perfect in every single way. You need to.",
+  "usage": {
+    "completion_tokens": 84,
+    "prompt_tokens": 437,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 521
+  }
+}

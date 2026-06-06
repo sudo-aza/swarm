@@ -1,0 +1,14 @@
+{
+  "created": 1780539747,
+  "id": "202606041022269e374539389044ec",
+  "request_id": "202606041022269e374539389044ec",
+  "text": "Having over two hundred point of empty space, and after that you only have like twenty six seven percent of pages being mostly empty. And the point I want to make very very clear is that twenty point twenty six seven is not zero, and I want it to be zero. That's it. And like.",
+  "usage": {
+    "completion_tokens": 63,
+    "prompt_tokens": 437,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 500
+  }
+}

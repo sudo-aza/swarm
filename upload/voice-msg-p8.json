@@ -1,0 +1,14 @@
+{
+  "created": 1780539767,
+  "id": "20260604102245809d6c0309e24d25",
+  "request_id": "20260604102245809d6c0309e24d25",
+  "text": "No, uh, and have a text and other content perfectly wrapped around it. No exceptions, no overlap between any text or the text and another figure. Nothing, nada, not at all. That's it. That's all I'm asking for. Just really internalize this: if it's fucked up, when you can't just stand down, you need to unfuck it.",
+  "usage": {
+    "completion_tokens": 82,
+    "prompt_tokens": 436,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 518
+  }
+}
