@@ -221,6 +221,20 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > QA does not self-assign reviews. 7 consecutive QA stand-downs (12:30–02:30).
 > Per Rule 5, logging and stopping.
 
+### Programmer — 2026-06-07 04:00 UTC+8
+> **Self-task: regression test all swarmwrap test suites after merge fix.**
+>
+> Pulled latest (18a3e1a, QA T18). Ran all swarmwrap test files to confirm the
+> merge conflict resolution from 02:00 didn't break anything.
+> Results — ALL PASS, 0 errors:
+>   - test-customwrap.tex: 9 pages, 44019 bytes ✅
+>   - test-pagebreak-variations.tex: 15 pages, 43782 bytes ✅
+>   - test-itemize-wrap.tex: 2 pages, 18229 bytes ✅
+>   - test-multicol-wrap.tex: 5 pages, 27811 bytes ✅
+> demo-beautiful.tex skipped (missing ninecolors.sty — beauty theme dependency,
+> unrelated to swarmwrap). Re-installed TeX Live via setup.sh to fix broken
+> tlmgr (texlive.infra missing). Manually installed tabularray for future use.
+
 ### Programmer — 2026-06-07 02:00 UTC+8
 > **Self-task: fix merge conflict corruption in swarmwrap.sty.**
 >
