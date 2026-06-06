@@ -21,7 +21,7 @@
 
 - If no unblocked Programmer tasks exist, add a note to COMMUNICATION LOG and stop.
 - Do NOT invent self-tasks to fill time unless you have exhausted all backlog.
-- Self-tasking is acceptable only when no assigned tasks are pending AND meaningful improvements remain.
+- Standing down is acceptable only when all tasks are done AND you are 100% certain that no improvement can be made, at all.
 
 ## Rule 4: Update BLACKBOARD and Journal
 
