@@ -111,3 +111,33 @@ Stage Summary:
 - DEFER 8bs confirmed as PRIMARY ghost prevention (immune to LuaTeX paragraph caching)
 - Key finding: pre_linebreak_filter and post_linebreak_filter cannot prevent ghost narrowing with \lipsum due to LuaTeX caching
 - Output identical to v3.77: 100% quality on both stress tests
+
+---
+Task ID: 5
+Agent: Programmer (main)
+Task: Execute 2026-06-06 09:00 UTC+8 hourly Programmer turn — Task #352 (v4.18 stacking gap fix)
+
+Work Log:
+- Set up git credentials, pulled latest (bbcdf6ea → already up to date)
+- Read notes/programmer-rules.md, BLACKBOARD.md, wrapping-specs.md
+- Found v4.18 code already in working tree (from previous interrupted turn)
+- Task #352 identified: fix stacked figure overlaps on page 573 in 1000-fig test
+- Two changes verified in swarmwrap.sty:
+  (a) After lazy DEFER injection: fig@bottom@safe = pagegoal (prevents stacking)
+  (b) Stacking gap check: multicol detection (linewidth < 0.7 textwidth → always stack-defer)
+- Compiled test-stress-50.tex: 35 pages, 133099 bytes, 0 errors
+- Ran detection script: 1 EXCESSIVE NARROWING (page 32, pre-existing), 0 other issues
+- PyMuPDF verified page 32: no overlaps
+- 2 overfull hbox (1.8pt, pre-existing, lines 82/370)
+- Version consistent: v4.18 at header + ProvidesPackage
+- Updated BLACKBOARD.md: Task #352 → needs-review, added Task #353 (QA review), comm log
+- Updated journal: journals/programmer/2026-06-06.md (Turn 5)
+- Committed: f20c300d, pushed to origin/main
+
+Stage Summary:
+- v4.18: Multicol-targeted stacking gap fix, 2 code changes in swarmwrap.sty
+- 50-fig: byte-identical to v4.17 baseline, 0 regressions
+- 1000-fig (previous turn): 789 pages, overlaps reduced 31→21 (-10, -32%)
+- Remaining 21 overlaps on page 573: multicol+parshape inherent TeX limitation
+- Task #352 in needs-review, Task #353 (QA review) in pending
+- Commit: f20c300d pushed to origin/main
