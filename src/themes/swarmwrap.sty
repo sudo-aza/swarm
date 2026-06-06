@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.23.1)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.26.1)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -232,29 +232,7 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-<<<<<<< Updated upstream
-% v3.26.1: Revert v3.26 deferred afterpage fix (67 overlap regression).
-%   v3.26 fixed the %.5f catcode bug in the deferred afterpage call, making
-%   \afterpage actually emit. The figure appeared on the next page, but
-%   subsequent paragraphs on that page flowed full-width through the
-%   figure overlay, causing 67 body-text overlaps on the 50-page test
-%   (was 0). This is the same failure mode as v3.24's earlier attempt.
-%   ROOT CAUSE: \afterpage places the figure as a zero-height overlay
-%   (\smash{\rlap{...}}) at the top of the next page. Only the leaked
-%   parshape lines from the deferred paragraph are narrow enough to avoid
-%   the figure. All subsequent paragraphs are full-width and overlap.
-%   There is no way to inject narrow parshape into \afterpage text
-%   without the continuation paragraph already having started.
-%   CONCLUSION: The deferred afterpage approach is fundamentally broken.
-%   The catcode bug was accidentally BENIGN — by silently dropping figures,
-%   it avoided 67 overlaps. Reverted to v3.25 behavior.
-%
-% v3.26: Fix deferred afterpage catcode bug — figures now appear on next page.
-
 \ProvidesPackage{swarmwrap}[2026/05/22 v3.26.1 revert deferred afterpage fix broken approach documented]
-=======
-\ProvidesPackage{swarmwrap}[2026/05/22 v3.26 ghost afterpage compensation in post_linebreak_filter]
->>>>>>> Stashed changes
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -300,17 +278,12 @@
 \newcount\swarmwrap@remaining@nl
 \swarmwrap@remaining@nl=0
 
-<<<<<<< Updated upstream
 % ── Deferred figure state (reserved for future use) ───────────────────
 % \newif\ifswarmwrap@deferred
 % \swarmwrap@deferredfalse
 % \newdimen\swarmwrap@deferred@tw
 % \newdimen\swarmwrap@deferred@fh
 % \newcount\swarmwrap@deferred@nl
-=======
-% ── Ghost figure saved box (v3.26) ──────────────────────────────────
-\newsavebox{\swarmwrap@ghost@box}
->>>>>>> Stashed changes
 
 % ── List patch: reduce \linewidth inside lists (Task 166) ──────
 % LaTeX's \list (latex.ltx:15868) sets \parshape \@ne \@totalleftmargin \linewidth,
@@ -344,16 +317,11 @@
   \fi
   \swarmwrap@old@list{#1}{#2}%
   \swarmwrap@in@listfalse
-}%% ── Lua callback: post_linebreak_filter ───────────────────────────────
+}
+
+% ── Lua callback: post_linebreak_filter ───────────────────────────────
 \ifswarmwrap@luatex
 \directlua{
-<<<<<<< Updated upstream
-=======
-  -- Ghost compensation: use deferred path when space is tight (v3.25).
-  -- v3.26: Also emit afterpage to compensate ghost narrowing on continuation pages.
-  swarmwrap_remaining_space = 0
-
->>>>>>> Stashed changes
   function swarmwrap_post_lb(head, groupcode)
     local tw_sp = tex.dimen["swarmwrap@tw@lua"]
     if tw_sp <= 0 then
@@ -378,18 +346,14 @@
       current = current.next
     end
     -- Decrement remaining-nl counter (v3.17)
-<<<<<<< Updated upstream
     -- v3.19: If paragraph broke across pages (total_lines < nl),
     -- zero out remaining@nl to prevent everypar from re-applying
     -- parshape to subsequent paragraphs on the continuation page.
-=======
->>>>>>> Stashed changes
     if tex.count["swarmwrap@remaining@nl"] > 0 then
       local r = tex.count["swarmwrap@remaining@nl"]
       local nl = tex.count["swarmwrap@nl"]
       if total_lines < nl then
         tex.count["swarmwrap@remaining@nl"] = 0
-        -- v3.26 PLACEHOLDER: ghost compensation will go here
       else
         r = math.max(0, r - narrow_count)
         tex.count["swarmwrap@remaining@nl"] = r
@@ -419,26 +383,11 @@
 }
 \fi
 
-<<<<<<< Updated upstream
 % ── Ghost compensation REMOVED in v3.25 ──────────────────────────────────
 % v3.24's afterpage-based ghost compensation caused 9 body-text overlaps
 % on the 1000-page stress test. The afterpage figure overlay aligned with
 % leaked parshape lines but subsequent paragraphs flowed full-width through
 % it. Removed to restore zero-overlap guarantee on 1000-page test.
-=======
-% ── Ghost figure injection command (v3.26) ──────────────────────────
-% Called by afterpage when post_linebreak_filter detected ghost narrowing.
-% Places a saved copy of the figure overlay at the top of the continuation page.
-\newcommand{\swarmwrap@inject@ghost}{%
-  \leavevmode\hbox{\smash{\rlap{%
-    \hskip\swarmwrap@ghost@tw\relax
-    \hskip\swarmwrap@ghost@gap\relax
-    \raise\swarmwrap@ghost@raise\relax
-    \hbox{\copy\swarmwrap@ghost@box}%
-  }}}%
-  \wlog{swarmwrap GHOST COMPENSATION: afterpage injected on page \thepage}%
-}
->>>>>>> Stashed changes
 
 % ── Environment: capture content into a savebox ─────────────────────
 \newenvironment{swarmwrap}{%

@@ -210,6 +210,19 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-06-07 02:00 UTC+8
+> **Self-task: fix merge conflict corruption in swarmwrap.sty.**
+>
+> Pulled latest (3fa4a77). Discovered that the 22:00 turn's git merge introduced
+> **7 unresolved merge conflict markers** (`<<<<<<<`/`=======`/`>>>>>>>`) into
+> swarmwrap.sty — the package would NOT compile correctly. Conflicts came from
+> an earlier uncommitted v3.26 ghost afterpage compensation session that was
+> incorrectly stashed and merged. All 7 conflicts resolved by keeping the
+> proven "Updated upstream" (v3.26.1 revert) version. Also fixed the version
+> header from `v3.23.1` to `v3.26.1` (line 1) to match actual code version.
+> Compile-tested: test-customwrap.tex → 9 pages, 0 errors, clean output.
+> Installed lipsum + csquotes packages (VM had reset).
+
 ### Programmer — 2026-06-07 01:00 UTC+8
 > **Stand-down — no pending Programmer tasks.**
 >
