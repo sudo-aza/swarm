@@ -1,0 +1,14 @@
+{
+  "created": 1780869066,
+  "id": "202606080551061f9635284c394ddb",
+  "request_id": "202606080551061f9635284c394ddb",
+  "text": "Needs to be perfect in every single way, and as long as you don't succeed in that, you failed.",
+  "usage": {
+    "completion_tokens": 25,
+    "prompt_tokens": 198,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 223
+  }
+}
