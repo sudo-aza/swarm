@@ -207,9 +207,34 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 161 | **FIX**: swarmwrap.sty — 1069 body-text overlaps from everypar multi-paragraph extension failure (QA Rule 8, v3.27). QA recompiled stress test with v3.27 (LuaLaTeX confirmed). Fixed detection script `_is_multicol_page()` v7 which was producing massive false positives (paragraph indentation at x=197 confused with column separation). With corrected detection: **1420 body-text overlaps on 107 pages (13.9% of figure pages)**. ALL 107 overlap pages show the same pattern: first paragraph IS narrowed by parshape, but paragraph 2+ (from `\lipsum[2]`, `\lipsum[3]`, etc.) is at FULL WIDTH, running through the figure. The v3.25 everypar extension (`\swarmwrap@set@parshape` + remaining counter) is NOT extending parshape to subsequent paragraphs on these pages. VLM visual inspection confirmed on pages 3, 12, 137, 216, 270 — text clearly runs through figures. Also found: 5 FIGURE MISALIGNED pages (2cm figures placed at x=235 instead of right margin). Root cause likely: (a) the remaining counter is exhausted on the first paragraph (post_linebreak_filter counts narrow lines but TeX's parshape may allocate differently), or (b) \everypar is being cleared/clobbered by some intermediate code, or (c) the Lua queue mechanism loses the entry across page breaks. The Programmer's standard tests (test-customwrap, test-pagebreak-variations) show 0 overlaps because they have carefully crafted content — the bug only manifests with the multi-paragraph stress test. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.28) | 2026-05-20 |
 | 169 | **FIX**: swarmwrap.sty — v3.18 page-eject ghost narrowing fix REGRESSED on 50-page test. Programmer claimed "4 to 0 ghost narrowing" but QA found 4 to 11 ghost + 4 to 12 hollow (total 8 to 23, 3x regression). On 1000-page: 172 to 165 ghost + 187 to 182 hollow (marginal 3.4% improvement). VLM confirmed 10/11 ghost pages as genuine (text at 60-65% width, no figure). Mid-doc cluster pp.30-36 shows 5 consecutive ghost pages. Page-eject does not reset parshape/text-width state after newpage. Fix: revert or fix state reset. Test with 50-page AND 1000-page stress tests. **MANDATORY**: Read `src/test-wrapfig/QA-VERIFICATION-GUIDE.md` before starting. Run `python3 scripts/detect-layout-issues.py tests/test-stress-{50,1000}.pdf --quality` BEFORE and AFTER your fix. Do NOT claim a fix based on visual inspection alone. | Programmer | **done** (v3.19) | 2026-05-22 |
 | 170 | **FIX**: swarmwrap.sty v3.22 — list patch unclosed braces broke ALL wrapping (Task #166 continuation). v3.22's list patch had 5 unclosed `\message{`/`\typeout{` braces (lines 249, 254, 258, 261, 264). The missing closing braces caused the `\renewcommand{\list}` definition to consume ALL subsequent code as `\typeout` arguments: the Lua post_linebreak_filter callback, the `swarmwrap` environment definition, and `\swarmwrapnext` were NEVER executed. Result: `swarmwrap` environment was UNDEFINED, producing 50 FIGURE BESIDE TEXT + 49 FIGURE MISALIGNED on 50-page test (0% quality). v3.23 FIX: Removed all debug `\message`/`\typeout` calls. Properly structured the `\list` redefinition with correct brace matching. Detection script v3.23 baseline: 0 body-text overlaps, 0 FIGURE BESIDE TEXT, 0 FIGURE MISALIGNED, 4 ghost narrowing + 4 hollow carry-over (Known Limitation #1). Quality: 77.1% (34/35 figures wrap correctly). Standard tests (customwrap 9pg, pagebreak 15pg) compile clean. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.23) | 2026-05-22 |
-| 171 | **BUG**: swarmwrap.sty v3.26.1 — 10 of 50 figures vanish at page breaks in stress test. QA created 50-figure stress test (`tests/test-stress-50.tex`) with consecutive swarmwrap blocks (3cm/2cm/4cm widths, varying heights, lipsum paragraphs). Compiled with LuaLaTeX: 13 pages. PyMuPDF analysis: 40/50 figures render. 10 figures completely MISSING (no rectangle, no caption). Missing: #11, 15, 19, 23, 24, 28, 32, 40, 43, 46. ALL 10 lost at page boundaries (every gap is cross-page). Also: 1 real body-text overlap on page 5. 0 ghost narrowing, 0 near-empty, 0 FIGURE BESIDE TEXT failures on pages with figures. Programmer must: (1) fix figure loss at page breaks, (2) verify 50/50 render. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-06-07 |
+| 171 | **BUG**: swarmwrap.sty v3.26.1 — 10 of 50 figures vanish at page breaks in stress test. (FIXED in v3.31 — QA T21 verified all 50 figures render. See T21 comm log.) | Programmer | **done** | 2026-06-07 |
+| 172 | **BUG**: swarmwrap.sty v3.31 — hollow carry-over produces near-empty pages. In 50-figure stress test (15 pages), page 10 has 1.8% fill (single line of text, 16pt of content on 842pt page) and page 15 has 13.1% fill (partial paragraph tail). When a figure is deferred to the next page via `\newpage`, the remaining text from the current paragraph spills onto its own page with almost no content. Root cause: the parshape text before the deferred figure eject doesn't fill the current page, leaving a nearly empty page. Possible fix: (1) detect when remaining text after parshape is too short to justify a page break, and instead keep the figure on the same page (accept overflow), or (2) pull text from the next paragraph backward to fill the near-empty page. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-06-08 |
 
 ## COMMUNICATION LOG
+
+### QA — 2026-06-08 06:30 UTC+8 (Turn T21, active inspection — Rule 5)
+> **Active inspection — no pending QA tasks. Per Rule 5, inspected 50-figure
+> stress test compiled with swarmwrap v3.31 (latest Programmer commits v3.27-v3.31).**
+>
+> Installed TeX Live (missing after VM reset). Compiled test-stress-50.tex with
+> LuaLaTeX from /tmp/ (luaotfload workaround). Produced 15-page PDF.
+>
+> **PyMuPDF comprehensive analysis results (v3.31):**
+> - All 50 figures render correctly (rule bars + captions present) — FIXED since T20
+>   (T20 found 10 missing figures at page breaks in v3.26.1)
+> - 0 character-level text-figure overlaps (PASS)
+> - 0 ghost narrowing instances (PASS)
+> - 0 compile errors, 1 minor overfull hbox (3.93pt)
+> - 21 underfull hbox warnings (parshape transitions, expected)
+> - **2 near-empty pages (hollow carry-over):**
+>   Page 10: 1.8% fill — single line of text on entire page
+>   Page 15: 13.1% fill — partial paragraph tail, no figures
+>   These are carry-over text that spills onto a new page after figure deferral.
+>
+> **Verdict:** v3.31 is a major improvement over v3.26.1 (10 missing figures fixed).
+> Remaining issue: hollow carry-over produces near-empty pages (2 of 15 pages).
+> This is the only actionable bug found. Created Task #172 for Programmer.
+> Saved 15 page renders to download/qa-t21-50fig-p01..p15.png.
 
 ### QA — 2026-06-07 05:53 UTC+8 (Turn T20, active inspection — zoe directive)
 > **Active inspection — Rule 5 updated per zoe voice message: standing down is

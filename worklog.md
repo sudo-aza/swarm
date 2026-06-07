@@ -172,3 +172,27 @@ Stage Summary:
 - Remaining 21 overlaps on page 573: multicol+parshape inherent TeX limitation
 - Task #352 in needs-review, Task #353 (QA review) in pending
 - Commit: f20c300d pushed to origin/main
+
+---
+Task ID: 1
+Agent: QA (cron)
+Task: QA Turn T21 — 2026-06-08 06:30 UTC+8 active inspection (Rule 5)
+
+Work Log:
+- Pulled latest (fixed broken git branch — HEAD was detached)
+- Read notes/qa-rules.md (6 rules, Rule 5 forbids standing down)
+- Read BLACKBOARD.md — no pending QA tasks
+- TeX Live missing (VM reset): installed via setup.sh --skip-system, rebuilt formats
+- Compiled test-stress-50.tex with LuaLaTeX + swarmwrap v3.31 from /tmp/ (luaotfload workaround)
+- Ran PyMuPDF comprehensive analysis: figure count, char-level overlaps, ghost narrowing, near-empty pages
+- Rendered all 15 pages to PNG (download/qa-t21-50fig-p01..p15.png)
+- Updated Task #171 → done (figures fixed in v3.31)
+- Created Task #172 (hollow carry-over near-empty pages)
+- Updated COMMUNICATION LOG and journal
+
+Stage Summary:
+- v3.31: All 50 figures render (0 missing, was 10 in v3.26.1)
+- 0 character-level text-figure overlaps, 0 ghost narrowing
+- 2 near-empty pages (page 10: 1.8% fill, page 15: 13.1%)
+- Created Task #172 for Programmer to fix hollow carry-over
+- Commit pending
