@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.30)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.31)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -29,6 +29,12 @@
 %
 %   % Custom text-figure gap (horizontal space between text and figure):
 %   \swarmwrapgap{20pt}  % default is 14pt
+%
+%   % Custom squeeze-fit threshold (fraction of figure height):
+%   \swarmwrapsqueeze{0.3}  % default is 0.4 (40%)
+%
+%   % Custom squeeze-fit minimum space:
+%   \swarmwrapsqueezemin{3\baselineskip}  % default is 2\baselineskip
 %
 % Zero arguments. Width and height are auto-detected from the rendered
 % content box. The user controls the content width explicitly (e.g.,
@@ -69,6 +75,15 @@
 %    wrapping spec #4 ("near newpage: right-wrap on next page").
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.31: Configurable squeeze-fit thresholds.
+%   Added user commands \swarmwrapsqueeze{<factor>} (default 0.4) and
+%   \swarmwrapsqueezemin{<dimen>} (default 2\baselineskip) to let users
+%   tune when squeeze-fit activates vs deferred-NEWPAGE. Previously
+%   hardcoded at 0.4 and 2\baselineskip (v3.30). Power users with
+%   specific document layouts can now raise the factor for more
+%   aggressive squeezing or lower it for conservative behavior.
+%   Defaults unchanged — 0 errors, 0 regressions across all 4 test suites.
 %
 % v3.30: Lower squeeze-fit thresholds for NE page reduction.
 %   The squeeze-fit mode (v3.28) previously required remaining space >= 50%
@@ -243,7 +258,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/08 v3.30 lower squeeze-fit thresholds for NE reduction]
+\ProvidesPackage{swarmwrap}[2026/06/08 v3.31 configurable squeeze-fit thresholds]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -310,6 +325,27 @@
 
 \newcommand{\swarmwrapgap}[1]{%
   \swarmwrap@gap=#1\relax
+}
+
+% ── Squeeze-fit threshold control (v3.31) ──────────────────────────
+% Users can tune when squeeze-fit activates vs deferred-NEWPAGE.
+% \swarmwrapsqueeze: fraction of figure height that remaining space
+%   must exceed (default 0.4 = 40%). Higher = more aggressive squeeze.
+% \swarmwrapsqueezemin: minimum remaining space in absolute terms
+%   (default 2\baselineskip). Prevents squeeze when almost no space.
+\newcommand{\swarmwrap@squeeze@factor}{0.4}
+\newcommand{\swarmwrap@squeeze@factor@str}{0.4}
+
+\newcommand{\swarmwrapsqueeze}[1]{%
+  \def\swarmwrap@squeeze@factor{#1}%
+  \def\swarmwrap@squeeze@factor@str{#1}%
+}
+
+\newdimen\swarmwrap@squeezemin
+\swarmwrap@squeezemin=2\baselineskip
+
+\newcommand{\swarmwrapsqueezemin}[1]{%
+  \swarmwrap@squeezemin=#1\relax
 }
 
 % ── Penalty control ──────────────────────────────────────────────────
@@ -470,19 +506,19 @@
   \fi
   \swarmwrap@fw=\swarmwrap@fw@val\relax
   \swarmwrap@fh=\swarmwrap@fh@val\relax
-  % ── Squeeze-fit check (v3.28) ───────────────────────────────
+  % ── Squeeze-fit check (v3.28/v3.31) ────────────────────────
   % When figure doesn't fit, check if scaling it down would allow
-  % it to fit. Conditions: remaining >= 50% of fh AND remaining >=
-  % 3 baselineskip. This avoids \newpage for moderate-shortfall
-  % cases, reducing NE (near-empty) pages.
+  % it to fit. Conditions: remaining >= squeeze-factor * fh AND
+  % remaining >= squeezemin. Both thresholds user-configurable
+  % via \swarmwrapsqueeze and \swarmwrapsqueezemin (v3.31).
   \swarmwrap@squeezedfalse
   \swarmwrap@deferredfalse
   \dimen0=\pagegoal
   \advance\dimen0 by -\pagetotal
   \ifdim\dimen0<\swarmwrap@fh
     % Figure doesn't fit. Try squeeze-fit.
-    \dimen2=0.4\swarmwrap@fh
-    \dimen3=2\baselineskip
+    \dimen2=\swarmwrap@squeeze@factor\swarmwrap@fh
+    \dimen3=\swarmwrap@squeezemin
     \ifdim\dimen0>\dimen2
       \ifdim\dimen0>\dimen3
         % SQUEEZE-FIT: Scale figure proportionally to fit.

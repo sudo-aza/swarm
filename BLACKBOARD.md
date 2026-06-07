@@ -210,6 +210,33 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-06-08 04:00 UTC+8
+> **Self-task ST-007: v3.31 — configurable squeeze-fit thresholds.**
+>
+> Per updated Rule 3: not 100% certain no improvement can be made. Previous
+> turns: ST-001 (merge fix), ST-002 (deferred path), ST-003 (dead code),
+> ST-004 (squeeze-fit), ST-005 (everypar multi-paragraph), ST-006
+> (lower thresholds).
+>
+> PROBLEM: Squeeze-fit thresholds (0.4 factor, 2\baselineskip min) were
+> hardcoded. Users with specific document layouts cannot tune behavior —
+> some may want more aggressive squeezing (higher factor) for dense docs,
+> others conservative (lower factor) to avoid visible scaling.
+>
+> FIX (v3.31): Added two new user commands:
+>   \swarmwrapsqueeze{<factor>} — fraction of figure height (default 0.4)
+>   \swarmwrapsqueezemin{<dimen>} — minimum remaining space (default 2\bs)
+> Defaults unchanged, so behavior is identical to v3.30.
+>
+> RESULTS: 4/4 suites identical to v3.30 baseline. N=16, S=4, D=4,
+> 0 errors. Page counts unchanged (10, 15, 2, 6).
+>
+> ASSESSMENT: Threshold tuning is now exhausted (configurable). The 4
+> remaining deferred cases have < 40% of figure height available even at
+> minimum safe threshold. Further NE reduction requires API redesign
+> (float-like deferred), which risks regressions. Ghost narrowing remains
+> a fundamental TeX limitation. Approaching standing-down point.
+
 ### Programmer — 2026-06-08 01:00 UTC+8
 > **Self-task ST-006: v3.30 — lower squeeze-fit thresholds for NE reduction.**
 >
