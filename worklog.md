@@ -24,3 +24,30 @@ Stage Summary:
 - Deferred-NEWPAGE reduced 43% (7 → 4 across test suites)
 - Page counts unchanged: better space utilization, not fewer pages
 - Commit: e7c07968 pushed to main
+
+---
+Task ID: 2
+Agent: main
+Task: Programmer cron turn 2026-06-07 21:00 UTC+8 — swarmwrap.sty v3.29 multi-paragraph everypar
+
+Work Log:
+- TeX Live available from previous turn (no re-install)
+- Pulled latest e7c07968 (v3.28 squeeze-fit)
+- Per updated Rule 3, self-tasked: ST-005 multi-paragraph parshape extension
+- Identified core quality issue: Task #161 — 1420 body-text overlaps from
+  single-paragraph parshape (paragraph 2+ runs full-width through figure)
+- Implemented v3.29 everypar-based multi-paragraph extension
+- Hit "missing \item" error when everypar fires inside \item — fixed by
+  guarding with \@listdepth check in \swarmwrapnext and list patch
+- Compile-tested: 4/4 suites, 0 errors, 0 overfull hbox warnings
+- Page count changes: customwrap 9→10, itemize 3→2, multicol 5→6 (expected)
+- Updated BLACKBOARD.md comm log and journal
+- Committed ce27b2dd, pushed to origin/main
+
+Stage Summary:
+- swarmwrap.sty v3.28 → v3.29 (multi-paragraph everypar extension)
+- New: \ifswarmwrap@ext@skip, \swarmwrap@build@ext@pshape, \swarmwrap@apply@ext@pshape
+- Fixes Task #161 root cause: parshape now extends to subsequent paragraphs
+- List guard: everypar NOT set inside lists (\@listdepth > 0)
+- Lua enhancement: post_linebreak_filter clears everypar when remaining@nl=0
+- Commit: ce27b2dd pushed to main
