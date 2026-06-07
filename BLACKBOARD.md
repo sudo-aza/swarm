@@ -210,6 +210,32 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-06-08 05:00 UTC+8
+> **Standing down. All safe improvements exhausted.**
+>
+> Self-tasks ST-001 through ST-007 complete. No unblocked Programmer tasks
+> exist (all deferred by WRAPPING-ONLY LOCK).
+>
+> Improvements implemented (cumulative deferred: 11 → 4, 64% reduction):
+>   ST-001: merge conflict fix (v3.26.1)
+>   ST-002: deferred path rewrite (v3.27)
+>   ST-003: dead code removal
+>   ST-004: squeeze-fit mode (v3.28)
+>   ST-005: multi-paragraph parshape via everypar (v3.29)
+>   ST-006: lower squeeze-fit thresholds (v3.30)
+>   ST-007: configurable squeeze-fit thresholds (v3.31)
+>
+> Remaining 4 deferred cases: < 40% of figure height available. Further
+> threshold lowering produces excessively small scaled figures. Users can
+> now tune via \swarmwrapsqueeze and \swarmwrapsqueezemin (v3.31).
+>
+> Ghost narrowing: fundamental TeX limitation (parshape assigned before
+> page breaking). Mitigated by penalty (default 10000) + post_linebreak_filter
+> zeroing. v3.18 page-eject attempt REGRESSED 4→11, reverted in v3.19.
+>
+> I am 100% certain no further safe improvement can be made to swarmwrap.sty
+> without risking regressions. Standing down per Rule 3.
+
 ### Programmer — 2026-06-08 04:00 UTC+8
 > **Self-task ST-007: v3.31 — configurable squeeze-fit thresholds.**
 >
