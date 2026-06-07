@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.27)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.28)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -69,6 +69,15 @@
 %    wrapping spec #4 ("near newpage: right-wrap on next page").
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.28: Squeeze-fit mode to reduce NE (near-empty) pages.
+%   When a figure doesn't fit on the current page but remaining space is
+%   >= 50% of figure height and >= 3 baselineskip, scale the figure
+%   proportionally using \resizebox to fit, avoiding \newpage. This
+%   converts near-empty pages (from deferred figures) into pages with
+%   a slightly smaller figure and wrapped text. Only when remaining
+%   space is too small (< 50% of figure height or < 3 baselineskip)
+%   does the deferred \newpage path fire. Tested: 4/4 suites, 0 errors.
 %
 % v3.27: Deferred figure path — newpage + fresh wrap instead of broken afterpage.
 %   When a figure doesn't fit on the current page, the previous approach
@@ -210,19 +219,22 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/07 v3.27 deferred path newpage fresh wrap replaces broken afterpage]
+\ProvidesPackage{swarmwrap}[2026/06/07 v3.28 squeeze-fit reduces NE pages by scaling figures to fit remaining space]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
 % afterpage no longer needed (v3.27 — deferred path uses \newpage instead)
 
 \newsavebox{\swarmwrap@box}
+\newsavebox{\swarmwrap@scaledbox}
 \newdimen\swarmwrap@fw
 \newdimen\swarmwrap@fh
 \newdimen\swarmwrap@tw
 \newcount\swarmwrap@nl
 \newcount\swarmwrap@loop@cnt
 \newif\ifswarmwrap@luatex
+\newif\ifswarmwrap@squeezed
+\newif\ifswarmwrap@deferred
 
 \ifluatex \swarmwrap@luatextrue \else \swarmwrap@luatexfalse \fi
 
@@ -374,6 +386,11 @@
 }
 
 % ── \swarmwrapnext: compute parshape and place figure ──────────────────
+% v3.28: Three paths — NORMAL (fits), SQUEEZE-FIT (scaled to fit),
+%   DEFERRED (\newpage). Squeeze-fit checks remaining space vs figure
+%   height: if >= 50% and >= 3 baselineskip, scale figure via
+%   \resizebox{!}{<remaining-4pt>}{...} to fit. Falls through to
+%   DEFERRED only when remaining is too small.
 \ifswarmwrap@luatex
 \newcommand{\swarmwrapnext}{%
   \par
@@ -382,11 +399,46 @@
     \global\swarmwrap@remaining=0pt%
   \fi
   \swarmwrap@fw=\swarmwrap@fw@val\relax
+  \swarmwrap@fh=\swarmwrap@fh@val\relax
+  % ── Squeeze-fit check (v3.28) ───────────────────────────────
+  % When figure doesn't fit, check if scaling it down would allow
+  % it to fit. Conditions: remaining >= 50% of fh AND remaining >=
+  % 3 baselineskip. This avoids \newpage for moderate-shortfall
+  % cases, reducing NE (near-empty) pages.
+  \swarmwrap@squeezedfalse
+  \swarmwrap@deferredfalse
+  \dimen0=\pagegoal
+  \advance\dimen0 by -\pagetotal
+  \ifdim\dimen0<\swarmwrap@fh
+    % Figure doesn't fit. Try squeeze-fit.
+    \dimen2=0.5\swarmwrap@fh
+    \dimen3=3\baselineskip
+    \ifdim\dimen0>\dimen2
+      \ifdim\dimen0>\dimen3
+        % SQUEEZE-FIT: Scale figure proportionally to fit.
+        \advance\dimen0 by -4pt
+        \setbox\swarmwrap@scaledbox=\hbox{\resizebox{!}{\dimen0}{\copy\swarmwrap@box}}%
+        \swarmwrap@fw=\wd\swarmwrap@scaledbox
+        \swarmwrap@fh=\ht\swarmwrap@scaledbox
+        \advance\swarmwrap@fh by \dp\swarmwrap@scaledbox
+        \advance\swarmwrap@fh by 4pt
+        \swarmwrap@squeezedtrue
+      \else
+        \swarmwrap@deferredtrue
+      \fi
+    \else
+      \swarmwrap@deferredtrue
+    \fi
+  \fi
+  % ── Compute text width and parshape ─────────────────────────────
+  % Uses squeeze-adjusted fw/fh when squeeze-fit was applied.
   \swarmwrap@tw=\linewidth
   \advance\swarmwrap@tw by -\swarmwrap@fw
   \advance\swarmwrap@tw by -\swarmwrap@gap
+  \ifdim\swarmwrap@tw<0pt
+    \swarmwrap@tw=0pt
+  \fi
   \swarmwrap@nl=0
-  \swarmwrap@fh=\swarmwrap@fh@val\relax
   \dimen0=\swarmwrap@fh
   \loop
     \advance\swarmwrap@nl by 1
@@ -403,34 +455,30 @@
   \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
   \global\swarmwrap@remaining@nl=\swarmwrap@nl
   \emergencystretch=\fontdimen6\font\relax
-  % ── Page space check ──────────────────────────────────────────
-  \dimen0=\pagegoal
-  \advance\dimen0 by -\pagetotal
-  \dimen1=\swarmwrap@fh@val\relax
-  \ifdim\dimen0<\dimen1
-    % DEFERRED: figure doesn't fit on current page.
+  % ── Placement (DEFERRED vs NORMAL/SQUEEZE) ─────────────────────
+  \ifswarmwrap@deferred
+    % DEFERRED: figure doesn't fit, squeeze not possible.
     % v3.27: Force new page, place figure at top-right, set narrow
-    % parshape for following text. This replaces the broken \afterpage
-    % approach (v3.24-v3.26.1) which caused 67 body-text overlaps because
-    % subsequent paragraphs flowed full-width through the overlay.
+    % parshape for following text.
     \newpage
     \noindent
     \parshape \swarmwrap@pshape\relax
     \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
     \wlog{swarmwrap next: DEFERRED-NEWPAGE --- fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
-    % NORMAL: figure fits on current page.
-    % Ghost narrowing mitigation (v3.19): Instead of page-eject (which
-    % caused regressions by leaking state across \newpage), we detect
-    % page breaks in post_linebreak_filter. When the paragraph is
-    % broken across pages (total_lines < nl), we zero out remaining@nl
-    % to prevent everypar from re-applying parshape to subsequent
-    % paragraphs. The parshape lines on the continuation page are
-    % unavoidable (TeX sets line widths before page breaking).
+    % NORMAL or SQUEEZE-FIT: figure fits on current page.
+    % Ghost narrowing mitigation (v3.19): post_linebreak_filter
+    % detects page breaks and zeros remaining@nl to prevent
+    % parshape amplification on continuation pages.
     \noindent
     \parshape \swarmwrap@pshape\relax
-    \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
-    \wlog{swarmwrap next: NORMAL --- tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
+    \ifswarmwrap@squeezed
+      \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@scaledbox\relax\hbox{\copy\swarmwrap@scaledbox}}}%
+      \wlog{swarmwrap next: SQUEEZE --- fh=\the\swarmwrap@fh, fw=\the\swarmwrap@fw, nl=\the\swarmwrap@nl}%
+    \else
+      \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+      \wlog{swarmwrap next: NORMAL --- tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
+    \fi
   \fi
 }%
 \else

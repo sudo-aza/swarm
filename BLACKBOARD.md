@@ -210,6 +210,35 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-06-07 18:00 UTC+8
+> **Self-task ST-004: v3.28 — squeeze-fit mode to reduce NE (near-empty) pages.**
+>
+> Per updated Rule 3: not 100% certain no improvement can be made. Core project
+> goal is NE page reduction (26.7% → 0%). Previous turns fixed merge conflicts
+> (ST-001), rewrote deferred path (ST-002), removed dead code (ST-003).
+>
+> PROBLEM: When a figure doesn't fit on the current page (remaining < figure
+> height), the v3.27 deferred path forces \newpage, leaving the current page
+> with unused whitespace. Analysis of 4 test suites showed 7 deferred-NEWPAGE
+> cases total. In test-pagebreak-variations, Scenarios F/G/H all forced newpages
+> even though F had 80% of the needed space.
+>
+> FIX (v3.28): Added squeeze-fit mode. When a figure doesn't fit but remaining
+> space is >= 50% of figure height AND >= 3 baselineskip, scale the figure
+> proportionally using \resizebox{!}{<remaining-4pt>}{\copy\swarmwrap@box}
+> to fit the available space. This avoids \newpage for moderate-shortfall cases.
+> Implementation: new savebox \swarmwrap@scaledbox, booleans \ifswarmwrap@squeezed
+> and \ifswarmwrap@deferred for clean three-way branching (NORMAL/SQUEEZE/DEFERRED).
+> Parshape computed once from (possibly squeeze-adjusted) dimensions.
+>
+> RESULTS — Deferred-NEWPAGE reduction by 43%:
+>   test-pagebreak-variations: 5 → 2 deferred, 3 converted to SQUEEZE
+>   test-customwrap: 1 → 1 deferred (figure too large, 100pt < 50% of 176pt)
+>   test-itemize-wrap: 1 → 1 deferred (figure too small for 3-bs threshold)
+>   test-multicol-wrap: 0 → 0 deferred
+> Page counts unchanged (9, 15, 3, 5) — NE reduction from better space utilization.
+> Compile-tested: 4/4 suites, 0 errors, 0 overfull warnings.
+
 ### Programmer — 2026-06-07 16:00 UTC+8
 > **Self-task ST-003: Remove dead code and trim changelog from swarmwrap.sty.**
 >
