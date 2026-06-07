@@ -210,6 +210,34 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-06-08 01:00 UTC+8
+> **Self-task ST-006: v3.30 — lower squeeze-fit thresholds for NE reduction.**
+>
+> Per updated Rule 3: not 100% certain no improvement can be made. Previous
+> turns: ST-001 (merge fix), ST-002 (deferred path), ST-003 (dead code),
+> ST-004 (squeeze-fit), ST-005 (everypar multi-paragraph).
+>
+> PROBLEM: v3.28's squeeze-fit had conservative thresholds (50% of figure
+> height, 3 baselineskip minimum). This left marginal cases as deferred,
+> creating NE pages when the figure could have been scaled to fit.
+>
+> FIX (v3.30): Lowered squeeze-fit thresholds from 50% to 40% of figure
+> height, and from 3 to 2 baselineskip minimum. One additional deferred
+> case in test-pagebreak-variations converted to squeeze-fit.
+>
+> RESULTS:
+>   Deferred: 5 → 4 (-20%), Squeeze-fit: 3 → 4 (+33%)
+>   Page counts unchanged (10, 15, 2, 6). 0 errors across all 4 suites.
+>   Remaining 4 deferred cases have < 40% of figure height available —
+>   further threshold lowering would produce excessively small figures.
+>
+> Cumulative deferred reduction: 7 (v3.27) → 4 (v3.28) → 5 (v3.29
+> page-break shift) → 4 (v3.30).
+>
+> NOTE: VM reset — repo cloned from scratch, TeX Live re-installed. The
+> previous turn's v3.30 commit failed to push (auth error), so this is
+> a re-implementation.
+
 ### Programmer — 2026-06-07 21:00 UTC+8
 > **Self-task ST-005: v3.29 — multi-paragraph parshape extension via everypar.**
 >

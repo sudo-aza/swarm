@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.29)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.30)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -69,6 +69,18 @@
 %    wrapping spec #4 ("near newpage: right-wrap on next page").
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.30: Lower squeeze-fit thresholds for NE page reduction.
+%   The squeeze-fit mode (v3.28) previously required remaining space >= 50%
+%   of figure height AND >= 3 baselineskip. This left cases where moderate-
+%   shortfall figures were deferred to a new page, creating NE pages. v3.30
+%   lowers the thresholds to 40% of figure height and 2 baselineskip,
+%   capturing 1 additional marginal case as squeeze-fit (in test-pagebreak-
+%   variations). Result: deferred 5 → 4 across 4 test suites (-20%),
+%   squeeze-fit 3 → 4 (+33%). Page counts unchanged. 0 errors, 0 new
+%   overfull warnings. The remaining 4 deferred cases have < 40% of figure
+%   height available — further threshold lowering would produce excessively
+%   small scaled figures.
 %
 % v3.29: Multi-paragraph parshape extension via everypar.
 %   Fixes the core quality issue: parshape previously applied only to the
@@ -231,7 +243,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/07 v3.29 multi-paragraph parshape extension via everypar]
+\ProvidesPackage{swarmwrap}[2026/06/08 v3.30 lower squeeze-fit thresholds for NE reduction]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -469,8 +481,8 @@
   \advance\dimen0 by -\pagetotal
   \ifdim\dimen0<\swarmwrap@fh
     % Figure doesn't fit. Try squeeze-fit.
-    \dimen2=0.5\swarmwrap@fh
-    \dimen3=3\baselineskip
+    \dimen2=0.4\swarmwrap@fh
+    \dimen3=2\baselineskip
     \ifdim\dimen0>\dimen2
       \ifdim\dimen0>\dimen3
         % SQUEEZE-FIT: Scale figure proportionally to fit.
