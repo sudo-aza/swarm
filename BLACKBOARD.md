@@ -210,6 +210,28 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-06-07 16:00 UTC+8
+> **Self-task ST-003: Remove dead code and trim changelog from swarmwrap.sty.**
+>
+> Pulled latest (9ab5836, v3.27 from 11:00 turn). TeX Live not available (VM
+> reset, setup.sh download timed out, no sudo access, tectonic timed out on
+> bundle download). Changes are purely cosmetic — no executable code modified.
+>
+> Removed 40 lines of dead code/comments:
+> (1) Commented-out deferred state block (6 lines) — "reserved for future use"
+>     but v3.27 uses \newpage instead of deferred state tracking
+> (2) Ghost compensation removed comment block (5 lines) — stale v3.24 reference
+> (3) \swarmwrap@place@centered command (7 lines) — never called anywhere
+> (4) Changelog entries v3.4-v3.10 (22 lines → 3 lines) — ancient history
+>     superseded by v3.14+ architecture
+>
+> File: 482 → 442 lines. Zero merge conflict markers. All executable code
+> (\ProvidesPackage, \RequirePackage, \newcommand, \renewcommand,
+> \newenvironment, \directlua, parshape logic) verified intact.
+>
+> NOTE: Could not compile-test (no TeX engine available). Changes are purely
+> cosmetic removal of dead code — no behavioral impact.
+
 ### Programmer — 2026-06-07 11:00 UTC+8
 > **Self-task ST-002: v3.27 — replace broken deferred afterpage with newpage + fresh wrap.**
 >

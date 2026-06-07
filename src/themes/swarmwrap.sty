@@ -206,27 +206,9 @@
 %   v3.12's deferred tw@val overwriting bug fix preserved (bake tw as
 %   literal dimension into \afterpage token list via tex.sprint).
 %
-% v3.10: Deferred figure placement. When the figure doesn't fit on the
-%   current page (\pagegoal - \pagetotal < figure height), it is placed
-%   at the top of the next page via \afterpage instead of being clipped.
-%   Text always stays in place with full parshape. On the next page, the
-%   figure appears beside the ghost-narrowed continuation text, turning
-%   ghost narrowing into real wrapping. Re-added afterpage dependency.
-%
-% v3.7: Reduced figure height padding from \baselineskip (13.6pt) to 4pt.
-%   Eliminates 1 extra narrowed line below each figure that had no
-%   figure beside it (visible empty strip).
-%
-% v3.6: Added \swarmwrappenalty{N} option (default 10000). Uses
-%   LuaTeX post_linebreak_filter to insert a penalty at the boundary
-%   between the last narrowed line and the first full-width line,
-%   discouraging page breaks that cause ghost narrowing.
-%
-% v3.5: Non-LuaLaTeX compilation produces hard error (was silent fallback).
-%   \swarmwrapnext errors on non-LuaLaTeX (was \relax).
-%
-% v3.4: Page-eject fallback replaces zero-height vbox. No more text-
-%   figure overlap on page breaks.
+% Earlier versions (v3.4-v3.10): Penalty system, deferred afterpage, height
+%   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
+%   v3.14+ architecture. See git history for details.
 
 \ProvidesPackage{swarmwrap}[2026/06/07 v3.27 deferred path newpage fresh wrap replaces broken afterpage]
 
@@ -272,13 +254,6 @@
 % ── Multi-paragraph parshape persistence (v3.17) ────────────────────
 \newcount\swarmwrap@remaining@nl
 \swarmwrap@remaining@nl=0
-
-% ── Deferred figure state (reserved for future use) ───────────────────
-% \newif\ifswarmwrap@deferred
-% \swarmwrap@deferredfalse
-% \newdimen\swarmwrap@deferred@tw
-% \newdimen\swarmwrap@deferred@fh
-% \newcount\swarmwrap@deferred@nl
 
 % ── List patch: reduce \linewidth inside lists (Task 166) ──────
 % LaTeX's \list (latex.ltx:15868) sets \parshape \@ne \@totalleftmargin \linewidth,
@@ -378,12 +353,6 @@
 }
 \fi
 
-% ── Ghost compensation REMOVED in v3.25 ──────────────────────────────────
-% v3.24's afterpage-based ghost compensation caused 9 body-text overlaps
-% on the 1000-page stress test. The afterpage figure overlay aligned with
-% leaked parshape lines but subsequent paragraphs flowed full-width through
-% it. Removed to restore zero-overlap guarantee on 1000-page test.
-
 % ── Environment: capture content into a savebox ─────────────────────
 \newenvironment{swarmwrap}{%
   \ifswarmwrap@luatex
@@ -402,14 +371,6 @@
     \advance\swarmwrap@fh by 4pt
     \xdef\swarmwrap@fh@val{\the\swarmwrap@fh}%
   \fi
-}
-
-% ── Helper: place figure centered ─────────────────────────────────────
-\newcommand{\swarmwrap@place@centered}{%
-  \begin{center}%
-    \copy\swarmwrap@box%
-  \end{center}%
-  \vspace{-\parskip}%
 }
 
 % ── \swarmwrapnext: compute parshape and place figure ──────────────────
