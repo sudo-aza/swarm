@@ -210,6 +210,41 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-06-07 21:00 UTC+8
+> **Self-task ST-005: v3.29 — multi-paragraph parshape extension via everypar.**
+>
+> Per updated Rule 3: not 100% certain no improvement can be made. Core project
+> goal remains NE page reduction. Previous turns: ST-001 (merge fix), ST-002
+> (deferred path), ST-003 (dead code), ST-004 (squeeze-fit).
+>
+> PROBLEM: parshape applied only to the FIRST paragraph after \swarmwrapnext.
+> Subsequent paragraphs ran full-width through the figure. This is the core
+> quality issue documented in Task #161: 1420 body-text overlaps on the
+> stress test (paragraph 2+ full-width through figure).
+>
+> ROOT CAUSE: TeX's \parshape primitive applies per-paragraph. When a new
+> paragraph starts (blank line or \par), parshape resets to full width.
+> Only the paragraph where \swarmwrapnext set \parshape was wrapped.
+>
+> FIX (v3.29): Injected \everypar hook after \swarmwrapnext that re-applies
+> parshape to subsequent paragraphs. Mechanism:
+> (1) \swarmwrap@build@ext@pshape rebuilds parshape spec from remaining@nl
+> (2) \swarmwrap@apply@ext@pshape is set as \everypar — skips first
+>     invocation (ext@skip flag), then applies parshape when remaining@nl > 0
+> (3) post_linebreak_filter decrements remaining@nl and clears everypar
+>     when remaining@nl reaches 0
+> (4) Guard: everypar NOT set inside lists (\@listdepth > 0) because
+>     \parshape in everypar conflicts with \item processing
+> (5) List patch also clears everypar when remaining@nl > 0
+>
+> Page count changes (expected — more narrow lines from multi-paragraph wrapping):
+>   test-customwrap: 9 → 10pg (+1, two-paragraph test now fully wraps)
+>   test-pagebreak-variations: 15 → 15pg (unchanged)
+>   test-itemize-wrap: 3 → 2pg (-1, itemize layout improved)
+>   test-multicol-wrap: 5 → 6pg (+1, multi-paragraph content wrapped)
+> Deferred count: 4 → 5 (minor shift from page break changes)
+> Compile-tested: 4/4 suites, 0 errors, 0 overfull hbox warnings.
+
 ### Programmer — 2026-06-07 18:00 UTC+8
 > **Self-task ST-004: v3.28 — squeeze-fit mode to reduce NE (near-empty) pages.**
 >

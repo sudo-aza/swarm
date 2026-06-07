@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.28)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.29)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -69,6 +69,18 @@
 %    wrapping spec #4 ("near newpage: right-wrap on next page").
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.29: Multi-paragraph parshape extension via everypar.
+%   Fixes the core quality issue: parshape previously applied only to the
+%   FIRST paragraph after \swarmwrapnext. Subsequent paragraphs ran
+%   full-width through the figure, causing 1420 body-text overlaps on
+%   the stress test (Task #161). v3.29 injects an everypar hook that
+%   re-applies parshape to subsequent paragraphs, using remaining@nl
+%   (decremented each paragraph by post_linebreak_filter) to track how
+%   many narrow lines remain. When remaining@nl reaches 0, everypar is
+%   cleared. The first paragraph after \swarmwrapnext is skipped by the
+%   everypar (it already has parshape from \swarmwrapnext itself).
+%   Compile-tested: 4/4 suites, 0 errors.
 %
 % v3.28: Squeeze-fit mode to reduce NE (near-empty) pages.
 %   When a figure doesn't fit on the current page but remaining space is
@@ -219,11 +231,13 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/07 v3.28 squeeze-fit reduces NE pages by scaling figures to fit remaining space]
+\ProvidesPackage{swarmwrap}[2026/06/07 v3.29 multi-paragraph parshape extension via everypar]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
 % afterpage no longer needed (v3.27 — deferred path uses \newpage instead)
+% Need \makeatletter for \@listdepth check in everypar (v3.29)
+\makeatletter
 
 \newsavebox{\swarmwrap@box}
 \newsavebox{\swarmwrap@scaledbox}
@@ -235,8 +249,45 @@
 \newif\ifswarmwrap@luatex
 \newif\ifswarmwrap@squeezed
 \newif\ifswarmwrap@deferred
+\newif\ifswarmwrap@ext@skip  % skip everypar on first paragraph
 
 \ifluatex \swarmwrap@luatextrue \else \swarmwrap@luatexfalse \fi
+
+% ── Multi-paragraph everypar extension (v3.29) ────────────────────
+% Re-applies parshape to subsequent paragraphs after the first one.
+% When remaining@nl > 0, builds a new parshape spec from remaining lines
+% and applies it. When remaining@nl = 0, clears everypar to avoid overhead.
+\newcommand{\swarmwrap@build@ext@pshape}{%
+  \xdef\swarmwrap@pshape@ext{\the\numexpr\swarmwrap@remaining@nl+1\relax\space}%
+  \swarmwrap@loop@cnt=\swarmwrap@remaining@nl
+  \loop
+    \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \swarmwrap@tw@val\space}%
+    \advance\swarmwrap@loop@cnt by -1
+  \ifnum\swarmwrap@loop@cnt>0 \repeat
+  \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \the\linewidth\space}%
+}
+
+\newcommand{\swarmwrap@apply@ext@pshape}{%
+  \ifswarmwrap@ext@skip
+    \global\swarmwrap@ext@skipfalse
+  \else
+    \ifnum\swarmwrap@remaining@nl>0\relax
+      \ifdim\swarmwrap@tw@lua>0pt\relax
+        % Skip parshape inside lists (\@listdepth > 0).
+        % Lists get narrow lines from the list patch (linewidth reduction).
+        % Applying parshape here conflicts with \item processing.
+        \ifnum\@listdepth>0\relax
+        \else
+          \swarmwrap@build@ext@pshape
+          \parshape \swarmwrap@pshape@ext\relax
+          \emergencystretch=\fontdimen6\font\relax
+        \fi
+      \fi
+    \else
+      \everypar{}%
+    \fi
+  \fi
+}
 
 \newcommand{\swarmwrap@fw@val}{0pt}
 \newcommand{\swarmwrap@fh@val}{0pt}
@@ -292,6 +343,8 @@
       \advance\linewidth by -\swarmwrap@gap
       \ifdim\linewidth>0pt\relax
         \swarmwrap@in@listtrue
+        % v3.29: Clear everypar inside lists to prevent \item conflicts.
+        \everypar{}%
       \else
         \linewidth=\swarmwrap@saved@lw
       \fi
@@ -331,6 +384,7 @@
     -- v3.19: If paragraph broke across pages (total_lines < nl),
     -- zero out remaining@nl to prevent everypar from re-applying
     -- parshape to subsequent paragraphs on the continuation page.
+    -- v3.29: Also clear everypar when remaining@nl reaches 0.
     if tex.count["swarmwrap@remaining@nl"] > 0 then
       local r = tex.count["swarmwrap@remaining@nl"]
       local nl = tex.count["swarmwrap@nl"]
@@ -339,6 +393,10 @@
       else
         r = math.max(0, r - narrow_count)
         tex.count["swarmwrap@remaining@nl"] = r
+      end
+      -- v3.29: Clear everypar when no remaining narrow lines
+      if tex.count["swarmwrap@remaining@nl"] == 0 then
+        tex.toks["everypar"] = {}
       end
     end
     -- Compute remaining figure height
@@ -455,6 +513,15 @@
   \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
   \global\swarmwrap@remaining@nl=\swarmwrap@nl
   \emergencystretch=\fontdimen6\font\relax
+  % ── Multi-paragraph extension (v3.29) ────────────────────────
+  % Set everypar to re-apply parshape to subsequent paragraphs.
+  % Skip the first invocation (\swarmwrapnext already set parshape).
+  % Do NOT set everypar inside lists (\@listdepth > 0) because
+  % everypar conflicts with \item processing.
+  \swarmwrap@ext@skiptrue
+  \ifnum\@listdepth=0\relax
+    \everypar=\expandafter{\swarmwrap@apply@ext@pshape}%
+  \fi
   % ── Placement (DEFERRED vs NORMAL/SQUEEZE) ─────────────────────
   \ifswarmwrap@deferred
     % DEFERRED: figure doesn't fit, squeeze not possible.
