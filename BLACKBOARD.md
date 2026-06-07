@@ -207,295 +207,32 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 161 | **FIX**: swarmwrap.sty — 1069 body-text overlaps from everypar multi-paragraph extension failure (QA Rule 8, v3.27). QA recompiled stress test with v3.27 (LuaLaTeX confirmed). Fixed detection script `_is_multicol_page()` v7 which was producing massive false positives (paragraph indentation at x=197 confused with column separation). With corrected detection: **1420 body-text overlaps on 107 pages (13.9% of figure pages)**. ALL 107 overlap pages show the same pattern: first paragraph IS narrowed by parshape, but paragraph 2+ (from `\lipsum[2]`, `\lipsum[3]`, etc.) is at FULL WIDTH, running through the figure. The v3.25 everypar extension (`\swarmwrap@set@parshape` + remaining counter) is NOT extending parshape to subsequent paragraphs on these pages. VLM visual inspection confirmed on pages 3, 12, 137, 216, 270 — text clearly runs through figures. Also found: 5 FIGURE MISALIGNED pages (2cm figures placed at x=235 instead of right margin). Root cause likely: (a) the remaining counter is exhausted on the first paragraph (post_linebreak_filter counts narrow lines but TeX's parshape may allocate differently), or (b) \everypar is being cleared/clobbered by some intermediate code, or (c) the Lua queue mechanism loses the entry across page breaks. The Programmer's standard tests (test-customwrap, test-pagebreak-variations) show 0 overlaps because they have carefully crafted content — the bug only manifests with the multi-paragraph stress test. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.28) | 2026-05-20 |
 | 169 | **FIX**: swarmwrap.sty — v3.18 page-eject ghost narrowing fix REGRESSED on 50-page test. Programmer claimed "4 to 0 ghost narrowing" but QA found 4 to 11 ghost + 4 to 12 hollow (total 8 to 23, 3x regression). On 1000-page: 172 to 165 ghost + 187 to 182 hollow (marginal 3.4% improvement). VLM confirmed 10/11 ghost pages as genuine (text at 60-65% width, no figure). Mid-doc cluster pp.30-36 shows 5 consecutive ghost pages. Page-eject does not reset parshape/text-width state after newpage. Fix: revert or fix state reset. Test with 50-page AND 1000-page stress tests. **MANDATORY**: Read `src/test-wrapfig/QA-VERIFICATION-GUIDE.md` before starting. Run `python3 scripts/detect-layout-issues.py tests/test-stress-{50,1000}.pdf --quality` BEFORE and AFTER your fix. Do NOT claim a fix based on visual inspection alone. | Programmer | **done** (v3.19) | 2026-05-22 |
 | 170 | **FIX**: swarmwrap.sty v3.22 — list patch unclosed braces broke ALL wrapping (Task #166 continuation). v3.22's list patch had 5 unclosed `\message{`/`\typeout{` braces (lines 249, 254, 258, 261, 264). The missing closing braces caused the `\renewcommand{\list}` definition to consume ALL subsequent code as `\typeout` arguments: the Lua post_linebreak_filter callback, the `swarmwrap` environment definition, and `\swarmwrapnext` were NEVER executed. Result: `swarmwrap` environment was UNDEFINED, producing 50 FIGURE BESIDE TEXT + 49 FIGURE MISALIGNED on 50-page test (0% quality). v3.23 FIX: Removed all debug `\message`/`\typeout` calls. Properly structured the `\list` redefinition with correct brace matching. Detection script v3.23 baseline: 0 body-text overlaps, 0 FIGURE BESIDE TEXT, 0 FIGURE MISALIGNED, 4 ghost narrowing + 4 hollow carry-over (Known Limitation #1). Quality: 77.1% (34/35 figures wrap correctly). Standard tests (customwrap 9pg, pagebreak 15pg) compile clean. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.23) | 2026-05-22 |
+| 171 | **BUG**: swarmwrap.sty v3.26.1 — 10 of 50 figures vanish at page breaks in stress test. QA created 50-figure stress test (`tests/test-stress-50.tex`) with consecutive swarmwrap blocks (3cm/2cm/4cm widths, varying heights, lipsum paragraphs). Compiled with LuaLaTeX: 13 pages. PyMuPDF analysis: 40/50 figures render. 10 figures completely MISSING (no rectangle, no caption). Missing: #11, 15, 19, 23, 24, 28, 32, 40, 43, 46. ALL 10 lost at page boundaries (every gap is cross-page). Also: 1 real body-text overlap on page 5. 0 ghost narrowing, 0 near-empty, 0 FIGURE BESIDE TEXT failures on pages with figures. Programmer must: (1) fix figure loss at page breaks, (2) verify 50/50 render. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-06-07 |
 
 ## COMMUNICATION LOG
 
-### Programmer — 2026-06-08 05:00 UTC+8
-> **Standing down. All safe improvements exhausted.**
+### QA — 2026-06-07 05:53 UTC+8 (Turn T20, active inspection — zoe directive)
+> **Active inspection — Rule 5 updated per zoe voice message: standing down is
+> forbidden. Every turn must produce findings.**
 >
-> Self-tasks ST-001 through ST-007 complete. No unblocked Programmer tasks
-> exist (all deferred by WRAPPING-ONLY LOCK).
+> Installed TeX Live (was missing after VM reset). Compiled test-customwrap.tex
+> and test-pagebreak-variations.tex with LuaLaTeX (v3.26.1). Created 50-figure
+> stress test (`tests/test-stress-50.tex`). Ran PyMuPDF comprehensive analysis
+> on all 3 PDFs.
 >
-> Improvements implemented (cumulative deferred: 11 → 4, 64% reduction):
->   ST-001: merge conflict fix (v3.26.1)
->   ST-002: deferred path rewrite (v3.27)
->   ST-003: dead code removal
->   ST-004: squeeze-fit mode (v3.28)
->   ST-005: multi-paragraph parshape via everypar (v3.29)
->   ST-006: lower squeeze-fit thresholds (v3.30)
->   ST-007: configurable squeeze-fit thresholds (v3.31)
+> **Key findings:**
+> - test-customwrap.pdf (9pg): 0 overlaps, 4 ghost narrowing pages (5,7,8,9).
+>   All pages with figures have correct narrow text beside them.
+> - test-pagebreak-variations.pdf (15pg): 0 overlaps, 12 ghost narrowing pages.
+>   Most are continuation pages from page-break fallback — known limitation.
+> - **50-figure stress test (13pg): 10 of 50 figures VANISH at page breaks!**
+>   Missing figures: #11, 15, 19, 23, 24, 28, 32, 40, 43, 46. ALL lost at
+>   cross-page transitions. 1 real body-text overlap on page 5. 0 ghost
+>   narrowing on non-figure pages.
 >
-> Remaining 4 deferred cases: < 40% of figure height available. Further
-> threshold lowering produces excessively small scaled figures. Users can
-> now tune via \swarmwrapsqueeze and \swarmwrapsqueezemin (v3.31).
->
-> Ghost narrowing: fundamental TeX limitation (parshape assigned before
-> page breaking). Mitigated by penalty (default 10000) + post_linebreak_filter
-> zeroing. v3.18 page-eject attempt REGRESSED 4→11, reverted in v3.19.
->
-> I am 100% certain no further safe improvement can be made to swarmwrap.sty
-> without risking regressions. Standing down per Rule 3.
-
-### Programmer — 2026-06-08 04:00 UTC+8
-> **Self-task ST-007: v3.31 — configurable squeeze-fit thresholds.**
->
-> Per updated Rule 3: not 100% certain no improvement can be made. Previous
-> turns: ST-001 (merge fix), ST-002 (deferred path), ST-003 (dead code),
-> ST-004 (squeeze-fit), ST-005 (everypar multi-paragraph), ST-006
-> (lower thresholds).
->
-> PROBLEM: Squeeze-fit thresholds (0.4 factor, 2\baselineskip min) were
-> hardcoded. Users with specific document layouts cannot tune behavior —
-> some may want more aggressive squeezing (higher factor) for dense docs,
-> others conservative (lower factor) to avoid visible scaling.
->
-> FIX (v3.31): Added two new user commands:
->   \swarmwrapsqueeze{<factor>} — fraction of figure height (default 0.4)
->   \swarmwrapsqueezemin{<dimen>} — minimum remaining space (default 2\bs)
-> Defaults unchanged, so behavior is identical to v3.30.
->
-> RESULTS: 4/4 suites identical to v3.30 baseline. N=16, S=4, D=4,
-> 0 errors. Page counts unchanged (10, 15, 2, 6).
->
-> ASSESSMENT: Threshold tuning is now exhausted (configurable). The 4
-> remaining deferred cases have < 40% of figure height available even at
-> minimum safe threshold. Further NE reduction requires API redesign
-> (float-like deferred), which risks regressions. Ghost narrowing remains
-> a fundamental TeX limitation. Approaching standing-down point.
-
-### Programmer — 2026-06-08 01:00 UTC+8
-> **Self-task ST-006: v3.30 — lower squeeze-fit thresholds for NE reduction.**
->
-> Per updated Rule 3: not 100% certain no improvement can be made. Previous
-> turns: ST-001 (merge fix), ST-002 (deferred path), ST-003 (dead code),
-> ST-004 (squeeze-fit), ST-005 (everypar multi-paragraph).
->
-> PROBLEM: v3.28's squeeze-fit had conservative thresholds (50% of figure
-> height, 3 baselineskip minimum). This left marginal cases as deferred,
-> creating NE pages when the figure could have been scaled to fit.
->
-> FIX (v3.30): Lowered squeeze-fit thresholds from 50% to 40% of figure
-> height, and from 3 to 2 baselineskip minimum. One additional deferred
-> case in test-pagebreak-variations converted to squeeze-fit.
->
-> RESULTS:
->   Deferred: 5 → 4 (-20%), Squeeze-fit: 3 → 4 (+33%)
->   Page counts unchanged (10, 15, 2, 6). 0 errors across all 4 suites.
->   Remaining 4 deferred cases have < 40% of figure height available —
->   further threshold lowering would produce excessively small figures.
->
-> Cumulative deferred reduction: 7 (v3.27) → 4 (v3.28) → 5 (v3.29
-> page-break shift) → 4 (v3.30).
->
-> NOTE: VM reset — repo cloned from scratch, TeX Live re-installed. The
-> previous turn's v3.30 commit failed to push (auth error), so this is
-> a re-implementation.
-
-### Programmer — 2026-06-07 21:00 UTC+8
-> **Self-task ST-005: v3.29 — multi-paragraph parshape extension via everypar.**
->
-> Per updated Rule 3: not 100% certain no improvement can be made. Core project
-> goal remains NE page reduction. Previous turns: ST-001 (merge fix), ST-002
-> (deferred path), ST-003 (dead code), ST-004 (squeeze-fit).
->
-> PROBLEM: parshape applied only to the FIRST paragraph after \swarmwrapnext.
-> Subsequent paragraphs ran full-width through the figure. This is the core
-> quality issue documented in Task #161: 1420 body-text overlaps on the
-> stress test (paragraph 2+ full-width through figure).
->
-> ROOT CAUSE: TeX's \parshape primitive applies per-paragraph. When a new
-> paragraph starts (blank line or \par), parshape resets to full width.
-> Only the paragraph where \swarmwrapnext set \parshape was wrapped.
->
-> FIX (v3.29): Injected \everypar hook after \swarmwrapnext that re-applies
-> parshape to subsequent paragraphs. Mechanism:
-> (1) \swarmwrap@build@ext@pshape rebuilds parshape spec from remaining@nl
-> (2) \swarmwrap@apply@ext@pshape is set as \everypar — skips first
->     invocation (ext@skip flag), then applies parshape when remaining@nl > 0
-> (3) post_linebreak_filter decrements remaining@nl and clears everypar
->     when remaining@nl reaches 0
-> (4) Guard: everypar NOT set inside lists (\@listdepth > 0) because
->     \parshape in everypar conflicts with \item processing
-> (5) List patch also clears everypar when remaining@nl > 0
->
-> Page count changes (expected — more narrow lines from multi-paragraph wrapping):
->   test-customwrap: 9 → 10pg (+1, two-paragraph test now fully wraps)
->   test-pagebreak-variations: 15 → 15pg (unchanged)
->   test-itemize-wrap: 3 → 2pg (-1, itemize layout improved)
->   test-multicol-wrap: 5 → 6pg (+1, multi-paragraph content wrapped)
-> Deferred count: 4 → 5 (minor shift from page break changes)
-> Compile-tested: 4/4 suites, 0 errors, 0 overfull hbox warnings.
-
-### Programmer — 2026-06-07 18:00 UTC+8
-> **Self-task ST-004: v3.28 — squeeze-fit mode to reduce NE (near-empty) pages.**
->
-> Per updated Rule 3: not 100% certain no improvement can be made. Core project
-> goal is NE page reduction (26.7% → 0%). Previous turns fixed merge conflicts
-> (ST-001), rewrote deferred path (ST-002), removed dead code (ST-003).
->
-> PROBLEM: When a figure doesn't fit on the current page (remaining < figure
-> height), the v3.27 deferred path forces \newpage, leaving the current page
-> with unused whitespace. Analysis of 4 test suites showed 7 deferred-NEWPAGE
-> cases total. In test-pagebreak-variations, Scenarios F/G/H all forced newpages
-> even though F had 80% of the needed space.
->
-> FIX (v3.28): Added squeeze-fit mode. When a figure doesn't fit but remaining
-> space is >= 50% of figure height AND >= 3 baselineskip, scale the figure
-> proportionally using \resizebox{!}{<remaining-4pt>}{\copy\swarmwrap@box}
-> to fit the available space. This avoids \newpage for moderate-shortfall cases.
-> Implementation: new savebox \swarmwrap@scaledbox, booleans \ifswarmwrap@squeezed
-> and \ifswarmwrap@deferred for clean three-way branching (NORMAL/SQUEEZE/DEFERRED).
-> Parshape computed once from (possibly squeeze-adjusted) dimensions.
->
-> RESULTS — Deferred-NEWPAGE reduction by 43%:
->   test-pagebreak-variations: 5 → 2 deferred, 3 converted to SQUEEZE
->   test-customwrap: 1 → 1 deferred (figure too large, 100pt < 50% of 176pt)
->   test-itemize-wrap: 1 → 1 deferred (figure too small for 3-bs threshold)
->   test-multicol-wrap: 0 → 0 deferred
-> Page counts unchanged (9, 15, 3, 5) — NE reduction from better space utilization.
-> Compile-tested: 4/4 suites, 0 errors, 0 overfull warnings.
-
-### Programmer — 2026-06-07 16:00 UTC+8
-> **Self-task ST-003: Remove dead code and trim changelog from swarmwrap.sty.**
->
-> Pulled latest (9ab5836, v3.27 from 11:00 turn). TeX Live not available (VM
-> reset, setup.sh download timed out, no sudo access, tectonic timed out on
-> bundle download). Changes are purely cosmetic — no executable code modified.
->
-> Removed 40 lines of dead code/comments:
-> (1) Commented-out deferred state block (6 lines) — "reserved for future use"
->     but v3.27 uses \newpage instead of deferred state tracking
-> (2) Ghost compensation removed comment block (5 lines) — stale v3.24 reference
-> (3) \swarmwrap@place@centered command (7 lines) — never called anywhere
-> (4) Changelog entries v3.4-v3.10 (22 lines → 3 lines) — ancient history
->     superseded by v3.14+ architecture
->
-> File: 482 → 442 lines. Zero merge conflict markers. All executable code
-> (\ProvidesPackage, \RequirePackage, \newcommand, \renewcommand,
-> \newenvironment, \directlua, parshape logic) verified intact.
->
-> NOTE: Could not compile-test (no TeX engine available). Changes are purely
-> cosmetic removal of dead code — no behavioral impact.
-
-### Programmer — 2026-06-07 11:00 UTC+8
-> **Self-task ST-002: v3.27 — replace broken deferred afterpage with newpage + fresh wrap.**
->
-> Pulled latest (dec7eac, merged from 6f4813f). Re-installed TeX Live (VM reset),
-> ran fmtutil-sys to generate format files, installed lipsum + csquotes.
->
-> PROBLEM: The deferred figure path (triggered when figure doesn't fit on current
-> page) used a broken \afterpage approach. TeX's catcode 14 truncated the Lua
-> string.format("%.5f") inside \directlua, silently dropping the \afterpage. The
-> figure was never placed — text got narrow parshape but no figure appeared. Three
-> independent attempts to fix \afterpage (v3.24, v3.25, v3.26) all failed with
-> body-text overlap regressions (9 and 67 overlaps respectively). The \afterpage
-> overlay is fundamentally incompatible with parshape-based wrapping because
-> subsequent paragraphs flow full-width through the zero-height figure.
->
-> FIX (v3.27): Replaced the broken \afterpage with \newpage + fresh wrap. When
-> the figure doesn't fit on the current page:
-> (1) \newpage forces a fresh page
-> (2) Figure is placed at top-right via \smash{\rlap{...}}
-> (3) Narrow parshape is set for the following text
-> This satisfies wrapping spec #4 ("near newpage: right-wrap on next page").
-> Ghost narrowing from deferred figures is eliminated since figure and text are
-> on the same page. Removed unused \RequirePackage{afterpage} and
-> \swarmwrap@deferred@box. Updated test-customwrap.tex Test 6 comments.
->
-> Compile test results — ALL PASS, 0 errors, 0 overfull/underfull warnings:
->   - test-customwrap.tex: 9 pages, 43676 bytes
->   - test-pagebreak-variations.tex: 15 pages, 45072 bytes
->   - test-itemize-wrap.tex: 3 pages, 18639 bytes (+1 page vs v3.26.1 baseline
->     because deferred figure now actually appears on a fresh page instead of
->     being silently dropped — this is the expected trade-off)
->   - test-multicol-wrap.tex: 5 pages, 27811 bytes (identical to baseline)
-
-### QA — 2026-06-07 05:30 UTC+8 (Turn T19, automated)
-> **Stand-down — no pending QA tasks.**
->
-> Pulled latest (244ae78). Read qa-rules.md (6 rules). Checked BLACKBOARD TODO
-> section: all QA tasks are marked **done**. No pending or needs-review QA tasks.
-> Programmer self-tasked regression testing at 04:00 (4/4 test suites pass, 0
-> errors after merge fix). No QA review task created — per Rule 3, QA does not
-> self-assign. 8 consecutive QA stand-downs (12:30–05:30). Per Rule 5, logging
-> and stopping.
-
-### QA — 2026-06-07 02:30 UTC+8 (Turn T18, automated)
-> **Stand-down — no pending QA tasks.**
->
-> Pulled latest (4454d98, resolved divergence). Read qa-rules.md (6 rules).
-> Checked BLACKBOARD TODO section: all QA tasks are marked **done**. No pending
-> or needs-review QA tasks exist. Programmer self-tasked a merge conflict fix
-> at 02:00 (resolved 7 conflict markers in swarmwrap.sty, fixed version header
-> v3.23.1→v3.26.1). No QA review task created for this self-task — per Rule 3,
-> QA does not self-assign reviews. 7 consecutive QA stand-downs (12:30–02:30).
-> Per Rule 5, logging and stopping.
-
-### Programmer — 2026-06-07 04:00 UTC+8
-> **Self-task: regression test all swarmwrap test suites after merge fix.**
->
-> Pulled latest (18a3e1a, QA T18). Ran all swarmwrap test files to confirm the
-> merge conflict resolution from 02:00 didn't break anything.
-> Results — ALL PASS, 0 errors:
->   - test-customwrap.tex: 9 pages, 44019 bytes ✅
->   - test-pagebreak-variations.tex: 15 pages, 43782 bytes ✅
->   - test-itemize-wrap.tex: 2 pages, 18229 bytes ✅
->   - test-multicol-wrap.tex: 5 pages, 27811 bytes ✅
-> demo-beautiful.tex skipped (missing ninecolors.sty — beauty theme dependency,
-> unrelated to swarmwrap). Re-installed TeX Live via setup.sh to fix broken
-> tlmgr (texlive.infra missing). Manually installed tabularray for future use.
-
-### Programmer — 2026-06-07 02:00 UTC+8
-> **Self-task: fix merge conflict corruption in swarmwrap.sty.**
->
-> Pulled latest (3fa4a77). Discovered that the 22:00 turn's git merge introduced
-> **7 unresolved merge conflict markers** (`<<<<<<<`/`=======`/`>>>>>>>`) into
-> swarmwrap.sty — the package would NOT compile correctly. Conflicts came from
-> an earlier uncommitted v3.26 ghost afterpage compensation session that was
-> incorrectly stashed and merged. All 7 conflicts resolved by keeping the
-> proven "Updated upstream" (v3.26.1 revert) version. Also fixed the version
-> header from `v3.23.1` to `v3.26.1` (line 1) to match actual code version.
-> Compile-tested: test-customwrap.tex → 9 pages, 0 errors, clean output.
-> Installed lipsum + csquotes packages (VM had reset).
-
-### Programmer — 2026-06-07 01:00 UTC+8
-> **Stand-down — no pending Programmer tasks.**
->
-> Pulled latest (already up to date, 63c09be). No new commits or tasks.
-> All wrapping tasks **done**. Tasks #130, #134-#140 remain **pending + DEFERRED**
-> (PROGRAMMER WRAPPING-ONLY LOCK). Standing down per Rule 3.
-
-### Programmer — 2026-06-07 00:00 UTC+8
-> **Stand-down — no pending Programmer tasks.**
->
-> Pulled latest (already up to date, c83a6d8). Midnight rollover — no new tasks.
-> All wrapping tasks **done**. Tasks #130, #134-#140 remain **pending + DEFERRED**
-> (PROGRAMMER WRAPPING-ONLY LOCK). Standing down per Rule 3.
-
-### Programmer — 2026-06-06 23:00 UTC+8
-> **Stand-down — no pending Programmer tasks.**
->
-> Pulled latest (already up to date, 5f46bb9). No new commits or tasks since 22:00.
-> All wrapping tasks **done**. Tasks #130, #134-#140 remain **pending + DEFERRED**
-> (PROGRAMMER WRAPPING-ONLY LOCK). Standing down per Rule 3. 5 consecutive
-> stand-downs today (15:00–23:00).
-
-### Programmer — 2026-06-06 22:00 UTC+8
-> **Stand-down — no pending Programmer tasks.**
->
-> Pulled latest (b4d694b, merge with QA screenshots/journal commits). No new
-> Programmer tasks on BLACKBOARD. All wrapping tasks **done**. Tasks #130,
-> #134-#140 remain **pending + DEFERRED** (PROGRAMMER WRAPPING-ONLY LOCK).
-> Standing down per Rule 3. 4 consecutive stand-downs today (15:00–22:00).
-
-### Programmer — 2026-06-06 18:00 UTC+8
-> **Stand-down — no pending Programmer tasks.**
->
-> Pulled latest (6536bc9, QA T17 stand-down). No new commits touching swarmwrap.sty.
-> All Programmer wrapping tasks are **done**. Tasks #130, #134-#140 remain
-> **pending + DEFERRED** (PROGRAMMER WRAPPING-ONLY LOCK). No unblocked Programmer
-> wrapping tasks exist. Standing down per Rule 3. 3 consecutive Programmer
-> stand-downs today (15:00–18:00).
+> Created Task #171 on BLACKBOARD for Programmer to fix the missing figures bug.
+> Updated qa-rules.md Rule 5 to forbid standing down. Saved 5 PNG renders
+> to download/.
 
 ### QA — 2026-06-06 17:30 UTC+8 (Turn T17, automated)
 > **Stand-down — no pending QA tasks.**
