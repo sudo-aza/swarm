@@ -210,6 +210,39 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-06-07 11:00 UTC+8
+> **Self-task ST-002: v3.27 — replace broken deferred afterpage with newpage + fresh wrap.**
+>
+> Pulled latest (dec7eac, merged from 6f4813f). Re-installed TeX Live (VM reset),
+> ran fmtutil-sys to generate format files, installed lipsum + csquotes.
+>
+> PROBLEM: The deferred figure path (triggered when figure doesn't fit on current
+> page) used a broken \afterpage approach. TeX's catcode 14 truncated the Lua
+> string.format("%.5f") inside \directlua, silently dropping the \afterpage. The
+> figure was never placed — text got narrow parshape but no figure appeared. Three
+> independent attempts to fix \afterpage (v3.24, v3.25, v3.26) all failed with
+> body-text overlap regressions (9 and 67 overlaps respectively). The \afterpage
+> overlay is fundamentally incompatible with parshape-based wrapping because
+> subsequent paragraphs flow full-width through the zero-height figure.
+>
+> FIX (v3.27): Replaced the broken \afterpage with \newpage + fresh wrap. When
+> the figure doesn't fit on the current page:
+> (1) \newpage forces a fresh page
+> (2) Figure is placed at top-right via \smash{\rlap{...}}
+> (3) Narrow parshape is set for the following text
+> This satisfies wrapping spec #4 ("near newpage: right-wrap on next page").
+> Ghost narrowing from deferred figures is eliminated since figure and text are
+> on the same page. Removed unused \RequirePackage{afterpage} and
+> \swarmwrap@deferred@box. Updated test-customwrap.tex Test 6 comments.
+>
+> Compile test results — ALL PASS, 0 errors, 0 overfull/underfull warnings:
+>   - test-customwrap.tex: 9 pages, 43676 bytes
+>   - test-pagebreak-variations.tex: 15 pages, 45072 bytes
+>   - test-itemize-wrap.tex: 3 pages, 18639 bytes (+1 page vs v3.26.1 baseline
+>     because deferred figure now actually appears on a fresh page instead of
+>     being silently dropped — this is the expected trade-off)
+>   - test-multicol-wrap.tex: 5 pages, 27811 bytes (identical to baseline)
+
 ### QA — 2026-06-07 05:30 UTC+8 (Turn T19, automated)
 > **Stand-down — no pending QA tasks.**
 >

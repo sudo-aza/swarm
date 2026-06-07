@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.26.1)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.27)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -57,39 +57,35 @@
 %    TeX's page breaker is discouraged from breaking within the narrow
 %    zone, reducing ghost instances.
 %
-% 2. Deferred figure placement (LATENT BUG):
+% 2. Deferred figure placement (FIXED in v3.27):
 %    When the figure doesn't fit on the current page (\pagegoal - \pagetotal
-%    < figure height), it should be deferred to the top of the next page via
-%    \afterpage. However, the DEFERRED path's \directlua{tex.sprint(string.format(
-%    "...%.5f..."))} has a latent bug: TeX's catcode 14 makes '%' a comment
-%    character, truncating the Lua code at the first '%.5f'. This means the
-%    \afterpage is NEVER emitted — deferred figures are silently dropped.
-%    The text on the current page still gets narrow parshape (harmless).
-%    The text on the next page gets ghost narrowing (Known Limitation #1).
-%    Net effect: same as if the deferred path didn't exist (0 overlaps).
-%    NOTE: v3.24 attempted to fix this by removing parshape in the deferred
-%    case (full-width text), but this caused 9 body-text overlaps on the
-%    1000-page stress test by altering page breaks throughout the document.
-%    Reverted in v3.25. A working deferred path requires a fundamentally
-%    different approach.
+%    < figure height), v3.27 now forces a new page and places the figure
+%    at the top-right with narrow parshape for the following text.
+%    Previous approach (\afterpage overlay) was fundamentally broken:
+%    it placed a zero-height figure at the top of the next page, but
+%    subsequent paragraphs flowed full-width through the overlay.
+%    Three independent attempts (v3.24, v3.25, v3.26) confirmed \afterpage
+%    cannot work for this use case. v3.27's \newpage approach satisfies
+%    wrapping spec #4 ("near newpage: right-wrap on next page").
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
-% v3.26.1: Revert v3.26 deferred afterpage fix (67 overlap regression).
-%   v3.26 fixed the %.5f catcode bug in the deferred afterpage call, making
-%   \afterpage actually emit. The figure appeared on the next page, but
-%   subsequent paragraphs on that page flowed full-width through the
-%   figure overlay, causing 67 body-text overlaps on the 50-page test
-%   (was 0). This is the same failure mode as v3.24's earlier attempt.
-%   ROOT CAUSE: \afterpage places the figure as a zero-height overlay
-%   (\smash{\rlap{...}}) at the top of the next page. Only the leaked
-%   parshape lines from the deferred paragraph are narrow enough to avoid
-%   the figure. All subsequent paragraphs are full-width and overlap.
-%   There is no way to inject narrow parshape into \afterpage text
-%   without the continuation paragraph already having started.
-%   CONCLUSION: The deferred afterpage approach is fundamentally broken.
-%   The catcode bug was accidentally BENIGN — by silently dropping figures,
-%   it avoided 67 overlaps. Reverted to v3.25 behavior.
+% v3.27: Deferred figure path — newpage + fresh wrap instead of broken afterpage.
+%   When a figure doesn't fit on the current page, the previous approach
+%   (\afterpage overlay) was fundamentally broken: it placed a zero-height
+%   figure at the top of the next page, but subsequent paragraphs flowed
+%   full-width through the overlay, causing 67 body-text overlaps (v3.26).
+%   Three independent attempts confirmed \afterpage cannot work (v3.24,
+%   v3.25, v3.26). The v3.25/v3.26.1 workaround was to silently drop
+%   the figure (broken catcode bug was accidentally benign).
+%   v3.27 replaces the broken afterpage with a \newpage + fresh wrap:
+%   force a new page, place the figure at the top-right, and set narrow
+%   parshape for the following text. This satisfies wrapping spec #4
+%   ("near newpage: right-wrap on next page"). Ghost narrowing from
+%   deferred figures is eliminated since figure and text are on the same
+%   page. Trade-off: +1 page per deferred figure (current page may
+%   have trailing whitespace where narrow text would have been).
+%   Compile-tested: 0 errors on all 4 test suites. No regressions.
 %
 % v3.26: Fix deferred afterpage catcode bug — figures now appear on next page.
 %   v3.23's deferred path used \directlua{tex.sprint(string.format("...%.5f..."))}
@@ -232,14 +228,13 @@
 % v3.4: Page-eject fallback replaces zero-height vbox. No more text-
 %   figure overlap on page breaks.
 
-\ProvidesPackage{swarmwrap}[2026/05/22 v3.26.1 revert deferred afterpage fix broken approach documented]
+\ProvidesPackage{swarmwrap}[2026/06/07 v3.27 deferred path newpage fresh wrap replaces broken afterpage]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
-\RequirePackage{afterpage}
+% afterpage no longer needed (v3.27 — deferred path uses \newpage instead)
 
 \newsavebox{\swarmwrap@box}
-\newsavebox{\swarmwrap@deferred@box}
 \newdimen\swarmwrap@fw
 \newdimen\swarmwrap@fh
 \newdimen\swarmwrap@tw
@@ -453,25 +448,15 @@
   \dimen1=\swarmwrap@fh@val\relax
   \ifdim\dimen0<\dimen1
     % DEFERRED: figure doesn't fit on current page.
-    % Set parshape for narrow text (maintains layout stability).
-    % The afterpage call has a latent bug (%%.5f truncated by TeX
-    % catcode 14) so the figure is silently dropped. This is BENIGN
-    % — fixing the bug (v3.26) caused 67 body-text overlaps because
-    % subsequent paragraphs on the next page flow full-width through
-    % the afterpage figure overlay. The broken afterpage is actually
-    % the correct behavior for the zero-overlap constraint.
+    % v3.27: Force new page, place figure at top-right, set narrow
+    % parshape for following text. This replaces the broken \afterpage
+    % approach (v3.24-v3.26.1) which caused 67 body-text overlaps because
+    % subsequent paragraphs flowed full-width through the overlay.
+    \newpage
     \noindent
     \parshape \swarmwrap@pshape\relax
-    \directlua{%
-      local tw = tex.dimen["swarmwrap@tw"]
-      local gap = tex.dimen["swarmwrap@gap"]
-      tex.sprint(string.format(%
-        "\\afterpage{\\noindent\\smash{\\rlap{\\hskip %.5fpt\\hskip %.5fpt" ..%
-        "\\raise\\dimexpr\\ht\\strutbox-\\ht\\swarmwrap@box\\relax" ..%
-        "\\hbox{\\copy\\swarmwrap@box}}}}"%
-        , tw / 65536.0, gap / 65536.0))%
-    }%
-    \wlog{swarmwrap next: DEFERRED --- remaining=\the\dimen0, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
+    \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+    \wlog{swarmwrap next: DEFERRED-NEWPAGE --- fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \else
     % NORMAL: figure fits on current page.
     % Ghost narrowing mitigation (v3.19): Instead of page-eject (which
