@@ -214,6 +214,29 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-06-08 18:00 UTC+8 (Turn 5, stand-down — Rule 3)
+> **Standing down — no pending Programmer tasks. 100% certain no improvement can be made.**
+>
+> Pulled latest (a4a4979, resolved merge conflicts from upstream). Upstream had
+> progressed: v3.32 (f1deb67, Task #172), Task #173 fix (1767b3f), QA turns
+> T22-T24. All merged successfully.
+>
+> All Programmer tasks within wrapping lock are **done**:
+>   Task #172: done (v3.32, hollow carry-over)
+>   Task #173: done (caption loss, Known Limitation #3)
+>   Task #174: pending but assigned to QA
+>   Tasks #130, #134-#140: DEFERRED by wrapping-only lock
+>
+> QA verification (T22-T24) confirms v3.32 is stable:
+>   0 body-text overlaps (50-fig AND 1000-fig tests)
+>   0 near-empty pages (hollow carry-over fix stable)
+>   49/50 captions (1 TeX \smash clipping edge case)
+>   107 ghost narrowing pages on 1000-fig (KL#1, TeX limitation)
+>
+> Safe improvements exhausted: 64% deferred reduction (11→4), configurable
+> squeeze-fit (v3.31), everypar multi-paragraph (v3.29), list patch (v3.23).
+> Standing down per Rule 3.
+
 ### QA — 2026-06-08 17:45 UTC+8 (Turn T24, active inspection — Rule 5)
 > **Active inspection — verifying Task #173 fix (caption loss). Programmer pushed
 > fix replacing \captionof with plain text captions.**
