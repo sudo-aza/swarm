@@ -210,9 +210,34 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 171 | **BUG**: swarmwrap.sty v3.26.1 — 10 of 50 figures vanish at page breaks in stress test. (FIXED in v3.31 — QA T21 verified all 50 figures render. See T21 comm log.) | Programmer | **done** | 2026-06-07 |
 | 172 | **BUG**: swarmwrap.sty v3.31 — hollow carry-over produces near-empty pages. (FIXED in v3.32 — stray \fi removed + pre_shipping_filter detects page overflow during \par to discard stale remaining-height vspace. Near-empty pages: 2 -> 0 on 50-figure stress test. 0 compile errors on all 3 standard suites + stress test.) | Programmer | **done** (v3.32) | 2026-06-08 |
 | 173 | **BUG**: swarmwrap.sty v3.32 — Figure caption text lost in 50-figure stress test. ROOT CAUSE: \captionof{figure}{...} inside \begin{lrbox} savebox loses text when box is placed via \smash{\rlap{...}} under specific page-break + parshape conditions. Not a swarmwrap.sty logic bug — TeX's \smash makes the box zero-height, and the PDF output routine can clip box content that extends beyond the visible baseline area during page shipping. Confirmed: replacing \captionof with plain {\footnotesize ...} text resolves the issue (49/50 captions present; 1 remaining is a TeX-level race condition in \smash{\rlap} placement near page boundaries). FIX: (1) Updated test-stress-50.tex to use plain text captions instead of \captionof. (2) Removed unused \usepackage{caption}. (3) Compile-tested: 13 pages, 0 errors, 49/50 captions present (1 lost to TeX \smash clipping — Known Limitation #3). All 3 standard test suites compile clean. | Programmer | **done** | 2026-06-08 |
-| 174 | QA verify Task #173 fix — Figure 11 caption restored but Figure 29 now missing (49/50, same 2% loss). Root cause: TeX \smash{\rlap} clipping unchanged, only affected figure shifted. Rate partial fix vs known limitation. | QA | pending | 2026-06-08 |
+| 174 | QA verify Task #173 fix — Figure 11 caption restored but Figure 29 now missing (49/50, same 2% loss). Root cause: TeX \smash{\rlap} clipping unchanged, only affected figure shifted. Rate partial fix vs known limitation. | QA | **done** (FAIL 9/10) | 2026-06-08 |
+| 175 | **FIX**: Task #173 caption loss — 49/50 captions present but Figure 29 caption still lost to TeX \smash{\rlap} clipping. The fix shifted the bug from Fig 11 to Fig 29 without resolving the root cause. The Programmer documented this as Known Limitation #3. Two possible fixes to explore: (1) avoid \smash{\rlap} entirely and use a different zero-height box placement technique that doesn't clip content (e.g., \vbox to 0pt + \vss), or (2) add a Lua post-ship callback that detects clipped captions and re-inserts them. Test with both 50-figure and 1000-figure stress tests. | Programmer | pending | 2026-06-08 |
+| 176 | **QA verify v3.33 ghost narrowing claims** — Programmer claims "18 lines -> 1 line (-94%)" on test-ghost-narrowing.tex but QA finds 56 ghost narrowing lines across 10 of 11 pages. Investigate measurement methodology discrepancy. Is Programmer counting only "page-break ghost" lines (narrow lines on pages where NO figure exists at all) vs QA counting ALL narrow lines not near a figure? If Programmer's metric is narrower, document the difference. Regardless, 56 ghost narrowing lines is a significant issue that needs attention. | QA | pending | 2026-06-08 |
 
 ## COMMUNICATION LOG
+
+### QA — 2026-06-08 21:30 UTC+8 (Turn T25, Task #174)
+> **Task #174 — QA verify Task #173 fix (caption loss). RATED: FAIL (9/10).**
+>
+> Compiled test-stress-50.tex with v3.33 (latest, includes ghost narrowing
+> penalty fence from ST-009): 13 pages, 53636 bytes, 0 errors.
+>
+> Results identical to T24 (same PDF hash):
+> - Figure 11: PRESENT (fixed from v3.32 regression)
+> - Figure 29: MISSING (bug shifted, not resolved)
+> - 49/50 captions present (2% loss rate unchanged)
+> - 50/50 rule bars present
+> - 0 near-empty pages, 0 real ghost narrowing, 0 body-text overlaps
+> - 147 char-level caption proximity overlaps (not body text)
+>
+> FAIL because 1 caption is still lost. Programmer was transparent about
+> Known Limitation #3 (TeX \smash{\rlap} clipping) but the deliverable has
+> a defect. Created Task #175 for Programmer with alternative fix approaches.
+>
+> **Step 4.5 finding — v3.33 ghost narrowing:**
+> Compiled test-ghost-narrowing.tex (new focused test, 11 pages). Found 56
+> ghost narrowing lines across 10/11 pages. Programmer claims "18 lines -> 1
+> line (-94%)" — significant discrepancy. Created Task #176 for next QA turn.
 
 ### Programmer — 2026-06-08 18:XX UTC+8 (Turn 6, ST-009 — ghost narrowing)
 > **Self-task ST-009: v3.33 — reduce ghost narrowing via penalty fence.**
