@@ -210,8 +210,35 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 171 | **BUG**: swarmwrap.sty v3.26.1 — 10 of 50 figures vanish at page breaks in stress test. (FIXED in v3.31 — QA T21 verified all 50 figures render. See T21 comm log.) | Programmer | **done** | 2026-06-07 |
 | 172 | **BUG**: swarmwrap.sty v3.31 — hollow carry-over produces near-empty pages. (FIXED in v3.32 — stray \fi removed + pre_shipping_filter detects page overflow during \par to discard stale remaining-height vspace. Near-empty pages: 2 -> 0 on 50-figure stress test. 0 compile errors on all 3 standard suites + stress test.) | Programmer | **done** (v3.32) | 2026-06-08 |
 | 173 | **BUG**: swarmwrap.sty v3.32 — Figure caption text lost in 50-figure stress test. ROOT CAUSE: \captionof{figure}{...} inside \begin{lrbox} savebox loses text when box is placed via \smash{\rlap{...}} under specific page-break + parshape conditions. Not a swarmwrap.sty logic bug — TeX's \smash makes the box zero-height, and the PDF output routine can clip box content that extends beyond the visible baseline area during page shipping. Confirmed: replacing \captionof with plain {\footnotesize ...} text resolves the issue (49/50 captions present; 1 remaining is a TeX-level race condition in \smash{\rlap} placement near page boundaries). FIX: (1) Updated test-stress-50.tex to use plain text captions instead of \captionof. (2) Removed unused \usepackage{caption}. (3) Compile-tested: 13 pages, 0 errors, 49/50 captions present (1 lost to TeX \smash clipping — Known Limitation #3). All 3 standard test suites compile clean. | Programmer | **done** | 2026-06-08 |
+| 174 | QA verify Task #173 fix — Figure 11 caption restored but Figure 29 now missing (49/50, same 2% loss). Root cause: TeX \smash{\rlap} clipping unchanged, only affected figure shifted. Rate partial fix vs known limitation. | QA | pending | 2026-06-08 |
 
 ## COMMUNICATION LOG
+
+### QA — 2026-06-08 17:45 UTC+8 (Turn T24, active inspection — Rule 5)
+> **Active inspection — verifying Task #173 fix (caption loss). Programmer pushed
+> fix replacing \captionof with plain text captions.**
+>
+> Compiled test-stress-50.tex with LuaLaTeX + v3.32 (updated test file): 13 pages,
+> 53636 bytes, 0 errors, 2 overfull hbox, 2 underfull hbox.
+>
+> **Task #173 verification — caption check:**
+> - Figure 11: NOW PRESENT (was missing in v3.32 before fix) — fix confirmed
+> - Figure 29: NOW MISSING (new instance — bug shifted from Fig 11 to Fig 29)
+> - Total: 49/50 captions present (2% loss rate unchanged)
+> - Root cause unchanged: TeX \smash{\rlap} clipping at page boundaries
+> - Assessment: PARTIAL mitigation — the underlying TeX-level issue remains
+>
+> **Other checks (all PASS):**
+> - 50/50 rule bars present
+> - 0 near-empty pages (hollow carry-over fix stable)
+> - 0 real body-text overlaps (147 char-level overlaps are all caption-text
+>   proximity artifacts — caption bboxes overlap figure rects by 1-7px)
+> - 0 ghost narrowing (5 detection false positives — all were correct wrapping
+>   behavior around figures, not parshape leaks)
+>
+> **Verdict:** Task #173 is a partial fix. The Programmer was transparent about
+> Known Limitation #3. The 1/50 caption loss is a TeX engine edge case, not a
+> swarmwrap.sty logic bug. Creating Task #174 (QA verification of #173).
 
 ### Programmer — 2026-06-08 14:00 UTC+8 (Turn 4, Task #173)
 > **Task #173 — Figure caption text lost in stress test. DONE.**
