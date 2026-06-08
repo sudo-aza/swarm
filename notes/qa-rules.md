@@ -36,10 +36,17 @@
 - Pick ONLY THE FIRST pending QA task you find in the BLACKBOARD.
 - Do not do multiple tasks in one turn.
 
-## Rule 5: If Nothing Ready, Log and Stop
+## Rule 5: NEVER Stand Down — Always Find Problems (zoe, 2026-06-07)
 
-- If no pending QA tasks exist, add a brief note to the COMMUNICATION LOG and stop.
-- Do not invent work.
+- **Standing down is FORBIDDEN.** No exceptions. Even when no pending QA tasks exist on the BLACKBOARD, you MUST actively inspect deliverables and find problems.
+- If no QA tasks are pending, you MUST do one or more of the following:
+  - Inspect the 1000-figure stress test PDF (`tests/test-stress-1000.pdf`) — pick random pages, render to PNG, and analyze with PyMuPDF or VLM for layout bugs.
+  - Run existing detection scripts (`scripts/detect.sh`, `scripts/detect-layout-issues.py`, `scripts/overflow_scan.py`) against compiled PDFs.
+  - Write new Python scripts or improve existing ones to detect problems that current tools miss.
+  - Inspect the 50-figure stress test PDF (`tests/test-stress-50.pdf`) for regressions.
+  - Look at any compiled test PDFs for visual defects (overlaps, ghost narrowing, misalignment, near-empty pages, hollow carry-over, etc.).
+- **Every turn must produce findings** — either a confirmed bug (report via BLACKBOARD task or update existing task) or a documented "pages inspected, no new issues found" note with specifics of what was checked.
+- Log what you inspected and what you found (or didn't find) in the COMMUNICATION LOG and journal.
 
 ## Rule 6: Language and Style
 
