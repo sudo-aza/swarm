@@ -77,15 +77,20 @@
 % ── Changelog ───────────────────────────────────────────────────────
 %
 % v3.32: Fix hollow carry-over near-empty pages (Task #172).
-%   When \swarmwrapnext's \par causes a page overflow, the tail of the
-%   paragraph lands on a fresh page. The remaining-height vspace from
-%   the previous figure (which is on the PREVIOUS page) was injected on
-%   this fresh page, wasting space. This could trigger unnecessary
-%   DEFERRED-NEWPAGE, producing near-empty pages (1.0% fill). FIX: Use
-%   Lua pre_shipping_filter to detect page shipping during \par. If the
-%   page shipped, discard the remaining vspace — the previous figure is
-%   not on this page. The figure then fits on the fresh page via NORMAL
-%   path. Near-empty pages: 2 -> 0 on 50-figure stress test.
+%   Two-part fix:
+%   (1) Stray \fi bug: The v3.32 placement section had an extra \fi
+%       closing the outer \ifswarmwrap@luatex early, causing "Extra \fi"
+%       error on 50-figure stress test at figure 18. Removed the stray
+%       \fi. 0 errors on all 3 standard test suites + 50-figure stress.
+%   (2) Pre_shipping_filter: When \swarmwrapnext's \par causes a page
+%       overflow, the tail of the paragraph lands on a fresh page. The
+%       remaining-height vspace from the previous figure (which is on the
+%       PREVIOUS page) was injected on this fresh page, wasting space and
+%       triggering unnecessary DEFERRED-NEWPAGE, producing near-empty
+%       pages (1.8% fill). FIX: Use Lua pre_shipping_filter to detect
+%       page shipping during \par. If page shipped, discard remaining
+%       vspace — the previous figure is not on this page. Near-empty
+%       pages: 2 -> 0 on 50-figure stress test.
 %
 % v3.31: Configurable squeeze-fit thresholds.
 %   Added user commands \swarmwrapsqueeze{<factor>} (default 0.4) and
@@ -638,7 +643,6 @@
       \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
       \wlog{swarmwrap next: NORMAL --- tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
     \fi
-  \fi
 }%
 \else
 \newcommand{\swarmwrapnext}{%

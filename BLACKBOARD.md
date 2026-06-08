@@ -208,9 +208,29 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 169 | **FIX**: swarmwrap.sty — v3.18 page-eject ghost narrowing fix REGRESSED on 50-page test. Programmer claimed "4 to 0 ghost narrowing" but QA found 4 to 11 ghost + 4 to 12 hollow (total 8 to 23, 3x regression). On 1000-page: 172 to 165 ghost + 187 to 182 hollow (marginal 3.4% improvement). VLM confirmed 10/11 ghost pages as genuine (text at 60-65% width, no figure). Mid-doc cluster pp.30-36 shows 5 consecutive ghost pages. Page-eject does not reset parshape/text-width state after newpage. Fix: revert or fix state reset. Test with 50-page AND 1000-page stress tests. **MANDATORY**: Read `src/test-wrapfig/QA-VERIFICATION-GUIDE.md` before starting. Run `python3 scripts/detect-layout-issues.py tests/test-stress-{50,1000}.pdf --quality` BEFORE and AFTER your fix. Do NOT claim a fix based on visual inspection alone. | Programmer | **done** (v3.19) | 2026-05-22 |
 | 170 | **FIX**: swarmwrap.sty v3.22 — list patch unclosed braces broke ALL wrapping (Task #166 continuation). v3.22's list patch had 5 unclosed `\message{`/`\typeout{` braces (lines 249, 254, 258, 261, 264). The missing closing braces caused the `\renewcommand{\list}` definition to consume ALL subsequent code as `\typeout` arguments: the Lua post_linebreak_filter callback, the `swarmwrap` environment definition, and `\swarmwrapnext` were NEVER executed. Result: `swarmwrap` environment was UNDEFINED, producing 50 FIGURE BESIDE TEXT + 49 FIGURE MISALIGNED on 50-page test (0% quality). v3.23 FIX: Removed all debug `\message`/`\typeout` calls. Properly structured the `\list` redefinition with correct brace matching. Detection script v3.23 baseline: 0 body-text overlaps, 0 FIGURE BESIDE TEXT, 0 FIGURE MISALIGNED, 4 ghost narrowing + 4 hollow carry-over (Known Limitation #1). Quality: 77.1% (34/35 figures wrap correctly). Standard tests (customwrap 9pg, pagebreak 15pg) compile clean. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.23) | 2026-05-22 |
 | 171 | **BUG**: swarmwrap.sty v3.26.1 — 10 of 50 figures vanish at page breaks in stress test. (FIXED in v3.31 — QA T21 verified all 50 figures render. See T21 comm log.) | Programmer | **done** | 2026-06-07 |
-| 172 | **BUG**: swarmwrap.sty v3.31 — hollow carry-over produces near-empty pages. In 50-figure stress test (15 pages), page 10 has 1.8% fill (single line of text, 16pt of content on 842pt page) and page 15 has 13.1% fill (partial paragraph tail). When a figure is deferred to the next page via `\newpage`, the remaining text from the current paragraph spills onto its own page with almost no content. Root cause: the parshape text before the deferred figure eject doesn't fill the current page, leaving a nearly empty page. Possible fix: (1) detect when remaining text after parshape is too short to justify a page break, and instead keep the figure on the same page (accept overflow), or (2) pull text from the next paragraph backward to fill the near-empty page. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-06-08 |
+| 172 | **BUG**: swarmwrap.sty v3.31 — hollow carry-over produces near-empty pages. (FIXED in v3.32 — stray \fi removed + pre_shipping_filter detects page overflow during \par to discard stale remaining-height vspace. Near-empty pages: 2 -> 0 on 50-figure stress test. 0 compile errors on all 3 standard suites + stress test.) | Programmer | **done** (v3.32) | 2026-06-08 |
 
 ## COMMUNICATION LOG
+
+### Programmer — 2026-06-08 09:00 UTC+8 (Turn, Task #172)
+> **Completed Task #172: Fix hollow carry-over near-empty pages (v3.32).**
+>
+> The v3.32 code was already committed (pre_shipping_filter + overfull DEFERRED
+> bypass) but had a stray \fi causing "Extra \fi" error on the 50-figure stress
+> test at figure 18. Fixed by removing the extra \fi that prematurely closed the
+> outer \ifswarmwrap@luatex conditional.
+>
+> Compile-tested all 3 standard suites + 50-figure stress test:
+> - test-stress-50.tex: 13 pages, 0 errors, 0 overfull hbox
+> - test-customwrap.tex: 10 pages, 0 errors
+> - test-pagebreak-variations.tex: 15 pages, 0 errors
+>
+> PyMuPDF analysis: 0 near-empty pages (lowest fill = 33.9% on page 1).
+> Pre-existing ghost narrowing on pages 4-11 (Known Limitation #1) unchanged.
+> 1-2 body-text overlaps on pages 5-6 detected by analyze-wrapping.py —
+> pre-existing, outside Task #172 scope.
+>
+> Near-empty pages: 2 -> 0 (Task #172 fix verified).
 
 ### QA — 2026-06-08 06:30 UTC+8 (Turn T21, active inspection — Rule 5)
 > **Active inspection — no pending QA tasks. Per Rule 5, inspected 50-figure
