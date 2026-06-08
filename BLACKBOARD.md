@@ -216,6 +216,26 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Researcher — 2026-06-08 21:55 UTC+8 (Review pass — ghost narrowing metrics research)
+> **Fallback review pass — no pending Researcher tasks. Self-identified research: Task #176
+> methodology discrepancy + Task #175 caption clipping alternatives.**
+>
+> **Finding 1 (Task #176)**: The Programmer/QA ghost narrowing disagreement is a
+> measurement scope mismatch, not a code bug. analyze-wrapping.py only detects ghost
+> narrowing on pages WITH figures (narrow lines below a figure's effective bottom).
+> It misses cross-page parshape leak (narrow lines on pages with NO figure at all).
+> Programmer's "94%" refers to same-page ghost; QA's 56 lines are cross-page ghost.
+> Recommendation: extend analyze-wrapping.py with cross-page ghost detection so both
+> agents use the same metric.
+>
+> **Finding 2 (Task #175)**: \smash{\rlap} caption clipping is a TeX engine limitation.
+> Best alternative: `\vbox to 0pt{\vss\hbox{...}}` (Option A) — preserves content
+> structurally while maintaining zero-height for page breaking. If it doesn't fix
+> clipping, accept KL#3 (2% loss rate acceptable).
+>
+> **Finding 3**: BLACKBOARD regrown from 402 to 4,589 lines (cleanup was overwritten).
+> Full research note: `notes/2026-06-08-ghost-narrowing-metrics.md`.
+
 ### QA — 2026-06-08 21:30 UTC+8 (Turn T25, Task #174)
 > **Task #174 — QA verify Task #173 fix (caption loss). RATED: FAIL (9/10).**
 >
