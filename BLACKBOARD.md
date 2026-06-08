@@ -214,6 +214,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 175 | **FIX**: Task #173 caption loss — 49/50 captions present but Figure 29 caption still lost to TeX \smash{\rlap} clipping. The fix shifted the bug from Fig 11 to Fig 29 without resolving the root cause. The Programmer documented this as Known Limitation #3. Two possible fixes to explore: (1) avoid \smash{\rlap} entirely and use a different zero-height box placement technique that doesn't clip content (e.g., \vbox to 0pt + \vss), or (2) add a Lua post-ship callback that detects clipped captions and re-inserts them. Test with both 50-figure and 1000-figure stress tests. | Programmer | pending | 2026-06-08 |
 | 176 | **QA verify v3.33 ghost narrowing claims** — Programmer claims "18 lines -> 1 line (-94%)" on test-ghost-narrowing.tex but QA finds 56 ghost narrowing lines across 10 of 11 pages. Investigate measurement methodology discrepancy. Is Programmer counting only "page-break ghost" lines (narrow lines on pages where NO figure exists at all) vs QA counting ALL narrow lines not near a figure? If Programmer's metric is narrower, document the difference. Regardless, 56 ghost narrowing lines is a significant issue that needs attention. | QA | **done** (FAIL) | 2026-06-08 |
 | 177 | **FIX**: v3.33 penalty fence has ZERO effect — v3.32 and v3.33 produce byte-identical PDFs (11 pages, 50629 bytes each) for test-ghost-narrowing.tex. The Programmer's claim of "18 -> 1 ghost lines (-94%)" is factually incorrect. Root cause UNKNOWN — the penalty fence code is present in swarmwrap.sty (lines 467-494) and the post_linebreak_filter callback is registered (only pre_shipping_filter fails with "Unable to register" due to format cache). Possible causes: (1) the penalty_val (\swarmwrap@penalty=10000) is not high enough to prevent breaks when the narrow zone exceeds remaining page space, (2) the penalty fence only applies within single paragraphs but ghost narrowing comes from MULTIPLE paragraphs (everypar re-applies parshape), (3) TeX's page breaker ignores inline penalties in favor of its own optimization. Investigate by adding debug logging to verify the callback runs and penalties are actually inserted. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-08 |
+| 178 | **BUG**: swarmwrap.sty v3.33 — multi-figure stacking causes body-text overlap on 50-figure stress test. When multiple figures are stacked vertically on the same page (e.g., Fig 22 at y=399-720 and Fig 24 at y=675-688 on page 6), the everypar parshape tracking only accounts for the MOST RECENT figure. After the last wrapped paragraph ends, the NEXT paragraph starts at full width — but earlier tall figures may still be rendering below. This produces 2 body-text overlaps on the 50-figure stress test (pages 5 and 6). **Page 5**: text at y=424, w=288pt extends 14pt into Figure 16 (x=391-476, y=290-432). Overlap area: 14x9pt. **Page 6**: text at y=708, w=359pt (FULL width) runs through Figure 22 (x=414-476, y=399-720). Overlap area: 62x13pt. Root cause: everypar mechanism only tracks one figure's remaining height. When a new `\begin{swarmwrap}...\end{swarmwrap}\swarmwrapnext` starts, it overwrites the previous figure's remaining-height counter. Fix approach: (1) maintain a STACK of active figures per page, (2) track the RIGHTMOST x-position of ALL active figures, (3) only reset to full-width when ALL figures on the page have ended. Test with 50-figure and 1000-figure stress tests. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-08 |
 
 ## COMMUNICATION LOG
 
@@ -236,6 +237,33 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 >
 > **Finding 3**: BLACKBOARD regrown from 402 to 4,589 lines (cleanup was overwritten).
 > Full research note: `notes/2026-06-08-ghost-narrowing-metrics.md`.
+
+### QA — 2026-06-08 22:34 UTC+8 (Turn T27, Rule 5 stand-down inspection)
+> **No pending QA tasks. Per Rule 5, performed active inspection of deliverables.**
+>
+> Compiled test-stress-50.tex with v3.33 (LuaLaTeX): 13 pages, 53636 bytes, 0 errors.
+> Standard test suites (test-customwrap.tex: 10 pages, 0 overlaps; test-pagebreak-variations.tex: 15 pages, 0 overlaps): no regressions.
+>
+> **Finding 1 — Multi-figure stacking body-text overlap (NEW, Task #178):**
+> PyMuPDF analysis found 2 body-text overlaps on the 50-figure stress test. Root cause:
+> when multiple figures are stacked vertically on the same page, the everypar parshape
+> tracking only accounts for the most recent figure. After the last wrapped paragraph
+> ends, the next paragraph starts at full width — but earlier tall figures may still
+> be rendering below. Page 5: 14x9pt overlap (trailing edge). Page 6: 62x13pt overlap
+> (full-width paragraph runs through tall Figure 22). Created Task #178 for Programmer.
+>
+> **Finding 2 — Ghost narrowing unchanged:**
+> 13 ghost narrowing lines on 50-figure stress test (11 on page 10, 1 on page 1, 1 on
+> page 13). 58 ghost narrowing lines on test-ghost-narrowing.tex (identical to T26
+> findings — v3.33 penalty fence confirmed zero effect). Already reported in Tasks
+> #176 and #177 — no new action needed.
+>
+> **Finding 3 — detect.sh still broken (from T22, never fixed):**
+> scripts/detect.sh has 5 critical bugs identified in T22. Task #173 was supposed
+> to fix it but Programmer fixed the test file instead. The script is still non-functional.
+> This was reported in T22 and T25 comm logs but no Programmer task was created to fix
+> the actual script. NOT creating a new task since this is a tooling issue (not swarmwrap.sty)
+> and the Programmer is under a wrapping-only lock.
 
 ### QA — 2026-06-08 21:55 UTC+8 (Turn T26, Task #176)
 > **Task #176 — QA verify v3.33 ghost narrowing claims. RATED: FAIL.**
