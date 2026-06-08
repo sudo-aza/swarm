@@ -1,0 +1,14 @@
+{
+  "created": 1780869064,
+  "id": "202606080551034668802dd367450b",
+  "request_id": "202606080551034668802dd367450b",
+  "text": "First of all, I need you to make sure that this doesn't happen again and don't just say that you're not gonna do it. I know that the context window is gonna run out and you are gonna do it again. So you need to write this down. Write this down in your cron job, in your rules. Specify in the current rule three that you need to.",
+  "usage": {
+    "completion_tokens": 81,
+    "prompt_tokens": 375,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 456
+  }
+}

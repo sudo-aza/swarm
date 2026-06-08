@@ -1,0 +1,14 @@
+{
+  "created": 1780869066,
+  "id": "202606080551054eb20b51fc384bd3",
+  "request_id": "202606080551054eb20b51fc384bd3",
+  "text": "If there's a single problem which is every problem which can be found, it needs to be fixed. Even if the regressions might be uh even if they might be regressions doesn't matter, you're gonna fix those regressions later too in another way just it.",
+  "usage": {
+    "completion_tokens": 57,
+    "prompt_tokens": 374,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 431
+  }
+}
