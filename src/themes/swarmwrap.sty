@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.33)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.34)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -45,7 +45,7 @@
 %
 % ── Known Limitations ─────────────────────────────────────────────────
 %
-% 1. Ghost narrowing (KNOWN LIMITATION, mitigated in v3.33):
+% 1. Ghost narrowing (KNOWN LIMITATION, mitigated in v3.33/v3.34):
 %    When the wrapped paragraph spans a page break, TeX's parshape
 %    persists across the page boundary but the figure does not (it is
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
@@ -61,10 +61,15 @@
 %    of consecutive narrow lines (not just at the boundary). This forces
 %    TeX to keep the entire narrow zone on one page or push it to the
 %    next, significantly reducing page-break ghost narrowing without the
-%    regressions of v3.18. Remaining instances (inter-figure ghost: narrow
-%    text below a figure's bottom extending into the gap before the next
-%    figure) are a fundamental TeX limitation (parshape assigned before
-%    page breaking).
+%    regressions of v3.18.
+%    v3.34 adds pre_shipping_filter ghost fix: when TeX ships a page,
+%    zeros remaining@nl and clears everypar, preventing cross-page
+%    multi-paragraph ghost narrowing (everypar re-applying parshape to
+%    paragraphs on the next page after the figure).
+%    Remaining instances (inter-figure ghost: narrow text below a figure's
+%    bottom extending into the gap before the next figure on the SAME page)
+%    are a fundamental TeX limitation (parshape assigned before page
+%    breaking).
 %
 % 2. Deferred figure placement (FIXED in v3.27):
 %    When the figure doesn't fit on the current page (\pagegoal - \pagetotal
@@ -78,6 +83,15 @@
 %    wrapping spec #4 ("near newpage: right-wrap on next page").
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.34: Pre_shipping_filter ghost narrowing fix (Known Limitation #1).
+%   When TeX ships a page, any remaining parshape lines (remaining@nl > 0)
+%   would leak to the next page via everypar, causing narrow text with no
+%   figure beside it. v3.34 zeros remaining@nl and clears everypar at page
+%   ship time, preventing cross-page multi-paragraph ghost narrowing.
+%   This is a pure state reset — no \newpage, no layout change (unlike v3.18
+%   which REGRESSED). The penalty fence from v3.33 prevents single-paragraph
+%   page-break ghost; v3.34 handles multi-paragraph cross-page ghost.
 %
 % v3.33: Reduce ghost narrowing via penalty fence (Known Limitation #1).
 %   Ghost narrowing occurs when a wrapped paragraph spans a page break —
@@ -290,7 +304,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/08 v3.33 ghost narrowing reduction]
+\ProvidesPackage{swarmwrap}[2026/06/08 v3.34 pre_shipping_filter ghost fix]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -434,18 +448,36 @@
   \swarmwrap@in@listfalse
 }
 
-% ── Lua callback: pre_shipping_filter (v3.32) ──────────────────────
-% Detects page shipping to fix hollow carry-over (Task #172).
-% Sets a flag when TeX ships a page. \swarmwrapnext checks this
-% flag after \par to detect page overflow.
+% ── Lua callback: pre_shipping_filter (v3.32, extended v3.34) ─────────
+% v3.32: Detects page shipping to fix hollow carry-over (Task #172).
+%   Sets a flag when TeX ships a page. \swarmwrapnext checks this
+%   flag after \par to detect page overflow.
+% v3.34: Zero remaining@nl and clear everypar on page shipping to
+%   prevent cross-page multi-paragraph ghost narrowing. When a page
+%   ships with remaining@nl > 0, the everypar hook would re-apply
+%   narrow parshape to subsequent paragraphs on the NEXT page, even
+%   though no figure exists there. By zeroing remaining@nl and clearing
+%   everypar at ship time, the next page starts full-width.
+%   This is NOT a page-eject (v3.18) — no \newpage, no layout change,
+%   purely a state reset. Safe because: if the current page had a
+%   figure, its narrow lines were already consumed by the paragraph
+%   that triggered the page break; any remaining narrow capacity is
+%   wasted anyway since the figure is page-local (\smash{\rlap}).
 \ifswarmwrap@luatex
 \directlua{
   swarmwrap_page_shipped = false
   luatexbase.add_to_callback("pre_shipping_filter",
     function(head, groupcode)
       swarmwrap_page_shipped = true
+      -- v3.34: Zero remaining@nl and clear everypar to prevent
+      -- cross-page ghost narrowing (Known Limitation #1 mitigation).
+      local rnl = tex.count["swarmwrap@remaining@nl"]
+      if rnl > 0 then
+        tex.count["swarmwrap@remaining@nl"] = 0
+        tex.toks["everypar"] = {}
+      end
       return head
-    end, "swarmwrap: detect page shipping")
+    end, "swarmwrap: detect page shipping + ghost fix")
 }
 \fi
 

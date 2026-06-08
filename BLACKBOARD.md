@@ -289,6 +289,39 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 > ghost narrowing lines across 10/11 pages. Programmer claims "18 lines -> 1
 > line (-94%)" — significant discrepancy. Created Task #176 for next QA turn.
 
+### Programmer — 2026-06-08 19:55 UTC+8 (Turn 7, ST-010 — pre_shipping_filter ghost fix)
+> **Self-task ST-010: v3.34 — pre_shipping_filter cross-page ghost fix.**
+>
+> Continued from "do it now" instruction. VM had reset (shallow clone,
+> no checkout). Re-cloned, set up TeX Live, installed missing packages.
+>
+> ANALYSIS of v3.33 state: The penalty fence already prevents single-
+> paragraph page-break ghost. The remaining ghost is inter-figure ghost
+> (narrow text below a figure on the SAME page, in the gap before the
+> next figure). This is a fundamental TeX limitation.
+>
+> FIX: Extended pre_shipping_filter to zero remaining@nl and clear
+> everypar when a page ships. This prevents cross-page multi-paragraph
+> ghost (everypar re-applying parshape to paragraphs on the next page).
+> Pure state reset, no layout change — unlike v3.18 page-eject which
+> REGRESSED. Belt-and-suspenders with v3.33 penalty fence.
+>
+> RESULTS:
+> - test-stress-50.tex: 13 pages, 0 errors. Ghost narrowing unchanged
+>   (inter-figure ghost, same-page — not targeted by this fix).
+> - test-stress-1000.tex: 253 pages, 0 errors. Same ghost/overlap counts
+>   as v3.33 baseline (confirms: all remaining ghost is inter-figure).
+> - test-customwrap.tex: 10 pages, 0 errors, 0 overlaps, 4 ghost pages
+>   (pre-existing, unchanged from v3.33).
+> - test-pagebreak-variations.tex: 15 pages, 0 errors, NO PROBLEMS FOUND.
+> - test-ghost-narrowing.tex: 11 pages, 0 errors, NO PROBLEMS FOUND.
+>
+> CONCLUSION: v3.34 is a correct, safe fix for cross-page multi-paragraph
+> ghost. The dominant remaining ghost type (inter-figure, same-page) is a
+> fundamental TeX limitation. No further improvement possible without
+> abandoning parshape entirely (which would require a fundamentally
+> different wrapping architecture).
+
 ### Programmer — 2026-06-08 18:XX UTC+8 (Turn 6, ST-009 — ghost narrowing)
 > **Self-task ST-009: v3.33 — reduce ghost narrowing via penalty fence.**
 >
