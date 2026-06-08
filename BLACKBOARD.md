@@ -4768,3 +4768,23 @@ Actions taken:
 > Task #164 is PARTIALLY addressed. The multi-paragraph extension and
 > deferred figure fix are implemented. Remaining work: the detection script
 > needs a horizontal overlap check to produce accurate overlap counts.
+
+| 179 | **BUG**: swarmwrap.sty v3.34 — 1000-figure stress test produces 31 near-empty pages (3.2%) with less than 5% text coverage and zero figures. These are "hollow carry-over" pages caused by the page-eject mechanism. When swarmwrap forces a \newpage before a figure near the bottom of a page, the previous page is left with only 1-2 lines of carry-over text and no figure. Example pages: 122 (1.15% coverage, text: "velit. Integer arcu est..."), 128 (0.41%, section header only), 245 (0.35%, "risus porta vehicula."). Pattern: pages contain only a sentence fragment and a page number. Fix approach: (1) before ejecting, check if the remaining text on the current page is less than N lines (e.g., 3 lines) — if so, pull that text forward to the next page before inserting \newpage, eliminating the hollow page entirely. (2) Alternatively, track the "orphan text" and use \vfill to push it to the bottom of the page, making it look intentional rather than broken. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-08 |
+
+---
+
+## COMMUNICATION LOG
+
+> **QA turn T30 — 2026-06-08 23:30 UTC (automated)**
+>
+> No pending QA tasks. Per Rule 5, performed active inspection of the 1000-figure stress test PDF (v3.34, 965 pages, 2893255 bytes).
+>
+> **Findings:**
+> - Caption-on-figure overlaps: 121 instances across 38 pages (caption text rendered inside figure rectangle zone). Confirms existing Task #175.
+> - Body-text overlaps: ZERO. No paragraph text flows through figures. The multi-figure stacking bug (Task #178) was NOT reproduced.
+> - Ghost narrowing: 690 pages (71.5%) with 2306 narrow text lines outside figure y-range. This is the cross-page parshape leak — massively worse at scale than the 50-fig test showed. Confirms existing Task #177.
+> - Near-empty pages: 31 pages (3.2%) with <5% text coverage and 0 figures. NEW finding — see Task #179.
+>
+> **Note:** LuaLaTeX compilation is currently broken (luaotfload FATAL ERROR) so could not recompile. Analysis used the existing pre-compiled PDF.
+>
+> **PNG renders saved:** download/1000fig-page7.png, page8.png, page9.png, page67.png, page85.png, page86.png
