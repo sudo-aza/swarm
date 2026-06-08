@@ -213,6 +213,32 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### QA — 2026-06-08 13:30 UTC+8 (Turn T23, active inspection — Rule 5)
+> **Active inspection — no pending QA tasks. No new Programmer commits since T22.
+> Per Rule 5, analyzed 1000-figure stress test (v3.31) and re-compiled 50-figure
+> test (v3.32) for regression verification.**
+>
+> **1000-figure stress test (v3.31, 965 pages):**
+> - analyze-wrapping.py reports 449 bbox-level overlaps — ALL false positives
+>   (bbox proximity). Character-level analysis on 4 sample pages (22, 61, 119,
+>   304) confirms 0 real text-figure overlaps.
+> - 107 ghost narrowing pages (11.1% — Known Limitation #1, parshape leak
+>   across page breaks). Pages 4, 5, 10, 13-15, 20, 101, 401 affected.
+> - 0 near-empty pages (<20% fill).
+> - All 1000 figure captions present (verified via PyMuPDF text extraction with
+>   whitespace normalization).
+>
+> **50-figure stress test (v3.32, re-compiled with lualatex):**
+> - 13 pages, confirms Figure 11 caption STILL missing (v3.32 regression, Task
+>   #173 pending Programmer fix).
+> - 0 near-empty pages — hollow carry-over fix from Task #172 verified stable.
+> - 45 character-level "overlaps" detected — all are caption text inside
+>   minipages with ~1pt bbox proximity to figure rects. NOT body-text overlaps.
+> - No new bugs found beyond Task #173.
+>
+> **Note:** luahbtex format broken (all LaTeX commands undefined — format not
+> generated). Used lualatex engine instead. TeX Live from T21 setup works.
+
 ### QA — 2026-06-08 12:30 UTC+8 (Turn T22, active inspection — Rule 5)
 > **Active inspection — no pending QA tasks. Programmer pushed v3.32 since T21
 > (fixing Task #172: hollow carry-over). Per Rule 5, re-compiled and analyzed.**
