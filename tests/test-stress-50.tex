@@ -1,0 +1,581 @@
+% test-stress-50.tex — 50-figure stress test for swarmwrap.sty
+% Compiles with: lualatex test-stress-50.tex
+% Purpose: Stress-test swarmwrap with 50 consecutive figure placements
+%   using varied figure heights and text amounts, with NO section breaks
+%   between figures. This tests the core wrapping loop and exposes:
+%   - body-text overlaps (parshape leak)
+%   - ghost narrowing (parshape persistence across pages)
+%   - hollow carry-over (empty narrow text regions)
+%   - wrongful whitespace (near-empty pages)
+
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{swarmwrap}
+
+\title{Stress Test: 50 Figures (swarmwrap.sty)}
+\author{Programmer Agent}
+\date{2026-06-08}
+
+\begin{document}
+\maketitle
+
+% 50 consecutive figures with no section breaks.
+% Pattern: swarmwrap + swarmwrapnext + lipsum
+% Figure heights cycle through: 3cm, 4cm, 5cm, 2cm, 6cm (repeat)
+% Text amounts cycle through: 1, 2, 1, 3, 2 paragraphs
+
+% Figure 1
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Fig 1 (3cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 2
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Fig 2 (4cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 3
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Fig 3 (5cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 4
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Fig 4 (2cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-3]
+
+% Figure 5
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    \captionof{figure}{Fig 5 (6cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 6
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Fig 6 (3cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 7
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Fig 7 (4cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 8
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Fig 8 (5cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 9
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Fig 9 (2cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-3]
+
+% Figure 10
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    \captionof{figure}{Fig 10 (6cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 11
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Fig 11 (3cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 12
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Fig 12 (4cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 13
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Fig 13 (5cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 14
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Fig 14 (2cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-3]
+
+% Figure 15
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    \captionof{figure}{Fig 15 (6cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 16
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Fig 16 (3cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 17
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Fig 17 (4cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 18
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Fig 18 (5cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 19
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Fig 19 (2cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-3]
+
+% Figure 20
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    \captionof{figure}{Fig 20 (6cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 21
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Fig 21 (3cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 22
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Fig 22 (4cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 23
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Fig 23 (5cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 24
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Fig 24 (2cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-3]
+
+% Figure 25
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    \captionof{figure}{Fig 25 (6cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 26
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Fig 26 (3cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 27
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Fig 27 (4cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 28
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Fig 28 (5cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 29
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Fig 29 (2cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-3]
+
+% Figure 30
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    \captionof{figure}{Fig 30 (6cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 31
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Fig 31 (3cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 32
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Fig 32 (4cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 33
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Fig 33 (5cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 34
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Fig 34 (2cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-3]
+
+% Figure 35
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    \captionof{figure}{Fig 35 (6cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 36
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Fig 36 (3cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 37
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Fig 37 (4cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 38
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Fig 38 (5cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 39
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Fig 39 (2cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-3]
+
+% Figure 40
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    \captionof{figure}{Fig 40 (6cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 41
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Fig 41 (3cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 42
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Fig 42 (4cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 43
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Fig 43 (5cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 44
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Fig 44 (2cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-3]
+
+% Figure 45
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    \captionof{figure}{Fig 45 (6cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 46
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Fig 46 (3cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 47
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{4cm}
+    \captionof{figure}{Fig 47 (4cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+% Figure 48
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Fig 48 (5cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+
+% Figure 49
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Fig 49 (2cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-3]
+
+% Figure 50
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    \captionof{figure}{Fig 50 (6cm tall)}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1-2]
+
+\end{document}

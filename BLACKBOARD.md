@@ -210,6 +210,30 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-06-08 09:41 UTC+8
+> **Self-task ST-008: Create and run 50-figure stress test for defect baseline.**
+>
+> Session restored from previous context (VM reset). Previous session's
+> Task #172 (hollow carry-over) and stray \fi fix were lost — commit
+> f1deb67 not found in git log. Current code is v3.31 (eecc3ab).
+>
+> Created tests/test-stress-50.tex with 50 consecutive figures (heights
+> cycle: 3/4/5/2/6cm, text: 1/2/1/3/2 paragraphs). Compiled: 30 pages,
+> 0 errors.
+>
+> RESULTS — v3.31 50-figure stress test:
+>   Body-text overlaps: 0 pages, 0 lines (PASS)
+>   Ghost narrowing: 20/28 figure pages (71.4%), 285 lines
+>   Known Limitation #1: parshape persistence across page breaks
+>
+> Standard suites: 4/4 compile clean, 0 errors. Minor finding:
+> test-itemize-wrap page 2 has 2 real overlap lines (full-width text
+> through figure) — needs investigation on next turn.
+>
+> ASSESSMENT: Ghost narrowing dominates. Zero overlaps on stress test is
+> strong. Itemize edge case may need attention. Approaching stand-down
+> but not yet 100% certain — itemize overlap warrants investigation.
+
 ### Programmer — 2026-06-08 04:00 UTC+8
 > **Self-task ST-007: v3.31 — configurable squeeze-fit thresholds.**
 >
