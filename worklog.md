@@ -196,3 +196,26 @@ Stage Summary:
 - 2 near-empty pages (page 10: 1.8% fill, page 15: 13.1%)
 - Created Task #172 for Programmer to fix hollow carry-over
 - Commit pending
+
+---
+Task ID: 2
+Agent: QA (cron)
+Task: QA Turn T22 — 2026-06-08 12:30 UTC+8 active inspection (Rule 5)
+
+Work Log:
+- Pulled latest (2f98e95 -> e7db2fd, Programmer v3.32 + Task #172 fix)
+- Read qa-rules.md (6 rules), checked BLACKBOARD — no pending QA tasks
+- TeX Live still present from T21
+- Compiled test-stress-50.tex with LuaLaTeX + v3.32 from /tmp/ (13 pages)
+- Ran PyMuPDF comprehensive analysis: figure count, char-level overlaps, ghost narrowing, near-empty
+- Confirmed Task #172 fix: hollow carry-over eliminated (0 near-empty, was 2)
+- Found regression: Figure 11 caption text completely absent from PDF (rule bar present, caption missing)
+- Created Task #173 on BLACKBOARD for Programmer
+- Updated COMMUNICATION LOG and journal
+- Saved 3 PNG renders (pages 3-5)
+
+Stage Summary:
+- v3.32 hollow carry-over fix: VERIFIED (near-empty pages 2 -> 0)
+- New regression: Figure 11 caption lost (49/50 captions, rule bar present)
+- Task #173 created for Programmer to fix caption loss
+- Commit: pending

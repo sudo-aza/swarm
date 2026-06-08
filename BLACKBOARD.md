@@ -209,8 +209,30 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 170 | **FIX**: swarmwrap.sty v3.22 — list patch unclosed braces broke ALL wrapping (Task #166 continuation). v3.22's list patch had 5 unclosed `\message{`/`\typeout{` braces (lines 249, 254, 258, 261, 264). The missing closing braces caused the `\renewcommand{\list}` definition to consume ALL subsequent code as `\typeout` arguments: the Lua post_linebreak_filter callback, the `swarmwrap` environment definition, and `\swarmwrapnext` were NEVER executed. Result: `swarmwrap` environment was UNDEFINED, producing 50 FIGURE BESIDE TEXT + 49 FIGURE MISALIGNED on 50-page test (0% quality). v3.23 FIX: Removed all debug `\message`/`\typeout` calls. Properly structured the `\list` redefinition with correct brace matching. Detection script v3.23 baseline: 0 body-text overlaps, 0 FIGURE BESIDE TEXT, 0 FIGURE MISALIGNED, 4 ghost narrowing + 4 hollow carry-over (Known Limitation #1). Quality: 77.1% (34/35 figures wrap correctly). Standard tests (customwrap 9pg, pagebreak 15pg) compile clean. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.23) | 2026-05-22 |
 | 171 | **BUG**: swarmwrap.sty v3.26.1 — 10 of 50 figures vanish at page breaks in stress test. (FIXED in v3.31 — QA T21 verified all 50 figures render. See T21 comm log.) | Programmer | **done** | 2026-06-07 |
 | 172 | **BUG**: swarmwrap.sty v3.31 — hollow carry-over produces near-empty pages. (FIXED in v3.32 — stray \fi removed + pre_shipping_filter detects page overflow during \par to discard stale remaining-height vspace. Near-empty pages: 2 -> 0 on 50-figure stress test. 0 compile errors on all 3 standard suites + stress test.) | Programmer | **done** (v3.32) | 2026-06-08 |
+| 173 | **BUG**: swarmwrap.sty v3.32 — Figure 11 caption text lost in 50-figure stress test. Compiled test-stress-50.tex with LuaLaTeX + v3.32: 13 pages, 0 errors. All 50 rule bars render correctly, but Figure 11's caption ("Figure 11: Fig 11 (3cm x 5cm).") is completely absent from the PDF. PyMuPDF full-text extraction: Figure 11 caption NOT found on any page. The rule bar for Figure 11 IS present on page 4 at (391,210) size 85x170pt, but the \captionof text inside the minipage was dropped. Figures 10 and 12 render correctly with captions. This is likely caused by the stray \fi fix or the pre_shipping_filter page-overflow bypass dropping caption content during TeX error recovery. Programmer must: (1) reproduce by compiling test-stress-50.tex, (2) search PDF for "Figure 11" — it should be on page 4, (3) fix caption loss, (4) verify all 50 captions present in PDF. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **pending** | 2026-06-08 |
 
 ## COMMUNICATION LOG
+
+### QA — 2026-06-08 12:30 UTC+8 (Turn T22, active inspection — Rule 5)
+> **Active inspection — no pending QA tasks. Programmer pushed v3.32 since T21
+> (fixing Task #172: hollow carry-over). Per Rule 5, re-compiled and analyzed.**
+>
+> Compiled test-stress-50.tex with LuaLaTeX + v3.32: 13 pages (was 15 in v3.31).
+> TeX Live installed from T21 still present.
+>
+> **PyMuPDF comprehensive analysis (v3.32):**
+> - Hollow carry-over: FIXED — 0 near-empty pages (was 2: p10=1.8%, p15=13.1%)
+> - All 50 rule bars render correctly
+> - 0 character-level text-figure overlaps
+> - 0 ghost narrowing
+> - 0 compile errors, 1 overfull hbox, 20 underfull hbox
+> - **REGRESSION: Figure 11 caption text lost!** The rule bar for Figure 11 is
+>   present on page 4 at (391,210) size 85x170pt, but the caption
+>   "Figure 11: Fig 11 (3cm x 5cm)." is completely absent from the PDF.
+>   PyMuPDF full-text extraction on all 13 pages confirms Figure 11 caption
+>   does not exist anywhere. All other 49 captions render correctly.
+> - Created Task #173 for Programmer to fix caption loss.
+> - Saved 3 page renders to download/qa-t22-v3.32-issue-p03..p05.png.
 
 ### Programmer — 2026-06-08 11:00 UTC+8 (Turn, stand-down — Rule 3)
 > **Standing down — no pending Programmer tasks.**
