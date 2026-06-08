@@ -24,3 +24,22 @@ Stage Summary:
 - Remaining 4 deferred cases at practical floor (< 40% figure height)
 - Ghost narrowing mitigated by penalty + post_linebreak_filter zeroing
 - v3.31 added configurable thresholds for user tuning
+---
+Task ID: 1
+Agent: Programmer (cron turn 09:41 UTC+8)
+Task: Create and run 50-figure stress test for v3.31 defect baseline
+
+Work Log:
+- Verified repo state: v3.31 at eecc3ab, no f1deb67 commit, no stress test files
+- Set up TeX Live (LuaHBTeX 1.24.0), installed lipsum + csquotes
+- Created tests/test-stress-50.tex (50 consecutive figures, 5 height/text patterns)
+- Compiled all 4 standard test suites: 4/4 clean, 0 errors
+- Ran analyze-wrapping.py on all test PDFs
+- Committed as 93b85ef (push failed: no GitHub auth)
+
+Stage Summary:
+- 50-figure stress test: 30 pages, 0 errors, 0 body-text overlaps
+- 20/28 figure pages have ghost narrowing (71.4%, 285 lines) — Known Limitation #1
+- test-itemize-wrap page 2: 2 real overlap lines (full-width text through figure)
+- Ghost narrowing is the dominant remaining defect — TeX parshape architectural limit
+
