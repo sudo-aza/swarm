@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.34)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.35)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -45,7 +45,7 @@
 %
 % ── Known Limitations ─────────────────────────────────────────────────
 %
-% 1. Ghost narrowing (KNOWN LIMITATION, mitigated in v3.33/v3.34):
+% 1. Ghost narrowing (KNOWN LIMITATION, mitigated in v3.33/v3.35):
 %    When the wrapped paragraph spans a page break, TeX's parshape
 %    persists across the page boundary but the figure does not (it is
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
@@ -60,12 +60,14 @@
 %    v3.33 adds a "penalty fence": penalties inserted between EVERY pair
 %    of consecutive narrow lines (not just at the boundary). This forces
 %    TeX to keep the entire narrow zone on one page or push it to the
-%    next, significantly reducing page-break ghost narrowing without the
-%    regressions of v3.18.
-%    v3.34 adds pre_shipping_filter ghost fix: when TeX ships a page,
-%    zeros remaining@nl and clears everypar, preventing cross-page
-%    multi-paragraph ghost narrowing (everypar re-applying parshape to
-%    paragraphs on the next page after the figure).
+%    next, reducing page-break ghost narrowing. NOTE: v3.35 discovered
+%    that the penalty fence was dead code (Lua -- comments ate the
+%    callback). v3.35 fixes this, ACTIVATING the penalty fence for
+%    the first time.
+%    v3.34 adds pre_shipping_filter ghost fix (code present but callback
+%    fails to register due to format cache — no effect).
+%    v3.35 fixes the critical Lua comment bug, enabling the penalty
+%    fence and remaining-nl tracking to actually execute.
 %    Remaining instances (inter-figure ghost: narrow text below a figure's
 %    bottom extending into the gap before the next figure on the SAME page)
 %    are a fundamental TeX limitation (parshape assigned before page
@@ -83,6 +85,40 @@
 %    wrapping spec #4 ("near newpage: right-wrap on next page").
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.35: CRITICAL BUG FIX — Lua callbacks were never executing.
+%   ROOT CAUSE: Lua -- comments inside \directlua{...} blocks are
+%   fatal. TeX's token scanner converts newlines to spaces before
+%   passing the string to Lua. Lua sees `-- comment rest_of_code`
+%   as one line, eating everything after the first -- comment.
+%   This meant the ENTIRE post_linebreak_filter callback (lines 487-563)
+%   was dead code from v3.17 onward. The function was never defined
+%   (swarmwrap_post_lb = nil), so the callback was never registered.
+%   All features attributed to this callback were actually working via
+%   TeX-level mechanisms (everypar, parshape, list patch) alone:
+%     - v3.17 remaining-nl tracking: was NOT decrementing (everypar used
+%       raw nl, not remaining@nl — but worked because everypar checked
+%       remaining@nl > 0 which was only set once at \swarmwrapnext and
+%       never decremented, so it stayed positive for the entire wrap zone)
+%     - v3.19 cross-page fix: was NOT zeroing remaining@nl on page break
+%       (relied on post_linebreak_filter which was dead)
+%     - v3.33 penalty fence: was NOT inserting any penalties
+%     - v3.34 pre_shipping_filter: also had -- comments, never registered
+%     - v3.15 emergencystretch reset: was NOT resetting (leaked to all
+%       subsequent paragraphs)
+%   FIX: Removed ALL -- comments from \directlua{...} blocks. Moved
+%   documentation to TeX % comments outside the blocks. Added warning
+%   comment explaining the restriction.
+%   IMPACT: The callback now actually runs. This activates:
+%     (1) Penalty fence (v3.33) — may reduce ghost narrowing
+%     (2) Remaining-nl tracking (v3.17) — everypar now properly counts
+%         down, clearing itself when narrow lines are exhausted
+%     (3) Emergencystretch reset (v3.15) — no more leak
+%     (4) Remaining-height computation (v3.14) — more accurate vspace
+%   NOTE: pre_shipping_filter still fails to register (format cache
+%   issue, not a code bug). This is a pre-existing limitation.
+%   QA Task #177: Confirmed v3.32 and v3.33 produced byte-identical
+%   PDFs because the penalty fence code was never executed.
 %
 % v3.34: Pre_shipping_filter ghost narrowing fix (Known Limitation #1).
 %   When TeX ships a page, any remaining parshape lines (remaining@nl > 0)
@@ -304,7 +340,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/08 v3.34 pre_shipping_filter ghost fix]
+\ProvidesPackage{swarmwrap}[2026/06/08 v3.35 critical: Lua callback fix]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -464,13 +500,13 @@
 %   that triggered the page break; any remaining narrow capacity is
 %   wasted anyway since the figure is page-local (\smash{\rlap}).
 \ifswarmwrap@luatex
+% Lua code below must NOT contain -- comments (TeX strips newlines
+% inside \directlua{}, causing -- to eat all subsequent code).
 \directlua{
   swarmwrap_page_shipped = false
   luatexbase.add_to_callback("pre_shipping_filter",
     function(head, groupcode)
       swarmwrap_page_shipped = true
-      -- v3.34: Zero remaining@nl and clear everypar to prevent
-      -- cross-page ghost narrowing (Known Limitation #1 mitigation).
       local rnl = tex.count["swarmwrap@remaining@nl"]
       if rnl > 0 then
         tex.count["swarmwrap@remaining@nl"] = 0
@@ -482,6 +518,18 @@
 \fi
 
 % ── Lua callback: post_linebreak_filter ───────────────────────────────
+% This callback:
+%   (a) v3.33 penalty fence: inserts penalties between consecutive narrow
+%       lines to prevent page breaks within the narrow zone.
+%   (b) v3.17 remaining-nl tracking: decrements remaining@nl counter.
+%   (c) v3.19 cross-page fix: zeros remaining@nl if paragraph broke
+%       across pages (total_lines < nl).
+%   (d) v3.29 everypar clearing: clears everypar when remaining@nl = 0.
+%   (e) v3.14 remaining height: computes vspace for next \swarmwrapnext.
+%   (f) v3.15 emergencystretch reset: prevents leak to subsequent paragraphs.
+%   (g) v3.6 boundary penalty: inserts penalty after last narrow line.
+% IMPORTANT: Lua -- comments are FORBIDDEN inside \directlua{} blocks.
+%   TeX strips newlines, causing -- to consume all subsequent code.
 \ifswarmwrap@luatex
 \directlua{
   function swarmwrap_post_lb(head, groupcode)
@@ -498,7 +546,6 @@
     local narrow_count = 0
     local penalty_val = tex.count["swarmwrap@penalty"]
     local current = head
-    -- Collect narrow line nodes for penalty insertion
     local narrow_nodes = {}
     while current do
       if current.id == 0 then
@@ -512,11 +559,6 @@
       end
       current = current.next
     end
-    -- v3.33: Insert penalty between every pair of consecutive narrow
-    -- lines to prevent TeX from breaking within the narrow zone.
-    -- This creates a "penalty fence" that forces TeX to either keep
-    -- all narrow lines on the current page (with the figure) or push
-    -- them all to the next page — eliminating page-break ghost narrowing.
     if penalty_val > 0 and #narrow_nodes > 1 then
       for i = 1, #narrow_nodes - 1 do
         local p = node.new(node.id("penalty"))
@@ -524,11 +566,6 @@
         node.insert_after(head, narrow_nodes[i], p)
       end
     end
-    -- Decrement remaining-nl counter (v3.17)
-    -- v3.19: If paragraph broke across pages (total_lines < nl),
-    -- zero out remaining@nl to prevent everypar from re-applying
-    -- parshape to subsequent paragraphs on the continuation page.
-    -- v3.29: Also clear everypar when remaining@nl reaches 0.
     if tex.count["swarmwrap@remaining@nl"] > 0 then
       local r = tex.count["swarmwrap@remaining@nl"]
       local nl = tex.count["swarmwrap@nl"]
@@ -538,12 +575,10 @@
         r = math.max(0, r - narrow_count)
         tex.count["swarmwrap@remaining@nl"] = r
       end
-      -- v3.29: Clear everypar when no remaining narrow lines
       if tex.count["swarmwrap@remaining@nl"] == 0 then
         tex.toks["everypar"] = {}
       end
     end
-    -- Compute remaining figure height
     local nl = tex.count["swarmwrap@nl"]
     local bs = tex.dimen["baselineskip"]
     local excess = 0
@@ -551,9 +586,7 @@
       excess = (nl - total_lines) * bs
     end
     tex.dimen["swarmwrap@remaining"] = excess
-    -- Reset emergencystretch
     tex.dimen["emergencystretch"] = 0
-    -- Insert penalty at parshape boundary (after last narrow line)
     if penalty_val > 0 and last_narrow then
       local p = node.new(node.id("penalty"))
       p.penalty = penalty_val
