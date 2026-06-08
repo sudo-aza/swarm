@@ -240,3 +240,24 @@ Stage Summary:
 - swarmwrap.sty v3.32 is stable with known limitations only
 - No pending Programmer tasks within wrapping lock
 
+---
+Task ID: 3
+Agent: Programmer (user-requested turn)
+Task: v3.33 — reduce ghost narrowing via penalty fence (ST-009)
+
+Work Log:
+- Analyzed ghost narrowing mechanism in v33.32 code
+- Created test-ghost-narrowing.tex focused test
+- Implemented penalty fence in post_linebreak_filter
+- Implemented narrow-line space check
+- Compared v3.32 vs v3.33 on focused test
+- Verified 0 regressions on all 5 standard test suites
+- Updated changelog, Known Limitation #1 docs
+- Committed as 1079ce9, pushed to origin/main
+
+Stage Summary:
+- v3.33 reduces page-break ghost narrowing by 94% (18→1 lines on focused test)
+- 0 regressions on all standard suites
+- Penalty fence: penalties between all consecutive narrow lines
+- Narrow-line check: nl*bs > remaining → DEFERRED
+
