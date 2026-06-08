@@ -261,3 +261,26 @@ Stage Summary:
 - Penalty fence: penalties between all consecutive narrow lines
 - Narrow-line check: nl*bs > remaining → DEFERRED
 
+---
+Task ID: 1
+Agent: Main (zai-2)
+Task: Implement ghost narrowing reduction in swarmwrap.sty via pre_shipping_filter approach
+
+Work Log:
+- VM had reset; re-cloned repo, set up TeX Live, installed missing packages
+- Read swarmwrap.sty v3.33 — discovered penalty fence already implemented
+- Analyzed ghost narrowing types: cross-page (everypar leak) vs inter-figure (same-page)
+- Implemented v3.34: extended pre_shipping_filter to zero remaining@nl and clear everypar on page shipping
+- Compiled test-stress-50.tex: 13 pages, 0 errors, identical ghost/overlap to v3.33
+- Created test-stress-1000.tex (1000 figures, cycling sizes)
+- Compiled test-stress-1000.tex: 253 pages, 0 errors, identical ghost/overlap to v3.33
+- Verified v3.33 vs v3.34 baseline (stashed, compiled, compared — no difference)
+- Compiled standard suites: customwrap (10pg), pagebreak (15pg), ghost-narrowing (11pg) — all 0 errors
+- Updated BLACKBOARD.md, journal, version/changelog/KL docs
+- Committed and pushed as v3.34 (aa7910a)
+
+Stage Summary:
+- v3.34 produces identical results to v3.33 — penalty fence already prevents cross-page breaks
+- All remaining ghost is inter-figure (same-page) — fundamental TeX limitation
+- All improvement avenues for KL#1 exhausted (v3.18→v3.34)
+- Test files: test-stress-1000.tex added for future regression testing
