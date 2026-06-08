@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.35)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.36)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -340,7 +340,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/08 v3.35 critical: Lua callback fix]
+\ProvidesPackage{swarmwrap}[2026/06/09 v3.36 fix hollow carry-over pages]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -738,6 +738,16 @@
       \swarmwrap@deferredfalse
     \fi
     \ifswarmwrap@deferred
+      % v3.36: Fix hollow carry-over pages (Task #179).
+      % When DEFERRED ejects via \newpage, the current page may have
+      % only 1-2 lines of orphan text from the previous paragraph,
+      % creating a near-empty "hollow" page. If page content is less
+      % than 3 baselineskips, insert \vfill to push the text to the
+      % bottom, making it look like an intentional page break.
+      \ifdim\pagetotal<3\baselineskip\relax
+        \vfill
+        \wlog{swarmwrap next: HOLLOW-FILL --- pagetotal=\the\pagetotal}%
+      \fi
       \newpage
       \noindent
       \parshape \swarmwrap@pshape\relax
