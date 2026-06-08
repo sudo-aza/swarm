@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.32)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.33)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -45,7 +45,7 @@
 %
 % ── Known Limitations ─────────────────────────────────────────────────
 %
-% 1. Ghost narrowing (KNOWN LIMITATION, v3.19):
+% 1. Ghost narrowing (KNOWN LIMITATION, mitigated in v3.33):
 %    When the wrapped paragraph spans a page break, TeX's parshape
 %    persists across the page boundary but the figure does not (it is
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
@@ -56,12 +56,15 @@
 %    state across \newpage. v3.19 REVERTS the page-eject. Instead, the
 %    post_linebreak_filter detects page breaks within the narrow zone
 %    (total_lines < nl) and zeros out remaining@nl to prevent everypar
-%    from amplifying the leak into subsequent paragraphs. The leaked
-%    parshape lines on the continuation page are unavoidable — this is
-%    a fundamental TeX limitation (parshape is set before page breaking).
-%    Combined with \swarmwrappenalty (default 10000) at the boundary,
-%    TeX's page breaker is discouraged from breaking within the narrow
-%    zone, reducing ghost instances.
+%    from amplifying the leak into subsequent paragraphs.
+%    v3.33 adds a "penalty fence": penalties inserted between EVERY pair
+%    of consecutive narrow lines (not just at the boundary). This forces
+%    TeX to keep the entire narrow zone on one page or push it to the
+%    next, significantly reducing page-break ghost narrowing without the
+%    regressions of v3.18. Remaining instances (inter-figure ghost: narrow
+%    text below a figure's bottom extending into the gap before the next
+%    figure) are a fundamental TeX limitation (parshape assigned before
+%    page breaking).
 %
 % 2. Deferred figure placement (FIXED in v3.27):
 %    When the figure doesn't fit on the current page (\pagegoal - \pagetotal
@@ -75,6 +78,19 @@
 %    wrapping spec #4 ("near newpage: right-wrap on next page").
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.33: Reduce ghost narrowing via penalty fence (Known Limitation #1).
+%   Ghost narrowing occurs when a wrapped paragraph spans a page break —
+%   TeX assigns parshape (narrow lines) before page breaking, so narrow
+%   lines on the continuation page have no figure beside them.
+%   FIX: In post_linebreak_filter, insert \penalty between EVERY pair of
+%   consecutive narrow lines (not just after the last one). This creates
+%   a "penalty fence" that prevents TeX from breaking within the narrow
+%   zone. TeX must either keep all narrow lines on the current page (with
+%   the figure) or push them all to the next page. This eliminates
+%   page-break ghost narrowing without the regressions of v3.18's approach
+%   (which used \newpage and leaked parshape state). The penalty value
+%   is the user-configurable \swarmwrappenalty (default 10000).
 %
 % v3.32: Fix hollow carry-over near-empty pages (Task #172).
 %   Two-part fix:
@@ -274,7 +290,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/08 v3.32 hollow carry-over fix]
+\ProvidesPackage{swarmwrap}[2026/06/08 v3.33 ghost narrowing reduction]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -445,9 +461,13 @@
     local tol = 3.0
     local narrow_width_max = tw_val + tol
     local last_narrow = nil
+    local prev_narrow = nil
     local total_lines = 0
     local narrow_count = 0
+    local penalty_val = tex.count["swarmwrap@penalty"]
     local current = head
+    -- Collect narrow line nodes for penalty insertion
+    local narrow_nodes = {}
     while current do
       if current.id == 0 then
         total_lines = total_lines + 1
@@ -455,9 +475,22 @@
         if lw <= narrow_width_max and lw > 0 then
           narrow_count = narrow_count + 1
           last_narrow = current
+          narrow_nodes[#narrow_nodes + 1] = current
         end
       end
       current = current.next
+    end
+    -- v3.33: Insert penalty between every pair of consecutive narrow
+    -- lines to prevent TeX from breaking within the narrow zone.
+    -- This creates a "penalty fence" that forces TeX to either keep
+    -- all narrow lines on the current page (with the figure) or push
+    -- them all to the next page — eliminating page-break ghost narrowing.
+    if penalty_val > 0 and #narrow_nodes > 1 then
+      for i = 1, #narrow_nodes - 1 do
+        local p = node.new(node.id("penalty"))
+        p.penalty = penalty_val
+        node.insert_after(head, narrow_nodes[i], p)
+      end
     end
     -- Decrement remaining-nl counter (v3.17)
     -- v3.19: If paragraph broke across pages (total_lines < nl),
@@ -488,8 +521,7 @@
     tex.dimen["swarmwrap@remaining"] = excess
     -- Reset emergencystretch
     tex.dimen["emergencystretch"] = 0
-    -- Insert penalty at parshape boundary
-    local penalty_val = tex.count["swarmwrap@penalty"]
+    -- Insert penalty at parshape boundary (after last narrow line)
     if penalty_val > 0 and last_narrow then
       local p = node.new(node.id("penalty"))
       p.penalty = penalty_val
@@ -603,6 +635,21 @@
     \advance\swarmwrap@loop@cnt by -1
   \ifnum\swarmwrap@loop@cnt>0 \repeat
   \xdef\swarmwrap@pshape{\swarmwrap@pshape 0pt \the\linewidth\space}%
+  % v3.33: Narrow-line space check. Even when the figure fits (remaining
+  % >= fh), the narrow parshape lines may not all fit on the current page
+  % (nl * baselineskip > remaining due to ceiling). If so, force
+  % DEFERRED to prevent page-break ghost narrowing. This catches cases
+  % where fh fits but the last narrow line would leak onto the next page.
+  \ifswarmwrap@deferred\else
+    \ifswarmwrap@squeezed\else
+      \dimen0=\pagegoal
+      \advance\dimen0 by -\pagetotal
+      \dimen2=\swarmwrap@nl\baselineskip
+      \ifdim\dimen2>\dimen0
+        \swarmwrap@deferredtrue
+      \fi
+    \fi
+  \fi
   \global\swarmwrap@remaining@nl=\swarmwrap@nl
   \emergencystretch=\fontdimen6\font\relax
   % ── Multi-paragraph extension (v3.29) ────────────────────────

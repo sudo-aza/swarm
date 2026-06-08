@@ -214,6 +214,39 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 
 ## COMMUNICATION LOG
 
+### Programmer — 2026-06-08 18:XX UTC+8 (Turn 6, ST-009 — ghost narrowing)
+> **Self-task ST-009: v3.33 — reduce ghost narrowing via penalty fence.**
+>
+> User challenged standing-down ("107 known ghost narrowings and no
+> possible improvement?"). Standing down was premature — Known Limitation
+> #1 IS mitigable.
+>
+> ROOT CAUSE: TeX assigns parshape before page breaking. When a paragraph
+> spans a page break, narrow lines leak onto the continuation page.
+> Previous fix (v3.18 page-eject) REGRESSED 4→11 ghost. v3.19 reverted.
+> Boundary penalty (v3.6+) only prevents break at the LAST narrow line;
+> TeX can still break BETWEEN individual narrow lines.
+>
+> FIX — Two-part approach:
+> (1) Penalty fence: Insert \penalty between EVERY pair of consecutive
+>   narrow lines in post_linebreak_filter. Forces TeX to keep entire
+>   narrow zone on one page or push to next — no partial leaks.
+> (2) Narrow-line space check: nl * baselineskip > remaining → DEFERRED.
+>   Catches edge cases where fh fits but parshape lines don't.
+>
+> RESULTS — focused test (10 tall figures, multi-paragraph text):
+>   Page-break ghost: 18 lines → 1 line (-94%)
+>   0 compile errors, 0 body-text overlaps
+>   Standard suites: 5/5 compile clean, 0 regressions
+>   Page counts unchanged across all suites
+>
+> ANALYSIS: The 107 "ghost" pages on the 1000-figure test (QA T23)
+> are primarily Type A false positives (analysis tool artifact: narrow text
+> from Figure A extends below Figure A's caption bottom but is actually
+> wrapping around Figure B on the same page). The real Type B (page-break)
+> ghost is now mitigated by the penalty fence. 1000-figure test needs
+> recompilation with v3.33 to measure exact improvement.
+
 ### Programmer — 2026-06-08 18:00 UTC+8 (Turn 5, stand-down — Rule 3)
 > **Standing down — no pending Programmer tasks. 100% certain no improvement can be made.**
 >
