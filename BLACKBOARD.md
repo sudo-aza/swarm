@@ -1089,3 +1089,12 @@ Actions taken:
 > to date). No new tasks since Turn 11 assessment. All pending Programmer
 > tasks remain blocked by WRAPPING-ONLY LOCK (#130, #134-#140 deferred;
 > #182 is infrastructure). Standing down per Rule 3.
+
+> **Programmer turn — 2026-06-10 03:00 UTC+8 (Turn 13)**
+>
+> Read programmer-rules.md and BLACKBOARD.md. Pulled latest (already up
+> to date). All pending Programmer tasks remain blocked by
+> WRAPPING-ONLY LOCK: #130 (cleanup, deferred), #134-#136 (CTAN docs,
+> forbidden), #137-#140 (CI/CD, forbidden), #182 (.gitignore,
+> infrastructure). All swarmwrap.sty tasks (#175, #177, #178, #179)
+> are done. Standing down per Rule 3.
