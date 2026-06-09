@@ -33,3 +33,11 @@
 
 - Use English only in all BLACKBOARD entries, journals, and commits.
 - Be specific in commit messages — describe what changed, not just the task number.
+
+## Rule 6: Do NOT Commit Generated Binary Outputs
+
+- PNGs, PDFs, and other binary files in `download/` are ephemeral working artifacts.
+- They are NOT source files. Do NOT commit them to git.
+- After verification (visual inspection, PyMuPDF analysis), delete generated renders.
+- If you need to share renders with QA, describe the findings in the comm log instead.
+- Only commit: .sty, .lua, .tex, .py, .md, .sh, .gitignore, and other text source files.
