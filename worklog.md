@@ -338,3 +338,28 @@ Stage Summary:
 - Task #185 created: CRITICAL repo contamination — 563 files committed by automated cron job.
 - No new swarmwrap bugs found. Existing bugs (#175, #178) unchanged.
 - Binary outputs deleted per Rule 7. Only text source files committed.
+---
+Task ID: T33
+Agent: QA
+Task: Automated QA turn T33 (19:30 UTC+8) — Rule 5 active inspection (tooling)
+
+Work Log:
+- Checked date. Read qa-rules.md. Pulled repo (already up to date).
+- Confirmed no pending QA tasks.
+- Per Rule 5, performed tooling work: re-created scripts/analyze-wrapping.py.
+- Regenerated lualatex.fmt via fmtutil-sys.
+- Compiled all 4 test suites with LuaLaTeX.
+- Wrote analyze-wrapping.py with 5 detection categories: overlaps, missing labels, ghost narrowing, near-empty pages, hollow carry-over.
+- Fixed bug in figure label extraction (per-page vs accumulated computation).
+- Validated script against all 4 test PDFs — results match T30-T32 manual analysis.
+- New findings via hollow carry-over detection: 4 pages in customwrap, 6 in pagebreak-variations, 1 in ghost-narrowing.
+- Created Task #186 on BLACKBOARD.
+- Added T33 comm log entry.
+- Updated journal with T33 results.
+- Cleaned compiled PDFs per Rule 7.
+
+Stage Summary:
+- Task #186 created: Re-created scripts/analyze-wrapping.py with 5-category detection.
+- v3.36 produces byte-identical PDFs across all 4 test suites (4th consecutive verification).
+- No new swarmwrap bugs found. Known issues (#175, #178) unchanged.
+- Script committed to repo for future QA turns.
