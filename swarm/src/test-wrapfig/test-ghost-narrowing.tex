@@ -1,23 +1,127 @@
-100755 blob 78edda654dc97efb84bcf4fb304c4a5d77c89f3c	RESULTS.md
-100755 blob 1ac5305dce5332e839d44c7b1f3936723125f412	test-customwrap.pdf
-100755 blob a0ad7a6b6305655da52830e3dd926cd1f2bbc726	test-customwrap.tex
-100755 blob c3fa94a0c8409f444dc5543d0d78e0ded27337da	test-cutwin.tex
-100755 blob 30915c7e8d4a6cd42076bd9e2722c46fb80ffb64	test-fallback-debug.tex
-100755 blob 4e9954a6f25211b961d25a6508889fc4e93c272f	test-figflow.tex
-100755 blob ace8ffa289e17079be412282c5f0a419d5564c00	test-floatflt.tex
-100644 blob 49344b871498a287fc6279b19cbc61b9bee887da	test-ghost-narrowing.tex
-100755 blob 85f497f7a35187a15a4e8aaf21d54e8e12f47372	test-image.png
-100755 blob add6797bde04b2848fe91943eca58d829767acb5	test-insbox.tex
-100755 blob 812cab37295f6255416a3f9ba6e90b479e269acd	test-itemize-wrap.tex
-100755 blob 313e3715ee085b418f7209464a8e1e2b52755240	test-multicol-wrap.tex
-100755 blob 9aabd8d2d93e0bf9885c6456aeca6a91149b68d4	test-pagebreak-variations.tex
-100755 blob 217ff1ee3af7d78403209cb6fa3ef1fe62f88721	test-paracol.tex
-100755 blob 0c4e7edcbc86169ade9251d9bc63195e7b40ca93	test-picinpar.tex
-100755 blob b4e9f6f9b76ca0acbbb66aef0e804932cb84c459	test-shapepar.tex
-100755 blob 52512b51d0663d64fb22e99964b5df9a8abeb5a7	test-spellcheck-inline-full.tex
-100755 blob c5fc79a4bcc251d2a3e9450b47f2df658ec0d718	test-spellcheck-inline.tex
-100755 blob 588a59c2befdc7507d42b9ab3d6e5b77384ce0bc	test-spellcheck-marks.tex
-100755 blob 1401794b88cd5e2e1fd9ecc4bfa776c7d424be8e	test-spellcheck-style.tex
-100755 blob 2c88c81fe155bdc215bb07d92c2000eb3ba46ce6	test-wrapfig.tex
-100755 blob b5eb11f4e42ba12c8218dd637811ba76a579b6c0	test-wrapfig2.tex
-100755 blob ed0b74c9032f995a1be3fb730ccff52f90a48cd0	test-wrapstuff.tex
+% test-ghost-narrowing.tex — Focused test for page-break ghost narrowing
+% Creates conditions where wrapped paragraphs span page breaks,
+% producing Type B ghost narrowing (narrow lines on continuation page).
+% Compiles with: lualatex test-ghost-narrowing.tex
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{swarmwrap}
+
+\title{Ghost Narrowing Test — swarmwrap.sty v3.33}
+\author{Programmer Agent}
+\date{2026-06-08}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+\begin{document}
+\maketitle
+
+% Test pattern: Tall figure (8cm, ~19 narrow lines) with enough text
+% to span a page break. This forces TeX to break within the narrow zone.
+% With v3.32: narrow lines leak onto continuation page (ghost narrowing).
+% With v3.33: penalty fence prevents break within narrow zone.
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{8cm}
+    {\footnotesize Fig 1 (3cm x 8cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]\lipsum[2]\lipsum[3]\lipsum[4]\lipsum[5]
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{8cm}
+    {\footnotesize Fig 2 (3cm x 8cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[6]\lipsum[7]\lipsum[8]\lipsum[9]\lipsum[10]
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    {\footnotesize Fig 3 (3cm x 6cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[11]\lipsum[12]\lipsum[13]\lipsum[14]\lipsum[15]
+
+% Repeat with even taller figure (10cm)
+\begin{swarmwrap}%
+  \begin{minipage}[t]{4cm}
+    \centering
+    \rule{\linewidth}{10cm}
+    {\footnotesize Fig 4 (4cm x 10cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[16]\lipsum[17]\lipsum[18]\lipsum[19]\lipsum[20]
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{4cm}
+    \centering
+    \rule{\linewidth}{10cm}
+    {\footnotesize Fig 5 (4cm x 10cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[21]\lipsum[22]\lipsum[23]\lipsum[24]\lipsum[25]
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{7cm}
+    {\footnotesize Fig 6 (3cm x 7cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[26]\lipsum[27]\lipsum[28]\lipsum[29]\lipsum[30]
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{7cm}
+    {\footnotesize Fig 7 (3cm x 7cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[31]\lipsum[32]\lipsum[33]\lipsum[34]\lipsum[35]
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{4cm}
+    \centering
+    \rule{\linewidth}{9cm}
+    {\footnotesize Fig 8 (4cm x 9cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[36]\lipsum[37]\lipsum[38]\lipsum[39]\lipsum[40]
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{8cm}
+    {\footnotesize Fig 9 (3cm x 8cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[41]\lipsum[42]\lipsum[43]\lipsum[44]\lipsum[45]
+
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{6cm}
+    {\footnotesize Fig 10 (3cm x 6cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[46]\lipsum[47]\lipsum[48]\lipsum[49]\lipsum[50]
+
+\end{document}

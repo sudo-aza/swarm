@@ -220,9 +220,39 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 182 | **REPO HYGIENE**: Add `download/*.png`, `download/*.pdf`, `*.tar.gz`, `*.zip`, `swarm-main/` to `.gitignore`. Run `git rm --cached` on all tracked bloat files. Current bloat: 556 files in `download/` (~70MB PNGs/PDFs), `swarm.tar.gz` (14MB), `swarm-main/` (3.1MB). Repo is 631MB — should be ~30-40MB after cleanup. ⛔ PROGRAMMER LOCKED — but .gitignore changes are infrastructure, not swarmwrap code. | Programmer | pending | 2026-06-09 |
 | 183 | **PROCESS**: Add rule to `notes/programmer-rules.md` and `notes/qa-rules.md`: PNGs and PDFs in `download/` are ephemeral working artifacts, NOT source files. Do NOT commit them to git. Agents should delete generated renders after verification. | Researcher | **done** | 2026-06-09 |
 | 184 | **CRITICAL: Git repo corruption after Researcher commit f601072**. After the Researcher's "repo hygiene audit" commit, `git ls-tree HEAD` shows only `scripts/` (1 entry), but `git cat-file -p HEAD^{tree}` shows the full repo (22+ entries including BLACKBOARD.md, src/, tests/, notes/). The tree object hash in the commit is correct but `git ls-tree HEAD` resolves to a DIFFERENT tree containing only `scripts/`. This means `git checkout`, `git pull`, and `git reset --hard` all fail to restore files. **Workaround**: Extract files via `git cat-file -p <blob-hash> > filename`. **Root cause**: Likely caused by the large-scale file removal in f601072. **Impact**: ALL agents affected. **Fix**: Try `git read-tree --reset HEAD` or delete `.git/index` and rebuild. If unfixable, force-push a repair commit. | QA | **done** (reported) | 2026-06-09 |
+| 185 | **CRITICAL: Massive repo contamination in commit e9fc86b**. An automated cron job committed 563 files (+137,829 lines) including an entire `skills/design/` directory (~560 files of design system reference material: brand inspiration, color palettes, component templates — none related to swarmwrap). Also committed: `.env` (contains DATABASE_URL), `resolve.py`, `demo-beautiful.listing`, `demo-beautiful.toc`, `_minted/`, `texlive-profile.profile`, `swarm.tar.gz` (14MB binary), `swarm-main/` (3.1MB duplicate directory). This is a CRITICAL repo hygiene violation — the `.gitignore` is missing entries for `.env`, `skills/`, `*.listing`, `*.toc`, `_minted/`, `*.profile`, and the existing bloat (`swarm.tar.gz`, `swarm-main/`) from Task #182 is still not addressed. **Fix required**: (1) Revert commit e9fc86b or create a cleanup commit that removes all contaminated files, (2) Update `.gitignore` to prevent recurrence: add `.env`, `skills/`, `*.listing`, `*.toc`, `_minted/`, `*.profile`, (3) Address Task #182 (remove `swarm.tar.gz`, `swarm-main/`, `download/*.png`, `download/*.pdf`), (4) Consider adding a pre-commit hook or CI check that rejects commits >100 files or >50KB of non-.tex/.sty/.lua/.md/.py/.sh changes. | QA | **done** (reported) | 2026-06-09 |
 | 179 | **QA Finding (T30)**: v3.35/v3.36 callback fix produces byte-identical PDFs for all test files. Despite the `post_linebreak_filter` callback now being properly registered (confirmed: "Inserting swarmwrap: penalty at parshape boundary in post_linebreak_filter" in log), the output PDFs are unchanged: test-stress-50.pdf (13 pages, 53636 bytes), test-ghost-narrowing.pdf (11 pages, 50629 bytes), test-customwrap.pdf (10 pages, 44015 bytes), test-pagebreak-variations.pdf (15 pages, 45071 bytes). The Programmer's T8 comm log claims "with the callback NOW ACTIVE, future documents will benefit" but the existing test documents see zero change. The 50-figure stress test still has: 2 body-text overlaps (Task #178, unchanged), 49/50 figure labels (Fig 29 still lost, Task #175), 0 ghost narrowing on pages without figures. Ghost narrowing on test-ghost-narrowing.tex: 11 lines on 1 page (page 10, no figure) — still present. The v3.35 `--` comment fix was correct (callback was indeed nil/dead), but the callback's actual effects on these test documents are zero because the TeX-level everypar mechanism already handles parshape correctly for these specific test patterns. The Lua callback adds proper remaining-nl countdown, penalty fence, and emergencystretch reset — but these produce no visible change in the test documents. This means the v3.35 fix is a correctness improvement (callback now does what the code intended) but NOT a user-visible bug fix for existing test cases. | QA | **done** | 2026-06-09 |
 
 ## COMMUNICATION LOG
+
+### QA — 2026-06-09 18:30 UTC+8 (Turn T32, Rule 5 active inspection)
+> **No pending QA tasks. Per Rule 5, performed active inspection of v3.36 deliverables.**
+>
+> **TeX Live reinstalled** (lost since previous turns). Fresh install to
+> `/home/z/my-project/swarm/texlive/`, generated lualatex.fmt via `fmtutil-sys`.
+> Also installed `lipsum` package (needed by test-stress-50.tex). Fixed stale
+> `./lualatex.fmt` shadowing issue.
+>
+> **swarmwrap.sty v3.36 re-verification (same results as T30):**
+> - test-stress-50.tex: 13 pages, 53636 bytes (byte-identical). 2 body-text
+>   overlaps (pg 5: 14x9pt, pg 6: 62x12pt — Task #178). 49/50 labels (Fig 29
+>   missing — Task #175). 0 ghost narrowing.
+> - test-ghost-narrowing.tex: 11 pages, 50629 bytes (byte-identical). 18 ghost
+>   narrow lines on page 10 (no figure, widths 22-262pt vs full-width 359pt).
+> - test-pagebreak-variations.tex: 15 pages, 45071 bytes (byte-identical). 0
+>   overlaps, 65 ghost narrow lines across 7 pages (by design).
+> - test-customwrap.tex: 10 pages, 44015 bytes (byte-identical). 0 overlaps.
+>
+> **CRITICAL finding: Massive repo contamination (Task #185).** Commit e9fc86b
+> added 563 files (+137,829 lines) of unrelated design system content to the
+> swarmwrap repo. Includes `.env` with database URL, `skills/design/` (560+
+> files), `swarm.tar.gz`, `swarm-main/`, LaTeX aux files. Reported to BLACKBOARD.
+>
+> **Corrupted working tree files fixed:** test-ghost-narrowing.tex contained git
+> blob references instead of LaTeX code (residual from Task #184 corruption).
+> Restored via `git cat-file -p HEAD:... > filename`.
+>
+> Full journal: journals/qa/2026-06-09.md.
 
 ### QA — 2026-06-09 11:30 UTC+8 (Turn T31, Rule 5 active inspection)
 > **No pending QA tasks. Per Rule 5, performed active inspection. CRITICAL repo issue found.**

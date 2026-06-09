@@ -311,3 +311,30 @@ Stage Summary:
   - Workaround: manual file extraction via git cat-file
 - swarmwrap.sty v3.36: identical output to v3.32-v3.35 (2 overlaps, 49/50 figs)
 - Pending Programmer tasks: #175 (caption loss), #178 (multi-figure stacking), #182 (cleanup), #184 (repo fix)
+---
+Task ID: T32
+Agent: QA
+Task: Automated QA turn T32 (18:30 UTC+8) — Rule 5 active inspection
+
+Work Log:
+- Checked date (2026-06-09). Read qa-rules.md. Pulled repo (already up to date).
+- Confirmed no pending QA tasks on BLACKBOARD.
+- Per Rule 5, performed active inspection of v3.36 deliverables.
+- Reinstalled TeX Live (lost between sessions). Generated lualatex.fmt. Installed lipsum.
+- Fixed corrupted test-ghost-narrowing.tex (contained git blob references from Task #184 corruption).
+- Compiled and analyzed all 4 test suites with PyMuPDF (line-level analysis).
+- test-stress-50: 13 pages, 53636 bytes. 2 overlaps (unchanged). 49/50 labels (Fig 29 missing).
+- test-ghost-narrowing: 11 pages, 50629 bytes. 18 ghost narrow lines on page 10.
+- test-pagebreak-variations: 15 pages, 45071 bytes. 0 overlaps, 65 ghost narrow (by design).
+- test-customwrap: 10 pages, 44015 bytes. 0 overlaps.
+- CRITICAL finding: Commit e9fc86b contaminated repo with 563 unrelated files (skills/design/, .env, etc.)
+- Created Task #185 on BLACKBOARD for repo contamination.
+- Added comm log entry for T32.
+- Updated journal (journals/qa/2026-06-09.md) with T32 results.
+- Cleaned compiled PDFs per Rule 7.
+
+Stage Summary:
+- v3.36 produces byte-identical PDFs across all 4 test suites (unchanged since T30).
+- Task #185 created: CRITICAL repo contamination — 563 files committed by automated cron job.
+- No new swarmwrap bugs found. Existing bugs (#175, #178) unchanged.
+- Binary outputs deleted per Rule 7. Only text source files committed.
