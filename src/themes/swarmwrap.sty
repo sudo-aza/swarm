@@ -114,6 +114,25 @@
 %   all figures gone). NOTE: Could not compile-test (no TeX Live on this
 %   VM). QA should verify on 50-figure and 1000-figure stress tests.
 %
+% v3.38: Fix figure loss on overfull pages (Task #175).
+%   BUG: When the page is overfull (remaining < 0), the deferred path
+%   had an overfull-UNDEFER that forced NORMAL placement instead of
+%   \newpage. The \smash{\rlap} figure was then placed below the page
+%   boundary and completely clipped by TeX's page shipper. This caused
+%   1/50 figures to vanish in the stress test (Fig 29, a 6cm figure on
+%   a page overfull by 13pt). ROOT CAUSE: v3.32's overfull-UNDEFER
+%   assumed the figure would be "partially at the page boundary" but
+%   for tall figures on significantly overfull pages, the entire figure
+%   extends below the visible area.
+%   FIX: Removed the overfull-UNDEFER entirely. Now DEFERRED always
+%   uses \newpage, even when the page is overfull. TeX ships the
+%   overfull page (which has plenty of content) and the figure starts
+%   on a fresh page with correct placement. Also fixed #parameter bug
+%   in v3.37's Lua table.insert (used # inside \newcommand).
+%   RESULT: 50/50 figure labels present (was 49/50). Page count may
+%   increase by 1-2 pages (deferred figures now get their own page
+%   instead of being clipped).
+%
 % v3.35: CRITICAL BUG FIX — Lua callbacks were never executing.
 %   ROOT CAUSE: Lua -- comments inside \directlua{...} blocks are
 %   fatal. TeX's token scanner converts newlines to spaces before
@@ -368,7 +387,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/09 v3.37 fix multi-figure stacking body-text overlap]
+\ProvidesPackage{swarmwrap}[2026/06/10 v3.38 fix figure loss on overfull pages (Task #175)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -775,11 +794,11 @@
     local stack = swarmwrap_fig_stack
     local tw_val = tex.dimen["swarmwrap@tw@lua"]
     local nl_val = tex.count["swarmwrap@nl"]
-    stack[#stack + 1] = {
+    table.insert(stack, {
       tw = tw_val,
       nl = nl_val,
       remaining_nl = nl_val
-    }
+    })
   }%
   % ── Multi-paragraph extension (v3.29) ────────────────────────
   % Set everypar to re-apply parshape to subsequent paragraphs.
@@ -793,31 +812,28 @@
   % ── Placement (DEFERRED vs NORMAL/SQUEEZE) ─────────────────────
   \ifswarmwrap@deferred
     % DEFERRED: figure doesn't fit, squeeze not possible.
-    % v3.32: If page is already overfull (remaining < 0), don't
-    % force a page break — let TeX ship the overfull page naturally.
-    % Take the NORMAL path so the figure is placed with the overflow
-    % text. The figure may be partially at the page boundary, but this
-    % prevents near-empty pages from overflow.
-    \ifdim\dimen0<0pt\relax
-      \swarmwrap@deferredfalse
+    % v3.38: Removed overfull-UNDEFER (was: if remaining < 0, take NORMAL
+    % path instead of \newpage). The overfull-UNDEFER caused figure loss:
+    % when page is overfull, the \smash{\rlap} figure is placed below the
+    % page boundary and completely clipped. Now always DEFER via \newpage
+    % — TeX ships the overfull page (which has content) and the figure
+    % starts on a fresh page. No near-empty pages because the shipped page
+    % is already overfull (plenty of content).
+    % v3.36: Fix hollow carry-over pages (Task #179).
+    % When DEFERRED ejects via \newpage, the current page may have
+    % only 1-2 lines of orphan text from the previous paragraph,
+    % creating a near-empty "hollow" page. If page content is less
+    % than 3 baselineskips, insert \vfill to push the text to the
+    % bottom, making it look like an intentional page break.
+    \ifdim\pagetotal<3\baselineskip\relax
+      \vfill
+      \wlog{swarmwrap next: HOLLOW-FILL --- pagetotal=\the\pagetotal}%
     \fi
-    \ifswarmwrap@deferred
-      % v3.36: Fix hollow carry-over pages (Task #179).
-      % When DEFERRED ejects via \newpage, the current page may have
-      % only 1-2 lines of orphan text from the previous paragraph,
-      % creating a near-empty "hollow" page. If page content is less
-      % than 3 baselineskips, insert \vfill to push the text to the
-      % bottom, making it look like an intentional page break.
-      \ifdim\pagetotal<3\baselineskip\relax
-        \vfill
-        \wlog{swarmwrap next: HOLLOW-FILL --- pagetotal=\the\pagetotal}%
-      \fi
-      \newpage
-      \noindent
-      \parshape \swarmwrap@pshape\relax
-      \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
-      \wlog{swarmwrap next: DEFERRED-NEWPAGE --- fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
-    \fi
+    \newpage
+    \noindent
+    \parshape \swarmwrap@pshape\relax
+    \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+    \wlog{swarmwrap next: DEFERRED-NEWPAGE --- fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
   \fi
   % NORMAL, SQUEEZE-FIT, or overfull DEFERRED: place figure.
   \noindent
