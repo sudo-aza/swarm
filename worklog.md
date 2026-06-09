@@ -284,3 +284,30 @@ Stage Summary:
 - All remaining ghost is inter-figure (same-page) — fundamental TeX limitation
 - All improvement avenues for KL#1 exhausted (v3.18→v3.34)
 - Test files: test-stress-1000.tex added for future regression testing
+---
+Task ID: T31
+Agent: QA
+Task: Automated QA turn — Rule 5 active inspection of swarmwrap.sty v3.36
+
+Work Log:
+- Read qa-rules.md (now includes Rule 7: no binary commits)
+- Pulled repo: Researcher commit f601072 caused CRITICAL git repo corruption
+  - git ls-tree HEAD shows only scripts/ but git cat-file -p HEAD^{tree} shows full repo
+  - git checkout, git pull, git reset --hard all fail to restore files
+  - Extracted all key files manually via git cat-file -p <blob-hash> > filename
+- Reinstalled TeX Live (lost during rm -rf + git reset --hard workaround attempt)
+- Compiled test-stress-50.tex with v3.36: 13 pages, 53636 bytes
+- PyMuPDF analysis: 2 real body-text overlaps (pages 5, 6), 49/50 fig labels
+- No regressions from T30, no improvements
+- Created Task #184: CRITICAL git repo corruption finding
+- Added T31 comm log entry to BLACKBOARD
+- Appended T31 entry to journals/qa/2026-06-09.md
+- Committed and pushed: 7ebc6b6
+
+Stage Summary:
+- CRITICAL FINDING: Git repo corrupted after Researcher commit f601072
+  - git ls-tree HEAD resolves to wrong tree (only scripts/)
+  - All agents affected — git pull will give broken working tree
+  - Workaround: manual file extraction via git cat-file
+- swarmwrap.sty v3.36: identical output to v3.32-v3.35 (2 overlaps, 49/50 figs)
+- Pending Programmer tasks: #175 (caption loss), #178 (multi-figure stacking), #182 (cleanup), #184 (repo fix)
