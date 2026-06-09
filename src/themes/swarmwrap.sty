@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.36)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.37)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -73,7 +73,17 @@
 %    are a fundamental TeX limitation (parshape assigned before page
 %    breaking).
 %
-% 2. Deferred figure placement (FIXED in v3.27):
+% 2. Multi-figure stacking (FIXED in v3.37):
+%    When multiple figures are stacked on the same page, earlier tall
+%    figures may still be rendering after a later figure's narrow lines
+%    are exhausted. v3.37 maintains a Lua stack of active figures
+%    (swarmwrap_fig_stack). Each \swarmwrapnext pushes an entry; the
+%    post_linebreak_filter tracks remaining lines per figure; when the
+%    top figure is exhausted, the previous figure's parameters are
+%    promoted. Text only returns to full width when all figures on the
+%    page are exhausted.
+%
+% 3. Deferred figure placement (FIXED in v3.27):
 %    When the figure doesn't fit on the current page (\pagegoal - \pagetotal
 %    < figure height), v3.27 now forces a new page and places the figure
 %    at the top-right with narrow parshape for the following text.
@@ -85,6 +95,24 @@
 %    wrapping spec #4 ("near newpage: right-wrap on next page").
 %
 % ── Changelog ───────────────────────────────────────────────────────
+%
+% v3.37: Fix multi-figure stacking body-text overlap (Task #178).
+%   BUG: When multiple figures are stacked on the same page, the
+%   everypar mechanism only tracked the MOST RECENT figure's remaining
+%   narrow lines. When a new \swarmwrapnext started, it overwrote
+%   remaining@nl and tw@lua. When the newer figure's narrow lines were
+%   exhausted, everypar cleared and text returned to full width — but
+%   earlier taller figures might still be rendering on the page, causing
+%   body-text overlaps (2 instances on 50-figure stress test: pages 5,6).
+%   FIX: Maintain a Lua stack of active figures (swarmwrap_fig_stack).
+%   Each \swarmwrapnext pushes {tw, nl, remaining_nl} to the stack.
+%   post_linebreak_filter decrements the top entry and, when exhausted,
+%   pops it and promotes the next entry to tw@lua/remaining@nl so
+%   everypar continues with the previous figure's parameters. Only when
+%   the stack is empty does everypar clear and text return to full width.
+%   pre_shipping_filter clears the entire stack on page ship (new page =
+%   all figures gone). NOTE: Could not compile-test (no TeX Live on this
+%   VM). QA should verify on 50-figure and 1000-figure stress tests.
 %
 % v3.35: CRITICAL BUG FIX — Lua callbacks were never executing.
 %   ROOT CAUSE: Lua -- comments inside \directlua{...} blocks are
@@ -340,7 +368,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/09 v3.36 fix hollow carry-over pages]
+\ProvidesPackage{swarmwrap}[2026/06/09 v3.37 fix multi-figure stacking body-text overlap]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -370,7 +398,7 @@
   \xdef\swarmwrap@pshape@ext{\the\numexpr\swarmwrap@remaining@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@remaining@nl
   \loop
-    \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \swarmwrap@tw@val\space}%
+    \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \the\swarmwrap@tw@lua\space}%
     \advance\swarmwrap@loop@cnt by -1
   \ifnum\swarmwrap@loop@cnt>0 \repeat
   \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \the\linewidth\space}%
@@ -504,6 +532,7 @@
 % inside \directlua{}, causing -- to eat all subsequent code).
 \directlua{
   swarmwrap_page_shipped = false
+  swarmwrap_fig_stack = {}
   luatexbase.add_to_callback("pre_shipping_filter",
     function(head, groupcode)
       swarmwrap_page_shipped = true
@@ -512,6 +541,7 @@
         tex.count["swarmwrap@remaining@nl"] = 0
         tex.toks["everypar"] = {}
       end
+      swarmwrap_fig_stack = {}
       return head
     end, "swarmwrap: detect page shipping + ghost fix")
 }
@@ -528,6 +558,8 @@
 %   (e) v3.14 remaining height: computes vspace for next \swarmwrapnext.
 %   (f) v3.15 emergencystretch reset: prevents leak to subsequent paragraphs.
 %   (g) v3.6 boundary penalty: inserts penalty after last narrow line.
+%   (h) v3.37 figure stack: pops exhausted figures and promotes next
+%       entry so everypar continues with previous figure's parameters.
 % IMPORTANT: Lua -- comments are FORBIDDEN inside \directlua{} blocks.
 %   TeX strips newlines, causing -- to consume all subsequent code.
 \ifswarmwrap@luatex
@@ -571,12 +603,30 @@
       local nl = tex.count["swarmwrap@nl"]
       if total_lines < nl then
         tex.count["swarmwrap@remaining@nl"] = 0
+        swarmwrap_fig_stack = {}
+        tex.toks["everypar"] = {}
       else
         r = math.max(0, r - narrow_count)
         tex.count["swarmwrap@remaining@nl"] = r
+        local stack = swarmwrap_fig_stack
+        if #stack > 0 then
+          stack[#stack].remaining_nl = r
+        end
       end
       if tex.count["swarmwrap@remaining@nl"] == 0 then
-        tex.toks["everypar"] = {}
+        local stack = swarmwrap_fig_stack
+        if #stack > 1 then
+          table.remove(stack)
+          local prev = stack[#stack]
+          tex.count["swarmwrap@remaining@nl"] = prev.remaining_nl
+          tex.dimen["swarmwrap@tw@lua"] = prev.tw
+          tex.count["swarmwrap@nl"] = prev.nl
+        else
+          if #stack == 1 then
+            table.remove(stack)
+          end
+          tex.toks["everypar"] = {}
+        end
       end
     end
     local nl = tex.count["swarmwrap@nl"]
@@ -717,6 +767,20 @@
   \fi
   \global\swarmwrap@remaining@nl=\swarmwrap@nl
   \emergencystretch=\fontdimen6\font\relax
+  % v3.37: Push figure to stack for multi-figure overlap prevention.
+  % Each figure gets a stack entry so that when a newer figure's narrow
+  % lines are exhausted, the previous figure's parameters are promoted
+  % and everypar continues narrowing for it.
+  \directlua{
+    local stack = swarmwrap_fig_stack
+    local tw_val = tex.dimen["swarmwrap@tw@lua"]
+    local nl_val = tex.count["swarmwrap@nl"]
+    stack[#stack + 1] = {
+      tw = tw_val,
+      nl = nl_val,
+      remaining_nl = nl_val
+    }
+  }%
   % ── Multi-paragraph extension (v3.29) ────────────────────────
   % Set everypar to re-apply parshape to subsequent paragraphs.
   % Skip the first invocation (\swarmwrapnext already set parshape).
