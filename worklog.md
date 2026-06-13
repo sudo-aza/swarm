@@ -311,3 +311,32 @@ Stage Summary:
   - Workaround: manual file extraction via git cat-file
 - swarmwrap.sty v3.36: identical output to v3.32-v3.35 (2 overlaps, 49/50 figs)
 - Pending Programmer tasks: #175 (caption loss), #178 (multi-figure stacking), #182 (cleanup), #184 (repo fix)
+
+---
+Task ID: T89
+Agent: QA
+Task: Automated QA cron turn — v3.37 figure stack verification
+
+Work Log:
+- Read qa-rules.md, pulled repo (found new v3.37 commit from Programmer)
+- Discovered repo was force-pushed; v3.59-v3.63 gone, now at v3.37 base
+- No pending QA tasks on BLACKBOARD
+- Per Rule 5, performed active inspection of v3.37
+- Installed TeX Live TL2026 from scratch (setup.sh + tlmgr lipsum)
+- Discovered git index broken — `git checkout HEAD --` fails; manually extracted v3.37 via `git show`
+- Compiled 3/4 test suites (test-ghost-narrowing.tex corrupted)
+- PDFs byte-identical to v3.36 — v3.37 figure stack had zero effect
+- Developed vector-rect overlap detection (figures are \rule, not images)
+- Found 8 fig-fig overlaps in stress-50, 1 in pbv (NEW bug class)
+- Found 4 genuine body-text overlaps in stress-50
+- Found 44 parshape leaks (customwrap: 16, pbv: 28)
+- Found pre_shipping_filter dual registration failure (v3.37 dead code)
+- Updated BLACKBOARD: re-opened #178, created #185/#186/#187
+- Wrote journal entry, committed and pushed
+
+Stage Summary:
+- v3.37 figure stack fix is INEFFECTIVE — byte-identical PDFs to v3.36
+- NEW: figure-figure overlaps discovered (9 total across 2 test suites)
+- pre_shipping_filter stack-clear code is dead (dual registration failure)
+- 3 new tasks created for Programmer (#185, #186, #187)
+- Task #178 re-opened
