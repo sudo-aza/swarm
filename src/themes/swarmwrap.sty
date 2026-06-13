@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.36)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.37)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -340,7 +340,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/09 v3.36 fix hollow carry-over pages]
+\ProvidesPackage{swarmwrap}[2026/06/14 v3.37 figure stack for multi-figure stacking overlap fix (Task 178)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -370,7 +370,7 @@
   \xdef\swarmwrap@pshape@ext{\the\numexpr\swarmwrap@remaining@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@remaining@nl
   \loop
-    \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \swarmwrap@tw@val\space}%
+    \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \the\swarmwrap@tw@lua\space}%
     \advance\swarmwrap@loop@cnt by -1
   \ifnum\swarmwrap@loop@cnt>0 \repeat
   \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \the\linewidth\space}%
@@ -504,6 +504,7 @@
 % inside \directlua{}, causing -- to eat all subsequent code).
 \directlua{
   swarmwrap_page_shipped = false
+  swarmwrap_fig_stack = {}
   luatexbase.add_to_callback("pre_shipping_filter",
     function(head, groupcode)
       swarmwrap_page_shipped = true
@@ -512,8 +513,9 @@
         tex.count["swarmwrap@remaining@nl"] = 0
         tex.toks["everypar"] = {}
       end
+      swarmwrap_fig_stack = {}
       return head
-    end, "swarmwrap: detect page shipping + ghost fix")
+    end, "swarmwrap: detect page shipping + ghost fix + stack clear")
 }
 \fi
 
@@ -576,7 +578,25 @@
         tex.count["swarmwrap@remaining@nl"] = r
       end
       if tex.count["swarmwrap@remaining@nl"] == 0 then
-        tex.toks["everypar"] = {}
+        local stack = swarmwrap_fig_stack
+        if type(stack) == "table" and #stack > 0 then
+          local prev = stack[#stack]
+          stack[#stack] = nil
+          tex.count["swarmwrap@remaining@nl"] = prev.remaining_nl
+          if #stack > 0 then
+            local min_tw = prev.tw
+            for i = 1, #stack do
+              if stack[i].tw < min_tw then
+                min_tw = stack[i].tw
+              end
+            end
+            tex.dimen["swarmwrap@tw@lua"] = min_tw
+          else
+            tex.dimen["swarmwrap@tw@lua"] = prev.tw
+          end
+        else
+          tex.toks["everypar"] = {}
+        end
       end
     end
     local nl = tex.count["swarmwrap@nl"]
@@ -626,6 +646,39 @@
 %   \resizebox{!}{<remaining-4pt>}{...} to fit. Falls through to
 %   DEFERRED only when remaining is too small.
 \ifswarmwrap@luatex
+% v3.37: Figure stack push helper (Task #178).
+% Defined outside \swarmwrapnext to avoid # token issues
+% inside \newcommand definitions.
+\directlua{
+  function swarmwrap_stack_push()
+    local rnl = tex.count["swarmwrap@remaining@nl"]
+    local tw = tex.dimen["swarmwrap@tw@lua"]
+    if rnl > 0 and tw > 0 then
+      local stack = swarmwrap_fig_stack
+      if type(stack) ~= "table" then
+        stack = {}
+        swarmwrap_fig_stack = stack
+      end
+      stack[#stack + 1] = {
+        remaining_nl = rnl,
+        tw = tw
+      }
+    end
+  end
+  function swarmwrap_stack_tw_min(new_tw)
+    local stack = swarmwrap_fig_stack
+    if type(stack) == "table" and #stack > 0 then
+      local min_tw = new_tw
+      for i = 1, #stack do
+        if stack[i].tw < min_tw then
+          min_tw = stack[i].tw
+        end
+      end
+      return min_tw
+    end
+    return new_tw
+  end
+}
 \newcommand{\swarmwrapnext}{%
   % v3.32: Clear page-shipped flag BEFORE \par to detect overflow
   \directlua{swarmwrap_page_shipped = false}%
@@ -693,6 +746,16 @@
   \ifdim\dimen0>0pt \repeat
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+  % v3.37: Clamp tw to minimum across all stacked figures (Task #178).
+  % If earlier figures are still active with narrower tw, use that
+  % to prevent text overlapping the wider stacked figure zones.
+  \directlua{
+    local new_tw = tex.dimen["swarmwrap@tw@lua"]
+    local clamped = swarmwrap_stack_tw_min(new_tw)
+    tex.dimen["swarmwrap@tw@lua"] = clamped
+    tex.dimen["swarmwrap@tw"] = clamped
+  }%
+  \xdef\swarmwrap@tw@val{\the\swarmwrap@tw@lua\space}%
   \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@nl
   \loop
@@ -715,6 +778,9 @@
       \fi
     \fi
   \fi
+  % v3.37: Figure stack (Task #178). Push previous figure's state
+  % if still active, so narrowing continues after new figure ends.
+  \directlua{swarmwrap_stack_push()}%
   \global\swarmwrap@remaining@nl=\swarmwrap@nl
   \emergencystretch=\fontdimen6\font\relax
   % ── Multi-paragraph extension (v3.29) ────────────────────────
