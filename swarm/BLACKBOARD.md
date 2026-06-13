@@ -979,3 +979,22 @@ Actions taken:
 > - test-stress-1000.tex: 253 pages, 0 errors, 0 DEFERRED-NEWPAGE (unchanged)
 >
 > Task #179 marked **done**. Remaining pending Programmer tasks: #175, #178.
+
+### QA — 2026-06-14 05:30 UTC+8 (T89, Rule 5 — v3.63 code review, TeX Live lost)
+
+> **No pending QA tasks.** TeX Live LOST (4th occurrence) —
+> cannot compile. Code review only.
+>
+> **v3.63 code review:** Correctly removes `leak_tw=0` from
+> `page_had_fig` branch (T88 finding). Adds recursive vbox
+> traversal for nested hboxes. v3.62 saves/restores `\begin/\end`
+> before `\end{lrbox}` to fix multicol interception.
+> Both changes architecturally sound.
+>
+> **Programmer's claim (UNVERIFIED):** Leaked lines are
+> full-width hboxes with short text (not narrow parshape).
+> If true, detect-parshape-leak.py has systematic FPs.
+>
+> **PROCESS ISSUE:** 3rd consecutive version (v3.61→v3.63)
+> pushed without QA review task. Tasks #208 and #215
+> marked done by Programmer without QA verification.
