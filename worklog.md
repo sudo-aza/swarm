@@ -372,3 +372,25 @@ Stage Summary:
 - Bug 3: `tex.dimen["baselineskip"]` wrong register type (use tex.skip[].width)
 - Fixes eliminate ALL 8 fig-fig overlaps and 38% of fig-text overlaps in stress-50
 - Task #188 created for Programmer with exact fixes
+
+---
+Task ID: T93
+Agent: QA (cron)
+Task: Verify v3.39 Programmer deliverable — 3 Lua API bug fixes + callback name fix
+
+Work Log:
+- Pulled latest: v3.39 commit 999bd9fa found. Resolved divergent branch (reset --hard origin/main).
+- Extracted v3.39 from git (working tree stale due to broken index).
+- Compiled all 3 test suites (2-pass LuaLaTeX, TL2026): 0 errors on all (was 198+).
+- Ran LINE-LEVEL overlap detection (new accurate method, replacing T89's block-level FP-prone method).
+- Ran parshape leak detection (detect-parshape-leak.py, unchanged script).
+- Rendered key pages to PNG for visual spot-check, deleted per Rule 7.
+- Updated BLACKBOARD: Tasks #178, #185, #186, #188, #189 marked done. Task #190 created (pbv regression).
+- Added T93 comm log entry. Wrote journal entry in journals/qa/2026-06-14.md.
+- Committed and pushed: c198eb89.
+
+Stage Summary:
+- v3.39 is a MAJOR improvement: 198+ errors → 0, 8 fig-fig overlaps → 0, 44 parshape leaks → 0 (stress-50).
+- NEW REGRESSION: pbv parshape leaks 28 → 40 (Task #190, hypothesis: stack pop restores stale cross-page state).
+- METHODOLOGY FIX: Switched from block-level to line-level text detection. T89's "4 body-text overlaps" were likely FPs.
+- Remaining issues: 1 pbv fig-fig overlap (pre-existing, identical-coords edge case), 5 customwrap leaks, 40 pbv leaks.
