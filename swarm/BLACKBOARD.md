@@ -1229,3 +1229,24 @@ Actions taken:
 > Updated Task #190 with corrected root cause and fix approaches. Corrected T93 comm log regression claim.
 >
 > Full journal: journals/qa/2026-06-14.md (T94 section).
+
+### QA — 2026-06-14 13:30 UTC+8 (Turn T95, Rule 5 — near-empty page analysis, regression verification)
+> **No pending QA tasks. Per Rule 5, performed active inspection — novel analysis angle: near-empty page detection + regression verification.**
+>
+> **NEW TOOL:** Created `scripts/detect-near-empty-pages.py` — detects pages where text vertical span covers less than N% of page height. Also identifies BLANK, FIGURE-ONLY, and NEAR-EMPTY-WITH-FIG pages. Computes overall text area density.
+>
+> **NEAR-EMPTY PAGE RESULTS (threshold: 25% of page height):**
+> - stress-50 (14 pages): 0 issues. Text span 56-75% per page. Worst: pg14 at 56.6% (last page with less content, normal).
+> - customwrap (11 pages): 0 issues. Text span 70-75% per page.
+> - pbv (15 pages): 0 issues. Text span 75-80% per page.
+> - **Conclusion: v3.39 produces NO near-empty pages in any of the 3 standard test suites.** The hollow carry-over fix from Task #179 (v3.36) remains stable.
+>
+> **REGRESSION VERIFICATION (byte-for-byte match with T93 baselines):**
+> - stress-50: 14pg, 54157 bytes ✅
+> - customwrap: 11pg, 44216 bytes ✅
+> - pbv: 15pg, 45170 bytes ✅
+> - Line-level overlaps: stress-50 0/0, customwrap 0/0, pbv 0/1 (pre-existing pg7 fig-fig) ✅
+> - Parshape leaks: stress-50 0, customwrap 5 (pg3:1, pg5:2, pg9:2), pbv 40 (5 pages) ✅
+> - **No regressions detected. v3.39 is stable.**
+>
+> Full journal: journals/qa/2026-06-14.md (T95 section).
