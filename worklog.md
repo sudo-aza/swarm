@@ -611,3 +611,25 @@ Stage Summary:
 - No new bugs found across 42 pages in 3 suites. All findings trace to known Tasks #190, #191, #194.
 - v3.41 confirmed stable: byte-identical PDFs, no new regressions.
 - Confirmed Task #192 fix (zero fig-fig overlaps in 36 stacked figure pairs).
+---
+Task ID: T103
+Agent: QA (cron)
+Task: QA turn — full detection suite regression + compilation log analysis
+
+Work Log:
+- Read qa-rules.md, checked BLACKBOARD (no pending QA tasks)
+- git pull --rebase origin main — already up to date, v3.41 current
+- Compiled all 3 test suites: byte-identical to baselines
+- Ran full detection script suite (figure-alignment, near-empty-pages, parshape-leak) on all 3 PDFs
+- All results match v3.41 baselines exactly: 0 overlaps, 0 new near-empty, 0 new parshape leaks
+- Novel angle: compilation log analysis — examined Overfull/Underfull warnings in all 3 .log files
+- stress-50: 1 overfull (7.28pt, no visual overflow), 2 negligible underfulls
+- customwrap: 1 overfull in multicol (documented limitation), 6 underfulls (expected)
+- pbv: 13 underfulls all in short header text (expected)
+- Updated BLACKBOARD comm log, created journal (new date: 2026-06-15.md)
+- Committed and pushed
+
+Stage Summary:
+- No new bugs found. v3.41 confirmed stable across all detection scripts and log analysis.
+- All baselines match exactly: 0 regressions in 16+11+15=42 pages.
+- Note: 1000-figure stress test does not exist yet.

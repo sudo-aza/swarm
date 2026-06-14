@@ -1416,3 +1416,24 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new findings. All anomalies trace to known Tasks #190, #194. Confirmed #192 fix.
 >
 > Full journal: journals/qa/2026-06-14.md (T102 section).
+
+### QA — 2026-06-15 02:30 UTC+8 (Turn T103, Rule 5 — full detection suite regression + compilation log analysis)
+> **No pending QA tasks. Per Rule 5, performed active inspection:**
+>
+> **No new commits since T102.** v3.41 remains current (commit `68fde819`).
+> All 3 suites byte-identical: stress-50 16pg/54668b, customwrap 11pg/44216b, pbv 15pg/45191b.
+>
+> **REGRESSION CHECK — Full script suite:** Ran detect-figure-alignment, detect-near-empty-pages,
+> detect-parshape-leak against all 3 PDFs. ALL results match v3.41 baselines exactly: 0 fig-fig
+> overlaps, 0 fig-text overlaps, 2 near-empty (pg6/pg10, #194), 0 parshape leaks in stress-50,
+> 5 in customwrap, 34 in pbv. Zero regressions confirmed.
+>
+> **NOVEL ANGLE — Compilation log analysis:** Examined Overfull/Underfull hbox warnings in all
+> 3 .log files. stress-50: 1 overfull (7.28pt in narrow zone, text ends 6.7pt BEFORE figure —
+> no visual overflow), 2 underfull (badness ~1100, negligible). customwrap: 1 overfull in multicol
+> (documented limitation). pbv: 13 underfull all in short header text (expected). No new bugs.
+>
+> **STEP 4.5 CHECK:** No new findings beyond known Tasks #190, #191, #194.
+> Note: 1000-figure stress test (`tests/test-stress-1000.pdf`) referenced in Rule 5 does not exist.
+>
+> Full journal: journals/qa/2026-06-15.md (T103 section).
