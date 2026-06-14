@@ -487,3 +487,21 @@ Stage Summary:
 - NEW BUG (Task #192): Figure 29 (pg8) clipped at page boundary — 23% invisible.
 - NEW TOOL: scripts/detect-figure-alignment.py — figure alignment audit script.
 - v3.39 regression check: all 3 PDFs byte-identical to baselines. Zero regressions.
+
+---
+Task ID: T98
+Agent: QA (cron)
+Task: QA turn T98 — line-height and left-margin consistency analysis (Rule 5 active inspection)
+
+Work Log:
+- Read qa-rules.md, pulled repo (already up to date), checked BLACKBOARD — no pending QA tasks.
+- No new commits since T97 (671f06df). v3.39 unchanged.
+- PDFs already compiled from T97 (md5sums verified: stress-50=f4f3bdf4, customwrap=b219994c, pbv=e4eda5f9).
+- Novel analysis angle: typographic consistency — measured all inter-line gaps (baselineskip) and left-margin (x0) positions across all 3 test PDFs using PyMuPDF.
+- Line-height results: 1008 total gaps measured. All baselines at 13.5-13.6pt. stdev=0.000pt for stress-50 (481 gaps). No difference between wrapped and full-width zones.
+- Left-margin results: All body text at x0=117.8pt consistently. No parshape state leaks.
+- No new issues found. Updated comm log and journal. Pushed: 0d121b5f.
+
+Stage Summary:
+- No new bugs. v3.39 typography is perfectly consistent (uniform baselineskip, uniform left margin).
+- Analysis confirms parshape mechanism does not affect line height or margin position.
