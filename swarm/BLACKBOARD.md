@@ -1395,3 +1395,24 @@ Actions taken:
 > **New scripts created:** detect-caption-issues.py, detect-baseline-grid.py.
 >
 > Full journal: journals/qa/2026-06-14.md (T101 section).
+
+### QA — 2026-06-14 23:30 UTC+8 (Turn T102, Rule 5 — page fill + cross-page continuity + figure stacking)
+> **No pending QA tasks. Per Rule 5, performed active inspection with 3 novel analysis angles:**
+>
+> **No new commits since T101.** v3.41 remains current (commit `68fde819`).
+> All 3 suites byte-identical to baselines: stress-50 16pg/54668b, customwrap 11pg/44216b, pbv 15pg/45191b.
+>
+> **ANGLE 1 — Page Fill Ratios:** 14/16 stress-50 pages at 83-106% fill. 2 near-empty (pg6/pg10, 2.6%,
+> known #194). customwrap: all 11 pages 72-106%. pbv: all 15 pages 74-106%. No new issues.
+>
+> **ANGLE 2 — Cross-Page Paragraph Continuity:** 10 continuations in stress-50: 2 known orphans (#194),
+> 1 normal full-width, 7 narrow but alongside figures (correct behavior). customwrap: 1 narrow
+> continuation on figure-less page (known #190). pbv: 3 narrow on figure-less pages (known #190).
+> No new issues.
+>
+> **ANGLE 3 — Figure Stacking Gaps:** 36 gaps in stress-50 (14 pages with 2+ figs). Zero overlaps
+> (confirmed #192). Range 20.9-188.4pt, median 66.5pt. All expected. customwrap/pbv: 0 multi-fig pages.
+>
+> **STEP 4.5 CHECK:** No new findings. All anomalies trace to known Tasks #190, #194. Confirmed #192 fix.
+>
+> Full journal: journals/qa/2026-06-14.md (T102 section).
