@@ -1,0 +1,20 @@
+# For the minted package (which does nice formatting of source code).
+# This rc file is correct for minted of version at least 3.6.0 (2025/03/06).
+# Previous versions needed a special configuration when out_dir/aux_dir were used.
+
+# Need to use -shell-escape on *latex command.
+set_tex_cmds( '%C -shell-escape %O %S' );
+push @generated_exts, 'nav', 'snm', 'vrb', 'pyg', 'listing';
+
+#====================================
+# --------OPTIONAL----------
+# By default, minted's cache files are in a directory _minted, with names unrelated
+# lexically to jobname, so latexmk can't do a clean up of these files
+# without a lot of work and/or enhancements to latexmk.  However, you can
+# make minted use a cache directory with a name containing \jobname.
+# Then latexmk can do the deletion of files (but not the cache directory).
+# E.g., with 
+#   \usepackage[cachedir=_minted-\jobname]{minted}
+# you can do:
+push @generated_exts, '_minted-%R/*';
+

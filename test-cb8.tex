@@ -1,0 +1,14 @@
+\documentclass{article}
+\usepackage{swarmwrap}
+\directlua{
+  local ok, err = pcall(function()
+    local desc = luatexbase.callback_descriptions("post_linebreak_filter")
+    texio.write_nl("DESC TYPE: " .. type(desc) .. " = " .. tostring(desc))
+  end)
+  if not ok then
+    texio.write_nl("ERROR: " .. tostring(err))
+  end
+}
+\begin{document}
+Test.
+\end{document}

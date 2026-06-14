@@ -1,0 +1,32 @@
+name ntheorem
+category Package
+revision 77682
+shortdesc Enhanced theorem environment
+longdesc The package offers enhancements for theorem-like environments:
+longdesc easier control of layout; proper placement of endmarks even
+longdesc when the environment ends with \end{enumerate} or
+longdesc \end{displaymath} (including support for amsmath
+longdesc displayed-equation environments); and support for making a list
+longdesc of theorems, analagous to \listoffigures.
+containersize 9644
+containerchecksum 478aa410723232fa2f99fdff0d4583a07d21918c6d32f4f489d82baa3d7571fcb9c5ee30f832f42b41e1527454ed1b7b40e6eded22fb7086c260ce19a0497946
+doccontainersize 420704
+doccontainerchecksum 777d6191f3cb0df2d998678c2f6d358431c112a08a61ceb0eff277e46f54732da1d16a860bfb3c0bcfa63f03e415fba0859240e1b1638a6226089938f0173105
+docfiles size=118
+ texmf-dist/doc/latex/ntheorem/README details="Readme"
+ texmf-dist/doc/latex/ntheorem/ntheorem.pdf details="Package documentation (English)" language="en"
+srccontainersize 46424
+srccontainerchecksum e26fe108df8c9710f53672753ffd7a8138d0bd0fb173b4ea259f39fc756522489a7aac1c0980d47162d00725f4e27dc991e9b4e024cd0225deabbd810192e186
+srcfiles size=52
+ texmf-dist/source/latex/ntheorem/ntheorem.drv
+ texmf-dist/source/latex/ntheorem/ntheorem.dtx
+ texmf-dist/source/latex/ntheorem/ntheorem.ins
+runfiles size=12
+ texmf-dist/tex/latex/ntheorem/ntheorem.std
+ texmf-dist/tex/latex/ntheorem/ntheorem.sty
+catalogue-also amsthm thmtools empheq
+catalogue-contact-home http://user.informatik.uni-goettingen.de/~may/Ntheorem/
+catalogue-ctan /macros/latex/contrib/ntheorem
+catalogue-license lppl
+catalogue-topics maths-theorem tagged-pdf-incompatible
+catalogue-version 1.33

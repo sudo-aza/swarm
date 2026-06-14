@@ -1,0 +1,31 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{lipsum}
+
+\newcount\testremaining
+
+\begin{document}
+
+\section{Test: everypar across lipsum paragraphs}
+
+% Set up everypar in vertical mode, then use \noindent to start a paragraph
+% (simulating what swarmwrap.sty does: noindent starts hmode, everypar set after)
+\noindent%  <-- starts horizontal mode (paragraph)
+\testremaining=3
+\everypar{%
+  \wlog{HOOK FIRED: remaining=\the\testremaining}%
+  \ifnum\testremaining>0
+    \parshape 4 0pt 200pt 0pt 200pt 0pt 200pt 0pt 200pt 0pt 345.0pt\relax
+  \else
+    \everypar{}%
+  \fi
+}%
+% Now \lipsum continues the SAME paragraph (we're in hmode)
+\lipsum[1]
+
+% After \lipsum[1] ends (\par), \lipsum[2] starts new paragraph
+% everypar should fire here
+\lipsum[2]
+
+\everypar{}% cleanup
+
+\end{document}

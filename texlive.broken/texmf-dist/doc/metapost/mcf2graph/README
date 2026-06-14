@@ -1,0 +1,84 @@
+********************************************************************************
+ mcf2graph  : Convert Molecular Coding Format to graphics with MetaPost
+ Author     : Akira Yamaji
+ version    : 5.30 2026-05-10
+ E-mail     : mcf2graph@gmail.com
+ Located at : http://www.ctan.org/pkg/mcf2graph
+********************************************************************************
+
+1. Introduction
+ Molecular Coding Format(MCF) is new linear notation represent
+ chemical structure diagrams.
+ This Coding is named from programing technique
+ such as operator,array,scope,macro,adressing,etc.
+ mcf2graph convert from MCF to SVG,PNG,MOL file.
+ It is also able to calculate molecular weight,exact mass,molecular formula.
+
+2. The distribution of software
+ ( 1) README             This file
+ ( 2) CHANGELOG          Changelog file of mcf2graph
+ ( 3) mcf_to_graph.cmd   Batch file for compile mcf or mp file
+                         drag and drop mcf or mp file on this batch
+                          >mcf_to_graph main_lib.mcf
+                           create graphic files in ./main_lib-(format)
+                          >mcf_to_graph template_lib.mcf
+                           create graphic files in ./template_lib-(format)
+                          >mcf_to_graph mcf_exa_soc.mp
+                           create graphic files in ./mcf_exa_soc-mp
+ ( 4) mcf2graph.mp       Main macro of Metapost
+ ( 5) main_lib.mcf       Main mcf library file
+ ( 6) template_lib.mcf   Template mcf file
+ ( 7) mcf_exa_soc.mp     Metapost source example
+                         drag and drop this file on mcf_to_graph.cmd
+                          >mpost mcf_exa_soc.mp
+ ( 8) mcf_manual.tex     MCF syntax manual
+                         file (4)(5) must be in the same directory to typeset
+ ( 9) mcf_manual.pdf     PDF of (8) typeset with LuaLaTeX
+ (10) mcf_example.tex    List of Molecule
+                         file (4)(5) must be in the same directory to typeset
+ (11) mcf_example.pdf    PDF of (10) typeset with LuaLaTeX
+
+3. Minimum required files to use mcf2graph
+ Install texlive or other distribution
+ These files are available from texlive2026.iso in the case of texlive
+ (1) mpost.exe
+   (TeXLive2026/archive/metapost.<os>.r<number>.tar/bin/<os>/mpost.exe)
+ (2) mpost.dll
+   (TeXLive2026/archive/metapost.<os>.r<number>.tar/bin/<os>/mpost.dll)
+ (3) mpost.mp
+   (TeXLive2026/archive/metapost.r<number>.tar/texmf-dist/metapost/base/mpost.mp)
+ (4) plain.mp
+   (TeXLive2026/archive/metapost.r<number>.tar/texmf-dist/metapost/base/plain.mp)
+
+4. Use mcf2graph with MetaPost
+     -command line-
+ (1) >mcf_to_graph        filename.mcf => output svg,png,mol,report
+ (2) >mcf_to_graph        filename.mp  => output svg(default),LV=0(default)
+ (3) >mpost               filename.mp  => output svg file
+ (4) >mpost -s ahangle=1  filename.mp  => output png file (600dpi)
+ (5) >mpost -s ahangle=2  filename.mp  => output png file (1200dpi)
+ (6) >mpost -s ahlength=5 filename.mp  => output mol file(V2000)
+ (7) >mpost -s ahlength=6 filename.mp  => output mol file(V3000)
+ (8) >mpost -s ahlength=7 filename.mp  => output report file
+
+5. License
+ mcf2graph ver 5.30   Copyright (c) 2013-2026   Akira Yamaji
+
+ Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+ The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+

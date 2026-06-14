@@ -1,0 +1,50 @@
+name babel-german
+category Package
+revision 78737
+shortdesc Babel support for documents written in German
+longdesc This bundle is an extension to the babel package for
+longdesc multilingual typesetting. It provides all the necessary macros,
+longdesc definitions and settings to typeset German documents. The
+longdesc bundle includes support for the traditional and reformed German
+longdesc orthography as well as for the Austrian and Swiss varieties of
+longdesc German.
+containersize 6820
+containerchecksum 8c8bd80b2942d6117a159528b6034fa1df41848a68c8145b5006e960e348c457f603340d538ed57fa76b97050dd3ed3442a9c816522f0905d746772a2643fe1c
+doccontainersize 509408
+doccontainerchecksum c273b254ecd33b4ec4847f12cc18570c602498ec7e5bfd745edeaab1306ad7c41cc7658c8fe634965ce3b008bd81cba965aaf1d149076bf7e4b0eec9eff1cda9
+docfiles size=127
+ texmf-dist/doc/generic/babel-german/README details="Readme"
+ texmf-dist/doc/generic/babel-german/babel-german.pdf details="Package documentation"
+srccontainersize 30204
+srccontainerchecksum 262bd616eef279591b3cd6587924fb56b3c94ac0e12b051b6b1240f5a902d6183cf2f58f7faf655dbdcb56276b3b202954dbfd6b705f4c39d0e4f6598de5432b
+srcfiles size=36
+ texmf-dist/source/generic/babel-german/babel-german.dtx
+ texmf-dist/source/generic/babel-german/babel-german.ins
+runfiles size=29
+ texmf-dist/tex/generic/babel-german/austrian.ldf
+ texmf-dist/tex/generic/babel-german/babel-german.def
+ texmf-dist/tex/generic/babel-german/german-at-1901.ldf
+ texmf-dist/tex/generic/babel-german/german-at.ldf
+ texmf-dist/tex/generic/babel-german/german-austria-1901.ldf
+ texmf-dist/tex/generic/babel-german/german-austria.ldf
+ texmf-dist/tex/generic/babel-german/german-ch-1901.ldf
+ texmf-dist/tex/generic/babel-german/german-ch.ldf
+ texmf-dist/tex/generic/babel-german/german-de-1901.ldf
+ texmf-dist/tex/generic/babel-german/german-de.ldf
+ texmf-dist/tex/generic/babel-german/german-germany-1901.ldf
+ texmf-dist/tex/generic/babel-german/german-germany.ldf
+ texmf-dist/tex/generic/babel-german/german-switzerland-1901.ldf
+ texmf-dist/tex/generic/babel-german/german-switzerland.ldf
+ texmf-dist/tex/generic/babel-german/german.ldf
+ texmf-dist/tex/generic/babel-german/germanb.ldf
+ texmf-dist/tex/generic/babel-german/naustrian.ldf
+ texmf-dist/tex/generic/babel-german/ngerman.ldf
+ texmf-dist/tex/generic/babel-german/ngermanb.ldf
+ texmf-dist/tex/generic/babel-german/nswissgerman.ldf
+ texmf-dist/tex/generic/babel-german/swissgerman.ldf
+catalogue-contact-bugs https://codeberg.org/jspitz/babel-german/issues
+catalogue-contact-repository https://codeberg.org/jspitz/babel-german
+catalogue-ctan /macros/latex/contrib/babel-contrib/german
+catalogue-license lppl1.3
+catalogue-topics german multilingual-addon
+catalogue-version 3.3

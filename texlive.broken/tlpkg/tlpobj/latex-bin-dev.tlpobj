@@ -1,0 +1,49 @@
+name latex-bin-dev
+category TLCore
+revision 77830
+shortdesc LaTeX pre-release executables and formats
+longdesc See the latex-base-dev package for information.
+depend babel
+depend cm
+depend dehyph
+depend hyph-utf8
+depend hyphen-base
+depend knuth-lib
+depend l3backend-dev
+depend l3kernel-dev
+depend latex-base-dev
+depend latex-bin-dev.ARCH
+depend latex-firstaid-dev
+depend latex-fonts
+depend latex-graphics-dev
+depend latexconfig
+depend lm
+depend luahbtex
+depend luaotfload
+depend luatex
+depend pdftex
+depend tex-ini-files
+depend unicode-data
+execute AddFormat name=dvilualatex-dev engine=luatex           patterns=language.dat,language.dat.lua           options="dvilualatex.ini"           fmttriggers=l3backend-dev,l3kernel-dev,latex-base-dev,latex-firstaid-dev,babel,cm,hyphen-base,knuth-lib,latex-fonts,tex-ini-files,unicode-data,lm,luaotfload
+execute AddFormat name=latex-dev engine=pdftex           patterns=language.dat           options="-translate-file=cp227.tcx *latex.ini"           fmttriggers=l3backend-dev,l3kernel-dev,latex-base-dev,latex-firstaid-dev,babel,cm,hyphen-base,knuth-lib,latex-fonts,tex-ini-files,unicode-data,dehyph,hyph-utf8,pdftex
+execute AddFormat name=lualatex-dev engine=luahbtex           patterns=language.dat,language.dat.lua           options="lualatex.ini"           fmttriggers=l3backend-dev,l3kernel-dev,latex-base-dev,latex-firstaid-dev,babel,cm,hyphen-base,knuth-lib,latex-fonts,tex-ini-files,unicode-data,lm,luaotfload
+execute AddFormat name=pdflatex-dev engine=pdftex           patterns=language.dat           options="-translate-file=cp227.tcx *pdflatex.ini"           fmttriggers=l3backend-dev,l3kernel-dev,latex-base-dev,latex-firstaid-dev,babel,cm,hyphen-base,knuth-lib,latex-fonts,tex-ini-files,unicode-data,dehyph,hyph-utf8,pdftex
+containersize 640
+containerchecksum 595899c007d72dbf0ad43647df52615d3ffd3a5ee6821af18da2f8b701f16a6aae62aa2d3bfba682ee6685bf557a5bfd8e81737aaffcbfb44d32e9d5923317fd
+doccontainersize 18868
+doccontainerchecksum 7d9d5c10c47e81f031a80fd1f7d8f1b145abb70c1d814375e76be1fe7d9caf32a92ae6ab4ba38f16a8c2c56582556d9307e32f62b268f5d5c64d141477f18608
+docfiles size=49
+ texmf-dist/doc/man/man1/dvilualatex-dev.1
+ texmf-dist/doc/man/man1/dvilualatex-dev.man1.pdf
+ texmf-dist/doc/man/man1/latex-dev.1
+ texmf-dist/doc/man/man1/latex-dev.man1.pdf
+ texmf-dist/doc/man/man1/lualatex-dev.1
+ texmf-dist/doc/man/man1/lualatex-dev.man1.pdf
+ texmf-dist/doc/man/man1/pdflatex-dev.1
+ texmf-dist/doc/man/man1/pdflatex-dev.man1.pdf
+ texmf-dist/doc/man/man1/platex-dev.1
+ texmf-dist/doc/man/man1/platex-dev.man1.pdf
+ texmf-dist/doc/man/man1/uplatex-dev.1
+ texmf-dist/doc/man/man1/uplatex-dev.man1.pdf
+ texmf-dist/doc/man/man1/xelatex-dev.1
+ texmf-dist/doc/man/man1/xelatex-dev.man1.pdf

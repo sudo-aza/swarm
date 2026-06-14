@@ -1,0 +1,25 @@
+name pdfcolfoot
+category Package
+revision 77682
+shortdesc Separate color stack for footnotes with pdfTeX
+longdesc Since version 1.40 pdfTeX supports several colour stacks. This
+longdesc package uses a separate colour stack for footnotes that can
+longdesc break across pages.
+containersize 1972
+containerchecksum f74cb122322a450b65662c1715b6239c49cbde4c5105b36a131a01a7d9ce360dc4c7749bbf0db271a1d9569b570166bf3f7e04551ff8b641ca3ed76552c58d53
+doccontainersize 310524
+doccontainerchecksum 6788cdd2b0af46c735fa36ef53c3e1345ef57b1361d631a170f4060d3ffb8d568cbc510572e6979059896ca1d4e9491bdfef2f06c132104ff460184b6da50a6f
+docfiles size=80
+ texmf-dist/doc/latex/pdfcolfoot/README.md
+ texmf-dist/doc/latex/pdfcolfoot/pdfcolfoot.pdf details="Package documentation"
+srccontainersize 5492
+srccontainerchecksum 958a086ba22876742c83a5ff6d10375ba16e9c58e06f0a8b2dabd2dc35ba53d75c862effdc1fd5fba1069081f4a8e75a07583e13202d726bd440879c729cbe2c
+srcfiles size=5
+ texmf-dist/source/latex/pdfcolfoot/pdfcolfoot.dtx
+runfiles size=2
+ texmf-dist/tex/latex/pdfcolfoot/pdfcolfoot.sty
+catalogue-contact-bugs https://github.com/ho-tex/pdfcolfoot/issues
+catalogue-ctan /macros/latex/contrib/pdfcolfoot
+catalogue-license lppl1.3
+catalogue-topics footnote colour tagged-pdf-incompatible
+catalogue-version 1.4

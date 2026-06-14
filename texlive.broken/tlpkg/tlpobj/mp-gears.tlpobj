@@ -1,0 +1,29 @@
+name mp-gears
+category Package
+revision 78918
+shortdesc Draw systems of intermeshing gears with MetaPost
+longdesc This package helps to draw systems of intermeshing gears with
+longdesc MetaPost. It allows users to model various gears/rack and
+longdesc gear/rack systems (and even spirographs).
+containersize 5692
+containerchecksum 1b0d966e3ad1f55efda752aadda47d2510da6b996f397881abdff0ae89a6382884c132d18608f5feb2c205cf303f8503e365adc2f099ec358bcf9da09c105b62
+doccontainersize 84804068
+doccontainerchecksum 53573a87f93d991c03d6a490a6fc6a4e03a42b7006479ec8a9064dabc103abd120a53fd2dc514a86453360e59406ce9a12e889d73a4296fee303de5ca2834dec
+docfiles size=24032
+ texmf-dist/doc/metapost/mp-gears/LICENSE
+ texmf-dist/doc/metapost/mp-gears/README.md details="Readme"
+ texmf-dist/doc/metapost/mp-gears/biblio.bib
+ texmf-dist/doc/metapost/mp-gears/ctan.bib
+ texmf-dist/doc/metapost/mp-gears/fond.pdf
+ texmf-dist/doc/metapost/mp-gears/horloge-1.png
+ texmf-dist/doc/metapost/mp-gears/mp-gears-doc-en.pdf details="Package documentation"
+ texmf-dist/doc/metapost/mp-gears/mp-gears-doc-en.tex
+ texmf-dist/doc/metapost/mp-gears/mp-gears-preamble.tex
+runfiles size=7
+ texmf-dist/metapost/mp-gears/gears.mp
+catalogue-contact-bugs https://gitlab.gutenberg-asso.fr/mchupin/mp-gears/-/work_items
+catalogue-contact-repository https://gitlab.gutenberg-asso.fr/mchupin/mp-gears
+catalogue-ctan /graphics/metapost/contrib/macros/mp-gears
+catalogue-license lppl1.3c
+catalogue-topics graphics-mpost
+catalogue-version 0.2

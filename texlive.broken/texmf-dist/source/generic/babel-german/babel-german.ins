@@ -1,0 +1,129 @@
+%%
+%% This file will generate fast loadable files and documentation
+%% driver files from the doc files in this package when run through
+%% LaTeX or TeX.
+%%
+%% Copyright 1989--2026
+%%     Johannes L. Braams
+%%     Bernd Raichle
+%%     Walter Schmidt
+%%     Juergen Spitzmueller
+%% All rights reserved.
+%% 
+%% This file is part of the babel-german bundle,
+%% an extension to the Babel system.
+%% ----------------------------------------------
+%% 
+%% It may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2003/12/01 or later.
+%% 
+%% This work has the LPPL maintenance status "maintained".
+%% 
+%% The Current Maintainer of this work is Juergen Spitzmueller.
+%%
+%% --------------- start of docstrip commands ------------------
+%%
+\def\filedate{2026/04/18}
+
+\input docstrip.tex
+
+{\ifx\generate\undefined
+\Msg{**********************************************}
+\Msg{*}
+\Msg{* This installation requires docstrip}
+\Msg{* version 2.3c or later.}
+\Msg{*}
+\Msg{* An older version of docstrip has been input}
+\Msg{*}
+\Msg{**********************************************}
+\errhelp{Move or rename old docstrip.tex.}
+\errmessage{Old docstrip in input path}
+\batchmode
+\csname @@end\endcsname
+\fi}
+
+\preamble
+This is a generated file.
+
+Copyright 1989--2026
+    Johannes L. Braams
+    Bernd Raichle
+    Walter Schmidt
+    Juergen Spitzmueller
+All rights reserved.
+
+This file is part of the babel-german bundle,
+an extension to the Babel system.
+----------------------------------------------
+
+It may be distributed and/or modified under the
+conditions of the LaTeX Project Public License, either version 1.3
+of this license or (at your option) any later version.
+The latest version of this license is in
+  http://www.latex-project.org/lppl.txt
+and version 1.3 or later is part of all distributions of LaTeX
+version 2003/12/01 or later.
+
+This work has the LPPL maintenance status "maintained".
+
+The Current Maintainer of this work is Juergen Spitzmueller.
+
+Please report errors to: Juergen Spitzmueller
+                    via: https://codeberg.org/jspitz/babel-german
+
+\endpreamble
+
+\keepsilent
+
+\usedir{tex/generic/babel-german} 
+
+\generate{\file{germanb.ldf}{\from{babel-german.dtx}{germanb}}
+          \file{german.ldf}{\from{babel-german.dtx}{german}}
+          \file{german-at.ldf}{\from{babel-german.dtx}{germanat}}
+          \file{german-ch.ldf}{\from{babel-german.dtx}{germanch}}
+          \file{german-de.ldf}{\from{babel-german.dtx}{germande}}
+          \file{german-austria.ldf}{\from{babel-german.dtx}{germanaustria}}
+          \file{german-switzerland.ldf}{\from{babel-german.dtx}{germanswitzerland}}
+          \file{german-germany.ldf}{\from{babel-german.dtx}{germangermany}}
+          \file{german-at-1901.ldf}{\from{babel-german.dtx}{germanat1901}}
+          \file{german-ch-1901.ldf}{\from{babel-german.dtx}{germanch1901}}
+          \file{german-de-1901.ldf}{\from{babel-german.dtx}{germande1901}}
+          \file{german-austria-1901.ldf}{\from{babel-german.dtx}{germanaustria1901}}
+          \file{german-switzerland-1901.ldf}{\from{babel-german.dtx}{germanswitzerland1901}}
+          \file{german-germany-1901.ldf}{\from{babel-german.dtx}{germangermany1901}}
+          \file{austrian.ldf}{\from{babel-german.dtx}{austrian}}
+          \file{swissgerman.ldf}{\from{babel-german.dtx}{swissgerman}}
+          \file{ngermanb.ldf}{\from{babel-german.dtx}{ngermanb}}          
+          \file{ngerman.ldf}{\from{babel-german.dtx}{ngerman}}
+          \file{naustrian.ldf}{\from{babel-german.dtx}{naustrian}}
+          \file{nswissgerman.ldf}{\from{babel-german.dtx}{nswissgerman}}
+          \file{babel-german.def}{\from{babel-german.dtx}{gbdef}}
+          }
+
+\ifToplevel{
+\Msg{***********************************************************}
+\Msg{*}
+\Msg{* To finish the installation you have to move the following}
+\Msg{* files into a directory searched by TeX:}
+\Msg{*}
+\Msg{* \space\space babel-german.def, austrian.ldf, german.ldf, germanb.ldf,}
+\Msg{* \space\space german-at.ldf, german-ch.ldf, german-de.ldf,}
+\Msg{* \space\space german-at-1901.ldf, german-ch-1901.ldf, german-de-1901.ldf,}
+\Msg{* \space\space german-austria.ldf, german-germany.ldf, german-switzerland.ldf,}
+\Msg{* \space\space german-austria-1901.ldf, german-germany-1901.ldf,}
+\Msg{* \space\space german-switzerland-1901.ldf, naustrian.ldf, ngerman.ldf,}
+\Msg{* \space\space ngermanb.ldf, nswissgerman.ldf and swissgerman.ldf}
+\Msg{*}
+\Msg{* To produce the documentation run the file }
+\Msg{* babel-german.dtx through LaTeX.}
+\Msg{*}
+\Msg{* Happy TeXing}
+\Msg{***********************************************************}
+}
+ 
+\endbatchfile
