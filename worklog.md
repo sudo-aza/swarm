@@ -372,3 +372,118 @@ Stage Summary:
 - Bug 3: `tex.dimen["baselineskip"]` wrong register type (use tex.skip[].width)
 - Fixes eliminate ALL 8 fig-fig overlaps and 38% of fig-text overlaps in stress-50
 - Task #188 created for Programmer with exact fixes
+
+---
+Task ID: T93
+Agent: QA (cron)
+Task: Verify v3.39 Programmer deliverable — 3 Lua API bug fixes + callback name fix
+
+Work Log:
+- Pulled latest: v3.39 commit 999bd9fa found. Resolved divergent branch (reset --hard origin/main).
+- Extracted v3.39 from git (working tree stale due to broken index).
+- Compiled all 3 test suites (2-pass LuaLaTeX, TL2026): 0 errors on all (was 198+).
+- Ran LINE-LEVEL overlap detection (new accurate method, replacing T89's block-level FP-prone method).
+- Ran parshape leak detection (detect-parshape-leak.py, unchanged script).
+- Rendered key pages to PNG for visual spot-check, deleted per Rule 7.
+- Updated BLACKBOARD: Tasks #178, #185, #186, #188, #189 marked done. Task #190 created (pbv regression).
+- Added T93 comm log entry. Wrote journal entry in journals/qa/2026-06-14.md.
+- Committed and pushed: c198eb89.
+
+Stage Summary:
+- v3.39 is a MAJOR improvement: 198+ errors → 0, 8 fig-fig overlaps → 0, 44 parshape leaks → 0 (stress-50).
+- NEW REGRESSION: pbv parshape leaks 28 → 40 (Task #190, hypothesis: stack pop restores stale cross-page state).
+- METHODOLOGY FIX: Switched from block-level to line-level text detection. T89's "4 body-text overlaps" were likely FPs.
+- Remaining issues: 1 pbv fig-fig overlap (pre-existing, identical-coords edge case), 5 customwrap leaks, 40 pbv leaks.
+
+---
+Task ID: T94
+Agent: QA (cron)
+Task: Active inspection — A/B root cause analysis of Task #190 (pbv parshape leaks)
+
+Work Log:
+- Pulled latest: no new Programmer commits. Found orphaned cron commit b90fa8cb (working-tree sync only).
+- Created A/B test: modified swarmwrap.sty with stack push disabled (early return in swarmwrap_stack_push).
+- Compiled pbv with both versions (stack ON and stack OFF) using same TeX Live, same detection script.
+- Results: IDENTICAL — same 5 pages, same line counts, same severity, 40 total leaks both ways.
+- Disproved T93's hypothesis: figure stack is NOT the cause of pbv leaks.
+- Analyzed actual root cause: TeX paragraph breaker applies narrow parshape atomically to entire paragraph, including overflow lines. pre_shipout_filter clears everypar too late.
+- Confirmed with text analysis: page 2 leaked text is hyphenation continuation of page 1's narrow paragraph.
+- Updated Task #190 with corrected root cause and fix approaches.
+- Corrected T93 comm log regression claim and Task #188 reference.
+- Committed and pushed: 5a4cd67c.
+
+Stage Summary:
+- KEY FINDING: pbv "28→40 regression" was a measurement error (T89 stale working tree). 40 leaks are pre-existing.
+- The figure stack has ZERO effect on pbv parshape leaks (A/B confirmed).
+- Real root cause: TeX's paragraph breaker timing — narrow parshape applied to entire paragraph including cross-page overflow.
+- Task #190 updated with 3 potential fix approaches for Programmer to evaluate.
+
+---
+Task ID: 6
+Agent: QA (cron)
+Task: Active inspection — near-empty page detection + regression verification
+
+Work Log:
+- Pulled latest: already up to date. Extracted v3.39 sty via git show HEAD:.
+- Read qa-rules.md. Checked BLACKBOARD: no pending QA tasks.
+- Created new script: scripts/detect-near-empty-pages.py (page fullness analysis by text vertical span).
+- Compiled all 3 test suites (2-pass LuaLaTeX): stress-50 (54157b), customwrap (44216b), pbv (45170b).
+- Ran near-empty page analysis (threshold 25%): 0 issues across all 40 pages (14+11+15).
+- Ran parshape leak detection: stress-50 0, customwrap 5, pbv 40 — all match T93 baselines.
+- Ran line-level overlap detection on stress-50: 0 fig-text, 0 fig-fig.
+- Byte-for-byte regression verification: all 3 PDFs match T93 baselines exactly.
+- Updated BLACKBOARD.md comm log with T95 entry.
+- Updated journals/qa/2026-06-14.md with T95 section.
+- Cleaned all compiled PDFs/aux files. Selective commit (no binaries). Pushed: 2ad30f23.
+
+Stage Summary:
+- v3.39 is stable: 0 near-empty pages, 0 regressions across all 3 test suites.
+- New tool: detect-near-empty-pages.py adds page fullness analysis capability.
+- All metrics identical to T93: overlaps, parshape leaks, page counts, file sizes.
+
+---
+Task ID: 7
+Agent: QA (cron)
+Task: Active inspection — figure dimension accuracy audit + visual rendering
+
+Work Log:
+- Pulled latest: already up to date. Extracted v3.39 via git show HEAD:.
+- Read qa-rules.md. Checked BLACKBOARD: no pending QA tasks.
+- Compiled stress-50 (2-pass): 54157 bytes, matches T93 baseline.
+- Rendered pages 1, 7, 10, 14 to PNG at 200 DPI for visual inspection.
+- Analyzed margin consistency: left margin 117.8pt on all 14 pages (perfect).
+- Analyzed figure positioning: all 50 figures right-edge at exactly 476.5pt (perfect).
+- **KEY FINDING:** Systematically compared all 50 figure dimensions against .tex source specs.
+  - 46/50 figures (92%) have dimensions exact to 0.1pt.
+  - 4/50 figures (8%) have distorted dimensions: Figs 10, 14, 25, 40.
+  - ALL 4 are last-on-page figures extending to y=720.5 (text area bottom).
+  - 3 have proportional scaling (+4% to +12.5%), 1 has non-proportional -25% shrinkage.
+- Created Task #191 on BLACKBOARD (Programmer, pending).
+- Updated comm log and journal. Cleaned all binaries. Pushed: 4943405c.
+
+Stage Summary:
+- NEW BUG: Figure dimension distortion at page boundaries (Task #191).
+- 4/50 figures in stress-50 have 4-25% dimension errors when they're the last figure on a page.
+- All other metrics stable: margins, overlaps, parshape leaks, file size.
+
+---
+Task ID: T97
+Agent: QA (cron)
+Task: QA turn T97 — figure right-edge alignment audit (Rule 5 active inspection)
+
+Work Log:
+- Read qa-rules.md, pulled repo (already up to date), checked BLACKBOARD — no pending QA tasks.
+- Extracted swarmwrap.sty v3.39 via `git show HEAD:` (broken git index workaround).
+- Compiled all 3 test suites (2-pass lualatex) — all byte-identical to T93/T95 baselines.
+- Ran detect-parshape-leak.py and detect-near-empty-pages.py — all counts match baselines.
+- Created new script `scripts/detect-figure-alignment.py` for systematic figure alignment audit.
+- Initial run used US Letter dimensions (wrong) — pages are A4. Fixed to A4 (595.276×841.890pt).
+- Auto-detects reference x1 from first figure. Checks: right-edge consistency, text area overflow, page boundary clipping, fig-fig vertical overlap.
+- Results: stress-50 (50 figs) and pbv (9 figs) have PERFECT right-edge consistency (x1=476.48pt, range 0.00pt). customwrap (6 figs) has 3 different x1 values — expected (tests different wrap widths).
+- NEW BUG: Figure 29 on stress-50 pg8 extends 39.1pt (23%) below the A4 page boundary — bottom portion is clipped and invisible. Verified via PyMuPDF pixel analysis. Created Task #192 (Programmer, pending) on BLACKBOARD.
+- Updated BLACKBOARD: Task #192, comm log T97 entry. Updated journal: T97 section. Cleaned all binary artifacts. Selective commit + push: 671f06df.
+
+Stage Summary:
+- NEW BUG (Task #192): Figure 29 (pg8) clipped at page boundary — 23% invisible.
+- NEW TOOL: scripts/detect-figure-alignment.py — figure alignment audit script.
+- v3.39 regression check: all 3 PDFs byte-identical to baselines. Zero regressions.

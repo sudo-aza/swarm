@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.36)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.39)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -64,8 +64,8 @@
 %    that the penalty fence was dead code (Lua -- comments ate the
 %    callback). v3.35 fixes this, ACTIVATING the penalty fence for
 %    the first time.
-%    v3.34 adds pre_shipping_filter ghost fix (code present but callback
-%    fails to register due to format cache — no effect).
+%    v3.34 adds pre_shipout_filter ghost fix (code correct but callback
+%    name misspelled as pre_shipping_filter — no effect until v3.38 fix).
 %    v3.35 fixes the critical Lua comment bug, enabling the penalty
 %    fence and remaining-nl tracking to actually execute.
 %    Remaining instances (inter-figure ghost: narrow text below a figure's
@@ -103,7 +103,7 @@
 %     - v3.19 cross-page fix: was NOT zeroing remaining@nl on page break
 %       (relied on post_linebreak_filter which was dead)
 %     - v3.33 penalty fence: was NOT inserting any penalties
-%     - v3.34 pre_shipping_filter: also had -- comments, never registered
+%     - v3.34 pre_shipout_filter: also had -- comments + wrong name, never registered
 %     - v3.15 emergencystretch reset: was NOT resetting (leaked to all
 %       subsequent paragraphs)
 %   FIX: Removed ALL -- comments from \directlua{...} blocks. Moved
@@ -115,16 +115,18 @@
 %         down, clearing itself when narrow lines are exhausted
 %     (3) Emergencystretch reset (v3.15) — no more leak
 %     (4) Remaining-height computation (v3.14) — more accurate vspace
-%   NOTE: pre_shipping_filter still fails to register (format cache
-%   issue, not a code bug). This is a pre-existing limitation.
+%   NOTE: pre_shipout_filter was misspelled as pre_shipping_filter
+%   in v3.32-v3.37, causing silent registration failure. Fixed in v3.38.
 %   QA Task #177: Confirmed v3.32 and v3.33 produced byte-identical
 %   PDFs because the penalty fence code was never executed.
 %
-% v3.34: Pre_shipping_filter ghost narrowing fix (Known Limitation #1).
+% v3.34: Pre_shipout_filter ghost narrowing fix (Known Limitation #1).
 %   When TeX ships a page, any remaining parshape lines (remaining@nl > 0)
 %   would leak to the next page via everypar, causing narrow text with no
 %   figure beside it. v3.34 zeros remaining@nl and clears everypar at page
 %   ship time, preventing cross-page multi-paragraph ghost narrowing.
+%   NOTE: v3.34 code was correct but used wrong callback name
+%   (pre_shipping_filter). Fixed in v3.38 -> pre_shipout_filter.
 %   This is a pure state reset — no \newpage, no layout change (unlike v3.18
 %   which REGRESSED). The penalty fence from v3.33 prevents single-paragraph
 %   page-break ghost; v3.34 handles multi-paragraph cross-page ghost.
@@ -142,6 +144,18 @@
 %   (which used \newpage and leaked parshape state). The penalty value
 %   is the user-configurable \swarmwrappenalty (default 10000).
 %
+% v3.39: Fix three Lua API bugs that made figure stack dead code (Task #189).
+%   Combines v3.38's callback name fix (pre_shipping_filter -> pre_shipout_filter)
+%   with three API misuse fixes diagnosed by QA T91:
+%   (1) # operator (length) crashes on Lua tables in LuaTeX because a global
+%       metatable overrides __len. Fix: rawlen() for all table length ops.
+%   (2) tex.toks["everypar"] = {} passes Lua table to toks register.
+%       Fix: tex.toks["everypar"] = "" (empty token string).
+%   (3) tex.dimen["baselineskip"] — baselineskip is a skip, not dimen.
+%       Fix: tex.skip["baselineskip"].width.
+%   RESULT: 198+ runtime errors eliminated. Figure stack now active.
+%   QA T91 verified: stress-50 fig-fig overlaps 8->0.
+%
 % v3.32: Fix hollow carry-over near-empty pages (Task #172).
 %   Two-part fix:
 %   (1) Stray \fi bug: The v3.32 placement section had an extra \fi
@@ -153,7 +167,7 @@
 %       remaining-height vspace from the previous figure (which is on the
 %       PREVIOUS page) was injected on this fresh page, wasting space and
 %       triggering unnecessary DEFERRED-NEWPAGE, producing near-empty
-%       pages (1.8% fill). FIX: Use Lua pre_shipping_filter to detect
+%       pages (1.8% fill). FIX: Use Lua pre_shipout_filter to detect
 %       page shipping during \par. If page shipped, discard remaining
 %       vspace — the previous figure is not on this page. Near-empty
 %       pages: 2 -> 0 on 50-figure stress test.
@@ -340,7 +354,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/09 v3.36 fix hollow carry-over pages]
+\ProvidesPackage{swarmwrap}[2026/06/14 v3.39 fix Lua API bugs + callback name (Task 189)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -370,7 +384,7 @@
   \xdef\swarmwrap@pshape@ext{\the\numexpr\swarmwrap@remaining@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@remaining@nl
   \loop
-    \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \swarmwrap@tw@val\space}%
+    \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \the\swarmwrap@tw@lua\space}%
     \advance\swarmwrap@loop@cnt by -1
   \ifnum\swarmwrap@loop@cnt>0 \repeat
   \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \the\linewidth\space}%
@@ -484,7 +498,7 @@
   \swarmwrap@in@listfalse
 }
 
-% ── Lua callback: pre_shipping_filter (v3.32, extended v3.34) ─────────
+% ── Lua callback: pre_shipout_filter (v3.32, extended v3.34, name fix v3.38, API fix v3.39) ─────────
 % v3.32: Detects page shipping to fix hollow carry-over (Task #172).
 %   Sets a flag when TeX ships a page. \swarmwrapnext checks this
 %   flag after \par to detect page overflow.
@@ -504,16 +518,18 @@
 % inside \directlua{}, causing -- to eat all subsequent code).
 \directlua{
   swarmwrap_page_shipped = false
-  luatexbase.add_to_callback("pre_shipping_filter",
+  swarmwrap_fig_stack = {}
+  luatexbase.add_to_callback("pre_shipout_filter",
     function(head, groupcode)
       swarmwrap_page_shipped = true
       local rnl = tex.count["swarmwrap@remaining@nl"]
       if rnl > 0 then
         tex.count["swarmwrap@remaining@nl"] = 0
-        tex.toks["everypar"] = {}
+        tex.toks["everypar"] = ""
       end
+      swarmwrap_fig_stack = {}
       return head
-    end, "swarmwrap: detect page shipping + ghost fix")
+    end, "swarmwrap: page shipout ghost fix + stack clear")
 }
 \fi
 
@@ -554,13 +570,13 @@
         if lw <= narrow_width_max and lw > 0 then
           narrow_count = narrow_count + 1
           last_narrow = current
-          narrow_nodes[#narrow_nodes + 1] = current
+          narrow_nodes[rawlen(narrow_nodes) + 1] = current
         end
       end
       current = current.next
     end
-    if penalty_val > 0 and #narrow_nodes > 1 then
-      for i = 1, #narrow_nodes - 1 do
+    if penalty_val > 0 and rawlen(narrow_nodes) > 1 then
+      for i = 1, rawlen(narrow_nodes) - 1 do
         local p = node.new(node.id("penalty"))
         p.penalty = penalty_val
         node.insert_after(head, narrow_nodes[i], p)
@@ -576,11 +592,29 @@
         tex.count["swarmwrap@remaining@nl"] = r
       end
       if tex.count["swarmwrap@remaining@nl"] == 0 then
-        tex.toks["everypar"] = {}
+        local stack = swarmwrap_fig_stack
+        if type(stack) == "table" and rawlen(stack) > 0 then
+          local prev = stack[rawlen(stack)]
+          stack[rawlen(stack)] = nil
+          tex.count["swarmwrap@remaining@nl"] = prev.remaining_nl
+          if rawlen(stack) > 0 then
+            local min_tw = prev.tw
+            for i = 1, rawlen(stack) do
+              if stack[i].tw < min_tw then
+                min_tw = stack[i].tw
+              end
+            end
+            tex.dimen["swarmwrap@tw@lua"] = min_tw
+          else
+            tex.dimen["swarmwrap@tw@lua"] = prev.tw
+          end
+        else
+          tex.toks["everypar"] = ""
+        end
       end
     end
     local nl = tex.count["swarmwrap@nl"]
-    local bs = tex.dimen["baselineskip"]
+    local bs = tex.skip["baselineskip"].width
     local excess = 0
     if total_lines < nl then
       excess = (nl - total_lines) * bs
@@ -626,6 +660,39 @@
 %   \resizebox{!}{<remaining-4pt>}{...} to fit. Falls through to
 %   DEFERRED only when remaining is too small.
 \ifswarmwrap@luatex
+% v3.37: Figure stack push helper (Task #178).
+% Defined outside \swarmwrapnext to avoid # token issues
+% inside \newcommand definitions.
+\directlua{
+  function swarmwrap_stack_push()
+    local rnl = tex.count["swarmwrap@remaining@nl"]
+    local tw = tex.dimen["swarmwrap@tw@lua"]
+    if rnl > 0 and tw > 0 then
+      local stack = swarmwrap_fig_stack
+      if type(stack) ~= "table" then
+        stack = {}
+        swarmwrap_fig_stack = stack
+      end
+      stack[rawlen(stack) + 1] = {
+        remaining_nl = rnl,
+        tw = tw
+      }
+    end
+  end
+  function swarmwrap_stack_tw_min(new_tw)
+    local stack = swarmwrap_fig_stack
+    if type(stack) == "table" and rawlen(stack) > 0 then
+      local min_tw = new_tw
+      for i = 1, rawlen(stack) do
+        if stack[i].tw < min_tw then
+          min_tw = stack[i].tw
+        end
+      end
+      return min_tw
+    end
+    return new_tw
+  end
+}
 \newcommand{\swarmwrapnext}{%
   % v3.32: Clear page-shipped flag BEFORE \par to detect overflow
   \directlua{swarmwrap_page_shipped = false}%
@@ -693,6 +760,16 @@
   \ifdim\dimen0>0pt \repeat
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+  % v3.37: Clamp tw to minimum across all stacked figures (Task #178).
+  % If earlier figures are still active with narrower tw, use that
+  % to prevent text overlapping the wider stacked figure zones.
+  \directlua{
+    local new_tw = tex.dimen["swarmwrap@tw@lua"]
+    local clamped = swarmwrap_stack_tw_min(new_tw)
+    tex.dimen["swarmwrap@tw@lua"] = clamped
+    tex.dimen["swarmwrap@tw"] = clamped
+  }%
+  \xdef\swarmwrap@tw@val{\the\swarmwrap@tw@lua\space}%
   \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@nl
   \loop
@@ -715,6 +792,9 @@
       \fi
     \fi
   \fi
+  % v3.37: Figure stack (Task #178). Push previous figure's state
+  % if still active, so narrowing continues after new figure ends.
+  \directlua{swarmwrap_stack_push()}%
   \global\swarmwrap@remaining@nl=\swarmwrap@nl
   \emergencystretch=\fontdimen6\font\relax
   % ── Multi-paragraph extension (v3.29) ────────────────────────
