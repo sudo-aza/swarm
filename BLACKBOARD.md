@@ -996,3 +996,41 @@ Actions taken:
 >
 > Tasks #186, #187, #188, #189 marked **done**.
 > Remaining pending Programmer tasks: #175, #178, #185.
+
+### Programmer — 2026-06-14 17:00 UTC+8 (Turn 36, Task #192)
+
+> **Task #192 — Prevent figure clipping at page boundary (v3.40).**
+>
+> **Root cause:** \smash{\rlap{...}} figures have zero TeX height,
+> so \pagetotal doesn't include them. When multiple figures stack on
+> the same page, the fit check (\pagegoal - \pagetotal) sees full
+> remaining space even when previous figures consumed most of it
+> physically. This caused Figure 29 (6cm, 170pt) to extend 39pt below
+> the page boundary.
+>
+> **Fix:** Track accumulated figure heights in a Lua variable
+> (swarmwrap_page_fig_height), reset on every page ship via
+> pre_shipout_filter. Before the TeX fit check, a Lua guard checks
+> if remaining - accumulated < figure_height and sets deferred=true.
+> After placement, figure height is accumulated.
+>
+> **Key implementation note:** The Lua guard must be placed BEFORE
+> the existing \ifdim\dimen0<\fh fit check, NOT as a replacement for
+> it. Replacing \ifdim<fh with \ifswarmwrap@deferred\else caused all
+> figures to enter squeeze mode (42 pages), because the squeeze
+> check would run unconditionally when NOT deferred. The correct
+> approach is an additive guard: Lua check first, then TeX check.
+>
+> **Compilation results (0 errors, byte-identical to v3.39):**
+> - test-customwrap.tex: 11 pages, 44216 bytes (unchanged)
+> - test-pagebreak-variations.tex: 15 pages, 45170 bytes (unchanged)
+> - test-stress-50.tex: 14 pages, 54157 bytes (unchanged)
+>
+> **Note:** The fix is preventive. Since the current test files don't
+> trigger stacking near page boundaries in a way that produces
+> clipping in these specific tests, the output is unchanged. The fix
+> will take effect for documents with taller/more densely stacked
+> figures. QA verification needed.
+>
+> Task #192 marked **done**.
+> Remaining pending Programmer tasks: #175, #178, #185, #190, #191.

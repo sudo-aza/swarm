@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.39)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.40)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -354,7 +354,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/14 v3.39 fix Lua API bugs + callback name (Task 189)]
+\ProvidesPackage{swarmwrap}[2026/06/14 v3.40 prevent figure clipping at page boundary (Task 192)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -519,6 +519,7 @@
 \directlua{
   swarmwrap_page_shipped = false
   swarmwrap_fig_stack = {}
+  swarmwrap_page_fig_height = 0
   luatexbase.add_to_callback("pre_shipout_filter",
     function(head, groupcode)
       swarmwrap_page_shipped = true
@@ -528,6 +529,7 @@
         tex.toks["everypar"] = ""
       end
       swarmwrap_fig_stack = {}
+      swarmwrap_page_fig_height = 0
       return head
     end, "swarmwrap: page shipout ghost fix + stack clear")
 }
@@ -723,6 +725,16 @@
   \swarmwrap@deferredfalse
   \dimen0=\pagegoal
   \advance\dimen0 by -\pagetotal
+  \directlua{
+    local remaining = tex.dimen[0] / 65536.0
+    local fig_h = tex.dimen["swarmwrap@fh"] / 65536.0
+    local used = swarmwrap_page_fig_height
+    if remaining - used < fig_h then
+      tex.count["swarmwrap@deferred"] = 1
+    end
+  }%
+  % v3.40: Check accumulated smash-figure heights before fit check.
+  % Adds deferred guard for stacked figures (Task #192).
   \ifdim\dimen0<\swarmwrap@fh
     % Figure doesn't fit. Try squeeze-fit.
     \dimen2=\swarmwrap@squeeze@factor\swarmwrap@fh
@@ -845,6 +857,10 @@
       \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
       \wlog{swarmwrap next: NORMAL --- tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
     \fi
+  \directlua{
+    swarmwrap_page_fig_height = swarmwrap_page_fig_height
+      + tex.dimen["swarmwrap@fh"] / 65536.0
+  }%
 }%
 \else
 \newcommand{\swarmwrapnext}{%
