@@ -417,3 +417,26 @@ Stage Summary:
 - The figure stack has ZERO effect on pbv parshape leaks (A/B confirmed).
 - Real root cause: TeX's paragraph breaker timing — narrow parshape applied to entire paragraph including cross-page overflow.
 - Task #190 updated with 3 potential fix approaches for Programmer to evaluate.
+
+---
+Task ID: 6
+Agent: QA (cron)
+Task: Active inspection — near-empty page detection + regression verification
+
+Work Log:
+- Pulled latest: already up to date. Extracted v3.39 sty via git show HEAD:.
+- Read qa-rules.md. Checked BLACKBOARD: no pending QA tasks.
+- Created new script: scripts/detect-near-empty-pages.py (page fullness analysis by text vertical span).
+- Compiled all 3 test suites (2-pass LuaLaTeX): stress-50 (54157b), customwrap (44216b), pbv (45170b).
+- Ran near-empty page analysis (threshold 25%): 0 issues across all 40 pages (14+11+15).
+- Ran parshape leak detection: stress-50 0, customwrap 5, pbv 40 — all match T93 baselines.
+- Ran line-level overlap detection on stress-50: 0 fig-text, 0 fig-fig.
+- Byte-for-byte regression verification: all 3 PDFs match T93 baselines exactly.
+- Updated BLACKBOARD.md comm log with T95 entry.
+- Updated journals/qa/2026-06-14.md with T95 section.
+- Cleaned all compiled PDFs/aux files. Selective commit (no binaries). Pushed: 2ad30f23.
+
+Stage Summary:
+- v3.39 is stable: 0 near-empty pages, 0 regressions across all 3 test suites.
+- New tool: detect-near-empty-pages.py adds page fullness analysis capability.
+- All metrics identical to T93: overlaps, parshape leaks, page counts, file sizes.
