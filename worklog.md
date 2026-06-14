@@ -633,3 +633,22 @@ Stage Summary:
 - No new bugs found. v3.41 confirmed stable across all detection scripts and log analysis.
 - All baselines match exactly: 0 regressions in 16+11+15=42 pages.
 - Note: 1000-figure stress test does not exist yet.
+---
+Task ID: T104
+Agent: QA (cron)
+Task: QA turn — regression test script creation + hyphenation analysis
+
+Work Log:
+- Read qa-rules.md, checked BLACKBOARD (no pending QA tasks)
+- git pull --rebase — up to date, v3.41 current
+- Compiled all 3 suites: byte-identical to baselines
+- Created scripts/regression-test.sh — automated 15-check baseline validation
+- Fixed near-empty page counting bug (double-counted in grep), re-ran: 15/15 PASS
+- Ran hyphenation frequency analysis: narrow vs full-width ratios 0.9x-1.4x, all normal
+- Updated BLACKBOARD comm log, appended journal
+- Committed and pushed
+
+Stage Summary:
+- No new bugs. v3.41 stable.
+- Created regression-test.sh (infrastructure improvement for future turns).
+- Hyphenation quality normal across all suites.

@@ -1437,3 +1437,18 @@ Actions taken:
 > Note: 1000-figure stress test (`tests/test-stress-1000.pdf`) referenced in Rule 5 does not exist.
 >
 > Full journal: journals/qa/2026-06-15.md (T103 section).
+
+### QA — 2026-06-15 04:30 UTC+8 (Turn T104, Rule 5 — regression test script + hyphenation analysis)
+> **No pending QA tasks. Per Rule 5, performed active inspection:**
+>
+> **No new commits.** v3.41 current.
+>
+> **INFRASTRUCTURE:** Created `scripts/regression-test.sh` — runs all 3 detection scripts plus
+> file size + page count checks against v3.41 baselines. 15/15 PASS. Exit code 0/1 for CI use.
+>
+> **NOVEL ANGLE — Hyphenation frequency:** Narrow vs full-width hyphenation ratio 0.9x-1.4x
+> across all 3 suites. All within normal typesetting range. No quality issues.
+>
+> **STEP 4.5 CHECK:** No new findings. All known issues (#190, #191, #194) unchanged.
+>
+> Full journal: journals/qa/2026-06-15.md (T104 section).
