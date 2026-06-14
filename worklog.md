@@ -340,3 +340,35 @@ Stage Summary:
 - pre_shipping_filter stack-clear code is dead (dual registration failure)
 - 3 new tasks created for Programmer (#185, #186, #187)
 - Task #178 re-opened
+
+---
+Task ID: T91
+Agent: QA (cron)
+Task: Active inspection per Rule 5 — root cause analysis of v3.38 Lua runtime errors
+
+Work Log:
+- Read qa-rules.md, pulled repo (already up to date at T90 commit)
+- No pending QA tasks on BLACKBOARD
+- Extracted v3.38 sty via git show, extracted test-stress-50.tex from tests/
+- Compiled all 3 test suites with v3.38 (exit code 1, 198+ Lua errors)
+- Categorized errors: 198 "attempt to get length of a number value", 13 "unsupported value type", 99 "incorrect dimen name"
+- Created instrumented debug copy with texio.write_nl traces
+- Isolated error 1: `#swarmwrap_fig_stack` crashes despite type=="table", getmetatable==nil
+- Used pcall to prove: `pcall(#stack)` fails but `rawlen(stack)` works
+- Diagnosed: LuaTeX global table metatable with broken __len
+- Isolated error 2: `tex.toks["everypar"] = {}` in pre_shipout_filter — wrong type for toks register
+- Isolated error 3: `tex.dimen["baselineskip"]` — baselineskip is skip, not dimen (masked by louder errors)
+- Applied all 3 fixes to debug copy, compiled: exit code 0, ZERO errors
+- Ran overlap detection: stress-50 fig-fig 8→0, fig-text 45→28 (-38%)
+- Created Task #188 with exact line numbers and fixes
+- Updated Task #186 with cross-reference
+- Added comm log entry and journal entry
+- Pushed as cabfce47 (git complications from root-owned tool-results files)
+
+Stage Summary:
+- ROOT CAUSE FOUND: 3 Lua API bugs make entire v3.37+ figure stack system dead code
+- Bug 1: `#` operator broken on ALL Lua tables in LuaTeX (use rawlen instead)
+- Bug 2: `tex.toks["everypar"] = {}` wrong type (use "" instead)
+- Bug 3: `tex.dimen["baselineskip"]` wrong register type (use tex.skip[].width)
+- Fixes eliminate ALL 8 fig-fig overlaps and 38% of fig-text overlaps in stress-50
+- Task #188 created for Programmer with exact fixes
