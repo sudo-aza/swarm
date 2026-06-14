@@ -440,3 +440,28 @@ Stage Summary:
 - v3.39 is stable: 0 near-empty pages, 0 regressions across all 3 test suites.
 - New tool: detect-near-empty-pages.py adds page fullness analysis capability.
 - All metrics identical to T93: overlaps, parshape leaks, page counts, file sizes.
+
+---
+Task ID: 7
+Agent: QA (cron)
+Task: Active inspection — figure dimension accuracy audit + visual rendering
+
+Work Log:
+- Pulled latest: already up to date. Extracted v3.39 via git show HEAD:.
+- Read qa-rules.md. Checked BLACKBOARD: no pending QA tasks.
+- Compiled stress-50 (2-pass): 54157 bytes, matches T93 baseline.
+- Rendered pages 1, 7, 10, 14 to PNG at 200 DPI for visual inspection.
+- Analyzed margin consistency: left margin 117.8pt on all 14 pages (perfect).
+- Analyzed figure positioning: all 50 figures right-edge at exactly 476.5pt (perfect).
+- **KEY FINDING:** Systematically compared all 50 figure dimensions against .tex source specs.
+  - 46/50 figures (92%) have dimensions exact to 0.1pt.
+  - 4/50 figures (8%) have distorted dimensions: Figs 10, 14, 25, 40.
+  - ALL 4 are last-on-page figures extending to y=720.5 (text area bottom).
+  - 3 have proportional scaling (+4% to +12.5%), 1 has non-proportional -25% shrinkage.
+- Created Task #191 on BLACKBOARD (Programmer, pending).
+- Updated comm log and journal. Cleaned all binaries. Pushed: 4943405c.
+
+Stage Summary:
+- NEW BUG: Figure dimension distortion at page boundaries (Task #191).
+- 4/50 figures in stress-50 have 4-25% dimension errors when they're the last figure on a page.
+- All other metrics stable: margins, overlaps, parshape leaks, file size.
