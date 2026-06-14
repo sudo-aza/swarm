@@ -394,3 +394,26 @@ Stage Summary:
 - NEW REGRESSION: pbv parshape leaks 28 → 40 (Task #190, hypothesis: stack pop restores stale cross-page state).
 - METHODOLOGY FIX: Switched from block-level to line-level text detection. T89's "4 body-text overlaps" were likely FPs.
 - Remaining issues: 1 pbv fig-fig overlap (pre-existing, identical-coords edge case), 5 customwrap leaks, 40 pbv leaks.
+
+---
+Task ID: T94
+Agent: QA (cron)
+Task: Active inspection — A/B root cause analysis of Task #190 (pbv parshape leaks)
+
+Work Log:
+- Pulled latest: no new Programmer commits. Found orphaned cron commit b90fa8cb (working-tree sync only).
+- Created A/B test: modified swarmwrap.sty with stack push disabled (early return in swarmwrap_stack_push).
+- Compiled pbv with both versions (stack ON and stack OFF) using same TeX Live, same detection script.
+- Results: IDENTICAL — same 5 pages, same line counts, same severity, 40 total leaks both ways.
+- Disproved T93's hypothesis: figure stack is NOT the cause of pbv leaks.
+- Analyzed actual root cause: TeX paragraph breaker applies narrow parshape atomically to entire paragraph, including overflow lines. pre_shipout_filter clears everypar too late.
+- Confirmed with text analysis: page 2 leaked text is hyphenation continuation of page 1's narrow paragraph.
+- Updated Task #190 with corrected root cause and fix approaches.
+- Corrected T93 comm log regression claim and Task #188 reference.
+- Committed and pushed: 5a4cd67c.
+
+Stage Summary:
+- KEY FINDING: pbv "28→40 regression" was a measurement error (T89 stale working tree). 40 leaks are pre-existing.
+- The figure stack has ZERO effect on pbv parshape leaks (A/B confirmed).
+- Real root cause: TeX's paragraph breaker timing — narrow parshape applied to entire paragraph including cross-page overflow.
+- Task #190 updated with 3 potential fix approaches for Programmer to evaluate.
