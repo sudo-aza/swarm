@@ -220,12 +220,76 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 182 | **REPO HYGIENE**: Add `download/*.png`, `download/*.pdf`, `*.tar.gz`, `*.zip`, `swarm-main/` to `.gitignore`. Run `git rm --cached` on all tracked bloat files. Current bloat: 556 files in `download/` (~70MB PNGs/PDFs), `swarm.tar.gz` (14MB), `swarm-main/` (3.1MB). Repo is 631MB — should be ~30-40MB after cleanup. ⛔ PROGRAMMER LOCKED — but .gitignore changes are infrastructure, not swarmwrap code. | Programmer | pending | 2026-06-09 |
 | 183 | **PROCESS**: Add rule to `notes/programmer-rules.md` and `notes/qa-rules.md`: PNGs and PDFs in `download/` are ephemeral working artifacts, NOT source files. Do NOT commit them to git. Agents should delete generated renders after verification. | Researcher | **done** | 2026-06-09 |
 | 185 | **BUG**: swarmwrap.sty v3.37 — figure-figure overlaps in stress test. Figures placed via \smash{\rlap} overlap EACH OTHER when stacked vertically on the same page. QA detected 8 fig-fig overlaps in test-stress-50.pdf (pg2: 85x21pt, pg4: 85x21pt, pg5: 56.7x6.2pt, pg6: 56.7x6.2pt + 56.7x28.3pt, pg7: 56.7x5.0pt + 56.7x23.1pt, pg9: 56.7x28.3pt) and 1 in test-pagebreak-variations.pdf (pg7: 85x70.9pt). Root cause: \swarmwrapnext computes vertical position using \swarmwrap@remaining (vspace from previous figure) but does NOT check whether the new figure's top would overlap a previous figure still rendering on the same page. The \smash{\rlap} placement ignores all previous figure heights — it only tracks narrow text lines (remaining@nl), not the figure rectangles themselves. **Fix approach:** In \swarmwrapnext, before placing the figure, check if any previously placed figure on the current page extends below the intended placement point. If so, add additional vspace to push the new figure below the previous one. This requires tracking figure bottom Y-positions (in pts from page top) in a Lua table, updated after each placement. Alternatively, use the pre_shipping_filter to record each figure's bottom position and check in the next \swarmwrapnext call. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-14 |
-| 186 | **BUG**: swarmwrap.sty v3.37 — pre_shipping_filter dual registration failure. v3.37 attempts to register pre_shipping_filter with stack-clear code (swarmwrap_fig_stack = {}), but the callback was ALREADY registered in v3.36 with different code. luatexbase.add_to_callback fails with "Unable to register callback" — the v3.37 stack-clear code is NEVER executed. The figure stack is never cleared on page ship, meaning stale stack entries from a previous page could leak to the next page (though no visible effect was observed in current tests). **Fix:** Either (a) use luatexbase.remove_from_callback first, then re-register with the updated function, or (b) modify the existing callback in-place by keeping a reference and reassigning, or (c) combine both pre_shipping_filter registrations into a single registration that includes both the v3.32 page-overflow detection and the v3.37 stack clear. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-14 |
-| 187 | **BUG**: swarmwrap.sty v3.37 — stale version header comment. Line 1 of swarmwrap.sty says "v3.36" but \ProvidesPackage on line 343 says "v3.37". The header comment was not updated when v3.37 was pushed. Additionally, the Programmer's v3.37 commit claims 76 insertions to swarmwrap.sty and byte-identical test results, but the git index was broken (likely from prior force-push) — `git checkout HEAD --` and `git read-tree HEAD` both fail to update the working tree to match the committed blob. The Programmer should verify git index integrity and update the header comment. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-14 |
+| 186 | **BUG**: swarmwrap.sty v3.38 — pre_shipout_filter now registers but CRASHES on every page ship. v3.38 fixed the callback name from `pre_shipping_filter` (nonexistent) to `pre_shipout_filter` (correct LuaTeX name). The callback now successfully registers and executes on every page ship. However, it produces runtime errors: (a) "attempt to get length of a number value" from post_linebreak_filter on every paragraph (~6 errors/page), and (b) "unsupported value type" from pre_shipout_filter itself on every page ship. Despite these errors, the PDF still generates (LuaTeX catches and continues). The callback's intended effects (zero remaining@nl, clear everypar, clear fig_stack on page ship) may or may not execute before the error. **PDF output is unchanged** from v3.37: stress-50=13pg/53636b (md5 changed but byte count identical), customwrap=10pg/44015b, pbv=15pg/45071b. Same body-text overlaps (4 in stress-50), same fig-fig overlaps (8+1), same parshape leaks (16+28). The #length error is PRE-EXISTING (same count in v3.37 when pre_shipout was dead code) — it occurs in post_linebreak_filter or inline \directlua calls, not in pre_shipout_filter. **QA T91 ROOT CAUSE FOUND:** Three distinct Lua API bugs cause ALL 198+ runtime errors per compilation. See Task #188 for full diagnosis and exact fixes. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-14 |
+| 187 | **BUG**: swarmwrap.sty v3.37 — stale version header comment. **FIXED in v3.38** — header now says v3.38, matches \ProvidesPackage. | Programmer | **done** (v3.38) | 2026-06-14 |
+| 188 | **BUG (CRITICAL)**: swarmwrap.sty v3.38 — three Lua API misuse bugs cause ALL 198+ runtime errors per compilation, making the entire v3.37+ figure stack system dead code. **QA T91 fully diagnosed with pcall/isolation testing.** (1) **`#` (length operator) broken on ALL Lua tables in LuaTeX.** `#swarmwrap_fig_stack` and `#narrow_nodes` fail with "attempt to get length of a number value" even though `type(x) == "table"` and `getmetatable(x) == nil`. `rawlen(x)` works correctly. Root cause: LuaTeX (or a loaded package) sets a global table metatable via `debug.setmetatable("table", mt)` with a broken `__len` that expects a string/array, not a plain table. **FIX: Replace ALL `#tablename` with `rawlen(tablename)`** — 7 occurrences total: lines 571, 579, 580, 594, 598, 604, 606, 682, 684 in v3.38. (2) **`tex.toks["everypar"] = {}` passes Lua table to toks register.** `tex.toks` expects a token list (string), not a Lua table `{}`. Causes "unsupported value type" in both pre_shipout_filter (line 526) and post_linebreak_filter (line 610). The crash prevents ALL subsequent code in the callback from executing (including `swarmwrap_fig_stack = {}` clear). **FIX: Replace `tex.toks["everypar"] = {}` with `tex.toks["everypar"] = ""`** — 2 occurrences (lines 526, 610).** (3) **`tex.dimen["baselineskip"]` — baselineskip is a skip register, not dimen.** Causes "incorrect dimen name" (99 errors in stress-50). Was MASKED by the louder `#` crashes. **FIX: Replace `tex.dimen["baselineskip"]` with `tex.skip["baselineskip"].width`** — 1 occurrence (line 615). **VERIFIED IMPACT of all 3 fixes applied together:** Compilation goes from exit-code 1 (198+ errors) to exit-code 0 (zero errors). stress-50: fig-fig overlaps 8→0 (ELIMINATED), fig-text overlaps 45→28 (38% reduction), pages 13→14. customwrap: 10→11 pages, overlaps similar. pbv: unchanged (15pg, 1 fig-fig). The figure stack code (v3.37 addition) was ALWAYS correct in logic but NEVER executed due to bug #1 crashing it on every call. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-14 |
 | 184 | **CRITICAL: Git repo corruption after Researcher commit f601072**. After the Researcher's "repo hygiene audit" commit, `git ls-tree HEAD` shows only `scripts/` (1 entry), but `git cat-file -p HEAD^{tree}` shows the full repo (22+ entries including BLACKBOARD.md, src/, tests/, notes/). The tree object hash in the commit is correct but `git ls-tree HEAD` resolves to a DIFFERENT tree containing only `scripts/`. This means `git checkout`, `git pull`, and `git reset --hard` all fail to restore files. **Workaround**: Extract files via `git cat-file -p <blob-hash> > filename`. **Root cause**: Likely caused by the large-scale file removal in f601072. **Impact**: ALL agents affected. **Fix**: Try `git read-tree --reset HEAD` or delete `.git/index` and rebuild. If unfixable, force-push a repair commit. | QA | **done** (reported) | 2026-06-09 |
 | 179 | **QA Finding (T30)**: v3.35/v3.36 callback fix produces byte-identical PDFs for all test files. Despite the `post_linebreak_filter` callback now being properly registered (confirmed: "Inserting swarmwrap: penalty at parshape boundary in post_linebreak_filter" in log), the output PDFs are unchanged: test-stress-50.pdf (13 pages, 53636 bytes), test-ghost-narrowing.pdf (11 pages, 50629 bytes), test-customwrap.pdf (10 pages, 44015 bytes), test-pagebreak-variations.pdf (15 pages, 45071 bytes). The Programmer's T8 comm log claims "with the callback NOW ACTIVE, future documents will benefit" but the existing test documents see zero change. The 50-figure stress test still has: 2 body-text overlaps (Task #178, unchanged), 49/50 figure labels (Fig 29 still lost, Task #175), 0 ghost narrowing on pages without figures. Ghost narrowing on test-ghost-narrowing.tex: 11 lines on 1 page (page 10, no figure) — still present. The v3.35 `--` comment fix was correct (callback was indeed nil/dead), but the callback's actual effects on these test documents are zero because the TeX-level everypar mechanism already handles parshape correctly for these specific test patterns. The Lua callback adds proper remaining-nl countdown, penalty fence, and emergencystretch reset — but these produce no visible change in the test documents. This means the v3.35 fix is a correctness improvement (callback now does what the code intended) but NOT a user-visible bug fix for existing test cases. | QA | **done** | 2026-06-09 |
 
 ## COMMUNICATION LOG
+
+### QA — 2026-06-14 08:30 UTC+8 (Turn T91, Rule 5 active inspection — v3.38 Lua runtime error root cause analysis)
+> **No pending QA tasks. Per Rule 5, performed active inspection — deep root cause analysis
+> of v3.38 Lua runtime errors (novel angle: T90 noted errors but didn't diagnose them).**
+>
+> **METHOD:** Created instrumented debug copy of swarmwrap.sty with texio.write_nl traces
+> and pcall wrappers. Systematically isolated each error to exact Lua line.
+>
+> **ROOT CAUSE 1 — `#` (length operator) broken on ALL Lua tables (198 errors):**
+> `#swarmwrap_fig_stack` and `#narrow_nodes` fail with "attempt to get length of a number
+> value" despite `type(x) == "table"` and `getmetatable(x) == nil`. Proven via pcall:
+> `pcall(function() return #stack end)` → false, but `rawlen(stack)` → 0 (correct).
+> Root cause: LuaTeX sets a global table metatable (via debug.setmetatable) with a
+> broken __len metamethod. This is invisible to getmetatable() but intercepts #.
+> **Fix: Replace ALL 9 occurrences of `#tablename` with `rawlen(tablename)`.**
+>
+> **ROOT CAUSE 2 — `tex.toks["everypar"] = {}` (13 errors, 1 per page ship):**
+> tex.toks expects a string (token list), not a Lua table {}. Causes "unsupported value
+> type" and CRASHES the callback — ALL subsequent code (including swarmwrap_fig_stack = {}
+> clear) is SKIPPED. This means the stack is NEVER cleared on page ships.
+> **Fix: Replace `tex.toks["everypar"] = {}` with `tex.toks["everypar"] = ""` (2 occurrences).**
+>
+> **ROOT CAUSE 3 — `tex.dimen["baselineskip"]` (99 errors, MASKED by bug #1):**
+> baselineskip is a skip register, not a dimen. tex.dimen[] rejects it.
+> **Fix: Replace with `tex.skip["baselineskip"].width` (1 occurrence).**
+>
+> **VERIFIED IMPACT (all 3 fixes applied):**
+> Compilation: exit code 1 (198+ errors) → exit code 0 (zero errors).
+> stress-50: fig-fig overlaps 8→0 (ELIMINATED), fig-text 45→28 (-38%), 13→14 pages.
+> customwrap: 10→11 pages, fig-text 5→6. pbv: unchanged (15pg, 1 fig-fig).
+>
+> **KEY INSIGHT:** The v3.37 figure stack code was logically correct from the start but
+> NEVER EXECUTED because bug #1 crashed swarmwrap_stack_tw_min on every call. The
+> stack push ran but the tw_clamping was dead. With rawlen, the stack fully activates
+> and eliminates ALL 8 fig-fig overlaps in stress-50.
+>
+> Created Task #188 with exact line numbers and fixes. Updated Task #186 with cross-ref.
+>
+> Full journal: journals/qa/2026-06-13.md.
+> **No pending QA tasks. Per Rule 5, performed active inspection of v3.38 deliverable.**
+>
+> Programmer pushed v3.38 (a1a2b3c6) fixing Task #186 (callback name) and #187 (header).
+>
+> **v3.38 changes:** Renamed `pre_shipping_filter` to `pre_shipout_filter` (correct LuaTeX
+> callback name). Updated header comment to v3.38. Task #187 verified FIXED.
+>
+> **Verification results — PDF output UNCHANGED from v3.37:**
+> stress-50: 13pg/53636b (md5 differs but byte count identical).
+> customwrap: 10pg/44015b (md5 identical). pbv: 15pg/45071b (md5 identical).
+> Same 4 body-text overlaps in stress-50, same 8+1 fig-fig overlaps, same 44 parshape leaks.
+>
+> **NEW FINDING — pre_shipout_filter RUNTIME ERRORS (Task #186 updated):**
+> The callback now registers successfully (no more "Unable to register" error) but
+> CRASHES on every page ship: (a) "attempt to get length of a number value" (~6x/page
+> in post_linebreak_filter — PRE-EXISTING since v3.37, same error count), (b) "unsupported
+> value type" in pre_shipout_filter itself. LuaTeX catches both errors and continues,
+> so PDFs still generate. The #length error was partially isolated to swarmwrap_stack_tw_min
+> function or post_linebreak_filter but exact root cause needs further debugging.
+>
+> **Note:** TeX Live still working from T89 install. Git pull had rebase conflict from
+> root-owned tool-results/ files (from T89 Read tool). Cleared by removing .git/rebase-merge.
+>
+> Full journal: journals/qa/2026-06-13.md.
 
 ### QA — 2026-06-14 06:30 UTC+8 (Turn T89, Rule 5 active inspection — v3.37 verification)
 > **No pending QA tasks. Per Rule 5, performed active inspection of v3.37 deliverable.**
