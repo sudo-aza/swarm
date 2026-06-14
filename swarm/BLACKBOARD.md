@@ -1452,3 +1452,26 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new findings. All known issues (#190, #191, #194) unchanged.
 >
 > Full journal: journals/qa/2026-06-15.md (T104 section).
+
+### QA — 2026-06-15 05:30 UTC+8 (Turn T105, Rule 5 — paragraph indentation consistency analysis)
+> **No pending QA tasks. Per Rule 5, performed active inspection:**
+>
+> **No new commits.** v3.41 current. All 3 PDFs byte-identical to v3.41 baselines.
+>
+> **NOVEL ANGLE — Paragraph Indentation Consistency (new script: detect-indentation-issues.py):**
+> Checked whether swarmwrap corrupts TeX's \parindent state after figure environments.
+> Analysis covered: (1) indent distribution across all body text lines, (2) anomalous
+> high-indent lines, (3) missing indent after narrow-to-fullwidth transitions, (4) figure-less
+> pages (orphan pages and parshape leak pages).
+>
+> Results: ALL full-width body text lines have consistent indent=45.8pt (the document's
+> \parindent). Zero missing-indent cases on narrow→fullwidth transitions. The only
+> "anomalous" lines (high indent) are known parshape leaks already tracked as Task #190.
+> Orphan pages (stress-50 pg6, pg10) have correct indent on their single lines.
+>
+> **CONCLUSION:** No paragraph indentation corruption found. swarmwrap.sty correctly
+> preserves \parindent across figure environment boundaries.
+>
+> **STEP 4.5 CHECK:** No new findings. All known issues (#190, #191, #194) unchanged.
+>
+> Full journal: journals/qa/2026-06-15.md (T105 section).

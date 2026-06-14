@@ -652,3 +652,24 @@ Stage Summary:
 - No new bugs. v3.41 stable.
 - Created regression-test.sh (infrastructure improvement for future turns).
 - Hyphenation quality normal across all suites.
+
+---
+Task ID: T105
+Agent: QA (cron)
+Task: QA turn T105 — paragraph indentation consistency analysis
+
+Work Log:
+- Pulled repo (already up to date, v3.41)
+- Read qa-rules.md, checked BLACKBOARD (no pending QA tasks)
+- Compiled all 3 test suites: byte-identical to v3.41 baselines
+- Created scripts/detect-indentation-issues.py (v2)
+- Analyzed paragraph indentation across all 3 PDFs
+- Found all full-width body text has consistent indent=45.8pt
+- Zero missing-indent cases on narrow-to-fullwidth transitions
+- "Anomalous" high-indent lines traced to known Task #190 parshape leaks
+- Updated BLACKBOARD comm log, appended journal
+- Committed and pushed
+
+Stage Summary:
+- No new bugs. v3.41 stable. Paragraph indentation correctly preserved.
+- Analysis angles exhausted: 18 different dimensions checked across T89-T105.
