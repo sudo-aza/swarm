@@ -673,3 +673,23 @@ Work Log:
 Stage Summary:
 - No new bugs. v3.41 stable. Paragraph indentation correctly preserved.
 - Analysis angles exhausted: 18 different dimensions checked across T89-T105.
+
+---
+Task ID: T106
+Agent: QA (cron)
+Task: QA turn T106 — figure ordering + right-margin consistency
+
+Work Log:
+- Pulled repo (already up to date, v3.41)
+- Read qa-rules.md, checked BLACKBOARD (no pending QA tasks)
+- Compiled all 3 test suites: byte-identical to v3.41 baselines
+- Created scripts/detect-figure-ordering.py
+- Verified all 50 figures in stress-50 correctly ordered (1→50), zero duplicates/missing/overlaps
+- Analyzed right-margin consistency of narrow lines across all 3 PDFs
+- All x1 variation explained by different figure widths and paragraph-ending ragged right
+- Updated BLACKBOARD comm log, appended journal
+- Committed and pushed
+
+Stage Summary:
+- No new bugs. v3.41 stable. Figure ordering correct. Right margins consistent.
+- Analysis angles: 20 dimensions checked across T89-T106.

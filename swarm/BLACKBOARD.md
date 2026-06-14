@@ -1475,3 +1475,26 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new findings. All known issues (#190, #191, #194) unchanged.
 >
 > Full journal: journals/qa/2026-06-15.md (T105 section).
+
+### QA — 2026-06-15 06:30 UTC+8 (Turn T106, Rule 5 — figure ordering verification + right-margin consistency)
+> **No pending QA tasks. Per Rule 5, performed active inspection:**
+>
+> **No new commits.** v3.41 current. All 3 PDFs byte-identical to v3.41 baselines.
+>
+> **NOVEL ANGLE 1 — Figure Ordering (new script: detect-figure-ordering.py):**
+> Verified that all 50 figures in stress-50 appear in correct numerical sequence
+> (Fig 1→50, monotonically increasing by page then vertical position). Also checked:
+> no duplicate figure numbers, no missing numbers, no vertical figure overlaps.
+> Customwrap (6 figs) and pbv (8 figs) also pass. Script handles both "Fig N" and
+> "Figure N:" caption formats.
+>
+> **NOVEL ANGLE 2 — Right-Margin Consistency of Narrow Lines:**
+> Checked whether narrow (wrapped) lines on the same page end at consistent x1
+> positions. Multiple distinct x1 values per page are EXPECTED because different
+> figures have different widths (3cm, 4cm, 5cm). Verified all outlier lines are:
+> (a) paragraph-ending lines (ragged right, normal), (b) next to different-width
+> figures, or (c) document headers. No parshape boundary errors found.
+>
+> **STEP 4.5 CHECK:** No new findings. All known issues (#190, #191, #194) unchanged.
+>
+> Full journal: journals/qa/2026-06-15.md (T106 section).
