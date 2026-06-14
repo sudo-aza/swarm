@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.40)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.41)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -155,6 +155,31 @@
 %       Fix: tex.skip["baselineskip"].width.
 %   RESULT: 198+ runtime errors eliminated. Figure stack now active.
 %   QA T91 verified: stress-50 fig-fig overlaps 8->0.
+%
+% v3.41: Fix figure clipping from stacked smashed figures (Task #193).
+%   v3.40 attempted to prevent clipping by tracking accumulated figure
+%   heights in a Lua variable and checking remaining - used < fig_h.
+%   QA T99 verified this FAILED: output was byte-identical to v3.39.
+%   ROOT CAUSE: \pagegoal - \pagetotal (TeX's "remaining") is inflated
+%   because \smash{\rlap} figures have zero TeX height. Subtracting the
+%   accumulated heights from this inflated value doesn't produce a
+%   meaningful comparison — the guard never triggers.
+%   FIX (three parts):
+%   (1) New TeX dimen \swarmwrap@eff@total tracks the maximum physical
+%       bottom (pagetotal + fh) of any smashed figure on the current page.
+%       Before the fit check, effective remaining = \pagegoal -
+%       max(\pagetotal, eff@total). When stacked figures extend below
+%       the current text position, eff@total > pagetotal, reducing the
+%       effective remaining and correctly triggering squeeze/deferred.
+%   (2) Overfull exemption (v3.32) now checks whether stacked figures
+%       caused the overfull. Previously, remaining < 0 always cleared
+%       the deferred flag. Now, if eff@total > pagetotal (stacked
+%       figures are the cause), deferred is preserved and the figure
+%       goes to the next page via \newpage.
+%   (3) Added \ifswarmwrap@placed guard to prevent double figure
+%       placement when the deferred-NEWPAGE path fires. Previously,
+%       the NORMAL placement code ran unconditionally after the
+%       deferred block, placing the figure twice on the same page.
 %
 % v3.32: Fix hollow carry-over near-empty pages (Task #172).
 %   Two-part fix:
@@ -354,7 +379,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/14 v3.40 prevent figure clipping at page boundary (Task 192)]
+\ProvidesPackage{swarmwrap}[2026/06/14 v3.41 Prevent figure clipping from stacked smashed figures (Task 193)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -458,6 +483,17 @@
 \newdimen\swarmwrap@remaining
 \swarmwrap@remaining=0pt
 
+% v3.41: Effective page total accounting for smashed figure heights.
+% Tracks the maximum physical bottom (pagetotal + fig_height) of any
+% smashed figure on the current page. Used to compute actual remaining
+% space instead of TeX's \pagetotal (which ignores zero-height smashes).
+\newdimen\swarmwrap@eff@total
+\swarmwrap@eff@total=0pt
+
+% v3.41: Flag to prevent double figure placement when deferred path fires.
+\newif\ifswarmwrap@placed
+\swarmwrap@placedfalse
+
 % ── Multi-paragraph parshape persistence (v3.17) ────────────────────
 \newcount\swarmwrap@remaining@nl
 \swarmwrap@remaining@nl=0
@@ -530,6 +566,7 @@
       end
       swarmwrap_fig_stack = {}
       swarmwrap_page_fig_height = 0
+      tex.dimen["swarmwrap@eff@total"] = 0
       return head
     end, "swarmwrap: page shipout ghost fix + stack clear")
 }
@@ -696,6 +733,8 @@
   end
 }
 \newcommand{\swarmwrapnext}{%
+  % v3.41: Reset placed flag for double-placement guard.
+  \swarmwrap@placedfalse
   % v3.32: Clear page-shipped flag BEFORE \par to detect overflow
   \directlua{swarmwrap_page_shipped = false}%
   \par
@@ -725,16 +764,6 @@
   \swarmwrap@deferredfalse
   \dimen0=\pagegoal
   \advance\dimen0 by -\pagetotal
-  \directlua{
-    local remaining = tex.dimen[0] / 65536.0
-    local fig_h = tex.dimen["swarmwrap@fh"] / 65536.0
-    local used = swarmwrap_page_fig_height
-    if remaining - used < fig_h then
-      tex.count["swarmwrap@deferred"] = 1
-    end
-  }%
-  % v3.40: Check accumulated smash-figure heights before fit check.
-  % Adds deferred guard for stacked figures (Task #192).
   \ifdim\dimen0<\swarmwrap@fh
     % Figure doesn't fit. Try squeeze-fit.
     \dimen2=\swarmwrap@squeeze@factor\swarmwrap@fh
@@ -821,13 +850,20 @@
   % ── Placement (DEFERRED vs NORMAL/SQUEEZE) ─────────────────────
   \ifswarmwrap@deferred
     % DEFERRED: figure doesn't fit, squeeze not possible.
-    % v3.32: If page is already overfull (remaining < 0), don't
+    % v3.32/v3.41: If page is already overfull (remaining < 0), don't
     % force a page break — let TeX ship the overfull page naturally.
     % Take the NORMAL path so the figure is placed with the overflow
     % text. The figure may be partially at the page boundary, but this
     % prevents near-empty pages from overflow.
+    % v3.41 EXCEPTION: When stacked smashed figures caused the overfull
+    % (eff@total > pagetotal), the overfull is from invisible content.
+    % In that case, keep deferred to push the figure to the next page
+    % where it won't clip.
     \ifdim\dimen0<0pt\relax
-      \swarmwrap@deferredfalse
+      \ifdim\swarmwrap@eff@total>\pagetotal\relax
+      \else
+        \swarmwrap@deferredfalse
+      \fi
     \fi
     \ifswarmwrap@deferred
       % v3.36: Fix hollow carry-over pages (Task #179).
@@ -845,22 +881,30 @@
       \parshape \swarmwrap@pshape\relax
       \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
       \wlog{swarmwrap next: DEFERRED-NEWPAGE --- fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
+      \swarmwrap@placedtrue
     \fi
   \fi
   % NORMAL, SQUEEZE-FIT, or overfull DEFERRED: place figure.
-  \noindent
-  \parshape \swarmwrap@pshape\relax
-    \ifswarmwrap@squeezed
-      \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@scaledbox\relax\hbox{\copy\swarmwrap@scaledbox}}}%
-      \wlog{swarmwrap next: SQUEEZE --- fh=\the\swarmwrap@fh, fw=\the\swarmwrap@fw, nl=\the\swarmwrap@nl}%
-    \else
-      \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
-      \wlog{swarmwrap next: NORMAL --- tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
-    \fi
-  \directlua{
-    swarmwrap_page_fig_height = swarmwrap_page_fig_height
-      + tex.dimen["swarmwrap@fh"] / 65536.0
-  }%
+  % v3.41: Skip if deferred-NEWPAGE already placed the figure.
+  \ifswarmwrap@placed\else
+    \noindent
+    \parshape \swarmwrap@pshape\relax
+      \ifswarmwrap@squeezed
+        \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@scaledbox\relax\hbox{\copy\swarmwrap@scaledbox}}}%
+        \wlog{swarmwrap next: SQUEEZE --- fh=\the\swarmwrap@fh, fw=\the\swarmwrap@fw, nl=\the\swarmwrap@nl}%
+      \else
+        \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+        \wlog{swarmwrap next: NORMAL --- tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
+      \fi
+  \fi
+  % v3.41: Update effective total with this figure's physical extent.
+  % The figure is at \pagetotal (zero-height smash), extending fh below.
+  % Track the max physical bottom across all figures on this page.
+  \dimen2=\pagetotal
+  \advance\dimen2 by \swarmwrap@fh
+  \ifdim\dimen2>\swarmwrap@eff@total
+    \global\swarmwrap@eff@total=\dimen2
+  \fi
 }%
 \else
 \newcommand{\swarmwrapnext}{%
