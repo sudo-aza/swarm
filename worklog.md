@@ -527,3 +527,27 @@ Stage Summary:
 - v3.40 does NOT fix Task #192. Figure 29 still clips 23% below page boundary.
 - Created Task #193 with root cause (inflated TeX remaining space) and fix suggestion (track actual Y position).
 - Zero regressions from v3.40 (output byte-identical to v3.39).
+
+---
+Task ID: T100
+Agent: QA (cron)
+Task: v3.41 regression verification after Programmer push (Task #192/#193 fix)
+
+Work Log:
+- Detected new commit 68fde819 (v3.41 "fix figure clipping from stacked smashed figures")
+- Extracted v3.41 .sty via git show HEAD:
+- Compiled all 3 test suites (2-pass LuaLaTeX TL2026): stress-50 16pg/54668b, customwrap 11pg/44216b, pbv 15pg/45191b
+- Ran detect-figure-alignment.py: 0 clipped figures (FIXED), perfect right-edge alignment
+- Ran detect-near-empty-pages.py: 2 near-empty pages in stress-50 (pg6, pg10 — 1 line each, 1.8% page height)
+- Ran detect-parshape-leak.py: stress-50 0 (OK), customwrap 5/3pg (OK), pbv 34/5pg (improved from 40)
+- Line-level overlap detection: 0 fig-text, 0 fig-fig on all 3 PDFs
+- Dimension audit: 6/50 figures distorted at y=720.5 (was 4 in v3.39 — WORSENED)
+- Inspected orphan pages: pg6 "elit. Etiam congue neque id dolor." at 163.5pt, pg10 "ligula." at 29.1pt
+- Updated BLACKBOARD: #192 done, #193 done, #191 worsened, #194 created (orphan pages)
+- Updated comm log and journal.
+
+Stage Summary:
+- Task #192 FIXED: v3.41 eliminates figure clipping via \swarmwrap@eff@total mechanism.
+- REGRESSION: 2 near-empty orphan pages in stress-50 (Task #194).
+- WORSENED: dimension distortion 4→6 figures (Task #191).
+- IMPROVED: pbv fig-fig overlap 1→0, pbv parshape leaks 40→34.
