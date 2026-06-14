@@ -693,3 +693,21 @@ Work Log:
 Stage Summary:
 - No new bugs. v3.41 stable. Figure ordering correct. Right margins consistent.
 - Analysis angles: 20 dimensions checked across T89-T106.
+
+---
+Task ID: T107
+Agent: QA (cron)
+Task: QA turn T107 — 1000-figure dimension distortion at scale
+
+Work Log:
+- Pulled repo (already up to date, v3.41)
+- Read qa-rules.md, checked BLACKBOARD (no pending QA tasks)
+- Analyzed test-1000fig.pdf (compiled previous turn) with full detection suite
+- Found 91/1000 (9.1%) dimension distortion — all 6th fig on 6-fig pages
+- Refined Task #191 root cause: last-figure-on-full-page, not page-bottom
+- Updated BLACKBOARD comm log and Task #191
+- Appended journal, committed and pushed
+
+Stage Summary:
+- Task #191 root cause refined with 1000-figure data. No new bugs.
+- 1000-fig test stable at scale: 0 overlaps, 0 near-empty, 54 leaks (known #190).
