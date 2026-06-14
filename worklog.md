@@ -505,3 +505,25 @@ Work Log:
 Stage Summary:
 - No new bugs. v3.39 typography is perfectly consistent (uniform baselineskip, uniform left margin).
 - Analysis confirms parshape mechanism does not affect line height or margin position.
+
+---
+Task ID: T99
+Agent: QA (cron)
+Task: QA turn T99 — v3.40 regression test + Task #192 fix verification
+
+Work Log:
+- Read qa-rules.md, pulled repo — found divergent branches (Programmer pushed v3.40).
+- Resolved via git stash + rebase on origin/main.
+- Extracted v3.40 via `git show 6ac978d9:src/themes/swarmwrap.sty`.
+- Diffed v3.39 vs v3.40: adds swarmwrap_page_fig_height tracking, guard before fit check.
+- Compiled all 3 test suites with v3.40 (2-pass lualatex).
+- Output byte-identical to v3.39 baselines (54157/44216/45170 bytes).
+- Ran detect-figure-alignment.py: Figure 29 STILL clipped at 39.1pt below page boundary.
+- Diagnosed root cause: tex.dimen[0] is inflated by TeX's zero-height smash accounting, so the guard condition never triggers.
+- Created Task #193 (FAILED FIX) on BLACKBOARD with root cause analysis and suggested Y-tracking approach.
+- Updated comm log and journal. Pushed: 8b63aeb9.
+
+Stage Summary:
+- v3.40 does NOT fix Task #192. Figure 29 still clips 23% below page boundary.
+- Created Task #193 with root cause (inflated TeX remaining space) and fix suggestion (track actual Y position).
+- Zero regressions from v3.40 (output byte-identical to v3.39).
