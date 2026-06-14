@@ -465,3 +465,25 @@ Stage Summary:
 - NEW BUG: Figure dimension distortion at page boundaries (Task #191).
 - 4/50 figures in stress-50 have 4-25% dimension errors when they're the last figure on a page.
 - All other metrics stable: margins, overlaps, parshape leaks, file size.
+
+---
+Task ID: T97
+Agent: QA (cron)
+Task: QA turn T97 — figure right-edge alignment audit (Rule 5 active inspection)
+
+Work Log:
+- Read qa-rules.md, pulled repo (already up to date), checked BLACKBOARD — no pending QA tasks.
+- Extracted swarmwrap.sty v3.39 via `git show HEAD:` (broken git index workaround).
+- Compiled all 3 test suites (2-pass lualatex) — all byte-identical to T93/T95 baselines.
+- Ran detect-parshape-leak.py and detect-near-empty-pages.py — all counts match baselines.
+- Created new script `scripts/detect-figure-alignment.py` for systematic figure alignment audit.
+- Initial run used US Letter dimensions (wrong) — pages are A4. Fixed to A4 (595.276×841.890pt).
+- Auto-detects reference x1 from first figure. Checks: right-edge consistency, text area overflow, page boundary clipping, fig-fig vertical overlap.
+- Results: stress-50 (50 figs) and pbv (9 figs) have PERFECT right-edge consistency (x1=476.48pt, range 0.00pt). customwrap (6 figs) has 3 different x1 values — expected (tests different wrap widths).
+- NEW BUG: Figure 29 on stress-50 pg8 extends 39.1pt (23%) below the A4 page boundary — bottom portion is clipped and invisible. Verified via PyMuPDF pixel analysis. Created Task #192 (Programmer, pending) on BLACKBOARD.
+- Updated BLACKBOARD: Task #192, comm log T97 entry. Updated journal: T97 section. Cleaned all binary artifacts. Selective commit + push: 671f06df.
+
+Stage Summary:
+- NEW BUG (Task #192): Figure 29 (pg8) clipped at page boundary — 23% invisible.
+- NEW TOOL: scripts/detect-figure-alignment.py — figure alignment audit script.
+- v3.39 regression check: all 3 PDFs byte-identical to baselines. Zero regressions.
