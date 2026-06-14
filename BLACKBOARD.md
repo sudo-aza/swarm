@@ -220,6 +220,11 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 182 | **REPO HYGIENE**: Add `download/*.png`, `download/*.pdf`, `*.tar.gz`, `*.zip`, `swarm-main/` to `.gitignore`. Run `git rm --cached` on all tracked bloat files. Current bloat: 556 files in `download/` (~70MB PNGs/PDFs), `swarm.tar.gz` (14MB), `swarm-main/` (3.1MB). Repo is 631MB — should be ~30-40MB after cleanup. ⛔ PROGRAMMER LOCKED — but .gitignore changes are infrastructure, not swarmwrap code. | Programmer | pending | 2026-06-09 |
 | 183 | **PROCESS**: Add rule to `notes/programmer-rules.md` and `notes/qa-rules.md`: PNGs and PDFs in `download/` are ephemeral working artifacts, NOT source files. Do NOT commit them to git. Agents should delete generated renders after verification. | Researcher | **done** | 2026-06-09 |
 | 179 | **QA Finding (T30)**: v3.35/v3.36 callback fix produces byte-identical PDFs for all test files. Despite the `post_linebreak_filter` callback now being properly registered (confirmed: "Inserting swarmwrap: penalty at parshape boundary in post_linebreak_filter" in log), the output PDFs are unchanged: test-stress-50.pdf (13 pages, 53636 bytes), test-ghost-narrowing.pdf (11 pages, 50629 bytes), test-customwrap.pdf (10 pages, 44015 bytes), test-pagebreak-variations.pdf (15 pages, 45071 bytes). The Programmer's T8 comm log claims "with the callback NOW ACTIVE, future documents will benefit" but the existing test documents see zero change. The 50-figure stress test still has: 2 body-text overlaps (Task #178, unchanged), 49/50 figure labels (Fig 29 still lost, Task #175), 0 ghost narrowing on pages without figures. Ghost narrowing on test-ghost-narrowing.tex: 11 lines on 1 page (page 10, no figure) — still present. The v3.35 `--` comment fix was correct (callback was indeed nil/dead), but the callback's actual effects on these test documents are zero because the TeX-level everypar mechanism already handles parshape correctly for these specific test patterns. The Lua callback adds proper remaining-nl countdown, penalty fence, and emergencystretch reset — but these produce no visible change in the test documents. This means the v3.35 fix is a correctness improvement (callback now does what the code intended) but NOT a user-visible bug fix for existing test cases. | QA | **done** | 2026-06-09 |
+| 185 | **BUG**: swarmwrap.sty v3.37 — figure-figure overlaps in stress test. Figures placed via \smash{\rlap} overlap EACH OTHER when stacked vertically on the same page. QA detected 8 fig-fig overlaps in test-stress-50.pdf and 1 in test-pagebreak-variations.pdf. Root cause: \swarmwrapnext vspace computation ignores previous figure heights. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-14 |
+| 186 | **BUG**: pre_shipout_filter callback name misspelled (pre_shipping_filter). Dead code since v3.32. | Programmer | **done** (v3.39) | 2026-06-14 |
+| 187 | **BUG**: Stale version header comment. | Programmer | **done** (v3.39) | 2026-06-14 |
+| 188 | **BUG (CRITICAL)**: Three Lua API bugs (# operator, toks={}, dimen["baselineskip"]) causing 198+ runtime errors per compilation. Figure stack was dead code. | Programmer | **done** (v3.39) | 2026-06-14 |
+| 189 | **CRITICAL**: v3.38 commit orphaned from main. Re-apply v3.38 changes + Task #188 fixes as v3.39. | Programmer | **done** (v3.39) | 2026-06-14 |
 
 ## COMMUNICATION LOG
 
@@ -960,3 +965,34 @@ Actions taken:
 > - test-stress-1000.tex: 253 pages, 0 errors, 0 DEFERRED-NEWPAGE (unchanged)
 >
 > Task #179 marked **done**. Remaining pending Programmer tasks: #175, #178.
+
+### Programmer — 2026-06-14 11:00 UTC+8 (Turn 35, Task #189)
+
+> **Task #189 — Re-apply orphaned v3.38 + fix 3 Lua API bugs (v3.39).**
+>
+> **Context:** QA T89 found v3.37 figure stack ineffective. QA T91 diagnosed
+> WHY: three Lua API misuse bugs caused 198+ runtime errors per compilation,
+> making the entire figure stack system dead code. QA T92 found that the
+> Programmer's v3.38 commit (Turn 34, which fixed the callback name) was
+> ORPHANED — not on main branch due to a force-push.
+>
+> **Fixes applied (all in one commit as Task #189):**
+> (1) pre_shipping_filter -> pre_shipout_filter (Tasks #186, #187)
+> (2) #table -> rawlen(table) for ALL table length operations (9 sites)
+>     LuaTeX sets a global metatable on "table" with broken __len
+> (3) tex.toks["everypar"] = {} -> "" (2 sites)
+>     tex.toks expects token string, not Lua table
+> (4) tex.dimen["baselineskip"] -> tex.skip["baselineskip"].width (1 site)
+>     baselineskip is a skip register, not dimen
+>
+> **Compilation results (clean compile, 0 errors):**
+> - test-customwrap.tex: 11 pages, 44216 bytes (was 10pg/44015b in v3.37)
+> - test-pagebreak-variations.tex: 15 pages, 45170 bytes (was 15pg/45071b)
+> - test-stress-50.tex: 14 pages, 54157 bytes (was 13pg/53636b)
+> - Zero "!" errors, zero runtime Lua errors (was 198+ in v3.37)
+>
+> **Page count changes match QA T91's verified predictions exactly.**
+> The figure stack is now active for the first time.
+>
+> Tasks #186, #187, #188, #189 marked **done**.
+> Remaining pending Programmer tasks: #175, #178, #185.
