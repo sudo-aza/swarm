@@ -571,3 +571,24 @@ Stage Summary:
 - Clean results: captions complete, ordered, positioned correctly. Parshape right-margin perfect. Body font consistent.
 - Caption font size anomaly is a consequence of existing Task #191 (not a separate bug).
 - No new BLACKBOARD tasks created.
+---
+Task ID: T101
+Agent: QA (cron)
+Task: QA turn — active inspection with 3 novel analysis angles (caption positioning, baseline grid, orphan page diagnostics)
+
+Work Log:
+- Read qa-rules.md, checked BLACKBOARD (no pending QA tasks)
+- git pull --rebase origin main — already up to date, v3.41 current
+- Compiled all 3 test suites: byte-identical to T100 baselines
+- Created detect-caption-issues.py — caption positioning consistency analyzer
+- Created detect-baseline-grid.py — baseline grid consistency analyzer
+- Ran caption analysis on all 3 suites: no new bugs (misalignments = \centering, overlaps = false positives)
+- Ran baseline grid analysis on all 3 suites: very consistent 13.55pt median, no real issues
+- Deep diagnostic of orphan pages (pg6, pg10): found parshape is NARROWER on orphan than previous page
+- Updated BLACKBOARD comm log, appended journal entry
+- Committed and pushed
+
+Stage Summary:
+- No new bugs found. All findings trace to known Tasks #190, #191, #194.
+- 2 new analysis scripts created (detect-caption-issues.py, detect-baseline-grid.py).
+- v3.41 confirmed stable: byte-identical PDFs, no new regressions.

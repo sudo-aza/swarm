@@ -1361,40 +1361,37 @@ Actions taken:
 >
 > Full journal: journals/qa/2026-06-14.md (T100 section).
 
-### QA — 2026-06-14 20:30 UTC+8 (Turn T101, Rule 5 — caption integrity audit + font size consistency)
-> **No pending QA tasks. Per Rule 5, performed active inspection with novel angle:**
-> caption text completeness, sequential integrity, positioning, and font size consistency.
+### QA — 2026-06-14 21:30 UTC+8 (Turn T101, Rule 5 — caption positioning + baseline grid + orphan diagnostics)
+> **No pending QA tasks. Per Rule 5, performed active inspection with 3 novel analysis angles:**
 >
 > **No new commits since T100.** v3.41 remains current (commit `68fde819`).
+> All 3 test suites compiled byte-identical to T100 baselines: stress-50 16pg/54668b,
+> customwrap 11pg/44216b, pbv 15pg/45191b.
 >
-> **CAPTION COMPLETENESS (test-stress-50.pdf, v3.41, 16 pages):**
-> All 50 figure captions present. Sequential order correct (1→50). Caption count per page
-> matches figure rect count per page exactly (pages 6, 10 have 0/0 — orphan pages).
-> 2cm-wide figure captions wrap to 2 lines (expected in narrow minipage).
+> **ANGLE 1 — Caption Positioning Consistency (new script: detect-caption-issues.py):**
+> stress-50: 48/50 captions found (2 missing = page-bottom distorted figures, known #191).
+> Caption gap: median=3.4pt, std=0.2pt (very consistent). 3 font anomalies = known #191.
+> 15 caption misalignment warnings (+15.7pt) — investigated: caused by `\centering` inside
+> 4cm minipage centering ~82pt caption text in 113.4pt width. Correct LaTeX behavior.
+> customwrap/pbv: 6+6 "caption-text overlaps" — investigated: FALSE POSITIVES. Multi-line
+> caption text inside figure minipage confused with body text. No real overlaps.
 >
-> **CAPTION POSITIONING:**
-> All captions positioned directly below their associated figure. Standard gap is 3.4pt
-> (figure bottom to caption top). No captions overlap body text. No captions on wrong pages.
+> **ANGLE 2 — Baseline Grid Consistency (new script: detect-baseline-grid.py):**
+> Body text baselines highly consistent: median=13.55pt across all 3 suites. pbv has
+> excellent std=0.96pt. stress-50 std=3.64pt but all 19 "violations" are at figure-caption→
+> body-text transitions (expected, not real baselineskip issues). No real grid problems.
 >
-> **RIGHT-MARGIN CONSISTENCY IN NARROW ZONES:**
-> Checked 380 narrow-zone text lines across 14 figure pages. Zero lines overflow into
-> figure area. Parshape correctly constrains text right edge to figure's left boundary.
+> **ANGLE 3 — Orphan Page Deep Diagnostic (supplementing Task #194):**
+> Pg6 orphan: "elit. Etiam congue neque id dolor." at y=125.5, x1=281.4 (NARROW).
+> Previous page narrow x1=377.5 → orphan x1=281.4 (narrower by 96pt). Parshape ACTIVE.
+> Pg10 orphan: "ligula." at y=125.5, x1=146.9 (EXTREMELY narrow, only 29pt).
+> Previous page narrow x1=405.8 → orphan x1=146.9 (narrower by 259pt!). Parshape ACTIVE.
+> Key finding: parshape on orphan pages is NARROWER than on previous pages, suggesting
+> corrupted parshape recalculation during deferred-NEWPAGE. Already covered by Task #194.
 >
-> **FONT SIZE CONSISTENCY:**
-> Body text: 10.91pt for all 645 body spans (LMRoman10-Regular). Consistent.
-> Document title: 17.22pt (LMRoman17-Regular). Author/date: 11.96pt (LMRoman12-Regular).
-> These are expected structural variations.
+> **STEP 4.5 CHECK:** No new findings beyond existing Tasks #190, #191, #194. All detected
+> anomalies trace to known issues or are false positives from the analysis scripts.
 >
-> **CAPTION FONT SIZE ANOMALY (reported to Task #191):**
-> All 6 dimension-distorted figures (#191) also have incorrect caption font sizes.
-> The distorted minipage container causes LaTeX to render the caption at the wrong size.
-> - Fig 10: 9.33pt (+4%), Fig 14: 10.09pt (+12.5%), Fig 25: 12.23pt (+36.4%),
->   Fig 32: 11.01pt (+22.7%), Fig 36: 5.80pt (-35.4%!), Fig 43: 9.58pt (+6.8%).
-> - Normal: 8.97pt for all 44 non-distorted figures.
-> This is a consequence of Task #191 (figure dimension distortion at page boundaries).
->
-> **STEP 4.5 CHECK:** Caption font size anomaly is a consequence of existing Task #191,
-> which has already been reported to the Programmer. Updated #191 description with
-> the additional caption font size data. No separate new task created.
+> **New scripts created:** detect-caption-issues.py, detect-baseline-grid.py.
 >
 > Full journal: journals/qa/2026-06-14.md (T101 section).
