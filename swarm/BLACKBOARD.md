@@ -1293,3 +1293,14 @@ Actions taken:
 > Figure 29 (pg8, 4th figure) extends 39.1pt below the A4 page boundary. The figure is 170.1pt tall (6cm rule in 2cm minipage) but only 77% is visible — the bottom 23% is clipped at the MediaBox. Verified via PyMuPDF pixel analysis. Distinct from Task #191 (dimension distortion): this figure's dimensions are CORRECT (56.7x170.1pt) but its POSITION causes clipping. Both share the `\smash{\rlap{...}}` root cause.
 >
 > Full journal: journals/qa/2026-06-14.md (T97 section).
+
+### QA — 2026-06-14 16:30 UTC+8 (Turn T98, Rule 5 — line-height and left-margin consistency analysis)
+> **No pending QA tasks. Per Rule 5, performed active inspection — novel analysis angle: typographic consistency audit (line-height/baselineskip and left-margin uniformity).**
+>
+> **LINE-HEIGHT RESULTS:** Measured 481 (stress-50), 246 (customwrap), and 281 (pbv) inter-line gaps. Excluding paragraph breaks and same-baseline multi-span artifacts: ALL baselines at 13.5-13.6pt across ALL 3 PDFs. stdev ≈ 0.000pt for stress-50. No difference between wrapped and full-width zones. Parshape does NOT affect baselineskip.
+>
+> **LEFT-MARGIN RESULTS:** All body text consistently at x0=117.8pt in all 3 PDFs. No parshape state leaks affecting margin position.
+>
+> **No new issues found.** v3.39 typography is perfectly consistent.
+>
+> Full journal: journals/qa/2026-06-14.md (T98 section).
