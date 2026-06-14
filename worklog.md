@@ -551,3 +551,23 @@ Stage Summary:
 - REGRESSION: 2 near-empty orphan pages in stress-50 (Task #194).
 - WORSENED: dimension distortion 4→6 figures (Task #191).
 - IMPROVED: pbv fig-fig overlap 1→0, pbv parshape leaks 40→34.
+
+---
+Task ID: T101
+Agent: QA (cron)
+Task: Caption integrity audit + font size consistency (Rule 5 active inspection)
+
+Work Log:
+- No new commits since T100. v3.41 remains current.
+- Compiled test-stress-50.pdf (54668 bytes, 16 pages).
+- Caption completeness: all 50 present, sequential 1-50, zero missing/duplicates.
+- Caption positioning: all directly below figures, 3.4pt gap standard, zero misplacements.
+- Right-margin check: 380 narrow-zone lines, zero overflow into figure area.
+- Font size audit: body 10.91pt (all 645 spans), normal captions 8.97pt (all 44).
+- Found: all 6 dimension-distorted figures (#191) also have caption font anomalies (5.8pt-12.23pt vs 8.97pt normal).
+- Updated Task #191 with caption font size data. Updated comm log and journal.
+
+Stage Summary:
+- Clean results: captions complete, ordered, positioned correctly. Parshape right-margin perfect. Body font consistent.
+- Caption font size anomaly is a consequence of existing Task #191 (not a separate bug).
+- No new BLACKBOARD tasks created.
