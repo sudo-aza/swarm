@@ -804,3 +804,23 @@ Stage Summary:
 - Task #190 refined: parshape leak is NOT correlated with figure position, it's systematic on every non-final figure page.
 - Task #196 confirmed: 100% last-on-page correlation for dimension distortion across all width groups.
 - v3.41 stable with no regressions.
+---
+Task ID: T113
+Agent: QA (cron)
+Task: QA turn T113 — compilation log analysis reclassifies Task #191/#196 as not-a-bug
+
+Work Log:
+- TeX Live OK (survived from T112). git pull up to date. No pending QA tasks.
+- Compiled stress-50 (16pg, 54668b, byte-identical to baseline).
+- Novel approach: parsed all 50 `swarmwrap next:` messages from compilation log.
+- Found 40 NORMAL + 6 SQUEEZE + 4 DEFERRED decisions.
+- Cross-referenced: ALL 6 "dimension-distorted" figures (Tasks #191/#196) are the 6 SQUEEZE cases. 100% correlation, zero exceptions.
+- SQUEEZE-FIT is an intentional v3.28 feature: `\resizebox{!}{<remaining-4pt>}` scales figures when they don't fit but have >= 40% height remaining.
+- Verified: text wrapping adapts correctly (14pt gap), 1000fig scaling is perfectly proportional (1.195x1.196).
+- Reclassified Task #191 and #196 as "done (not a bug)" on BLACKBOARD.
+- Remaining genuine bugs: #190 (parshape leak), #194 (orphan pages), #175 (caption clipping).
+- Committed and pushed: 2d4b8419.
+
+Stage Summary:
+- MAJOR FINDING: Tasks #191 and #196 are NOT bugs — they are the SQUEEZE-FIT feature working as designed.
+- v3.41 bug count reduced from 4 to 2 genuine bugs (#190, #194) plus 1 known limitation (#175).
