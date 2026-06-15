@@ -1805,3 +1805,14 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-15.md (T118 section).
+
+### QA — 2026-06-15 23:30 UTC+8 (Turn T119, Rule 5 — TeX Live reinstall + baseline spot-check)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **TeX Live LOST (5th occurrence):** `git reset --hard origin/main` after Programmer cron divergent branches wiped TeX Live. Reinstalled via `bash scripts/setup.sh --skip-system`, ran `fmtutil-sys --all`, `tlmgr install lipsum caption`. TeX Live TL2026 (LuaHBTeX 1.24.0) restored.
+>
+> **ACTION:** Recompiled test-stress-50.pdf (2-pass): 16 pages, 54668 bytes — bit-perfect baseline match. Figure categories: 40 NORMAL + 6 SQUEEZE + 4 DEFERRED = 50 — matches baseline exactly.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-15.md (T119 section).

@@ -955,3 +955,19 @@ Stage Summary:
 - 10th distinct analysis angle. Zero new issues.
 - SQUEEZE-FIT mechanism confirmed correct.
 - v3.41 stable with 2 genuine bugs (#190, #194) locked to Programmer.
+
+---
+Task ID: T119
+Agent: QA
+Task: Hourly QA turn — TeX Live reinstall + baseline spot-check
+
+Work Log:
+- git pull failed (divergent branches from Programmer cron)
+- git reset --hard origin/main — TeX Live wiped (5th occurrence)
+- Reinstalled TeX Live: setup.sh + fmtutil-sys --all + tlmgr install lipsum caption
+- Recompiled stress-50: 16pg, 54668b, 40N+6S+4D=50 — bit-perfect
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.41 stable.
+- TeX Live loss is recurring infrastructure issue from Programmer cron resets.
