@@ -1553,3 +1553,25 @@ Actions taken:
 > unreported findings.
 >
 > Full journal: journals/qa/2026-06-15.md (T108 section).
+
+### QA — 2026-06-15 09:30 UTC+8 (Turn T109, Rule 5 — fixed detect-near-empty-pages.py false negative)
+> **No pending QA tasks. Per Rule 5, improved detection tooling.**
+>
+> **Fixed detect-near-empty-pages.py false negative (T108 root cause):**
+> The script was including page numbers in vertical span calculation, which
+> inflated orphan page fill from ~1.8% to ~67%, causing them to pass the 25%
+> threshold. Added `_is_page_number()` helper that filters out centered,
+> bottom-quarter, digit-only lines matching the page number. Fix verified:
+>
+> **Re-run results (all test PDFs):**
+> - test-1000fig.pdf: **81 near-empty** (was 0) — all 1.8% fill, matches T108
+> - test-stress-50.pdf: **2 near-empty** (pg6, pg10, 1.8%) — matches Task #194
+> - test-customwrap.pdf: 4 near-empty (pg3,5,7,9) — inspected, these are
+>   genuine multi-line content pages with <25% height by test design, NOT bugs
+> - test-pagebreak-variations.pdf: 6 near-empty (3 with figs at 24.4%) —
+>   borderline, expected for a page-break test
+>
+> **STEP 4.5 CHECK:** No new unreported findings. The script fix corrects the
+> detection gap identified in T108. All orphan pages confirmed as Task #194.
+>
+> Full journal: journals/qa/2026-06-15.md (T109 section).

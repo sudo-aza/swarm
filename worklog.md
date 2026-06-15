@@ -734,3 +734,20 @@ Stage Summary:
 - Critical finding: Task #194 (orphan pages) is 40x worse at 1000-fig scale (81 vs 2 pages)
 - 30.8% of pages are wasted orphan pages — potential to shrink 263→~182 pages
 - detect-near-empty-pages.py has a false negative bug (includes page numbers in span)
+
+---
+Task ID: T109
+Agent: QA (cron)
+Task: QA turn T109 — fix detect-near-empty-pages.py false negative
+
+Work Log:
+- Pulled repo (up to date)
+- Read qa-rules.md, checked BLACKBOARD (no pending QA tasks)
+- Fixed detect-near-empty-pages.py: added `_is_page_number()` to exclude page numbers from vertical span
+- Fixed indentation error, verified script runs
+- Re-ran on all 4 test PDFs: 1000fig now correctly shows 81 near-empty (was 0), stress-50 unchanged (2), customwrap 4 (not bugs), pagebreak-variations 6 (expected)
+- Updated BLACKBOARD comm log and journal
+
+Stage Summary:
+- Detection script false negative fixed — near-empty pages now correctly detected across all PDFs
+- No new bugs found; all orphan pages confirmed as existing Task #194

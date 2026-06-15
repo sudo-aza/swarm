@@ -21,9 +21,37 @@ def get_figure_rects(page):
                 rects.append(r)
     return rects
 
+def _is_page_number(page, spans_text, bbox):
+    """Check if a text line is a page number (article class default footer).
+    Page numbers are: centered horizontally, in the bottom 1/5 of the page,
+    and contain only digits matching the page number.
+    """
+    page_w = page.rect.width
+    page_h = page.rect.height
+    page_num = str(int(page.number + 1))  # page.number is 0-indexed
+
+    # Must be in the bottom 25% of the page
+    if bbox[3] < page_h * 0.75:
+        return False
+
+    # Must be roughly centered (within 40pt of center)
+    line_cx = (bbox[0] + bbox[2]) / 2
+    if abs(line_cx - page_w / 2) > 40:
+        return False
+
+    # Text content must be just the page number (digits only)
+    text = spans_text.strip()
+    if text == page_num:
+        return True
+
+    return False
+
+
 def get_text_coverage(page):
     """Get the vertical coverage of text on a page.
     Returns (min_y, max_y, total_text_height, page_height, num_text_lines, num_figure_rects).
+    Excludes page numbers from the vertical span calculation to avoid false negatives
+    on orphan pages where the page number inflates the apparent fill ratio.
     """
     page_h = page.rect.height
     figure_rects = get_figure_rects(page)
@@ -31,6 +59,7 @@ def get_text_coverage(page):
     text_min_y = page_h
     text_max_y = 0
     num_lines = 0
+    num_pn_skipped = 0
 
     blocks = page.get_text("dict")["blocks"]
     for block in blocks:
@@ -40,10 +69,19 @@ def get_text_coverage(page):
             bbox = line["bbox"]
             line_top = bbox[1]
             line_bottom = bbox[3]
-            if line_bottom > line_top:  # valid bbox
-                text_min_y = min(text_min_y, line_top)
-                text_max_y = max(text_max_y, line_bottom)
-                num_lines += 1
+            if line_bottom <= line_top:  # invalid bbox
+                continue
+
+            # Collect spans text for page number detection
+            spans_text = " ".join(s["text"] for s in line["spans"])
+
+            if _is_page_number(page, spans_text, bbox):
+                num_pn_skipped += 1
+                continue
+
+            text_min_y = min(text_min_y, line_top)
+            text_max_y = max(text_max_y, line_bottom)
+            num_lines += 1
 
     if num_lines == 0:
         return (None, None, 0, page_h, 0, len(figure_rects))
