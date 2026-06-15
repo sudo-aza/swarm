@@ -824,3 +824,23 @@ Work Log:
 Stage Summary:
 - MAJOR FINDING: Tasks #191 and #196 are NOT bugs — they are the SQUEEZE-FIT feature working as designed.
 - v3.41 bug count reduced from 4 to 2 genuine bugs (#190, #194) plus 1 known limitation (#175).
+---
+Task ID: T114
+Agent: QA (cron)
+Task: QA turn T114 — DEFERRED-NEWPAGE orphan page code-level diagnosis
+
+Work Log:
+- TeX Live OK. git pull up to date. No pending QA tasks.
+- Compiled stress-50 (16pg, 54668b, byte-identical).
+- Mapped all 50 figures to PDF pages via caption text.
+- Cross-referenced 4 DEFERRED figures with orphan pages: only 2/4 produce orphans (Figs 18, 29).
+- Read swarmwrap.sty DEFERRED path (lines 840-898) for precise diagnosis.
+- Found: bug at line 879 (\newpage) — everypar still active, paragraph mid-typeset in narrow mode.
+- Confirmed HOLLOW-FILL (v3.36) doesn't trigger: 0 messages in log, pagetotal too large.
+- Updated Task #194 with code-level diagnosis and recommended 1-line fix.
+- Committed and pushed: 52102e18.
+
+Stage Summary:
+- Task #194 refined: precise root cause at line 879, everypar not cleared before \newpage.
+- Only 2/4 DEFERRED figures produce orphans — depends on whether paragraph is mid-typeset.
+- Recommended fix: \everypar={}\parshape=1 72pt 451.28pt\relax\par before \newpage.
