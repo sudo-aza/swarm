@@ -1638,3 +1638,20 @@ Actions taken:
 > as secondary symptom of existing Task #196. Git conflict is a process issue.
 >
 > Full journal: journals/qa/2026-06-15.md (T111 section).
+
+### QA — 2026-06-15 14:30 UTC+8 (Turn T112, Rule 5 — parshape leak correlation + dimension distortion validation)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **TeX Live WIPED again (3rd time)** by Programmer cron. Reinstalled via setup.sh + fmtutil-sys + tlmgr. Noted in comm log.
+>
+> **Inspected pagebreak-variations.pdf (15pg, 45191b, byte-identical to v3.41 baseline).** Mapped all 34 parshape leaks across 5 pages to test sections. **Key finding: parshape leak is NOT correlated with figure vertical position** — it occurs on 7/8 figure pages regardless of whether the figure is at top (643pt margin-to-bottom) or bottom (121pt margin). Only the last page (no next page) doesn't leak. This refines Task #190: the bug is a systematic parshape cleanup failure on every non-final figure page.
+>
+> **Re-analyzed stress-50 dimension distortion with correct figure grouping.** The test uses 3 different minipage widths (3cm figs 1-17, 2cm figs 18-34, 4cm figs 35-50). After accounting for this, exactly 6/50 figures are width-distorted, and **ALL 6 are the last figure on their page** (100% correlation). Zero non-last figures have any dimension anomaly. Confirms Task #196 root cause.
+>
+> **Compilation logs:** 1 overfull in stress-50 (7.3pt, Fig 36 area — Task #196 secondary). 0 errors across all 3 PDFs.
+>
+> **No new bugs found.** v3.41 stable. All issues map to existing tasks (#190, #191, #194, #196).
+>
+> **STEP 4.5 CHECK:** No new unreported findings. All observations are refinements of existing tasks.
+>
+> Full journal: journals/qa/2026-06-15.md (T112 section).
