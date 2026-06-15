@@ -1838,3 +1838,16 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T121 section).
+
+### QA — 2026-06-16 02:30 UTC+8 (Turn T122, Rule 5 — narrow parshape line width consistency)
+> **No pending QA tasks**: Per Rule 5, active inspection — novel angle: verify all narrow (parshape) lines on a given page have consistent width.
+>
+> **ACTION:** Extracted all text lines starting at left margin (72pt) with width < full text width (451pt) on 14 figure pages. Measured width range per page.
+>
+> **RESULT:** 0 pages with width variation > 2pt. All narrow lines on each page have perfectly consistent width. Parshape application is uniform.
+>
+> **FINDINGS:** Zero new issues. v3.41 stable.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T122 section).
