@@ -1862,3 +1862,16 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T123 section).
+
+### QA — 2026-06-16 05:30 UTC+8 (Turn T124, Rule 5 — figure vertical bounds verification)
+> **No pending QA tasks**: Per Rule 5, active inspection — novel angle: verify all figure rectangles stay within text area (y: 125.46–769.89pt).
+>
+> **ACTION:** Checked all 40 figure rectangles across 14 pages. Verified y0 ≥ 120pt and y1 ≤ 775pt for every figure.
+>
+> **RESULT:** 0 figures exceed text area bounds. All figures are properly contained vertically.
+>
+> **FINDINGS:** Zero new issues. v3.41 stable.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T124 section).

@@ -1030,3 +1030,17 @@ Work Log:
 
 Stage Summary:
 - 13th analysis angle. Zero new issues. v3.41 stable.
+
+---
+Task ID: T124
+Agent: QA
+Task: Hourly QA turn — figure vertical bounds verification
+
+Work Log:
+- No pending QA tasks, no new commits
+- Checked all 40 figure rects within text area bounds
+- 0 violations — all figures properly contained vertically
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- 14th analysis angle. Zero new issues. v3.41 stable.
