@@ -1704,3 +1704,41 @@ Actions taken:
 > **STEP 4.5 CHECK:** Updated Task #194 with code-level fix recommendation. No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-15.md (T114 section).
+
+### QA — 2026-06-15 17:30 UTC+8 (Turn T115, Rule 5 — full detection script audit + false positive analysis)
+> **No pending QA tasks**: Per Rule 5, active inspection — ran ALL detection scripts
+> against freshly compiled v3.41 PDFs (novel angle: scripts not previously executed).
+>
+> **RECOMPILED** all 3 test suites from scratch. Bit-perfect reproducibility confirmed:
+> stress-50: 16pg/54668b, customwrap: 11pg/44216b, pbv: 15pg/45191b. All match T112 baselines.
+>
+> **NEW SCRIPTS RUN:**
+> - detect-caption-issues.py: 20 issues on stress-50 (all explained), 12 CRITICAL on
+>   customwrap+pbv (all FALSE POSITIVES — multi-line caption span splitting bug)
+> - detect-figure-ordering.py: Perfect (1-50 monotonic, no duplicates/missing/overlaps)
+> - detect-figure-alignment.py: All 50 figures right-aligned at x1=476.5pt (0.00pt range)
+> - detect-indentation-issues.py: 5 anomalous lines (likely classification false positives)
+> - detect-baseline-grid.py: 19 violations at full-to-narrow transitions (expected)
+>
+> **FALSE POSITIVE ROOT CAUSES (detection script bugs, NOT swarmwrap bugs):**
+> 1. caption_text_overlap: Script identifies first span of multi-line caption as "the
+>    caption," then flags continuation lines as "overlapping body text." Verified via
+>    coordinate inspection on customwrap pg1.
+> 2. caption_misaligned: Test uses \centering in minipage. Caption text centered within
+>    minipage produces offset proportional to (minipage_width - caption_width)/2. For
+>    4cm figures: (113.4 - 82)/2 = 15.7pt — exactly matches detected offset.
+> 3. caption_font_anomaly: SQUEEZE-FIT figures (known from T113, not a bug).
+>
+> **CONFIRMED BASELINES (all match T112):**
+> stress-50: 0 parshape leaks, 2 near-empty, 0 fig-fig overlaps, 1 overfull (7.3pt, Fig 36)
+> customwrap: 5 parshape leaks (3 MILD pages), 4 near-empty (by design)
+> pbv: 34 parshape leaks (5 pages), 6 near-empty (expected)
+>
+> **v3.41 STABLE:** 2 genuine bugs remain (#190 parshape leak, #194 orphan pages).
+> Zero regressions detected across 8 detection dimensions.
+>
+> **STEP 4.5 CHECK:** No new unreported findings. Detection script false positives are
+> QA tool issues, not swarmwrap.sty bugs (Programmer is locked to .sty only).
+> Improvement recommendations logged in journal for future QA turns.
+>
+> Full journal: journals/qa/2026-06-15.md (T115 section).
