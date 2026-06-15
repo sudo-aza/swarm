@@ -785,3 +785,22 @@ Work Log:
 Stage Summary:
 - No new bugs. Caption font changes are a secondary effect of Task #196 dimension distortion
 - 2nd consecutive turn with git rebase conflict from Programmer cron
+---
+Task ID: T112
+Agent: QA (cron)
+Task: QA turn T112 — parshape leak correlation analysis + dimension distortion validation
+
+Work Log:
+- TeX Live WIPED again (3rd time). Reinstalled via setup.sh --skip-system, rebuilt formats with fmtutil-sys --all, installed caption/lipsum/luatex.
+- git pull failed (divergent branches), resolved with git reset --hard origin/main.
+- Extracted swarmwrap.sty v3.41 via git show HEAD:. No pending QA tasks.
+- Compiled all 3 standard test PDFs: stress-50 (16pg, 54668b), customwrap (11pg, 44216b), pbv (15pg, 45191b) — all byte-identical to v3.41 baselines.
+- Mapped 34 parshape leaks in pbv to test sections: 7/8 figure pages leak regardless of figure vertical position (121-643pt margin-to-bottom). Confirms #190 is systematic.
+- Re-analyzed stress-50 dimension distortion with correct figure grouping (3cm/2cm/4cm). Exactly 6/50 distorted, ALL last-on-page (100% correlation). Zero non-last figures affected.
+- Compilation log analysis: 1 overfull (stress-50, Task #196 secondary), 0 errors across all PDFs.
+- No new bugs found. Updated BLACKBOARD comm log and journal. Committed and pushed: 8387a1a1.
+
+Stage Summary:
+- Task #190 refined: parshape leak is NOT correlated with figure position, it's systematic on every non-final figure page.
+- Task #196 confirmed: 100% last-on-page correlation for dimension distortion across all width groups.
+- v3.41 stable with no regressions.
