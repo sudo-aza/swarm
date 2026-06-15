@@ -1792,3 +1792,16 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-15.md (T117 section).
+
+### QA — 2026-06-15 22:30 UTC+8 (Turn T118, Rule 5 — SQUEEZE-FIT aspect ratio verification)
+> **No pending QA tasks**: Per Rule 5, active inspection — novel angle: verify SQUEEZE-FIT preserves aspect ratio correctly.
+>
+> **ACTION:** Extracted SQUEEZE figure dimensions from compilation log (fw, fh for all 6 SQUEEZE figures: 10, 14, 25, 32, 36, 43). Initially compared fw/(fh-4pt) against source rule dimensions and found significant AR mismatches (0.09-0.44). Investigated root cause.
+>
+> **ROOT CAUSE (not a bug):** `\swarmwrap@box` contains the full minipage (`\rule` + caption text). `\resizebox{!}{<height>}` scales the entire box preserving ITS aspect ratio, not just the `\rule`. The caption adds height without adding width, shifting the box's aspect ratio relative to the rule alone. The `\resizebox{!}{H}` command from the graphicx package is a standard LaTeX mechanism that mathematically guarantees aspect ratio preservation of whatever box it operates on.
+>
+> **FINDINGS:** SQUEEZE-FIT aspect ratio handling is CORRECT. Zero new issues.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-15.md (T118 section).

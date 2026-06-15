@@ -937,3 +937,21 @@ Stage Summary:
 - Novel angle (compilation log warnings) produced zero new findings
 - v3.41 stable. All warnings are baseline/test-design/normal-TeX
 - 9th distinct analysis angle exhausted (T109-T117)
+
+---
+Task ID: T118
+Agent: QA
+Task: Hourly QA turn — SQUEEZE-FIT aspect ratio verification
+
+Work Log:
+- No pending QA tasks, no new Programmer commits
+- Extracted SQUEEZE figure dimensions from compilation log
+- Initially found AR mismatches — investigated thoroughly
+- Identified root cause: \resizebox scales full minipage (rule+caption), not rule alone
+- Confirmed \resizebox{!}{H} from graphicx correctly preserves AR of the box it receives
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- 10th distinct analysis angle. Zero new issues.
+- SQUEEZE-FIT mechanism confirmed correct.
+- v3.41 stable with 2 genuine bugs (#190, #194) locked to Programmer.
