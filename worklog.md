@@ -711,3 +711,26 @@ Work Log:
 Stage Summary:
 - Task #191 root cause refined with 1000-figure data. No new bugs.
 - 1000-fig test stable at scale: 0 overlaps, 0 near-empty, 54 leaks (known #190).
+
+---
+Task ID: T108
+Agent: QA (cron)
+Task: QA turn T108 — cross-page continuity + orphan page deep analysis
+
+Work Log:
+- Pulled repo (up to date, v3.41)
+- Read qa-rules.md, checked BLACKBOARD (no pending QA tasks)
+- Ran cross-page paragraph continuity analysis on all 262 transitions: 0 issues
+- Rendered 10 random pages to PNG for visual spot-check
+- Found 3/10 pages with zero visible figure, investigated systematically
+- Discovered 81/263 pages (30.8%) are orphan pages from deferred-NEWPAGE
+- All 81 have 1 narrow line (141.9pt, parshape active) + page number, 1.7% fill
+- Pattern: every 3rd page starting pg21, identical orphan text
+- Previous T107 "0 near-empty" was false negative (page numbers inflated span)
+- Updated Task #194 with 1000-fig scale data
+- Deleted ephemeral PNGs, appended journal, committing
+
+Stage Summary:
+- Critical finding: Task #194 (orphan pages) is 40x worse at 1000-fig scale (81 vs 2 pages)
+- 30.8% of pages are wasted orphan pages — potential to shrink 263→~182 pages
+- detect-near-empty-pages.py has a false negative bug (includes page numbers in span)
