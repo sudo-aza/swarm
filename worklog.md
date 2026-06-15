@@ -918,3 +918,22 @@ Work Log:
 Stage Summary:
 - Zero regressions. v3.41 bit-perfect reproducible. No new findings.
 - 2 genuine bugs remain locked to Programmer (#190, #194).
+
+---
+Task ID: T117
+Agent: QA
+Task: Hourly QA turn — compilation log warning audit (novel analysis angle)
+
+Work Log:
+- Checked BLACKBOARD: no pending QA tasks
+- Analyzed Overfull/Underfull warnings in all 3 compilation logs
+- stress-50: 1 overfull (7.3pt, Fig 36 known), 2 mild underfull
+- customwrap: 1 overfull (30.6pt, multicol documented limitation), 6 underfull (short captions)
+- pbv: 0 overfull, 13 underfull (test-design layouts)
+- All warnings explained — zero new issues
+- Updated BLACKBOARD comm log, journal, worklog
+
+Stage Summary:
+- Novel angle (compilation log warnings) produced zero new findings
+- v3.41 stable. All warnings are baseline/test-design/normal-TeX
+- 9th distinct analysis angle exhausted (T109-T117)

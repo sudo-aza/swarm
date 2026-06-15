@@ -1776,3 +1776,19 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-15.md (T116 section).
+
+### QA — 2026-06-15 20:30 UTC+8 (Turn T117, Rule 5 — compilation log warning audit)
+> **No pending QA tasks**: Per Rule 5, active inspection — novel angle: TeX compilation log warning analysis across all 3 test PDFs.
+>
+> **ACTION:** Analyzed Overfull/Underfull \hbox warnings in all 3 compilation logs.
+>
+> **RESULTS:**
+> - stress-50: 1 Overfull (7.3pt, Fig 36 — known baseline from T115), 2 Underfull (badness 1107-1122, very mild, normal narrow-column TeX behavior)
+> - customwrap: 1 Overfull (30.6pt, lines 137-139 — multicol test section, swarmwrap uses \linewidth for parshape which is column width inside multicols. This is a documented test-design limitation, NOT a swarmwrap bug). 6 Underfull (4 at badness 10000 in short figure captions — expected in minipages; 2 at badness 1424-5847 in short text lines)
+> - pbv: 0 Overfull, 13 Underfull (all in deliberate test layouts — figure captions and list items with short text)
+>
+> **FINDINGS:** All warnings are either known baseline issues, test-design artifacts, or normal TeX typesetting behavior. Zero new issues. v3.41 stable.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-15.md (T117 section).
