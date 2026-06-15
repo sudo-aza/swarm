@@ -844,3 +844,33 @@ Stage Summary:
 - Task #194 refined: precise root cause at line 879, everypar not cleared before \newpage.
 - Only 2/4 DEFERRED figures produce orphans — depends on whether paragraph is mid-typeset.
 - Recommended fix: \everypar={}\parshape=1 72pt 451.28pt\relax\par before \newpage.
+---
+Task ID: T115
+Agent: QA
+Task: Automated QA turn — full detection script audit + false positive analysis
+
+Work Log:
+- Checked date (2026-06-15 09:30 UTC), read qa-rules.md, git pull (already up to date)
+- Extracted swarmwrap.sty from git HEAD (commit 68fde819, v3.41)
+- Compiled all 3 test suites (stress-50, customwrap, pbv) — 2-pass LuaLaTeX
+- Bit-perfect reproducibility confirmed: all match T112 baselines exactly
+- Ran 5 detection scripts not previously executed against v3.41:
+  - detect-caption-issues.py (all 3 PDFs)
+  - detect-figure-ordering.py (stress-50)
+  - detect-figure-alignment.py (stress-50)
+  - detect-indentation-issues.py (stress-50)
+  - detect-baseline-grid.py (stress-50)
+- Investigated 12 CRITICAL caption_text_overlap findings — all false positives (multi-line caption span splitting bug in detection script)
+- Investigated 17 caption_misaligned findings — all false positives (\centering in minipage)
+- Confirmed 3 caption_font_anomaly are SQUEEZE-FIT (known from T113)
+- Confirmed zero regressions across all detection dimensions
+- Cleaned up compiled PDFs per Rule 7
+- Appended journal entry to journals/qa/2026-06-15.md
+- Appended comm log to BLACKBOARD.md
+- Selective commit + push (BLACKBOARD.md + journal only, no binaries)
+
+Stage Summary:
+- v3.41 remains stable with 2 known genuine bugs (#190, #194)
+- 12 CRITICAL false positives traced to 2 bugs in detect-caption-issues.py
+- 8 detection dimensions all confirm zero regressions
+- Commit: 5477c969
