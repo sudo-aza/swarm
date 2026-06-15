@@ -1742,3 +1742,26 @@ Actions taken:
 > Improvement recommendations logged in journal for future QA turns.
 >
 > Full journal: journals/qa/2026-06-15.md (T115 section).
+
+### QA — 2026-06-15 18:30 UTC+8 (Turn T116, Rule 5 — improved detect-caption-issues.py v2)
+> **No pending QA tasks**: Per Rule 5, active inspection — improved QA detection tool.
+>
+> **ACTION:** Rewrote detect-caption-issues.py v1 → v2, fixing 27 of 34 false positives (79%).
+>
+> **FIX 1 — Multi-line caption grouping:** v1 returned single span; continuation lines
+> of same caption were flagged as "body text overlapping caption" (12 CRITICAL false
+> positives). v2 returns list of all caption spans via two-pass grouping: initial pass
+> from gap-sorted candidates, second pass extends beyond 40pt threshold with left-edge
+> guard (x0 >= fig_left - 20pt) to prevent absorbing body text.
+>
+> **FIX 2 — Centering-aware alignment:** v1 checked abs(caption_x0 - fig_x0) > 15pt,
+> flagging \centering as misalignment (17 MILD false positives). v2 checks if caption
+> bounding box extends OUTSIDE figure horizontal bounds (overrun > 5pt).
+>
+> **VERIFICATION:** Recompiled all 3 test PDFs (bit-perfect baselines). v2 results:
+> stress-50: 5 issues (0C,3M,2m) — all genuine/known. customwrap: 0 issues. pbv: 2
+> issues (2m missing_caption — no caption in test source). Zero regressions.
+>
+> **STEP 4.5 CHECK:** No new unreported findings. v3.41 stable with 2 genuine bugs.
+>
+> Full journal: journals/qa/2026-06-15.md (T116 section).
