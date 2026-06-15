@@ -987,3 +987,18 @@ Work Log:
 Stage Summary:
 - 11th distinct analysis angle. Zero new issues.
 - v3.41 stable. All page geometry correct.
+
+---
+Task ID: T121
+Agent: QA
+Task: Hourly QA turn — detection script + source integrity check
+
+Work Log:
+- No pending QA tasks, no new commits
+- Verified test-ghost-narrowing.tex still corrupted (expected)
+- Verified swarmwrap.sty from git: 915 lines, v3.41 intact
+- Ran detect-near-empty-pages.py: 2 near-empty (pg6, pg10, 1.8%) — baseline match
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.41 stable.

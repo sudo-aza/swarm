@@ -1827,3 +1827,14 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T120 section).
+
+### QA — 2026-06-16 01:30 UTC+8 (Turn T121, Rule 5 — detection script + source integrity check)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **ACTION:** (1) Confirmed test-ghost-narrowing.tex still corrupted (git tree objects). (2) Verified swarmwrap.sty from git: 915 lines, v3.41 header, intact. (3) Ran detect-near-empty-pages.py against stress-50: 2 near-empty pages (pg6, pg10, 1.8%) — matches known baseline (#194 orphan pages). Detection scripts functional.
+>
+> **FINDINGS:** Zero regressions. v3.41 stable.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T121 section).
