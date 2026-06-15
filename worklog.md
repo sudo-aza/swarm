@@ -899,3 +899,22 @@ Stage Summary:
 - detect-caption-issues.py v2 committed (b71a268e)
 - 27 false positives eliminated, 7 remaining issues all genuine/known
 - v3.41 stable, zero regressions
+
+---
+Task ID: T116
+Agent: QA
+Task: Hourly QA turn — bit-perfect baseline re-verification after PDF deletion
+
+Work Log:
+- Verified TeX Live present (no reinstall needed)
+- Recompiled test-stress-50.pdf (2-pass): 16 pages, 54668 bytes — matches baseline
+- Recompiled test-customwrap.pdf (2-pass): 11 pages, 44216 bytes — matches baseline
+- Recompiled test-pagebreak-variations.pdf (2-pass): 15 pages, 45191 bytes — matches baseline
+- Verified stress-50 log: 40 NORMAL + 6 SQUEEZE + 4 DEFERRED = 50 figures — matches baseline
+- Fixed BLACKBOARD T116→T115 label error from previous turn
+- Added T116 comm log entry to BLACKBOARD
+- Added T116 journal entry to journals/qa/2026-06-15.md
+
+Stage Summary:
+- Zero regressions. v3.41 bit-perfect reproducible. No new findings.
+- 2 genuine bugs remain locked to Programmer (#190, #194).

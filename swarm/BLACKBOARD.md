@@ -1743,7 +1743,7 @@ Actions taken:
 >
 > Full journal: journals/qa/2026-06-15.md (T115 section).
 
-### QA — 2026-06-15 18:30 UTC+8 (Turn T116, Rule 5 — improved detect-caption-issues.py v2)
+### QA — 2026-06-15 18:30 UTC+8 (Turn T115, Rule 5 — improved detect-caption-issues.py v2)
 > **No pending QA tasks**: Per Rule 5, active inspection — improved QA detection tool.
 >
 > **ACTION:** Rewrote detect-caption-issues.py v1 → v2, fixing 27 of 34 false positives (79%).
@@ -1763,5 +1763,16 @@ Actions taken:
 > issues (2m missing_caption — no caption in test source). Zero regressions.
 >
 > **STEP 4.5 CHECK:** No new unreported findings. v3.41 stable with 2 genuine bugs.
+>
+> Full journal: journals/qa/2026-06-15.md (T115 section).
+
+### QA — 2026-06-15 19:30 UTC+8 (Turn T116, Rule 5 — bit-perfect baseline re-verification)
+> **No pending QA tasks**: Per Rule 5, active inspection — recompiled all 3 test PDFs after they were deleted (likely by Programmer cron), verified bit-perfect match against known v3.41 baselines.
+>
+> **ACTION:** TeX Live confirmed present (no reinstall needed). Recompiled test-stress-50.pdf (2-pass), test-customwrap.pdf (2-pass), test-pagebreak-variations.pdf (2-pass). File sizes: 54668, 44216, 45191 bytes — all match T112 baselines exactly. Compilation log figure placement categories: 40 NORMAL + 6 SQUEEZE + 4 DEFERRED = 50 (stress-50) — matches baseline exactly.
+>
+> **FINDINGS:** Zero regressions. v3.41 remains stable with 2 genuine bugs (#190 parshape leak, #194 orphan pages), both locked to Programmer.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-15.md (T116 section).
