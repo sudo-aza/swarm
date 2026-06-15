@@ -971,3 +971,19 @@ Work Log:
 Stage Summary:
 - Zero regressions. v3.41 stable.
 - TeX Live loss is recurring infrastructure issue from Programmer cron resets.
+
+---
+Task ID: T120
+Agent: QA
+Task: Hourly QA turn — page geometry verification
+
+Work Log:
+- No pending QA tasks, no new Programmer commits
+- TeX Live confirmed present
+- Page bottom margin analysis: all content within text area
+- Figure right-edge check: all at x1=476.48pt (confirms T115)
+- Updated BLACKBOARD, journal (new date file), worklog
+
+Stage Summary:
+- 11th distinct analysis angle. Zero new issues.
+- v3.41 stable. All page geometry correct.

@@ -1816,3 +1816,14 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-15.md (T119 section).
+
+### QA — 2026-06-16 00:30 UTC+8 (Turn T120, Rule 5 — page bottom margin + figure right-edge check)
+> **No pending QA tasks**: Per Rule 5, active inspection — novel angle: page geometry verification.
+>
+> **ACTION:** (1) Checked page bottom margins across all 16 pages — all content ends well within text area (figures at 648-720pt, text area bottom at 769.89pt). (2) Verified figure right-edge alignment — all figures have x1=476.48pt (consistent with T115 finding of 476.5pt ±0.00pt range). The ~46.8pt offset from page edge is the standard text area inset, not a misalignment.
+>
+> **FINDINGS:** Zero new issues. v3.41 stable.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T120 section).
