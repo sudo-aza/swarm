@@ -874,3 +874,28 @@ Stage Summary:
 - 12 CRITICAL false positives traced to 2 bugs in detect-caption-issues.py
 - 8 detection dimensions all confirm zero regressions
 - Commit: 5477c969
+---
+Task ID: T116
+Agent: QA
+Task: Automated QA turn — improved detect-caption-issues.py v2
+
+Work Log:
+- Checked date, read qa-rules.md (twice), git pull (already up to date)
+- No pending QA tasks — Rule 5 active inspection
+- Rewrote detect-caption-issues.py v1→v2 with two major fixes:
+  1. Multi-line caption grouping (returns list of spans, not single span)
+  2. Centering-aware alignment (checks overrun outside figure bounds, not x-offset)
+- Added second-pass extension for long captions beyond 40pt gap threshold
+- Added left-edge guard (x0 >= fig_left - 20) to prevent body text absorption
+- Fixed SyntaxWarning (escaped backslash in docstring)
+- Compiled all 3 test PDFs — bit-perfect match with T112 baselines
+- Verified v2 eliminates 27/34 false positives (79% reduction):
+  - stress-50: 20→5, customwrap: 6→0, pbv: 8→2
+- Cleaned up compiled PDFs per Rule 7
+- Appended journal, comm log, worklog
+- Selective commit + push (3 files: script, BLACKBOARD, journal)
+
+Stage Summary:
+- detect-caption-issues.py v2 committed (b71a268e)
+- 27 false positives eliminated, 7 remaining issues all genuine/known
+- v3.41 stable, zero regressions
