@@ -1016,3 +1016,17 @@ Work Log:
 
 Stage Summary:
 - 12th distinct analysis angle. Zero new issues.
+
+---
+Task ID: T123
+Agent: QA
+Task: Hourly QA turn — first-line baseline consistency
+
+Work Log:
+- No pending QA tasks, no new commits
+- Measured first text line y0 on all 16 pages
+- 12/14 body pages at exactly 125.46pt, 2 orphan pages same, DEFERRED pages start with figures
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- 13th analysis angle. Zero new issues. v3.41 stable.

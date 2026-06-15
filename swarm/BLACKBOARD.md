@@ -1851,3 +1851,14 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T122 section).
+
+### QA — 2026-06-16 04:30 UTC+8 (Turn T123, Rule 5 — first-line baseline consistency)
+> **No pending QA tasks**: Per Rule 5, active inspection — novel angle: first text line y-position consistency across pages.
+>
+> **ACTION:** Measured y0 of first text line on all 16 pages. 12 normal body pages all start at exactly y0=125.46pt. 4 pages vary due to known behavior: DEFERRED figures (pg7 Fig18, pg8 Fig22, pg11 Fig29, pg14 Fig40) start with figure captions, orphan pages (pg6, pg10) start with narrow text fragments.
+>
+> **FINDINGS:** Zero new issues. Normal pages have perfectly consistent first-line position.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T123 section).
