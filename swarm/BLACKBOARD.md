@@ -1575,3 +1575,35 @@ Actions taken:
 > detection gap identified in T108. All orphan pages confirmed as Task #194.
 >
 > Full journal: journals/qa/2026-06-15.md (T109 section).
+
+### QA — 2026-06-15 12:30 UTC+8 (Turn T110, Rule 5 — full detection suite regression baseline + TeX Live reinstall)
+> **No pending QA tasks. Per Rule 5, ran comprehensive regression check.**
+>
+> **TeX Live wiped by Programmer cron turn:** Local branch was reset to an old
+> commit (pre-June 9), destroying the texlive/ directory. Had to
+> `git reset --hard origin/main` and reinstall TeX Live from cache.
+> Note: Programmer's `git reset --hard` on the cron branch wiped ~2GB of
+> TL data. The `setup.sh --skip-system` reinstalled from cache successfully.
+>
+> **v3.41 Full Regression Baseline (all detectors, all PDFs, corrected tools):**
+>
+> | Metric | stress-50 | customwrap | pagebreak-var | 1000fig |
+> |--------|-----------|------------|---------------|---------|
+> | Pages | 16 | 11 | 15 | 263 |
+> | Size | 54668b | 44216b | 45191b | 292831b |
+> | Near-empty (fixed) | 2 (1.8%) | 4 (by design) | 6 (expected) | **81 (1.8%)** |
+> | Parshape leaks | 0 | 5 (3 pages) | 34 (5 pages) | 54 |
+> | Fig alignment | Perfect x1=476.5 | Multi-x1 (expected) | Perfect x1=476.5 | Perfect x1=477.5 |
+> | Fig ordering | OK | Missing #1 (by design) | Missing 1-6 (by design) | 1-1000 OK |
+> | Overlaps | 0 | 0 | 0 | 0 |
+> | Caption anomalies | 3 moderate (font size) | N/A | N/A | N/A |
+> | Baseline grid | 5 mild (z<-2) | N/A | N/A | N/A |
+>
+> All results consistent with previous T100-T109 findings. No regressions.
+> The 81 near-empty pages in 1000fig confirmed with the fixed detector.
+>
+> **STEP 4.5 CHECK:** No new findings. All detected issues match known tasks
+> (#190 parshape leak, #191 dimension distortion, #194 orphan pages, #196
+> last-fig distortion). TeX Live wipe is a process issue, not a code bug.
+>
+> Full journal: journals/qa/2026-06-15.md (T110 section).

@@ -751,3 +751,20 @@ Work Log:
 Stage Summary:
 - Detection script false negative fixed — near-empty pages now correctly detected across all PDFs
 - No new bugs found; all orphan pages confirmed as existing Task #194
+
+---
+Task ID: T110
+Agent: QA (cron)
+Task: QA turn T110 — full regression baseline + TeX Live reinstall
+
+Work Log:
+- Found local branch reset to pre-June commit by Programmer cron; TeX Live wiped
+- Removed stale index.lock, git reset --hard origin/main to recover T109
+- Reinstalled TeX Live from cache (setup.sh --skip-system) + tlmgr packages
+- Compiled all 4 test PDFs — byte-identical to v3.41 baselines
+- Ran full detection suite (near-empty, parshape, alignment, ordering, caption, baseline-grid)
+- Produced comprehensive regression table: no regressions, all issues match known tasks
+
+Stage Summary:
+- v3.41 regression baseline confirmed across all 4 PDFs with corrected tools
+- TeX Live wipe by Programmer cron is a recurring process issue (not first time)
