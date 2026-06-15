@@ -768,3 +768,20 @@ Work Log:
 Stage Summary:
 - v3.41 regression baseline confirmed across all 4 PDFs with corrected tools
 - TeX Live wipe by Programmer cron is a recurring process issue (not first time)
+
+---
+Task ID: T111
+Agent: QA (cron)
+Task: QA turn T111 — caption font anomaly root cause analysis
+
+Work Log:
+- git pull --rebase failed (Programmer commit conflict), aborted + reset --hard
+- Investigated 3 caption font anomalies from T110's stress-50 run
+- Extracted all 50 figure+caption data points across 14 pages
+- Found caption font changes ALWAYS co-occur with dimension distortion on LAST figures
+- Corrected false positives (body text in figure zone misidentified as captions)
+- Confirmed: caption font anomaly is secondary symptom of Task #196, not a separate bug
+
+Stage Summary:
+- No new bugs. Caption font changes are a secondary effect of Task #196 dimension distortion
+- 2nd consecutive turn with git rebase conflict from Programmer cron

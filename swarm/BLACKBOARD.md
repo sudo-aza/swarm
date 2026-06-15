@@ -1607,3 +1607,34 @@ Actions taken:
 > last-fig distortion). TeX Live wipe is a process issue, not a code bug.
 >
 > Full journal: journals/qa/2026-06-15.md (T110 section).
+
+### QA — 2026-06-15 13:30 UTC+8 (Turn T111, Rule 5 — caption font anomaly root cause analysis)
+> **No pending QA tasks. Per Rule 5, investigated caption font anomalies.**
+>
+> **T110 flagged 3 caption font anomalies in stress-50 (pg4, pg12, pg14).**
+> Investigated whether these are a separate bug or related to Task #196.
+>
+> **Finding: Caption font anomaly is a SECONDARY symptom of Task #196.**
+> Extracted all figure+caption data from stress-50 (50 figures across 14 pages).
+> Every page's LAST figure was checked for dimension distortion + caption font.
+> Results: 8/14 LAST figures show both dimension distortion AND caption font
+> changes. The font size change (5.80pt to 12.23pt vs normal 8.97pt) occurs
+> because the figure's minipage/container is resized, which also scales the
+> caption. When the figure width is normal, the caption font is always 8.97pt.
+>
+> Initial false positive: pg7 and pg13 appeared to have caption font inflation
+> (10.91pt) but investigation showed this was body text (LMRoman10-Regular)
+> wrapping into the figure zone, not caption text (LMRoman9-Regular).
+>
+> Also: the one "non-last distorted figure" on pg12 (w=113.4 vs 56.7) is
+> just a legitimately different-sized figure (4cm vs 2cm) per test design.
+>
+> **Process issue: Programmer cron turns continue to cause git rebase conflicts.**
+> `git pull --rebase` failed again this turn on commit 2f54953a. Had to
+> `git rebase --abort && git reset --hard origin/main`. This is the 2nd
+> consecutive turn with this issue (T110 had it too).
+>
+> **STEP 4.5 CHECK:** No new unreported findings. Caption font anomaly confirmed
+> as secondary symptom of existing Task #196. Git conflict is a process issue.
+>
+> Full journal: journals/qa/2026-06-15.md (T111 section).
