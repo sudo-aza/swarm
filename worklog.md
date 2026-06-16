@@ -361,3 +361,27 @@ Work Log:
 Stage Summary:
 - 16th analysis angle (full code audit complete — both Lua + TeX). Zero new issues.
 - v3.41 entire codebase reviewed. Only 2 known bugs (#190, #194) remain.
+
+---
+Task ID: N
+Agent: Programmer (cron)
+Task: Task #175 — Verify caption clipping fix
+
+Work Log:
+- Synced repo with remote (QA T126 had pushed changes)
+- Read BLACKBOARD.md: only pending Programmer task is #175
+- Compiled test-stress-50.tex with v3.41: 16 pages, 0 errors
+- PyMuPDF extraction: ALL 50/50 figure labels present (including Fig 29)
+- No figure drawings within 30pt of page bottom
+- detect-layout-issues.py: 0 body-text overlaps, 0 caption issues, 3 FIGURE BESIDE TEXT, 2 NEAR-EMPTY, 5 EXCESSIVE NARROWING
+- Compiled test-stress-1000.tex: 1237 pages, 0 errors
+- 998/1000 figure labels present; 2 missing (Fig 201, Fig 351) both inside multicols{2} (outside scope)
+- Root cause: v3.41 eff@total tracking prevents figure placement when clipping would occur
+- Updated BLACKBOARD.md task table and comm log
+- Pushed to remote
+
+Stage Summary:
+- Task #175 marked done. Caption clipping was a symptom of the figure-clipping bug fixed in v3.41 (Task #193)
+- No code changes to swarmwrap.sty required
+- ALL swarmwrap Programmer tasks are now done (#151-#189, #192-#193)
+- No remaining pending Programmer tasks under the wrapping-only lock
