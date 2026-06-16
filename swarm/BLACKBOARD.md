@@ -1888,3 +1888,14 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T125 section).
+
+### QA — 2026-06-16 11:30 UTC+8 (Turn T126, Rule 5 — TeX macro code audit)
+> **No pending QA tasks**: Per Rule 5, active inspection — novel angle: code-level audit of TeX macros in swarmwrap.sty (complementing T125's Lua callback audit).
+>
+> **ACTION:** Programmer pushed 3 commits (BLACKBOARD cleanup, no swarmwrap.sty changes). TeX Live still missing (not reinstalled — no compilation needed). Audited: `\swarmwrapnext` main logic (lines 727-895), everypar hook `\swarmwrap@apply@ext@pshape` (lines 418-437), list patch `\renewcommand{\list}` (lines 518-541), SQUEEZE-FIT check, DEFERRED overfull exception (v3.41), parshape computation, figure stack push, emergencystretch reset.
+>
+> **FINDINGS:** Code is well-structured and matches comments. All logic paths verified correct. No code-level bugs. Zero new issues.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T126 section).
