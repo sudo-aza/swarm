@@ -223,9 +223,11 @@ def detect_figure_beside_text(page_num, figures, text_lines, min_adjacent):
     is_multicol, multicol_page_width = _is_multicol_page(body_lines)
 
     widths = sorted([l["width"] for l in body_lines])
-    # Full width = 90th percentile of body line widths
-    idx = max(0, int(len(widths) * 0.9) - 1)
-    full_width = widths[idx]
+    # Full width = max body line width (v12: was 90th percentile, which
+    # fails on pages with stacked figures where 90%+ of lines are narrow,
+    # making the percentile equal the narrow width and masking real
+    # narrowing.)
+    full_width = widths[-1]
 
     # On multicol pages, use page width instead of column width
     if is_multicol and multicol_page_width > full_width:
@@ -781,9 +783,9 @@ def detect_excessive_narrowing(page_num, page, figures, text_lines,
     if not body_lines:
         return issues
 
-    # Compute full width baseline
+    # Compute full width baseline (v12: use max, see fig-beside-text fix)
     widths = sorted([l["width"] for l in body_lines])
-    full_width = widths[max(0, int(len(widths) * 0.9) - 1)]
+    full_width = widths[-1]
 
     for i, fig in enumerate(figures):
         fig_height = fig.height
