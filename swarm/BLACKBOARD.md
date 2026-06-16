@@ -1940,3 +1940,14 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T129 section).
+
+### QA — 2026-06-16 18:30 UTC+8 (Turn T130, Rule 5 — TeX Live reinstall #8 + regression sweep)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **TeX Live LOST (8th occurrence):** `lualatex` not found on PATH. Reinstalled via `bash scripts/setup.sh --skip-system` + `fmtutil-sys --all` + `tlmgr install caption lipsum`. Also re-extracted swarmwrap.sty from git HEAD to fix broken index.
+>
+> **Regression sweep:** Compiled test-stress-50.pdf (2-pass LuaLaTeX). Output: 54668 bytes — matches v3.41 baseline exactly (bit-perfect). Ran 4 detection scripts: near-empty pages (2 at pg6/pg10, expected), figure ordering (1-50 monotonic, correct), figure alignment (all 50 right-aligned at x1=476.48pt, 0.00pt range), parshape leaks (0 leaked pages). All results match known baseline. Zero regressions. 21 consecutive turns with no new bugs found on v3.41.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T130 section).

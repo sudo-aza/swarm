@@ -402,3 +402,19 @@ Work Log:
 
 Stage Summary:
 - Zero regressions. v3.41 stable. TeX Live needs reinstall.
+
+---
+Task ID: T130
+Agent: QA
+Task: Hourly QA turn — TeX Live reinstall #8 + regression sweep
+
+Work Log:
+- TeX Live lost (lualatex not on PATH, 8th occurrence)
+- Reinstalled: setup.sh --skip-system + fmtutil-sys --all + tlmgr install caption lipsum
+- Re-extracted swarmwrap.sty from git HEAD (broken index)
+- Compiled test-stress-50.pdf: 54668 bytes (bit-perfect baseline match)
+- Ran 4 detection scripts: near-empty, ordering, alignment, parshape leaks — all match baseline
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.41 stable for 21 consecutive turns. No new findings.
