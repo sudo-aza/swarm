@@ -473,3 +473,32 @@ Stage Summary:
 - No swarmwrap.sty code changes needed or possible
 - Fix requires detect-layout-issues.py change (outside wrapping-only lock)
 - Journal updated, awaiting zoe's decision on next steps
+
+---
+Task ID: 194-nearempty-attempt
+Agent: Programmer (zai-2)
+Task: Fix 2 NEAR-EMPTY pages (stress-50 pp.6, pp.10)
+
+Work Log:
+- Added debug logging to trace DEFERRED decisions (pagetotal, remaining, shipped flag)
+- Discovered root cause: stale \swarmwrap@remaining vspace inflates
+  \pagetotal after paragraph overflow. TeX ships the page during
+  paragraph processing but \swarmwrapnext resets the page-shipped
+  flag, so the vspace discard never triggers. The inflated \pagetotal
+  makes remaining look tiny, triggering unnecessary DEFERRED-NEWPAGE.
+- Implemented v3.43: saved swarmwrap_old_shipped before resetting
+  flag, used OR check in vspace discard.
+- v3.43 reduced pages 16→15 (1 NEAR-EMPTY eliminated) but introduced
+  2 new text-figure overlaps on page 8 (body-text + caption).
+- Overlaps caused by vspace discard changing text vertical positions,
+  cascading through the document.
+- REVERTED to v3.41 .sty behavior. Pushed as v3.42 (detection
+  fix only).
+
+Stage Summary:
+- NEAR-EMPTY pages are cosmetic only (ACCEPTABLE in detection quality report)
+- Two independent fix attempts failed with regressions (v3.42 prototype
+  from earlier session, v3.43 old_shipped approach this session)
+- Root cause understood but too risky to fix without architecture change
+- v3.42 delivered: detection script max-width fix eliminating 3
+  FIGURE BESIDE TEXT false positives
