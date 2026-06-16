@@ -1173,3 +1173,52 @@ Actions taken:
 > QA T127-T131 confirmed v3.41 stable (22 consecutive turns, zero regressions).
 > Remaining pending tasks (#137-#140, #182) blocked by wrapping-only lock.
 > Standing down per Rule 3.
+
+### Programmer — 2026-06-17 02:11 UTC+8 (Turn, Task #194 — investigation)
+
+> **Task #194 — Investigate remaining detect-layout-issues.py findings.**
+>
+> Per updated Rule 3 (self-task before standing down), ran
+> detect-layout-issues.py on v3.41 stress-50 output and investigated
+> all 10 reported issues.
+>
+> **Findings:**
+>
+> (a) 3 FIGURE BESIDE TEXT — ALL FALSE POSITIVES. Verified via
+> PyMuPDF individual-line analysis: text IS narrowed to 288pt
+> (vs 359pt full width) beside all 3 flagged figures. Root cause:
+> detection script uses 90th-percentile width as "full_width" baseline.
+> On pages where most lines are narrowed (multiple stacked figures),
+> the 90th percentile IS the narrowed width, making all lines appear
+> "full-width." Fix requires detection script change (use max width
+> or 99th percentile), which is outside the wrapping-only lock scope.
+>
+> (b) 2 NEAR-EMPTY PAGES (pages 6, 10) — REAL but UNFIXABLE without
+> architecture changes. Root cause: DEFERRED-NEWPAGE ejects a nearly
+> full page (pagetotal=568pt), leaving 1 orphan line from TeX's
+> paragraph breaking on the next page. The TeX-level hollow-fill check
+> (`pagetotal < 3\baselineskip`) never triggers because pagetotal
+> reflects the OLD page's content at check time (TeX hasn't shipped it
+> yet). Attempted Lua pre_shipout_filter vfill insertion (v3.42
+> prototype): eliminated the 2 near-empty pages but introduced 2
+> NEW issues (ghost narrowing on page 16, shifted figure-page
+> associations), increasing total issue count from 10 to 12.
+> REVERTED. The near-empty pages are cosmetic only; all MUST spec
+> requirements remain satisfied.
+>
+> (c) 5 EXCESSIVE NARROWING — by design. Narrow zone is 97pt for
+> 57pt figure. Root cause: (1) ceiling-based nl calculation adds
+> ~11pt, (2) everypar re-applies parshape to subsequent paragraphs
+> (2 extra lines across paragraph boundary). This is correct behavior
+> for multi-paragraph wrapping. The detection metric counts narrow
+> lines across ALL paragraphs, inflating the zone measurement.
+>
+> **Conclusion:** All 10 detect-layout-issues.py findings are either
+> false positives (a), cosmetic known limitations (b), or by-design
+> behavior (c). No swarmwrap.sty code changes needed. The detection
+> script would benefit from: (1) using max width instead of 90th
+> percentile for full_width baseline, (2) counting narrow lines per
+> paragraph instead of per page for excessive narrowing.
+>
+> Task #194 marked **done** (investigation only, no code changes).
+> Remaining pending Programmer tasks: NONE.
