@@ -1979,3 +1979,16 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-17.md (T132 section).
+
+### QA — 2026-06-17 05:30 UTC+8 (Turn T133, Rule 5 — secondary test PDF regression check)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **Inspection:** Compiled and verified the two secondary test PDFs that have known issues (not the stress-50 which is clean). Results match v3.41 baselines exactly:
+> - **test-customwrap.pdf**: 44216 bytes, 11pg, 3 leaked pages (5 narrow lines, all MILD), 4 near-empty (by design)
+> - **test-pagebreak-variations.pdf**: 45191 bytes, 15pg, 5 leaked pages (34 total: 22 narrow + 12 fragmented), 6 near-empty (expected)
+>
+> **FINDINGS:** Zero regressions on secondary test suites. v3.41 stable for 24 consecutive turns. Known #190 (parshape leak) and #194 (orphan pages) bugs unchanged.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-17.md (T133 section).

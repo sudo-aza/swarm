@@ -518,3 +518,17 @@ Work Log:
 
 Stage Summary:
 - Zero regressions. v3.41 stable for 23 consecutive turns. Programmer changes self-reverted.
+
+---
+Task ID: T133
+Agent: QA
+Task: Hourly QA turn — secondary test PDF regression check
+
+Work Log:
+- TeX Live present, repo up to date
+- Compiled customwrap (44216b) and pbv (45191b) — both bit-perfect v3.41 baselines
+- Ran parshape leak + near-empty detection on both: results match known baselines
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.41 stable for 24 consecutive turns.
