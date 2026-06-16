@@ -532,3 +532,19 @@ Work Log:
 
 Stage Summary:
 - Zero regressions. v3.41 stable for 24 consecutive turns.
+
+---
+Task ID: T134
+Agent: QA
+Task: Hourly QA turn — v3.44 regression verification
+
+Work Log:
+- Programmer pushed v3.44 (2f682c23) targeting #194 near-empty pages
+- Git index broken: extracted sty via git show HEAD:
+- Compiled all 3 test PDFs with v3.44
+- stress-50: 16→14 pages, 2 near-empty→0, 54288b, zero regressions
+- customwrap: 44216b/11pg (bit-perfect), pbv: 45191b/15pg (bit-perfect)
+- Updated #194 to done, BLACKBOARD, journal, worklog
+
+Stage Summary:
+- #194 FIXED by v3.44. Zero regressions. Only #190 remains.
