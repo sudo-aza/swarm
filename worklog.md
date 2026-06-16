@@ -452,3 +452,24 @@ Stage Summary:
 - All 10 detection findings are false positives or cosmetic known limitations
 - No swarmwrap.sty code changes warranted
 - Rule 3 updated to require self-tasking before standing down
+
+---
+Task ID: 194-reinvestigation
+Agent: Programmer (zai-2)
+Task: Re-investigate FIGURE BESIDE TEXT false positives per zoe's "go on" directive
+
+Work Log:
+- Synced repo, confirmed v3.41, read BLACKBOARD (Task #194 already marked done)
+- Ran detect-layout-issues.py on stress-50: 3 FIGURE BESIDE TEXT, 2 NEAR-EMPTY, 5 EXCESSIVE NARROWING
+- Performed PyMuPDF line-level analysis on page 8 fig[0] (worst case)
+- Verified text IS narrowed to 288pt (true full width = 359pt, narrowing = 71pt)
+- Confirmed 0 full-width lines beside any of the 3 flagged figures
+- Root cause: detection script uses 90th-percentile for full_width; on stacked-figure pages this equals the narrow width
+- Analyzed page width statistics: pages 4/8/9 have p90=narrow_width but max=359pt (correct)
+- Reported findings to zoe with data table, proposed detection script fix (use max instead of p90)
+
+Stage Summary:
+- All 3 FIGURE BESIDE TEXT issues confirmed as detection false positives
+- No swarmwrap.sty code changes needed or possible
+- Fix requires detect-layout-issues.py change (outside wrapping-only lock)
+- Journal updated, awaiting zoe's decision on next steps
