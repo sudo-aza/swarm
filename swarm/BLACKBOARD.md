@@ -1927,3 +1927,16 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T128 section).
+
+### QA — 2026-06-16 17:30 UTC+8 (Turn T129, Rule 5 — test source integrity verification)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **TeX Live LOST (8th occurrence):** `git rebase --skip` after Programmer cron conflict wiped TeX Live. PDFs also lost from rebase.
+>
+> **ACTION:** Verified test source files intact: stress-50 (518 lines), customwrap (198 lines), pbv (213 lines). No swarmwrap.sty changes from Programmer.
+>
+> **FINDINGS:** Zero regressions. Source files intact.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T129 section).
