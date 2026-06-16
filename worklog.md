@@ -502,3 +502,19 @@ Stage Summary:
 - Root cause understood but too risky to fix without architecture change
 - v3.42 delivered: detection script max-width fix eliminating 3
   FIGURE BESIDE TEXT false positives
+
+---
+Task ID: T132
+Agent: QA
+Task: Hourly QA turn — Programmer activity review + new script validation
+
+Work Log:
+- Divergent branches from Programmer cron, resolved via git reset --hard
+- Programmer pushed v3.42 (detection fix) and v3.43 (NEAR-EMPTY fix, reverted) — sty still v3.41
+- New analyze-wrapping.py script validated against stress-50 baseline
+- Compiled stress-50.pdf: 54668 bytes (bit-perfect)
+- Existing detection scripts confirm: 0 overlaps, ordering correct, 0 parshape leaks
+- Updated BLACKBOARD, journal (new file 2026-06-17.md), worklog
+
+Stage Summary:
+- Zero regressions. v3.41 stable for 23 consecutive turns. Programmer changes self-reverted.

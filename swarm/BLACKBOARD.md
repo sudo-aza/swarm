@@ -1964,3 +1964,18 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T131 section).
+
+### QA — 2026-06-17 03:30 UTC+8 (Turn T132, Rule 5 — Programmer activity review + new script validation)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **Programmer activity detected:** Divergent branches from Programmer cron (commits ba09e73e..3fe6ac65). Resolved via `git reset --hard origin/main`. Programmer worked on NEAR-EMPTY fix attempt (v3.42, v3.43) — both reverted, swarmwrap.sty remains v3.41 (915 lines). New `scripts/analyze-wrapping.py` script added (combined 5-in-1 detector). Detection script mode changed to executable.
+>
+> **TeX Live:** Survived git reset. Still present.
+>
+> **Regression verification:** Compiled stress-50.pdf = 54668 bytes (bit-perfect v3.41 baseline). Ran new `analyze-wrapping.py`: 0 overlaps, 50 labels, 2 ghost/near-empty/hollow-carryover (pg6, pg10 — known #194 bug). Existing scripts (ordering, parshape leaks) also match baseline.
+>
+> **FINDINGS:** Zero regressions. v3.41 stable for 23 consecutive turns. Programmer's v3.42/v3.43 changes were self-reverted — no QA action needed.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-17.md (T132 section).
