@@ -17,11 +17,17 @@
 - Run setup.sh if TeX Live is missing. "No TeX Live" is never an excuse.
 - Check for "Output written" and zero "!" errors in the log.
 
-## Rule 3: If Nothing Ready, Log and Stop
+## Rule 3: Self-Task Before Standing Down
 
-- If no unblocked Programmer tasks exist, add a note to COMMUNICATION LOG and stop.
-- Do NOT invent self-tasks to fill time unless you have exhausted all backlog.
-- Standing down is acceptable only when all tasks are done AND you are 100% certain that no improvement can be made, at all.
+You MUST attempt to find or create useful work before standing down. Standing down is a last resort. The bar is high.
+
+1. **Check BLACKBOARD** for any pending Programmer task (even if it seems small or old).
+2. **Run the detection/analysis scripts** on the latest output. If they find issues, those issues ARE your tasks — create a BLACKBOARD entry and fix them.
+3. **Review the spec** (`notes/wrapping-specs.md`). Does the current output match every MUST requirement? If not, that gap is a task.
+4. **Ask yourself honestly**: "Is there ANY known bug, limitation, or quality gap I could work on?" If yes, you are NOT done. Standing down is forbidden.
+5. Only stand down if: (a) zero pending tasks exist, (b) zero detectable issues remain, AND (c) you have run the analysis scripts and verified the output matches all specs.
+
+Do NOT use "no tasks assigned" as an excuse to do nothing when bugs are clearly visible in the output.
 
 ## Rule 4: Update BLACKBOARD and Journal
 
