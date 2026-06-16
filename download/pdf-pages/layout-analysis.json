@@ -1,0 +1,592 @@
+[
+  {
+    "page": 1,
+    "page_size": "595x842",
+    "text_blocks": 5,
+    "images": 0,
+    "text_spans": [
+      {
+        "bbox": [
+          117.8,
+          121.4,
+          205.0,
+          141.9
+        ],
+        "width": 87.2,
+        "lines": 2,
+        "char_count": 11
+      },
+      {
+        "bbox": [
+          235.5,
+          215.6,
+          292.2,
+          271.7
+        ],
+        "width": 56.7,
+        "lines": 6,
+        "char_count": 34
+      },
+      {
+        "bbox": [
+          117.8,
+          151.0,
+          221.5,
+          627.1
+        ],
+        "width": 103.7,
+        "lines": 64,
+        "char_count": 722
+      },
+      {
+        "bbox": [
+          302.1,
+          151.0,
+          405.8,
+          627.1
+        ],
+        "width": 103.7,
+        "lines": 59,
+        "char_count": 732
+      },
+      {
+        "bbox": [
+          294.4,
+          738.0,
+          299.9,
+          753.4
+        ],
+        "width": 5.5,
+        "lines": 1,
+        "char_count": 1
+      }
+    ],
+    "image_rects": [],
+    "text_width_stats": {
+      "min": 56.7,
+      "max": 103.7,
+      "mean": 88.0,
+      "unique_widths": 2
+    }
+  },
+  {
+    "page": 2,
+    "page_size": "595x842",
+    "text_blocks": 5,
+    "images": 0,
+    "text_spans": [
+      {
+        "bbox": [
+          391.4,
+          220.5,
+          476.5,
+          249.5
+        ],
+        "width": 85.0,
+        "lines": 3,
+        "char_count": 25
+      },
+      {
+        "bbox": [
+          117.8,
+          125.5,
+          377.5,
+          493.2
+        ],
+        "width": 259.7,
+        "lines": 40,
+        "char_count": 1439
+      },
+      {
+        "bbox": [
+          575.0,
+          601.1,
+          598.7,
+          630.1
+        ],
+        "width": 23.6,
+        "lines": 2,
+        "char_count": 9
+      },
+      {
+        "bbox": [
+          117.8,
+          477.7,
+          377.5,
+          723.5
+        ],
+        "width": 259.7,
+        "lines": 27,
+        "char_count": 919
+      },
+      {
+        "bbox": [
+          294.4,
+          738.0,
+          299.9,
+          753.4
+        ],
+        "width": 5.5,
+        "lines": 1,
+        "char_count": 1
+      }
+    ],
+    "image_rects": [],
+    "text_width_stats": {
+      "min": 85.0,
+      "max": 259.7,
+      "mean": 201.5,
+      "unique_widths": 2
+    }
+  },
+  {
+    "page": 3,
+    "page_size": "595x842",
+    "text_blocks": 4,
+    "images": 0,
+    "text_spans": [
+      {
+        "bbox": [
+          117.8,
+          125.5,
+          377.5,
+          452.5
+        ],
+        "width": 259.7,
+        "lines": 29,
+        "char_count": 1240
+      },
+      {
+        "bbox": [
+          377.4,
+          588.8,
+          506.5,
+          604.2
+        ],
+        "width": 129.1,
+        "lines": 1,
+        "char_count": 25
+      },
+      {
+        "bbox": [
+          117.8,
+          437.1,
+          377.5,
+          723.5
+        ],
+        "width": 259.7,
+        "lines": 24,
+        "char_count": 1131
+      },
+      {
+        "bbox": [
+          294.4,
+          738.0,
+          299.9,
+          753.4
+        ],
+        "width": 5.5,
+        "lines": 1,
+        "char_count": 1
+      }
+    ],
+    "image_rects": [],
+    "text_width_stats": {
+      "min": 129.1,
+      "max": 259.7,
+      "mean": 216.2,
+      "unique_widths": 2
+    }
+  },
+  {
+    "page": 4,
+    "page_size": "595x842",
+    "text_blocks": 4,
+    "images": 0,
+    "text_spans": [
+      {
+        "bbox": [
+          117.8,
+          125.5,
+          377.5,
+          520.3
+        ],
+        "width": 259.7,
+        "lines": 34,
+        "char_count": 1520
+      },
+      {
+        "bbox": [
+          520.9,
+          682.8,
+          577.6,
+          725.4
+        ],
+        "width": 56.7,
+        "lines": 5,
+        "char_count": 25
+      },
+      {
+        "bbox": [
+          117.8,
+          504.8,
+          377.5,
+          723.5
+        ],
+        "width": 259.7,
+        "lines": 17,
+        "char_count": 852
+      },
+      {
+        "bbox": [
+          294.4,
+          738.0,
+          299.9,
+          753.4
+        ],
+        "width": 5.5,
+        "lines": 1,
+        "char_count": 1
+      }
+    ],
+    "image_rects": [],
+    "text_width_stats": {
+      "min": 56.7,
+      "max": 259.7,
+      "mean": 192.0,
+      "unique_widths": 2
+    }
+  },
+  {
+    "page": 5,
+    "page_size": "595x842",
+    "text_blocks": 2,
+    "images": 0,
+    "text_spans": [
+      {
+        "bbox": [
+          117.8,
+          125.5,
+          377.5,
+          723.5
+        ],
+        "width": 259.7,
+        "lines": 50,
+        "char_count": 2387
+      },
+      {
+        "bbox": [
+          294.4,
+          738.0,
+          299.9,
+          753.4
+        ],
+        "width": 5.5,
+        "lines": 1,
+        "char_count": 1
+      }
+    ],
+    "image_rects": [],
+    "text_width_stats": {
+      "min": 259.7,
+      "max": 259.7,
+      "mean": 259.7,
+      "unique_widths": 1
+    }
+  },
+  {
+    "page": 10,
+    "page_size": "595x842",
+    "text_blocks": 4,
+    "images": 0,
+    "text_spans": [
+      {
+        "bbox": [
+          117.8,
+          125.5,
+          377.5,
+          547.4
+        ],
+        "width": 259.7,
+        "lines": 37,
+        "char_count": 1629
+      },
+      {
+        "bbox": [
+          464.2,
+          626.9,
+          577.6,
+          655.9
+        ],
+        "width": 113.4,
+        "lines": 5,
+        "char_count": 27
+      },
+      {
+        "bbox": [
+          117.8,
+          531.9,
+          377.5,
+          723.5
+        ],
+        "width": 259.7,
+        "lines": 15,
+        "char_count": 742
+      },
+      {
+        "bbox": [
+          291.7,
+          738.0,
+          302.6,
+          753.4
+        ],
+        "width": 10.9,
+        "lines": 1,
+        "char_count": 2
+      }
+    ],
+    "image_rects": [],
+    "text_width_stats": {
+      "min": 113.4,
+      "max": 259.7,
+      "mean": 210.9,
+      "unique_widths": 2
+    }
+  },
+  {
+    "page": 20,
+    "page_size": "595x842",
+    "text_blocks": 4,
+    "images": 0,
+    "text_spans": [
+      {
+        "bbox": [
+          117.8,
+          125.5,
+          377.5,
+          222.2
+        ],
+        "width": 259.7,
+        "lines": 7,
+        "char_count": 349
+      },
+      {
+        "bbox": [
+          453.7,
+          301.8,
+          593.7,
+          317.2
+        ],
+        "width": 140.0,
+        "lines": 1,
+        "char_count": 27
+      },
+      {
+        "bbox": [
+          117.8,
+          206.8,
+          377.5,
+          723.5
+        ],
+        "width": 259.7,
+        "lines": 49,
+        "char_count": 2028
+      },
+      {
+        "bbox": [
+          291.7,
+          738.0,
+          302.6,
+          753.4
+        ],
+        "width": 10.9,
+        "lines": 1,
+        "char_count": 2
+      }
+    ],
+    "image_rects": [],
+    "text_width_stats": {
+      "min": 140.0,
+      "max": 259.7,
+      "mean": 219.8,
+      "unique_widths": 2
+    }
+  },
+  {
+    "page": 30,
+    "page_size": "595x842",
+    "text_blocks": 4,
+    "images": 0,
+    "text_spans": [
+      {
+        "bbox": [
+          117.8,
+          125.5,
+          377.5,
+          276.4
+        ],
+        "width": 259.7,
+        "lines": 11,
+        "char_count": 573
+      },
+      {
+        "bbox": [
+          491.1,
+          384.3,
+          576.2,
+          413.3
+        ],
+        "width": 85.0,
+        "lines": 2,
+        "char_count": 27
+      },
+      {
+        "bbox": [
+          117.8,
+          261.0,
+          377.5,
+          723.5
+        ],
+        "width": 259.7,
+        "lines": 38,
+        "char_count": 1833
+      },
+      {
+        "bbox": [
+          291.7,
+          738.0,
+          302.6,
+          753.4
+        ],
+        "width": 10.9,
+        "lines": 1,
+        "char_count": 2
+      }
+    ],
+    "image_rects": [],
+    "text_width_stats": {
+      "min": 85.0,
+      "max": 259.7,
+      "mean": 201.5,
+      "unique_widths": 2
+    }
+  },
+  {
+    "page": 40,
+    "page_size": "595x842",
+    "text_blocks": 2,
+    "images": 0,
+    "text_spans": [
+      {
+        "bbox": [
+          117.8,
+          125.5,
+          377.5,
+          723.5
+        ],
+        "width": 259.7,
+        "lines": 52,
+        "char_count": 2372
+      },
+      {
+        "bbox": [
+          291.7,
+          738.0,
+          302.6,
+          753.4
+        ],
+        "width": 10.9,
+        "lines": 1,
+        "char_count": 2
+      }
+    ],
+    "image_rects": [],
+    "text_width_stats": {
+      "min": 259.7,
+      "max": 259.7,
+      "mean": 259.7,
+      "unique_widths": 1
+    }
+  },
+  {
+    "page": 50,
+    "page_size": "595x842",
+    "text_blocks": 6,
+    "images": 0,
+    "text_spans": [
+      {
+        "bbox": [
+          117.8,
+          125.5,
+          231.7,
+          140.9
+        ],
+        "width": 113.8,
+        "lines": 1,
+        "char_count": 25
+      },
+      {
+        "bbox": [
+          540.6,
+          275.1,
+          597.3,
+          317.6
+        ],
+        "width": 56.7,
+        "lines": 5,
+        "char_count": 27
+      },
+      {
+        "bbox": [
+          117.8,
+          125.5,
+          377.5,
+          357.7
+        ],
+        "width": 259.7,
+        "lines": 17,
+        "char_count": 871
+      },
+      {
+        "bbox": [
+          509.5,
+          522.3,
+          594.5,
+          551.3
+        ],
+        "width": 85.0,
+        "lines": 2,
+        "char_count": 27
+      },
+      {
+        "bbox": [
+          117.8,
+          342.2,
+          377.5,
+          710.0
+        ],
+        "width": 259.7,
+        "lines": 29,
+        "char_count": 1427
+      },
+      {
+        "bbox": [
+          291.7,
+          738.0,
+          302.6,
+          753.4
+        ],
+        "width": 10.9,
+        "lines": 1,
+        "char_count": 2
+      }
+    ],
+    "image_rects": [],
+    "text_width_stats": {
+      "min": 56.7,
+      "max": 259.7,
+      "mean": 155.0,
+      "unique_widths": 4
+    }
+  }
+]

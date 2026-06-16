@@ -1,0 +1,21 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{swarmwrap}
+\pagestyle{empty}
+\begin{document}
+\directlua{
+  local ok, val = pcall(tex.dimen, "baselineskip")
+  texio.write_nl("baselineskip pcall=" .. tostring(ok) .. " val=" .. tostring(val))
+  local ok2, val2 = pcall(tex.dimen, "swarmwrap@tw@lua")
+  texio.write_nl("tw@lua pcall=" .. tostring(ok2) .. " val=" .. tostring(val2))
+}
+Test
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}\centering\rule{\linewidth}{2cm}\end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+Test text after wrap.
+\directlua{
+  local ok2, val2 = pcall(tex.dimen, "swarmwrap@tw@lua")
+  texio.write_nl("tw@lua AFTER pcall=" .. tostring(ok2) .. " val=" .. tostring(val2))
+}
+\end{document}

@@ -1,0 +1,43 @@
+name mpchess
+category Package
+revision 78101
+shortdesc Drawing chess boards and positions with MetaPost
+longdesc This package allows you to draw chess boards and positions. The
+longdesc appearance of the drawings is modern and largely inspired by
+longdesc what is offered by the excellent web site Lichess.org. Relying
+longdesc on MetaPost probably allows more graphic flexibility than the
+longdesc excellent LaTeX packages. This package is in beta version, do
+longdesc not hesitate to report bugs, as well as requests for
+longdesc improvement
+containersize 30528
+containerchecksum 559cfb4903e6a01b4b0b27b4430c04fd27791dde0872a3cc477094bbcbcb859acc73933fba09b1d0f7db3082d5c67fa939bf5849908604c0b98dba9b7a32034a
+doccontainersize 2427280
+doccontainerchecksum 8faf458987ab9f48368704bccbcb3848e464c42dd6d086ea12314fda25775080e463a7a984193d01cce43c25259c1556577aa7c06483add7747202f25f6b910f
+docfiles size=788
+ texmf-dist/doc/metapost/mpchess/LICENSE
+ texmf-dist/doc/metapost/mpchess/README.md details="Readme"
+ texmf-dist/doc/metapost/mpchess/ctan.bib
+ texmf-dist/doc/metapost/mpchess/fond.pdf
+ texmf-dist/doc/metapost/mpchess/mpchess-doc-en.pdf details="Package documentation (English)"
+ texmf-dist/doc/metapost/mpchess/mpchess-doc-en.tex
+ texmf-dist/doc/metapost/mpchess/mpchess-doc-fr.pdf details="Package documentation (French)" language="fr"
+ texmf-dist/doc/metapost/mpchess/mpchess-doc-fr.tex
+ texmf-dist/doc/metapost/mpchess/mpchess-preamble.tex
+ texmf-dist/doc/metapost/mpchess/test.fen
+ texmf-dist/doc/metapost/mpchess/test.pgn
+runfiles size=52
+ texmf-dist/fonts/truetype/public/mpchess/mpchessfont.ttf
+ texmf-dist/metapost/mpchess/mpchess-cburnett.mp
+ texmf-dist/metapost/mpchess/mpchess-chessboard.mp
+ texmf-dist/metapost/mpchess/mpchess-fen.mp
+ texmf-dist/metapost/mpchess/mpchess-pgn.mp
+ texmf-dist/metapost/mpchess/mpchess-pieces.mp
+ texmf-dist/metapost/mpchess/mpchess-skak.mp
+ texmf-dist/metapost/mpchess/mpchess.mp
+catalogue-contact-bugs https://gitlab.gutenberg-asso.fr/mchupin/mpchess/-/issues
+catalogue-contact-home https://gitlab.gutenberg-asso.fr/mchupin/mpchess
+catalogue-contact-repository https://gitlab.gutenberg-asso.fr/mchupin/mpchess
+catalogue-ctan /graphics/metapost/contrib/macros/mpchess
+catalogue-license lppl1.3c gpl2+
+catalogue-topics graphics graphics-mpost mp-use games chess
+catalogue-version 0.9

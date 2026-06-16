@@ -1,0 +1,622 @@
+% \iffalse meta-comment
+%
+%% File: latex-lab-sec.dtx (C) Copyright 2022-2026 LaTeX Project
+%
+% It may be distributed and/or modified under the conditions of the
+% LaTeX Project Public License (LPPL), either version 1.3c of this
+% license or (at your option) any later version.  The latest version
+% of this license is in the file
+%
+%    https://www.latex-project.org/lppl.txt
+%
+%
+% The latex-lab bundle is developed in the LaTeX2e GitHub.
+% Issues may be reported at
+%
+%    https://github.com/latex3/latex2e/issues
+%
+\def\ltlabsecdate{2026-04-28}
+\def\ltlabsecversion{0.84o}
+
+%<*driver>
+\DocumentMetadata{tagging=on,pdfstandard=ua-2}
+\documentclass[kernel]{l3in2edoc}
+
+\EnableCrossrefs
+\CodelineIndex
+\begin{document}
+  \DocInput{latex-lab-sec.dtx}
+\end{document}
+%</driver>
+%
+% \fi
+%
+%
+% \title{The \textsf{latex-lab-sec} package\\
+% Changes related to the tagging of sectioning commands}
+% \author{\LaTeX{} Project\thanks{Initial implementation done by Ulrike Fischer}}
+% \date{v\ltlabsecversion\ \ltlabsecdate}
+%
+% \maketitle
+%
+% \newcommand{\xt}[1]{\textsl{\textsf{#1}}}
+% \newcommand{\TODO}[1]{\textbf{[TODO:} #1\textbf{]}}
+% \newcommand{\docclass}{document class \marginpar{\raggedright document class
+% customizations}}
+%
+% \providecommand\hook[1]{\texttt{#1}}
+%
+% \begin{abstract}
+% The following code implements a first draft for the tagging of heading commands.
+% \end{abstract}
+%
+% \section{New implementation with templates}
+% 
+%  Various parts of this module are obsolete as the commands have been reimplemented
+%  in the module \texttt{latex-lab-sec-template} with templates. The tagging sockets
+%  are still relevant.
+%  
+%  In a later step both files will be merged.
+%  
+% \section{Limitations}
+%
+% Heading commands are in general not defined by the format but by the classes.
+% Their implementation vary: some are defined with the help of \cs{@startsection},
+% some are like \cs{chapter} handcrafted,
+% some built with the help of extension packages or as in the KOMA classes
+% with class code that extends the \cs{@startsection} functionality.
+%
+% The following code can therefore currently be used \emph{only} with the standard classes
+% or with classes which do not overwrite the changed definitions.
+%
+%
+%
+% \section{Introduction}
+%
+%  Tagging of heading commands consist of two parts:
+%
+% \begin{itemize}
+%  \item The \emph{title text} of the heading should be surrounded by a structure with 
+%  a \emph{heading tag}, typically \texttt{Hn} with some value of \texttt{n}.
+%  In theory, one could/should put the number of the heading in an \texttt{Lbl} structure.
+%  However, current AT doesn't handle this well, so
+%  we use a tag \texttt{section-number} that is role-mapped to \texttt{Span}.
+%  The number of the \texttt{Hn} tag should reflect the \enquote{natural} level.
+%  So in an article \cs{section} will use  \texttt{H1}, in a book \cs{chapter} will use
+%  \texttt{H1} and \cs{section} \texttt{H2}.
+%  Titles of \cs{part} are a bit out of this system as they are normally
+%  not part of the hierarchy: often only some chapters are grouped under a part.
+%  Their title is therefore tagged as \texttt{Title}.
+%  \item
+%  The whole section (title and all the text body) should normally be surrounded by
+%  a \texttt{Sect} tag. Parts (started with the \cs{part} command)
+%  are surrounded currently by \texttt{Part} until the next \cs{part} or a command like 
+%  \cs{backmatter}.
+%  It is a bit unclear if the headings should be inside or outside of these
+%  structures---the best practice guide puts them outside---but on the whole
+%  it seems more logical to group the heading together with the text inside the \texttt{Sect}.
+%  For \cs{part} this is actually required, as there can be only one \texttt{Title}
+%  in a structure, so the part title can't be at the same level as the
+%  document \texttt{Title}.
+%
+%  Starting such an enclosing \texttt{Sect} structure is rather easy,
+%  but closing it requires code in various place,
+%  for example, the commands \cs{mainmatter}, \cs{backmatter},
+%  \cs{frontmatter} and \cs{appendix} should typically close everything.
+%  Following heading commands should close all previous structures
+%  with a level equal or higher than their own level.
+%  \end{itemize}
+%
+%  \section{Technical details and problems}
+%
+%  The implementation has to take care of various details.
+%
+%  \begin{itemize}
+%
+%  \item As heading commands in \LaTeX{} are not environments, the
+%  \texttt{<Sect>} structures can be wrongly nested with other structures. For example
+%  if a document puts a heading command into a list or a trivlist or
+%  a minipage then it can no longer close previous \texttt{<Sect>} structures correctly.
+%  The problem can be detected by checking the structure stack
+%  and a warning can be issued, but the author then has to close the structures
+%  manually before the list or minipage.
+%
+%  Thus there have to be user interfaces to handle such cases.
+%  It should also be possible not to create all the \texttt{<Sect>} structures
+%  automatically but to tag only the headings so that the author can handle special
+%  cases manually.
+%
+%  \item If hyperref is used, targets for links should be inserted, either with
+%  \cs{refstepcounter} or manually with \cs{MakeLinkTarget}. These targets must be
+%  in the correct structure for the structure destinations. They replace some
+%  of the current patches in hyperref.
+%
+%  \end{itemize}
+%
+%  \subsection{TODO}
+%
+%  \begin{itemize}
+%   \item A dedicated command to close a \texttt{Sect} unit should be provided.
+%
+%   \item A dedicated command to open a \texttt{Sect} unit should be provided too.
+%
+%   \item It should also be possible to put an epigraph or similar in front of a heading command,
+%   that is still inside the \texttt{Sect} unit.
+%
+%  \item The number in \cs{part} and  \cs{chapter} is currently not correctly
+%  tagged as a \texttt{section-number} as this requires to redefine the internal (class dependent)
+%  commands too.
+%
+%  \end{itemize}
+%
+%    \begin{macrocode}
+%<*package>
+%    \end{macrocode}
+%
+% \section{Implementation}
+%    \begin{macrocode}
+\ProvidesExplPackage {latex-lab-testphase-sec} {\ltlabsecdate} {\ltlabsecversion}
+  {Code related to the tagging of heading commands}
+%    \end{macrocode}
+% \changes{0.84k}{2025-10-20}{Switched to tagging sockets and various corrections}.
+%
+% \subsection{Surrounding by \texttt{Sect} structures}
+%  We use a stack to record the levels of the open \texttt{Sect}. The first item
+%  has level $-100$. A heading command will take a record from the stack. If its level is
+%  greater or equal it closes this structure and takes the next record from the stack.
+%  If the record has a smaller level then it puts it back and stops.
+%  The stack is compared with the main structure stack, if they don't match
+%  it means we can't safely close the \texttt{Sect} and so we issue a warning
+%  and do nothing.
+%
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}
+% \changes{0.84m}{2026-02-25}{Removed glyphtounicode definitions}
+%    \begin{macrocode}
+%<*package>
+%<@@=tag>
+%    \end{macrocode}
+%
+% \subsubsection{Tagging commands}
+%
+%
+% \begin{variable}{\g_@@_sec_stack_seq}
+% The stack holds the tag, the level and the structure number.
+%    \begin{macrocode}
+\seq_new:N   \g_@@_sec_stack_seq
+\seq_gpush:Nn\g_@@_sec_stack_seq {{Document}{-100}{2}}
+%    \end{macrocode}
+% \end{variable}
+%
+% \begin{macro}{\@@_get_data_current_Sect:}
+% This allows to retrieve the number of the current Sect structure (or
+% Document if we are outside any Sect) with |\tag_get:n{current_Sect}|
+%    \begin{macrocode}
+\cs_new:Npn \@@_get_data_current_Sect:
+ {
+   \exp_last_unbraced:Ne\use_iii:nnn{\seq_item:Nn\g_@@_sec_stack_seq{1}}
+ }
+%    \end{macrocode}
+% \end{macro}
+% \begin{variable}{\l_@@_sec_Sect_bool}
+% This boolean controls if a Sect structure is opened.
+%    \begin{macrocode}
+\bool_new:N     \l_@@_sec_Sect_bool
+\bool_set_true:N\l_@@_sec_Sect_bool
+%    \end{macrocode}
+% \end{variable}
+% \begin{variable}{\l_@@_sec_tmpa_tl}
+% a temp variable
+%    \begin{macrocode}
+\tl_new:N     \l_@@_sec_tmpa_tl
+%    \end{macrocode}
+% \end{variable}
+% \begin{macro}{\@@_sec_begin:nn}
+% This starts a \texttt{Sect} unit structure (the „Sect environment“).
+% Currently the default tag is either Sect or Part, depending on the level,
+% but this can be changed by adapting the symbolic structure names which are
+% built from the level.
+% The second argument allows to add more options but is currently unused.
+%    \begin{macrocode}
+\cs_new_protected:Npn\@@_sec_begin:nn #1 #2 %#1 level #2 keyval
+  {
+    \tag_struct_begin:n
+      {
+         tag= \UseStructureName{sec/#1}
+        ,#2
+      }
+    \seq_gpush:Ne \g_@@_sec_stack_seq
+      {{\g_@@_struct_tag_tl}{\int_eval:n{#1}}{\g_@@_struct_stack_current_tl}}
+  }
+\cs_generate_variant:Nn \@@_sec_begin:nn {en}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_sec_end:n}
+%    \begin{macrocode}
+\msg_new:nnn { tag } {wrong-sect-nesting}
+  {
+    The~structure~#1~can~not~be~closed.\\
+    It~is~not~equal~to~the~current~structure~#2~on~the~main~stack
+  }
+
+\cs_new_protected:Npn\@@_sec_end:n #1 % #1 level
+  {
+    \seq_get:NN \g_@@_sec_stack_seq \l_@@_tmpa_tl
+    \int_compare:nNnT {#1}<{\exp_last_unbraced:NV\use_ii:nnn\l_@@_tmpa_tl+1}
+      {
+        \seq_get:NN\g_@@_struct_tag_stack_seq \l_@@_tmpb_tl
+        \exp_args:Nee
+          \tl_if_eq:nnTF
+            {\exp_last_unbraced:NV\use_i:nnn\l_@@_tmpa_tl}
+            {\exp_last_unbraced:NV\use_i:nn\l_@@_tmpb_tl}
+            {
+              \seq_gpop:NN \g_@@_sec_stack_seq \l_@@_tmpa_tl
+              \tag_struct_end:
+              \@@_sec_end:n {#1}
+            }
+            {
+              \msg_warning:nnee {tag}{wrong-sect-nesting}
+               { \exp_last_unbraced:NV\use_i:nnn \l_@@_tmpa_tl }
+               { \exp_last_unbraced:NV\use_i:nn \l_@@_tmpb_tl }
+            }
+      }
+  }
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{\@@_sec_title_split:,\@@_sec_restore_para:}
+% A runin-heading command must separate the heading title from the following text.
+% The code is in an \cs{everypar} which is perhaps executed in a group (e.g. when
+% a list follows), we have to ensure that the restoring of the para can escape.
+%    \begin{macrocode}
+\cs_new_protected:Npn\@@_sec_restore_para:
+ {
+   \UseTaggingSocket {para/restore}
+   \if_int_compare:w \tex_currentgrouptype:D =14        % semi-simple group
+     \group_insert_after:N \@@_sec_restore_para:
+   \else:
+       \if_int_compare:w \tex_currentgrouptype:D =\c_one_int  % simple group
+         \group_insert_after:N \@@_sec_restore_para:
+       \fi:
+   \fi:
+ }
+\cs_new_protected:Npn \@@_sec_title_split:
+  {
+%    \end{macrocode}
+% This ends the title structure. As the begin is from the
+% automatic (flattened) para-tagging we have to increase the counter.
+%    \begin{macrocode}
+    \tag_mc_end:
+    \tag_struct_end:
+    \@@_gincr_para_end_int:
+%    \end{macrocode}
+% In case something (e.g. a list) did reset the boolean we need to close also a semantic
+% paragraph.
+%    \begin{macrocode}
+    \bool_if:NF\l__tag_para_flattened_bool
+      {\UseTaggingSocket{para/semantic/end}{}}
+%    \end{macrocode}
+% Now restore the para-tagging and start a normal paragraph:
+%    \begin{macrocode}
+    \@@_sec_restore_para:
+    \UseTaggingSocket{para/begin}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_sec_title_begin:nn}
+% This command is used in the socket at the begin of display heading commands
+% like part and chapter. It takes two arguments: the level and the title.
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_sec_title_begin:nn #1 #2 %level, title
+  {
+    \pdf_purify:nN{#2}\l_@@_sec_tmpa_tl
+    \tag_struct_begin:n{tag=\UseStructureName{sec/#1/title},title-o={\l_@@_sec_tmpa_tl}}
+    \bool_set_true:N\l_@@_para_flattened_bool
+    \tl_set:Nn\l_@@_para_tag_tl {\UseStructureName{sec/#1/titleline}}
+  }
+%    \end{macrocode}
+% \end{macro}
+
+% \begin{macro}{\@@_sec_title_end:}
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_sec_title_end:
+  {
+    \tag_struct_end: %P = Hn
+    \UseTaggingSocket{para/restore}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@@_set_title_hang:nnn}
+% To be able to correctly tag the number and insert the link target in the
+% title of a sectioning command created with \cs{@startsection}
+% we need a special\cs{@hangfrom} variant. This is a bit tricky:
+% The argument contains the link target and for a correct structure
+% destination it should be typeset \emph{after} the structure has been opened.
+% But to measure the hangindent it must be typeset \emph{before} the paragraph is started.
+% This means that we have to open the title structure manually
+% and then have to suppress the para-tagging.
+% Additionally there is an engine difference: with pdftex the literals for the mc are inserted
+% with the box after the paragraph has started but luatex sets the attributes before
+% and we have to reset them. Hiding all this in a tagging socket is non-trivial.
+% The code assumes that we are in vmode!
+% Attention: The code opens a structure that it doesn't close (it is closed by the \cs{par}).
+% It therefore does not handle the full tagging of the title. In a new implementation
+% of the sectioning command this will perhaps have to change.
+%
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_set_title_hang:nNnn #1 #2 #3 #4
+  %#1 level,
+  %#2 boolean: nonumber? (will be later \l__head_nonumber_bool)
+  %#3 formated number /hang space
+  %#4 title
+%    \end{macrocode}
+% The handling of the title is not perfect. It would be better to pass it through
+% something like \cs{GetTitleString}. TODO.
+% \changes{0.84l}{2026-01-07}{use \cs{protected@edef} to avoid problem with conditionals}
+% \changes{0.84o}{2026-04-28}{use \cs{pdf_purify:nN} for the title of the structure}
+%    \begin{macrocode}
+  {   
+    \pdf_purify:nN {#4}\l_@@_sec_tmpa_tl 
+    \tagstructbegin{tag=\UseStructureName{sec/#1/title},title-o={\l_@@_sec_tmpa_tl}}
+    \cs_if_exist_use:N \@@_gincr_para_begin_int:
+    \bool_if:NF #2
+     { \tagstructbegin{tag=\UseStructureName{sec/#1/number}} }
+    \setbox\@tempboxa\hbox{{#3}}
+%    \end{macrocode}
+% We stop paratagging now, to avoid that the \cs{noindent} creates a structure.
+%    \begin{macrocode}
+    \bool_set_false:N \l_@@_para_bool
+    \hangindent \wd\@tempboxa\noindent
+%    \end{macrocode}
+% Restart paratagging and insert the box. If the box has a real content (if there is a
+% number) we have to add mc-chunks and reset the attribute of the box.
+%    \begin{macrocode}
+    \bool_set_true:N \l_@@_para_bool
+    \bool_if:NTF #2
+     {
+       \box\@tempboxa
+     }
+     {
+       \tagmcbegin{}
+%    \end{macrocode}
+% In lua mode we have to reset the attributes inside the box!
+%    \begin{macrocode}
+       \tag_mc_reset_box:N\@tempboxa
+       \box\@tempboxa
+       \tagmcend
+       \tagstructend
+     }
+   \tagmcbegin{}
+  }
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\@@_sec_title_runin_number:nn}
+%    \begin{macrocode}
+\cs_new_protected:Npn \@@_sec_title_runin_number:nNn #1 #2 #3 %#1 level, #2 boolean no number, #3 content
+  {
+    \bool_if:NTF #2
+    { #3 }
+    {
+      \tag_mc_end_push:
+      \tag_struct_begin:n{tag=\UseStructureName{sec/#1/number}}
+      \tag_mc_begin:n{}
+      #3
+      \tag_mc_end:
+      \tag_struct_end:
+      \tag_mc_begin_pop:n{}
+    }
+  }
+%    \end{macrocode}
+% \end{macro}
+% Open sec structures should be closed at the end of the document. This should
+% be done before tagpdf closes the Document structure.
+%    \begin{macrocode}
+\hook_gput_code:nnn
+  {tagpdf/finish/before}
+  {tagpdf/sec}
+  {\AssignTaggingSocketPlug{sec/end}{kernel}\UseTaggingSocket{sec/end}{-10}}
+\hook_gset_rule:nnnn {tagpdf/finish/before}{tagpdf/sec}{before}{tagpdf}
+%    \end{macrocode}
+%
+% The commands \cs{mainmatter}, \cs{backmatter}, \cs{frontmatter} and
+% \cs{appendix} close all \texttt{Sect} and \texttt{Part} structures.
+% \changes{v0.84g}{2025/01/05}{ensure that paragraph is ended (tagging/777)}
+%    \begin{macrocode}
+\AddToHook{cmd/frontmatter/before}{\par\UseTaggingSocket{sec/end}{-10}}
+\AddToHook{cmd/mainmatter/before} {\par\UseTaggingSocket{sec/end}{-10}}
+\AddToHook{cmd/backmatter/before} {\par\UseTaggingSocket{sec/end}{-10}}
+\AddToHook{cmd/appendix/before}   {\par\UseTaggingSocket{sec/end}{-10}}
+%    \end{macrocode}
+%
+% \subsection{Tagging Sockets}
+% First the sockets that handle the Sect structures. 
+% 
+% The argument of the begin socket consists of two brace groups,
+% in the first brace is the level, in the second the keys for the structure.
+%    \begin{macrocode}
+\NewTaggingSocketPlug{sec/begin}{kernel}
+  {
+     \@@_sec_begin:en #1
+  }
+\AssignTaggingSocketPlug{sec/begin}{kernel}
+%    \end{macrocode}
+% The end socket takes as argument only the level to close.
+%    \begin{macrocode}
+\NewTaggingSocketPlug{sec/end}{kernel}
+  {
+     \@@_sec_end:n {#1}
+  }
+\AssignTaggingSocketPlug{sec/end}{kernel}
+%    \end{macrocode}
+%
+% These two sockets handle the tagging of headings titles with special formatting
+% like part and chapter.
+% The argument of the begin socket is two brace groups containing the level and
+% the title.
+%    \begin{macrocode}
+\NewTaggingSocketPlug{sec/title/begin}{kernel}
+ {
+   \@@_sec_title_begin:nn #1 
+ }
+\AssignTaggingSocketPlug{sec/title/begin}{kernel}
+%    \end{macrocode}
+% The end socket does not take an argument. It only closes the structures
+% and restores the para settings.
+%    \begin{macrocode}
+
+\NewTaggingSocketPlug{sec/title/end}{kernel}
+ {
+   \@@_sec_title_end:
+ }
+\AssignTaggingSocketPlug{sec/title/end}{kernel}
+%    \end{macrocode}
+%
+%
+% The \texttt{sec/title/hang} socket is used to typeset a heading title using \cs{@hangfrom}.
+% It is the most tricky one. It takes two arguments.
+% The second argument of this socket will pass the normal \cs{@hangfrom} command
+% if tagging is not active. It is not used with tagging.
+% The first argument passes four brace groups:
+% the level, a boolean for \enquote{nonumber}, 
+% the actual content of the number and the title.
+%
+% Attention: The socket opens a structure that it doesn't close (it is closed by the \cs{par}).
+% It therefore does not handle the full tagging of the title. In a new implementation
+% of the heading command this will perhaps have to change.
+%    \begin{macrocode}
+\NewTaggingSocketPlug{sec/title/hang}{kernel}
+  {
+    \@@_set_title_hang:nNnn #1
+  }
+\AssignTaggingSocketPlug{sec/title/hang}{kernel}
+%    \end{macrocode}
+%
+% The \texttt{sec/title/init} socket is used to do some initialization 
+% for heading commands that are set up with \cs{@startsection}. It sets
+% the tag name and flattens the para-tagging. It is mostly needed for run-in
+% headings which set the heading inside \cs{everypar}. 
+% It takes 1 argument, the level.
+%    \begin{macrocode}
+\NewTaggingSocketPlug{sec/title/init}{kernel}
+ {
+   \tl_set:Ne\l_@@_para_tag_tl{\UseStructureName{sec/#1/title}}
+   \bool_set_true:N \l_@@_para_flattened_bool
+ }
+\AssignTaggingSocketPlug{sec/title/init}{kernel}
+%    \end{macrocode}
+%
+% This socket handles the tagging between a run-in heading and the following text.
+% It takes no argument.
+%    \begin{macrocode}
+\NewTaggingSocketPlug{sec/title/split}{kernel}
+ {
+   \@@_sec_title_split:
+ }
+\AssignTaggingSocketPlug{sec/title/split}{kernel}
+%    \end{macrocode}
+%
+% The following tagging socket command is used to handle the tagging
+% of the number in the title of run-in headings. Similar to the hang variant it does not
+% handle the full structure but relies in part on the paragraph
+% tagging. This again can change if sectioning commands are reimplemented.
+% It takes as first argument the level and a boolean for the numbering.
+% The second argument contains the formatted number (if numbered) and the destination.
+%    \begin{macrocode}
+\NewTaggingSocketPlug{sec/title/runin/number}{kernel}
+ {
+   \@@_sec_title_runin_number:nNn #1 {#2}
+ }
+\AssignTaggingSocketPlug{sec/title/runin/number}{kernel}
+%    \end{macrocode}
+%
+% The following tagging socket command simply tags a number.
+% It is not used here, as the legacy code needs a more complicated setup.
+% 
+% It takes the level as first argument.
+% The second argument contains the formatted number.
+%    \begin{macrocode}
+\NewTaggingSocketPlug{sec/title/number}{kernel}
+ {
+   \tag_mc_end_push:
+   \tag_struct_begin:n{tag=\UseStructureName{sec/#1/number}}
+   \tag_mc_begin:n{}
+     #2
+   \tag_mc_end:
+   \tag_struct_end:
+   \tag_mc_begin_pop:n{}
+ }
+\AssignTaggingSocketPlug{sec/title/number}{kernel}
+%    \end{macrocode}
+%
+% \section{Heading commands}
+%
+% \subsection{\cs{part} and \cs{chapter}}
+%
+% \cs{part} and \cs{chapter} are defined by the classes.
+% To tag them we redefine the user commands.
+% This will probably break with various classes and with titlesec.
+% The tagging inside relies on the para tagging.
+% We do not yet use keyval in the optional argument, as this requires latex-dev
+% and the naming of the keys and their key family is unclear.
+% \changes{v0.84f}{2024/10/04}{Added braces around optional arg (tagging/725)}
+% \changes{v0.84l}{2026/01/06}{Removed redefinition of \cs{chapter} and \cs{part}. Now done with templates.}
+%
+%
+% \subsubsection{Hyperref code}
+% Package \pkg{hyperref} has to insert anchors. If the heading is numbered this is done by
+% \cs{refstepcounter} (and so in vmode). For unnumbered headings hyperref
+% injects the anchor in hmode before the text, it also inserts a
+% kern to compensate the indent.
+%
+% This means that the target of numbered and unnumbered sectioning commands
+% differ, both regarding the location and in relation to the
+% tagging structure: The anchor from the \cs{refstepcounter} is outside of
+% the structure created by the heading title if the para tags are used,
+% while the other anchors are inside and so the structure destinations are different.
+%
+%
+% \changes{0.84n}{2026-04-24}{Removed the suppressing of hyperref patches, it is done by hyperref now.}
+% \changes{0.84n}{2026-04-24}{Removed the hyperref code, this is done in the template implementation.}
+%
+% \subsection{Adaption of the heading commands}
+% 
+% \changes{0.84n}{2026-04-24}{Removed the code, as it is now superseded 
+%  by the new implementation in latex-lab-sec-template}
+%
+% \subsection{Keys for \cs{tagpdfsetup}}
+% We need to provide user and package level commands
+% \changes{0.84k}{2025/04/09}{Add braces around key values, tagging issue \#830}
+% \changes{0.84j}{2025-10-11}{add \cs{tagpdfsetup} keys for two user facing keys}
+%
+%    \begin{macrocode}
+\keys_define:nn{__tag / setup}
+ {
+   ,sec/end .code:n =
+      {
+        \par
+        \UseTaggingSocket{sec/end}{\int_eval:n{\cs_if_exist_use:c{toclevel@#1}+0}}
+      }
+   ,sec/end .value_required:n = true
+   ,sec/grouping .choice:,
+   ,sec/grouping / true .code:n =
+     {
+       \AssignTaggingSocketPlug{sec/begin}{kernel}
+       \AssignTaggingSocketPlug{sec/end}{kernel}
+     }
+   ,sec/grouping / false .code:n =
+     {
+       \AssignTaggingSocketPlug{sec/begin}{noop}
+       \AssignTaggingSocketPlug{sec/end}{noop}
+     }
+   ,sec/grouping .default:n = true
+ }
+%    \end{macrocode}
+%    \begin{macrocode}
+%</package>
+%    \end{macrocode}

@@ -1,0 +1,27 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{lipsum}
+
+\newcount\testremaining
+
+\begin{document}
+
+\section{Test: noindent + hbox + everypar + lipsum}
+
+\noindent
+\parshape 6 0pt 200pt 0pt 200pt 0pt 200pt 0pt 200pt 0pt 200pt 0pt 345.0pt\relax
+\hbox to 0pt{\vbox to 0pt{\color{red}\rule{50pt}{50pt}\vss}\hss}%
+\testremaining=5
+\everypar{%
+  \wlog{HOOK: remaining=\the\testremaining}%
+  \ifnum\testremaining>0
+    \parshape 6 0pt 200pt 0pt 200pt 0pt 200pt 0pt 200pt 0pt 200pt 0pt 345.0pt\relax
+  \else
+    \everypar{}%
+  \fi
+}%
+\lipsum[1]
+\lipsum[2]
+
+\everypar{}%
+
+\end{document}

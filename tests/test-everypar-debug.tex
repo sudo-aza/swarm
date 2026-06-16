@@ -1,0 +1,23 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{lipsum}
+\usepackage{swarmwrap}
+
+\begin{document}
+
+\section{Test: everypar inside itemize}
+
+% Test 1: Does everypar fire inside itemize at all?
+\everypar{\wlog{EVERYPAR FIRED before itemize}}
+\lipsum[1][1-2]
+
+\begin{itemize}
+\everypar{\wlog{EVERYPAR FIRED inside itemize}}
+  \item First item text
+  \item Second item text
+  \item Third item text
+\end{itemize}
+
+\everypar{\wlog{EVERYPAR FIRED after itemize}}
+\lipsum[1][1-2]
+
+\end{document}

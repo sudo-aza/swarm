@@ -1,0 +1,8 @@
+\input docstrip
+\generate{%
+  \file{lua-unicode-math.sty}{%
+    \from{lua-unicode-math.dtx}{}%
+  }%
+}
+\directlua {loadfile 'generate-nfss.lua'()}
+\endbatchfile

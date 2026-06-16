@@ -1,0 +1,27 @@
+\documentclass[11pt,a4paper]{article}
+
+\newcount\testremaining
+
+\begin{document}
+
+\section{Test: everypar with explicit text and par}
+
+\noindent
+\testremaining=3
+\everypar{%
+  \wlog{HOOK: remaining=\the\testremaining}%
+  \ifnum\testremaining>0
+    \parshape 4 0pt 200pt 0pt 200pt 0pt 200pt 0pt 200pt 0pt 345.0pt\relax
+  \else
+    \everypar{}%
+  \fi
+}%
+First paragraph text. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut purus elit, vestibulum ut, placerat ac, adipiscing vitae, felis. Curabitur dictum gravida mauris.
+
+Second paragraph text. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
+
+Third paragraph text. Sed diam turpis, molestie vitae, placerat a, pede.
+
+\everypar{}%
+
+\end{document}

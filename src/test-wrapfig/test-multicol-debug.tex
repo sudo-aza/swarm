@@ -1,0 +1,107 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{multicol}
+\usepackage{caption}
+\usepackage{swarmwrap}
+
+\title{Test: Multicol Figure Alignment — Debug}
+\author{Programmer Agent}
+\date{2026-05-30}
+
+\begin{document}
+\maketitle
+
+% ====================================================================
+% Test A: Figure in LEFT column of 2-col multicol
+% ====================================================================
+\section*{Test A: Figure in Left Column}
+\begin{multicols}{2}
+  \begin{swarmwrap}%
+    \begin{minipage}[t]{2cm}
+      \centering
+      \rule{\linewidth}{2.8cm}
+      \captionof{figure}{Fig A: Left col (2cm).}
+    \end{minipage}%
+  \end{swarmwrap}%
+  \swarmwrapnext
+  \lipsum[1-3]
+\end{multicols}
+
+% ====================================================================
+% Test B: Figure in RIGHT column — text fills left column first
+% ====================================================================
+\section*{Test B: Figure in Right Column}
+\begin{multicols}{2}
+  \lipsum[1-2]% Fill left column and start right column
+  \begin{swarmwrap}%
+    \begin{minipage}[t]{2cm}
+      \centering
+      \rule{\linewidth}{2.8cm}
+      \captionof{figure}{Fig B: Right col (2cm).}
+    \end{minipage}%
+  \end{swarmwrap}%
+  \swarmwrapnext
+  \lipsum[3-5]
+\end{multicols}
+
+% ====================================================================
+% Test C: Two consecutive figures in left column
+% ====================================================================
+\section*{Test C: Consecutive Figures in Left Column}
+\begin{multicols}{2}
+  \begin{swarmwrap}%
+    \begin{minipage}[t]{2cm}
+      \centering
+      \rule{\linewidth}{1.5cm}
+      \captionof{figure}{Fig C1 (2cm).}
+    \end{minipage}%
+  \end{swarmwrap}%
+  \swarmwrapnext
+  \lipsum[1]
+  \begin{swarmwrap}%
+    \begin{minipage}[t]{2cm}
+      \centering
+      \rule{\linewidth}{1.5cm}
+      \captionof{figure}{Fig C2 (2cm).}
+    \end{minipage}%
+  \end{swarmwrap}%
+  \swarmwrapnext
+  \lipsum[2-3]
+\end{multicols}
+
+% ====================================================================
+% Test D: Figure near page break in multicol
+% ====================================================================
+\section*{Test D: Figure Near Page Break in Multicol}
+\begin{multicols}{2}
+  \lipsum[1-8]% Fill most of the page
+  \begin{swarmwrap}%
+    \begin{minipage}[t]{2cm}
+      \centering
+      \rule{\linewidth}{2.8cm}
+      \captionof{figure}{Fig D: Near break (2cm).}
+    \end{minipage}%
+  \end{swarmwrap}%
+  \swarmwrapnext
+  \lipsum[9-11]
+\end{multicols}
+
+% ====================================================================
+% Test E: Wide figure (4cm) in left column of 2-col multicol
+% ====================================================================
+\section*{Test E: Wide Figure (4cm) in Left Column}
+\begin{multicols}{2}
+  \begin{swarmwrap}%
+    \begin{minipage}[t]{4cm}
+      \centering
+      \rule{\linewidth}{2.8cm}
+      \captionof{figure}{Fig E: Wide (4cm).}
+    \end{minipage}%
+  \end{swarmwrap}%
+  \swarmwrapnext
+  \lipsum[1-2]
+\end{multicols}
+
+\end{document}
