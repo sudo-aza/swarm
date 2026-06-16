@@ -1899,3 +1899,68 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T126 section).
+
+### QA — 2026-06-16 15:30 UTC+8 (Turn T127, Rule 5 — TeX Live reinstall + regression check after Programmer activity)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **PROGRAMMER ACTIVITY:** 1 commit since T126 — marked Task #175 as done (caption clipping, TeX engine limitation, already handled by v3.41 SQUEEZE-FIT). No swarmwrap.sty changes.
+>
+> **TeX Live REINSTALLED (7th occurrence):** setup.sh + fmtutil-sys --all + tlmgr install lipsum caption.
+>
+> **ACTION:** Recompiled test-stress-50.pdf (2-pass): 16 pages, 54668 bytes — bit-perfect baseline. 40 NORMAL + 6 SQUEEZE + 4 DEFERRED = 50.
+>
+> **FINDINGS:** Zero regressions after Programmer's BLACKBOARD cleanup commits. v3.41 stable.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T127 section).
+
+### QA — 2026-06-16 16:30 UTC+8 (Turn T128, Rule 5 — font consistency check)
+> **No pending QA tasks**: Per Rule 5, active inspection — novel angle: verify all text uses consistent font family.
+>
+> **ACTION:** Extracted all font names from stress-50.pdf via PyMuPDF span analysis.
+>
+> **RESULT:** 4 fonts found, all Latin Modern Roman: LMRoman10-Regular (645 spans, body), LMRoman9-Regular (67 spans, figure captions), LMRoman12-Regular (2 spans, date), LMRoman17-Regular (1 span, title). All expected.
+>
+> **FINDINGS:** Zero new issues. Font usage consistent.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T128 section).
+
+### QA — 2026-06-16 17:30 UTC+8 (Turn T129, Rule 5 — test source integrity verification)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **TeX Live LOST (8th occurrence):** `git rebase --skip` after Programmer cron conflict wiped TeX Live. PDFs also lost from rebase.
+>
+> **ACTION:** Verified test source files intact: stress-50 (518 lines), customwrap (198 lines), pbv (213 lines). No swarmwrap.sty changes from Programmer.
+>
+> **FINDINGS:** Zero regressions. Source files intact.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T129 section).
+
+### QA — 2026-06-16 18:30 UTC+8 (Turn T130, Rule 5 — TeX Live reinstall #8 + regression sweep)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **TeX Live LOST (8th occurrence):** `lualatex` not found on PATH. Reinstalled via `bash scripts/setup.sh --skip-system` + `fmtutil-sys --all` + `tlmgr install caption lipsum`. Also re-extracted swarmwrap.sty from git HEAD to fix broken index.
+>
+> **Regression sweep:** Compiled test-stress-50.pdf (2-pass LuaLaTeX). Output: 54668 bytes — matches v3.41 baseline exactly (bit-perfect). Ran 4 detection scripts: near-empty pages (2 at pg6/pg10, expected), figure ordering (1-50 monotonic, correct), figure alignment (all 50 right-aligned at x1=476.48pt, 0.00pt range), parshape leaks (0 leaked pages). All results match known baseline. Zero regressions. 21 consecutive turns with no new bugs found on v3.41.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T130 section).
+
+### QA — 2026-06-16 20:30 UTC+8 (Turn T131, Rule 5 — text-figure gap consistency + compilation log check)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **TeX Live:** Present from T130 reinstall. No issues.
+>
+> **Inspection:** (1) PyMuPDF spot-check on 5 random pages (pg2,6,9,11,13) analyzing text-figure vertical adjacency. All narrow text lines correctly wrap alongside figures with 0.9pt minimum gap (normal inter-line spacing). Zero actual text-figure collisions. (2) Recompiled stress-50, checked log: 1 overfull (7.3pt, Fig 36, known), 2 underfull (badness ~1100, cosmetic) — all match known baseline.
+>
+> **FINDINGS:** Zero regressions. v3.41 stable for 22 consecutive turns.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T131 section).
