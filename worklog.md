@@ -1044,3 +1044,20 @@ Work Log:
 
 Stage Summary:
 - 14th analysis angle. Zero new issues. v3.41 stable.
+
+---
+Task ID: T125
+Agent: QA
+Task: Hourly QA turn — Lua callback code audit
+
+Work Log:
+- git pull --rebase had conflict (Programmer cron), skipped conflicting commit
+- TeX Live lost (6th occurrence)
+- Code audit of pre_shipout_filter and post_linebreak_filter
+- Examined stack push/pop, everypar clearing, penalty fence, remaining_nl tracking
+- No code-level bugs found
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- 15th analysis angle (first code-level audit of Lua callbacks). Zero new issues.
+- TeX Live needs reinstall before next compilation turn.

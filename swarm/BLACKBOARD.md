@@ -1875,3 +1875,16 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T124 section).
+
+### QA — 2026-06-16 10:30 UTC+8 (Turn T125, Rule 5 — Lua callback code audit)
+> **No pending QA tasks**: Per Rule 5, active inspection — novel angle: code-level audit of Lua callbacks in swarmwrap.sty.
+>
+> **ACTION:** Reviewed pre_shipout_filter (lines 537-571) and post_linebreak_filter (lines 575-660) in detail. Examined: ghost narrowing fix, everypar clearing, remaining_nl tracking, penalty fence insertion, figure stack push/pop logic, tw restoration.
+>
+> **TeX Live LOST (6th occurrence):** Programmer cron wiped TeX Live again. Noted.
+>
+> **FINDINGS:** Code is well-structured and matches comments. Stack pop logic correctly restores previous figure's tw and remaining_nl. No code-level bugs found. Zero new issues.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T125 section).
