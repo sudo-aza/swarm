@@ -1899,3 +1899,18 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T126 section).
+
+### QA — 2026-06-16 15:30 UTC+8 (Turn T127, Rule 5 — TeX Live reinstall + regression check after Programmer activity)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **PROGRAMMER ACTIVITY:** 1 commit since T126 — marked Task #175 as done (caption clipping, TeX engine limitation, already handled by v3.41 SQUEEZE-FIT). No swarmwrap.sty changes.
+>
+> **TeX Live REINSTALLED (7th occurrence):** setup.sh + fmtutil-sys --all + tlmgr install lipsum caption.
+>
+> **ACTION:** Recompiled test-stress-50.pdf (2-pass): 16 pages, 54668 bytes — bit-perfect baseline. 40 NORMAL + 6 SQUEEZE + 4 DEFERRED = 50.
+>
+> **FINDINGS:** Zero regressions after Programmer's BLACKBOARD cleanup commits. v3.41 stable.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T127 section).

@@ -361,3 +361,17 @@ Work Log:
 Stage Summary:
 - 16th analysis angle (full code audit complete — both Lua + TeX). Zero new issues.
 - v3.41 entire codebase reviewed. Only 2 known bugs (#190, #194) remain.
+
+---
+Task ID: T127
+Agent: QA
+Task: Hourly QA turn — TeX Live reinstall + regression check
+
+Work Log:
+- Programmer marked #175 done, no .sty changes
+- TeX Live reinstalled (7th occurrence)
+- Recompiled stress-50: 16pg, 54668b, 40N+6S+4D=50 — bit-perfect
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.41 stable.
