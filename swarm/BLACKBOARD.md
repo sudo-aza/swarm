@@ -1951,3 +1951,16 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T130 section).
+
+### QA — 2026-06-16 20:30 UTC+8 (Turn T131, Rule 5 — text-figure gap consistency + compilation log check)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **TeX Live:** Present from T130 reinstall. No issues.
+>
+> **Inspection:** (1) PyMuPDF spot-check on 5 random pages (pg2,6,9,11,13) analyzing text-figure vertical adjacency. All narrow text lines correctly wrap alongside figures with 0.9pt minimum gap (normal inter-line spacing). Zero actual text-figure collisions. (2) Recompiled stress-50, checked log: 1 overfull (7.3pt, Fig 36, known), 2 underfull (badness ~1100, cosmetic) — all match known baseline.
+>
+> **FINDINGS:** Zero regressions. v3.41 stable for 22 consecutive turns.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T131 section).

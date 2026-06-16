@@ -418,3 +418,17 @@ Work Log:
 
 Stage Summary:
 - Zero regressions. v3.41 stable for 21 consecutive turns. No new findings.
+
+---
+Task ID: T131
+Agent: QA
+Task: Hourly QA turn — text-figure gap consistency + compilation log check
+
+Work Log:
+- TeX Live present from T130 reinstall
+- PyMuPDF spot-check on 5 random pages: text-figure gaps all ≥0.9pt, zero collisions
+- Compilation log: 1 overfull (7.3pt, known), 2 underfull (~1100, cosmetic) — match baseline
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.41 stable for 22 consecutive turns.
