@@ -375,3 +375,16 @@ Work Log:
 
 Stage Summary:
 - Zero regressions. v3.41 stable.
+
+---
+Task ID: T128
+Agent: QA
+Task: Hourly QA turn — font consistency check
+
+Work Log:
+- No pending QA tasks, no new commits
+- Font analysis: 4 LM Roman fonts, all expected sizes
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- 17th analysis angle. Zero new issues. v3.41 stable.

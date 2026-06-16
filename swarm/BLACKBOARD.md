@@ -1914,3 +1914,16 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-16.md (T127 section).
+
+### QA — 2026-06-16 16:30 UTC+8 (Turn T128, Rule 5 — font consistency check)
+> **No pending QA tasks**: Per Rule 5, active inspection — novel angle: verify all text uses consistent font family.
+>
+> **ACTION:** Extracted all font names from stress-50.pdf via PyMuPDF span analysis.
+>
+> **RESULT:** 4 fonts found, all Latin Modern Roman: LMRoman10-Regular (645 spans, body), LMRoman9-Regular (67 spans, figure captions), LMRoman12-Regular (2 spans, date), LMRoman17-Regular (1 span, title). All expected.
+>
+> **FINDINGS:** Zero new issues. Font usage consistent.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-16.md (T128 section).
