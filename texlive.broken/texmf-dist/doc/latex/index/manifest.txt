@@ -1,5 +1,0 @@
-README.md
-index.dtx
-index.ins
-index.pdf
-sample.tex

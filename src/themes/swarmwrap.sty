@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.41)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.45)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -392,6 +392,7 @@
 \newdimen\swarmwrap@fw
 \newdimen\swarmwrap@fh
 \newdimen\swarmwrap@tw
+\newdimen\swarmwrap@fig@tw  % v3.45: unclamped tw for figure positioning
 \newcount\swarmwrap@nl
 \newcount\swarmwrap@loop@cnt
 \newif\ifswarmwrap@luatex
@@ -809,6 +810,12 @@
   \ifdim\dimen0>0pt \repeat
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+  % v3.45: Save unclamped tw for figure positioning. The clamped
+  % tw (below) is used only for parshape/text narrowing to prevent
+  % text overlapping wider stacked figures. But the figure itself
+  % must always be flush with the right margin.
+  \global\swarmwrap@fig@tw=\swarmwrap@tw\relax
+  \xdef\swarmwrap@fig@tw@val{\the\swarmwrap@fig@tw\space}%
   % v3.37: Clamp tw to minimum across all stacked figures (Task #178).
   % If earlier figures are still active with narrower tw, use that
   % to prevent text overlapping the wider stacked figure zones.
@@ -893,7 +900,7 @@
       \fi
       \noindent
       \parshape \swarmwrap@pshape\relax
-      \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+      \smash{\rlap{\hskip\swarmwrap@fig@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
       \wlog{swarmwrap next: DEFERRED-NEWPAGE --- fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
       \swarmwrap@placedtrue
     \fi
@@ -911,10 +918,10 @@
     \parshape \swarmwrap@pshape\relax
     \interlinepenalty=\swarmwrap@penalty\relax
       \ifswarmwrap@squeezed
-        \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@scaledbox\relax\hbox{\copy\swarmwrap@scaledbox}}}%
+        \smash{\rlap{\hskip\swarmwrap@fig@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@scaledbox\relax\hbox{\copy\swarmwrap@scaledbox}}}%
         \wlog{swarmwrap next: SQUEEZE --- fh=\the\swarmwrap@fh, fw=\the\swarmwrap@fw, nl=\the\swarmwrap@nl}%
       \else
-        \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+        \smash{\rlap{\hskip\swarmwrap@fig@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
         \wlog{swarmwrap next: NORMAL --- tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
       \fi
   \fi

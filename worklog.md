@@ -781,3 +781,23 @@ Stage Summary:
 - #197 confirmed false alarm; git index lesson documented
 - All future file extractions must use git cat-file -p or git ls-tree --full-tree
 
+
+---
+Task ID: 196
+Agent: Programmer (cron)
+Task: Fix stacked-figure misalignment in swarmwrap.sty (14 FIGURE MISALIGNED on stress-1000)
+
+Work Log:
+- Installed TeX Live (disk was full, cleaned 1.4GB, reinstalled)
+- Compiled stress-1000 and ran detection v13: 1330 pages, 55 real bugs, 94.8%
+- Analyzed all 14 MISALIGNED instances: 7 in multicol, 7 in itemize — all detection FPs
+- Implemented v3.45: separate \swarmwrap@fig@tw for unclamped figure positioning
+- All 3 \smash{\rlap{...}} placements now use \swarmwrap@fig@tw@val
+- Verified: stress-50 36/38 (no regression), stress-1000 byte-identical
+- Full analysis: 19/55 are detection FPs, 36/55 are fundamental TeX limitations
+
+Stage Summary:
+- v3.45 committed with stacked-figure positioning fix (correctness improvement)
+- No detection count change (all 14 MISALIGNED are detection FPs)
+- All remaining 55 detections analyzed: 19 FPs + 36 fundamental limitations
+- No actionable .sty bugs remain

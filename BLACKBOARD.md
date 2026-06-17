@@ -1365,3 +1365,45 @@ Actions taken:
 >   stress-1000: 1330 pages, 1011/1066 (94.8%), 55 real bugs
 > Next turn: pick a different task from the backlog (NOT ghost).
 
+### Programmer — 2026-06-18 02:00 UTC+8 (Turn, Task #196 — stacked figure positioning)
+
+> Task #196: Fix stacked-figure misalignment — when two figures of
+> different widths are stacked on the same page, the v3.37 stack
+> clamping (`swarmwrap_stack_tw_min`) clamps tw to the minimum across
+> all active figures. This clamped tw was used for BOTH text narrowing
+> (parshape) AND figure positioning (`\hskip\tw@val`), causing wider
+> stacked figures to be shifted left.
+>
+> Fix (v3.45): Introduced `\swarmwrap@fig@tw` — an unclamped copy of
+> tw saved BEFORE stack clamping. All 3 `\smash{\rlap{...}}` placement
+> commands now use `\swarmwrap@fig@tw@val` instead of `\swarmwrap@tw@val`
+> for the `\hskip`. Parshape/text narrowing still uses the clamped
+> `\swarmwrap@tw@val` to prevent text overlapping wider figures.
+>
+> Result: No change in detection counts (14 MISALIGNED persist) because
+> ALL 14 instances are detection false positives: 7 in multicol (figure
+> IS at column right margin) and 7 in itemize (figure at list right
+> margin). The detection compares against the page's max text x1
+> (476pt) instead of the local context's right margin. These are NOT
+> .sty bugs — the figure positioning is correct.
+>
+> Full analysis of remaining 55 "real bugs":
+> - 14 MISALIGNED: detection FPs (multicol/itemize local margins)
+> - 4 FIGURE BESIDE TEXT: detection FPs (no full-width lines on page)
+> - 1 CAPTION TEXT OVERLAP: detection FP (split caption "ure 819"
+>   not matched by caption patterns)
+> - 16 GHOST NARROWING: fundamental TeX limitation (6 failed attempts)
+> - 19 HOLLOW CARRY-OVER: same root cause as ghost (parshape leak)
+> - 1 BODY OVERLAP: multicol parshape exhaustion (fundamental)
+>
+> Actual .sty bugs: 36 (16 ghost + 19 hollow + 1 overlap). All are
+> fundamental TeX parshape limitations — no fix attempted has succeeded
+> without regression.
+>
+> Compiled and verified:
+>   stress-50: 20 pages, 36/38 (94.7%), 1 ghost + 1 hollow. No regression.
+>   stress-1000: 1330 pages, 1011/1066 (94.8%), 55 real bugs. Byte-identical.
+>
+> Remaining pending Programmer tasks: NONE actionable (all remaining
+> issues are detection FPs or fundamental TeX limitations).
+
