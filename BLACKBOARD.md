@@ -1489,3 +1489,66 @@ Actions taken:
 > Compiled stress-50: 20 pages, 36/38 (94.7%). No .sty changes.
 > Buffer approach reverted. No regression from v3.45.
 
+### Programmer — 2026-06-18 07:00 UTC+8 (Turn, Task #198 — v3.46 defensive ghost-narrow improvements)
+
+> Task #198: Add defensive interlinepenalty and space check to everypar
+> extension to mitigate multi-paragraph ghost narrowing.
+>
+> Changes (v3.46):
+> (1) Added \interlinepenalty=\swarmwrap@penalty to everypar extension.
+>     Previously only the first paragraph had interlinepenalty; subsequent
+>     paragraphs via everypar had no page-break penalty. The penalty
+>     fence in post_linebreak_filter already handles most cases, but
+>     this is correct defensive coding. No detection change.
+> (2) Added space check in everypar: before applying parshape to a
+>     subsequent paragraph, checks if remaining@nl * baselineskip >
+>     available page space. If so, skips parshape and clears everypar.
+>     No detection change (the check is too conservative to fire for
+>     the current ghost cases, but provides safety for edge cases).
+> (3) Investigated 7 approaches to eliminate ghost narrowing on
+>     stress-1000:
+>     a. interlinepenalty in everypar: no effect (penalty fence already
+>        handles this in post_linebreak_filter)
+>     b. Aggressive deferred (2-5bs safety margin): stress-50 ghost 1→0
+>        but stress-1000 unchanged (ghosts are from everypar, not first
+>        paragraph). +9 pages, 1 FIGURE BESIDE TEXT regression.
+>     c. Space check in everypar (1x and 2x margin): no effect on
+>        stress-1000 (remaining@nl is small, always fits)
+>     d. post_linebreak_filter widening leaked lines (total_lines < nl):
+>        CATASTROPHIC REGRESSION (20→16 pages, 4 body overlaps). The
+>        remaining estimation was wrong, causing wrong lines to widen.
+>     e. pre_shipout_filter widening narrow lines: no visible effect.
+>        Root cause: setting hbox width doesn't change text span
+>        positions in the PDF (detection measures text spans, not
+>        hbox widths). Also initially missed that page content is
+>        a vlist with nested hlists, not flat hlists.
+>     f. pre_shipout_filter with \swarmwrappagehasfig tracking:
+>        Implemented correctly but widening approach itself doesn't
+>        work (see e above).
+>     g. post_linebreak_filter page-break detection via penalty nodes:
+>        TeX does NOT insert -10000 penalties in the line-break
+>        output. Page breaks happen later in page-building phase.
+>        No penalty <= -10000 found in node list.
+>
+> CONCLUSION: The 55 stress-1000 detections break down as:
+> - 12 truly figureless pages with parshape leaks (fundamental TeX
+>   limitation: parshape assigned before page breaking, 10000
+>   interlinepenalty overridden by page overflow)
+> - 8 pages with figures of width 29-50pt missed by detection's
+>   width > 50 threshold
+> - 14 figure misalignment in multicol/itemize (figure at correct
+>   column/list margin, not page margin)
+> - 6 pages in itemize context (naturally narrow from bullet
+>   indentation, not parshape)
+> - 4 figure-beside-text (no full-width lines for comparison)
+> - 6 multi-span line detection FPs (paragraph-ending spans
+>   misidentified as narrow lines)
+> - 1 split caption word
+> - 1 multicol parshape exhaustion (body overlap)
+> - 3 additional hollow from multi-span FPs
+>
+> Compiled and verified:
+>   stress-50: 20 pages, 36/38 (94.7%), 1 ghost + 1 hollow. No regression.
+>   test-pagebreak-variations: 15 pages, 0 errors. No regression.
+>   stress-1000: 1330 pages, 1011/1066 (94.8%), 55 real bugs. Byte-identical.
+
