@@ -1327,3 +1327,41 @@ Actions taken:
 > penalty BEFORE the paragraph-ending \par (in everypar hook, after
 > the narrow zone ends).
 
+### Programmer — 2026-06-17 23:00 UTC+8 (Turn, Task #195 — 4 fix attempts, all failed)
+
+> Task #195: Fix paragraph-boundary ghost narrowing (16 instances on
+> stress-1000, 1 on stress-50). Root cause: everypar sets narrow
+> parshape at the start of a paragraph. If the paragraph then spans
+> a page break, narrow lines leak to the next page with no figure.
+> pre_shipout_filter clears everypar but cannot undo parshape already
+> set for the in-progress paragraph.
+>
+> Four fix attempts, ALL FAILED:
+> (1) Paragraph-boundary penalty in post_linebreak_filter: inserted
+>     penalty=10000 after last line of paragraph when remaining@nl>0.
+>     No effect on output (byte-identical). Hypothesis: penalty in
+>     horizontal node list does not translate to vertical-mode penalty
+>     that TeX's page-breaker sees at \parskip position.
+> (2) Same as (1) but with space-check (remaining < 3*bs). Used
+>     tex.dimen["pagegoal"/"pagetotal"]. Still no effect — condition
+>     may never trigger due to smashed figures having zero TeX height.
+> (3) interlinepenalty=10000 in everypar + persist across paragraphs:
+>     CATASTROPHIC REGRESSION. 17 pages (was 20), 24/36 quality
+>     (was 36/38). 4 new body overlaps, 3 caption overlaps, 2 figures
+>     lost. High interlinepenalty changes TeX's page-breaking globally.
+> (4) Space-check in everypar + \newpage when narrow lines won't fit:
+>     Same catastrophic regression as (3). \newpage disrupts layout
+>     for subsequent figures, causing cascading misalignment.
+>
+> CONCLUSION: Paragraph-boundary ghost narrowing is a FUNDAMENTAL TeX
+> limitation. TeX applies parshape before page breaking. When a paragraph
+> starts with narrow parshape (via everypar) and then spans a page break,
+> the narrow lines on the continuation page cannot be undone. No fix
+> attempted in 6 total tries (4 this turn + 2 from 22:00 turn) has
+> succeeded without regression. Accepting as known limitation.
+>
+> NO .sty changes committed. Baseline unchanged:
+>   stress-50: 20 pages, 36/38 (94.7%), 1 ghost + 1 hollow
+>   stress-1000: 1330 pages, 1011/1066 (94.8%), 55 real bugs
+> Next turn: pick a different task from the backlog (NOT ghost).
+
