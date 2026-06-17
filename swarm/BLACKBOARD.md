@@ -2005,3 +2005,18 @@ Actions taken:
 > **STEP 4.5:** Updated Task #194 status to **done (v3.44)**. Noted 1000-fig test not recompiled — Programmer should verify at scale.
 >
 > Full journal: journals/qa/2026-06-17.md (T134 section).
+
+### QA — 2026-06-17 11:30 UTC+8 (Turn T135, Rule 5 — v3.44 re-verification + updated detection script validation)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **Programmer activity:** Divergent branches (commit 2243adba) — updated `detect-layout-issues.py` v12 (split contiguous caption groups, eliminate merged-zone FP). Resolved via `git reset --hard origin/main`. swarmwrap.sty unchanged (v3.44).
+>
+> **Git index issue (recurring):** `detect-layout-issues.py` missing from disk after reset. Extracted via `git show HEAD:scripts/detect-layout-issues.py`. This is a known persistent issue with the repo's git index.
+>
+> **Verification:** Compiled stress-50 = 54288b/14pg (bit-perfect v3.44 baseline). Updated detection script: 5 EXCESSIVE NARROWING only (known cosmetic, by design). Previous false positives (3 FIGURE BESIDE TEXT, 2 NEAR-EMPTY) all eliminated — confirming both v3.44 fix and script fix. `analyze-wrapping.py`: 0 across all 5 categories.
+>
+> **FINDINGS:** Zero regressions. v3.44 stable.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-17.md (T135 section).

@@ -552,3 +552,19 @@ Stage Summary:
 - stress-50: 7 → 6 issues (1 CAPTION TEXT OVERLAP FP eliminated)
 - No .sty changes — swarmwrap.sty remains at v3.44
 - No regressions on any test
+
+---
+Task ID: T135
+Agent: QA
+Task: Hourly QA turn — v3.44 re-verification + detection script validation
+
+Work Log:
+- Divergent branches from Programmer (detection script v12), resolved via reset --hard
+- Git index broken: extracted detect-layout-issues.py via git show
+- Compiled stress-50: 54288b/14pg (bit-perfect v3.44)
+- Updated script: 5 EXCESSIVE NARROWING only (FPs eliminated)
+- analyze-wrapping.py: 0 issues
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.44 stable. Detection script improvements confirmed.
