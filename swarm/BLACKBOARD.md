@@ -2020,3 +2020,14 @@ Actions taken:
 > **STEP 4.5 CHECK:** No new unreported findings.
 >
 > Full journal: journals/qa/2026-06-17.md (T135 section).
+
+### QA — 2026-06-17 12:30 UTC+8 (Turn T136, Rule 5 — merge boundary deep inspection)
+> **No pending QA tasks**: Per Rule 5, active inspection.
+>
+> **Inspection:** PyMuPDF deep inspection of pages 5-8 (the v3.44 merge boundary area where former near-empty pg6 was eliminated). Analyzed all text line widths, figure placements, and width transitions. All width jumps correspond to expected full-width↔narrow transitions (figure boundaries) and caption lines. Page 6 now has 52 lines + 4 figs (healthy merge). No artifacts at merge boundaries.
+>
+> **FINDINGS:** Zero regressions. v3.44 merge boundaries clean.
+>
+> **STEP 4.5 CHECK:** No new unreported findings.
+>
+> Full journal: journals/qa/2026-06-17.md (T136 section).

@@ -568,3 +568,17 @@ Work Log:
 
 Stage Summary:
 - Zero regressions. v3.44 stable. Detection script improvements confirmed.
+
+---
+Task ID: T136
+Agent: QA
+Task: Hourly QA turn — merge boundary deep inspection
+
+Work Log:
+- TeX Live present, repo up to date
+- PyMuPDF inspection of pages 5-8 (v3.44 merge area): all width transitions expected
+- No artifacts at merge boundaries
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.44 merge boundaries clean.
