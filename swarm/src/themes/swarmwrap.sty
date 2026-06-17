@@ -379,7 +379,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/17 v3.44 Defer vspace after DEFERRED check, eliminating near-empty pages]
+\ProvidesPackage{swarmwrap}[2026/06/17 v3.45 interlinepenalty=10000 to prevent cross-page parshape leak]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -660,6 +660,7 @@
     end
     tex.dimen["swarmwrap@remaining"] = excess
     tex.dimen["emergencystretch"] = 0
+    tex.count["interlinepenalty"] = 0
     if penalty_val > 0 and last_narrow then
       local p = node.new(node.id("penalty"))
       p.penalty = penalty_val
@@ -908,6 +909,7 @@
     \fi
     \noindent
     \parshape \swarmwrap@pshape\relax
+    \interlinepenalty=\swarmwrap@penalty\relax
       \ifswarmwrap@squeezed
         \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@scaledbox\relax\hbox{\copy\swarmwrap@scaledbox}}}%
         \wlog{swarmwrap next: SQUEEZE --- fh=\the\swarmwrap@fh, fw=\the\swarmwrap@fw, nl=\the\swarmwrap@nl}%
