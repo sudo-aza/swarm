@@ -1276,3 +1276,54 @@ Actions taken:
 >
 > Task #195: Fix ghost narrowing on stress-1000 (105 instances)
 
+### Programmer — 2026-06-17 22:00 UTC+8 (Turn, Task #195 investigation)
+
+> Task #195 deep investigation. Key findings:
+>
+> (1) QA commit ef5ff06b reverted detection v13's EXCESSIVE NARROWING fix
+> (re-added 10pt vertical margin), causing 5 false positives on stress-50.
+> Restored v13 detection (removed margin). stress-50 now 36/38 (94.7%)
+> with 1 ghost + 1 hollow on page 18 (pre-existing, not from v3.44).
+>
+> (2) With restored v13 detection, stress-1000 baseline: 94.8% quality
+> (1011/1066), 55 real bugs: 16 ghost, 19 hollow carry-over, 14 misaligned,
+> 4 figure-beside-text, 1 overlap, 1 caption-text-overlap. 184 near-empty
+> are ACCEPTABLE (page-eject). Previous "288 bugs" was from pre-v13 detection.
+>
+> (3) Investigated four ghost fix approaches:
+>   a. Persist interlinepenalty=10000 across paragraphs via everypar:
+>      No effect on stress-1000 (0 ghost reduction). Stress-50 unchanged.
+>   b. Persist interlinepenalty in post_linebreak_filter (reset only
+>      when remaining@nl=0): REGRESSION — 6 extra pages, 5 EXCESSIVE
+>      NARROWING, 1 new ghost. Penalty affects full-width lines after
+>      narrow zone, changing TeX page break decisions globally.
+>   c. Clear figure stack on total_lines<nl (page break detection):
+>      REGRESSION — 3 extra pages, 4 body overlaps, 3 caption overlaps.
+>      The check is a FALSE POSITIVE: fires for short paragraphs
+>      (paragraph has fewer lines than parshape specifies) not actual
+>      page breaks.
+>   d. Page-number-aware stack pop (only pop if same page):
+>      REGRESSION — 17 pages, 4 body overlaps, 3 caption overlaps.
+>      Prevented legitimate same-page stack restores.
+>
+> (4) Root cause analysis: Ghost narrowing is a FUNDAMENTAL TeX
+> limitation. TeX applies parshape before line breaking. When a paragraph
+> spans a page break, continuation lines inherit narrow widths. The
+> penalty fence (explicit 10000 penalties between narrow lines +
+> interlinepenalty=10000 on first paragraph) prevents breaks within
+> single paragraphs. But it cannot prevent breaks at PARAGRAPH BOUNDARIES
+> (between the last narrow paragraph and the first full-width paragraph
+> via everypar). The 16 ghost instances on stress-1000 occur at these
+> paragraph boundaries where \par's inherent break penalty (-10000)
+> overrides the 10000 interline penalty.
+>
+> (5) Confirmed: the `total_lines < nl` check in post_linebreak_filter
+> is dead code — `nl` refers to a nil global variable because `local nl`
+> is declared later in the function. The check never fires. Page breaks
+> are handled solely by pre_shipout_filter.
+>
+> NO .sty changes committed. Only detection v13 margin removal restored.
+> Next turn: attempt to fix paragraph-boundary ghost by inserting a
+> penalty BEFORE the paragraph-ending \par (in everypar hook, after
+> the narrow zone ends).
+

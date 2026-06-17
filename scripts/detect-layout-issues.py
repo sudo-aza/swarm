@@ -824,13 +824,17 @@ def detect_excessive_narrowing(page_num, page, figures, text_lines,
         # with wrapping. Fix: only count lines whose vertical range overlaps
         # with the figure's vertical range (with 1-baselineskip margin for
         # parshape rounding above and below).
-        MARGIN = 10.0  # accounts for line-height overlap at figure boundaries
         narrow_lines = []
         for line in body_lines:
-            # Must vertically overlap with the figure (with margin)
-            if line["y1"] < fig.y0 - MARGIN:
+            # Must vertically overlap with the figure.
+            # No margin needed: a line whose y-range overlaps the figure's
+            # y-range is genuinely beside it. A margin catches naturally
+            # short paragraph-ending lines above/below the figure,
+            # inflating the narrow zone (v12: was 10pt, caused 5 FPs on
+            # stress-50 where short last-lines were counted as wrap-narrow).
+            if line["y1"] < fig.y0:
                 continue  # Line is above the figure
-            if line["y0"] > fig.y1 + MARGIN:
+            if line["y0"] > fig.y1:
                 continue  # Line is below the figure
             # Must be beside the figure (to the left)
             if line["x1"] > fig.x0 + 5:
