@@ -1320,3 +1320,39 @@ Stage Summary:
 - Code review: v3.63 correctly applies T88 fix + adds recursive vbox.
 - Programmer marked Tasks #208 and #215 done without QA verification.
 - Git root mismatch causes pull failures (parent repo at /home/z/my-project).
+
+---
+Task ID: T146
+Agent: QA
+Task: Hourly QA turn — v3.45 CRITICAL regression discovered via broken git index
+
+Work Log:
+- Discovered git index causes git show HEAD: and git ls-tree HEAD to return STALE content
+- git ls-tree --full-tree HEAD reveals actual .sty is v3.45 (d4c05fc4), not v3.41
+- Re-extracted .sty via git cat-file -p, compiled all 3 test suites
+- v3.45 CRITICAL regression on stress-50: 14pg/54288b to 20pg/57025b (+43% pages)
+- Root cause: tex.count["interlinepenalty"] = 0 in post_linebreak_filter resets globally
+- New issues: 1 GHOST NARROWING + 1 HOLLOW CARRY-OVER (v3.44 had 0)
+- Confirmed #197 was false alarm via git ls-tree --full-tree
+- Created Task #198 for Programmer
+
+Stage Summary:
+- v3.45 has CRITICAL regression: stress-50 +6 pages from interlinepenalty=0 reset
+- Task #198 created for Programmer: remove tex.count["interlinepenalty"] = 0
+- All future file extractions must use git cat-file -p or git ls-tree --full-tree
+
+---
+Task ID: T147
+Agent: QA
+Task: Hourly QA turn — v3.45 regression re-confirmation
+
+Work Log:
+- All extractions via git cat-file -p (T146 lesson applied)
+- v3.45 still in HEAD, no new Programmer commits
+- Re-compiled stress-50: 57025b/20pg, regression unchanged
+- Discovered T146 BLACKBOARD changes lost (wrong path prefix)
+- Re-applied #197 and #198 to BLACKBOARD.md
+
+Stage Summary:
+- v3.45 regression persists, #198 pending with Programmer
+- Process fix: commits must use repo-root-relative paths
