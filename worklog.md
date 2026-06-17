@@ -629,3 +629,18 @@ Work Log:
 
 Stage Summary:
 - Zero regressions. v3.44 stable for 9 consecutive turns. No new issues.
+
+---
+Task ID: T140
+Agent: QA
+Task: Hourly QA turn — caption position check + secondary PDF baseline
+
+Work Log:
+- TeX Live present, repo up to date, no pending QA tasks
+- Compiled stress-50: 54288b/14pg (bit-perfect v3.44)
+- Caption analysis: all 50 captions within 15pt of figure bottom, zero misalignment
+- Compiled customwrap: 44216b/11pg (baseline match)
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.44 stable for 10 consecutive turns. No new issues.

@@ -1265,3 +1265,11 @@ Actions taken:
 > - Compilation log: identical to baseline (1OF+2UF, 2 expected package warnings)
 > - Page density: 37-57 text lines per page, no near-empty pages
 > - No new issues found.
+
+### QA — 2026-06-17 18:30 UTC+8 (Turn, T140)
+
+> **No pending QA tasks.** Per Rule 5, performed active inspection:
+> - Compiled stress-50: 54288b/14pg (bit-perfect v3.44 baseline, 10th consecutive stable turn)
+> - Caption position: all 50 captions directly below figures (gap ≤ 15pt)
+> - customwrap: 44216b/11pg (baseline match)
+> - No new issues found.
