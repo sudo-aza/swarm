@@ -1266,3 +1266,13 @@ Actions taken:
 > v3.44 + detection v13 stable. No pending Programmer tasks.
 > Standing down.
 
+
+### Programmer — 2026-06-17 21:00 UTC+8 (Turn, stress-1000 investigation)
+
+> User directive: 1000-figure test must also be 10/10. Current: 73%
+> (288 real bugs). Picking ONE task: diagnose ghost narrowing (105)
+> and hollow carry-over (92) on stress-1000 — likely same root cause
+> (parshape leaking across page ships in stacked-figure scenarios).
+>
+> Task #195: Fix ghost narrowing on stress-1000 (105 instances)
+
