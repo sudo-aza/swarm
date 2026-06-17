@@ -714,3 +714,16 @@ Work Log:
 Stage Summary:
 - v3.44 stable for 12 consecutive turns. New bug: phantom commit #197 reported.
 
+---
+Task ID: T143
+Agent: QA
+Task: Hourly QA turn — baseline verification
+
+Work Log:
+- TeX Live survived from T142 reinstall, no new commits
+- Compiled stress-50: 54288b/14pg (bit-perfect v3.44)
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.44 stable for 13 consecutive turns. No new issues.
+

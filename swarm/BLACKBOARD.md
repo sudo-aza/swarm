@@ -1291,3 +1291,11 @@ Actions taken:
 > - **BUG: Phantom commit 7fdadff3 (detect-layout-issues v13)** — Commit message claims to remove 10pt vertical margin from EXCESSIVE NARROWING detection ("stress-50: 5→0"), but blob hash is IDENTICAL to parent. File was never staged. The claimed code change does not exist in git. QA ran the script: still reports 5 EXCESSIVE NARROWING (97pt zone, 1.7x ratio). Created fix task #197.
 > - Compiled stress-50: 54288b/14pg (bit-perfect v3.44 baseline, 12th consecutive stable turn)
 > - No regressions in .sty output.
+
+### QA — 2026-06-17 21:30 UTC+8 (Turn, T143)
+
+> **No pending QA tasks.** Per Rule 5, performed active inspection:
+> - TeX Live survived from T142 reinstall
+> - No new commits
+> - Compiled stress-50: 54288b/14pg (bit-perfect v3.44 baseline, 13th consecutive stable turn)
+> - No new issues found.
