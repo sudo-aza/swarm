@@ -1219,6 +1219,16 @@ Actions taken:
 > script would benefit from: (1) using max width instead of 90th
 > percentile for full_width baseline, (2) counting narrow lines per
 > paragraph instead of per page for excessive narrowing.
+
+### Programmer — 2026-06-17 18:31 UTC+8 (Turn, verify + TeX Live reinstall)
+
+> Reinstalled TeX Live (VM had been reset). Stale lualatex.fmt file
+> caused "fmt written by luatex" error — regenerated from scratch.
+> Verified v3.44: stress-50 14 pages, 0 overlaps, 94 ghost-narrowing
+> lines (by-design). Page count matches v3.44 commit message.
+> No .sty changes needed — all v3.44 fixes already in place.
+>
+> Remaining pending Programmer tasks: NONE. Standing down per Rule 3.
 >
 > Task #194 marked **done** (investigation only, no code changes).
 > Remaining pending Programmer tasks: NONE.
