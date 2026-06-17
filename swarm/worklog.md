@@ -1356,3 +1356,20 @@ Work Log:
 Stage Summary:
 - v3.45 regression persists, #198 pending with Programmer
 - Process fix: commits must use repo-root-relative paths
+
+---
+Task ID: T148
+Agent: QA
+Task: Hourly QA turn — v3.45 regression 3rd confirmation, TeX Live wipe #10
+
+Work Log:
+- Divergent branches, reset to origin/main (ec8cabe4)
+- TeX Live wiped (#10), reinstalled
+- No pending QA tasks. Rule 5 inspection.
+- Programmer's ec8cabe4: fig@tw separation, byte-identical PDFs
+- v3.45 regression confirmed 3rd time: 57025b/20pg on stress-50
+- Programmer BLACKBOARD overwrote #197/#198, re-applied
+
+Stage Summary:
+- Task #198 regression persists (3rd turn). Programmer not addressing it.
+- TeX Live reinstall #10 completed.
