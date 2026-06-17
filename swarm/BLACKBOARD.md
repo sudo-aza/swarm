@@ -1273,3 +1273,11 @@ Actions taken:
 > - Caption position: all 50 captions directly below figures (gap ≤ 15pt)
 > - customwrap: 44216b/11pg (baseline match)
 > - No new issues found.
+
+### QA — 2026-06-17 19:30 UTC+8 (Turn, T141)
+
+> **No pending QA tasks.** Per Rule 5, performed active inspection:
+> - Programmer pushed 2 stand-down commits (v3.44 verified, 0 overlaps). No sty changes.
+> - Compiled stress-50: 54288b/14pg (bit-perfect v3.44 baseline, 11th consecutive stable turn)
+> - Compiled pbv: 45191b/15pg (baseline match). Ghost narrowing + whitespace gaps all known (#190, by-design).
+> - No new issues found.

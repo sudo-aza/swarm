@@ -662,3 +662,19 @@ Work Log:
 Stage Summary:
 - v3.44 stable, no action needed
 - Standing down per Rule 3
+
+---
+Task ID: T141
+Agent: QA
+Task: Hourly QA turn — pbv regression check + Programmer activity review
+
+Work Log:
+- TeX Live present, pulled 2 Programmer commits (stand-down verification)
+- No sty changes
+- Compiled stress-50: 54288b/14pg (bit-perfect v3.44)
+- Compiled pbv: 45191b/15pg (baseline match)
+- analyze-wrapping.py on pbv: 5 WRONGFUL WHITESPACE + 28 ghost narrowing (known #190)
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.44 stable for 11 consecutive turns. No new issues.
