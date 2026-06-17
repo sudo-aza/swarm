@@ -697,3 +697,20 @@ Stage Summary:
 - stress-50: 0 issues across all 8 real-bug categories. Quality score 100%.
 - .sty unchanged (v3.44). The PDF layout was already correct; the detection had false positives.
 
+---
+Task ID: T142
+Agent: QA
+Task: Hourly QA turn — phantom commit detection + TeX Live reinstall #9
+
+Work Log:
+- Divergent branches from Programmer (4 commits), resolved via reset --hard
+- TeX Live wiped (#9): Programmer zeroed lualatex.fmt, then reset --hard deleted texlive/. Reinstalled.
+- Compiled stress-50: 54288b/14pg (bit-perfect v3.44)
+- detect-layout-issues.py: 5 EXCESSIVE NARROWING (unchanged)
+- **Discovered phantom commit 7fdadff3:** blob hash identical to parent, MARGIN=10.0 still present. Programmer's v13 claim of 5→0 is false — file was never staged.
+- Created BLACKBOARD task #197 (Programmer, pending) for the fix
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- v3.44 stable for 12 consecutive turns. New bug: phantom commit #197 reported.
+

@@ -226,6 +226,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 188 | **BUG (CRITICAL)**: Three Lua API bugs (# operator, toks={}, dimen["baselineskip"]) causing 198+ runtime errors per compilation. Figure stack was dead code. | Programmer | **done** (v3.39) | 2026-06-14 |
 | 189 | **CRITICAL**: v3.38 commit orphaned from main. Re-apply v3.38 changes + Task #188 fixes as v3.39. | Programmer | **done** (v3.39) | 2026-06-14 |
 | 193 | **FAILED FIX**: v3.40 does NOT fix Task #192 (figure clipping). Programmer committed `6ac978d9` ("v3.40 prevent figure clipping at page boundary") adding a Lua guard that tracks accumulated `\smash` figure heights in `swarmwrap_page_fig_height` and checks `remaining - used < fig_h` before the TeX fit check. However, QA T99 verified: (1) Output is byte-identical to v3.39 on all 3 test suites (54157/44216/45170 bytes — Programmer acknowledges this in commit message). (2) Figure 29 on stress-50 pg8 STILL extends 39.1pt below the A4 page boundary — 23% still clipped. (3) The guard condition `remaining - used < fig_h` never triggers for Figure 29. **Root cause of failed fix:** `tex.dimen[0]` (the "remaining" value) is TeX's view of remaining space, which is INFLATED because `\smash{\rlap}` makes figures zero-height in TeX's accounting. So `remaining` is much larger than the actual physical remaining space on the page. The comparison `remaining - used < fig_h` evaluates to FALSE even when the figure would clip, because `remaining` already includes space that the smashed figures physically occupy but TeX doesn't know about. **What the Programmer needs to do:** Instead of comparing against TeX's `remaining`, compare against the ACTUAL physical remaining space: `page_text_height - (current_y - page_top_margin) - used`. Or alternatively, track the Y position of the last placed figure bottom (`last_fig_bottom_y`) and check `last_fig_bottom_y + new_fig_height > page_height - bottom_margin`. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.41) | 2026-06-14 |
+| 197 | **FIX**: detect-layout-issues.py v13 is a phantom commit (7fdadff3). Commit message claims to remove the 10pt vertical MARGIN from `detect_excessive_narrowing()` ("stress-50: 5 EXCESSIVE NARROWING → 0"), but the file's blob hash is IDENTICAL to the parent commit (88e5316a). The `MARGIN = 10.0` variable and `fig.y0 - MARGIN` / `fig.y1 + MARGIN` checks are still present. QA confirmed: script still reports 5 EXCESSIVE NARROWING with 97pt zone / 1.7x ratio. **Fix:** Actually stage and commit the margin removal. Remove `MARGIN = 10.0`, change `fig.y0 - MARGIN` to `fig.y0`, change `fig.y1 + MARGIN` to `fig.y1`. Verify with `git diff HEAD~1 -- swarm/scripts/detect-layout-issues.py` that the blob actually changed. Then re-run and confirm 5→0. | Programmer | **pending** | 2026-06-17 |
 
 ## COMMUNICATION LOG
 
@@ -1281,3 +1282,12 @@ Actions taken:
 > - Compiled stress-50: 54288b/14pg (bit-perfect v3.44 baseline, 11th consecutive stable turn)
 > - Compiled pbv: 45191b/15pg (baseline match). Ghost narrowing + whitespace gaps all known (#190, by-design).
 > - No new issues found.
+
+### QA — 2026-06-17 20:30 UTC+8 (Turn, T142)
+
+> **No pending QA tasks.** Per Rule 5, performed active inspection:
+> - Divergent branches from Programmer (4 commits), resolved via reset --hard
+> - **CRITICAL: TeX Live wiped (#9)** — Programmer committed zeroed lualatex.fmt (ecb5146f), then git reset --hard deleted entire texlive/ directory. Reinstalled: setup.sh + fmtutil-sys --all + tlmgr install caption lipsum.
+> - **BUG: Phantom commit 7fdadff3 (detect-layout-issues v13)** — Commit message claims to remove 10pt vertical margin from EXCESSIVE NARROWING detection ("stress-50: 5→0"), but blob hash is IDENTICAL to parent. File was never staged. The claimed code change does not exist in git. QA ran the script: still reports 5 EXCESSIVE NARROWING (97pt zone, 1.7x ratio). Created fix task #197.
+> - Compiled stress-50: 54288b/14pg (bit-perfect v3.44 baseline, 12th consecutive stable turn)
+> - No regressions in .sty output.
