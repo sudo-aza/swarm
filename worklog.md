@@ -757,3 +757,27 @@ Work Log:
 Stage Summary:
 - Zero regressions from v3.45. #197 corrected as false alarm. Lesson: use git ls-tree/git cat-file, not git show HEAD:.
 
+---
+Task ID: T146
+Agent: QA
+Task: Hourly QA turn — v3.45 regression discovered via broken git index
+
+Work Log:
+- No pending QA tasks. Rule 5 active inspection.
+- Discovered git index causes `git show HEAD:` and `git ls-tree HEAD` to return STALE content
+- `git ls-tree --full-tree HEAD` reveals actual .sty is v3.45 (d4c05fc4), not v3.41 (77fcd10a)
+- Re-extracted .sty via `git cat-file -p d4c05fc4`, recompiled all 3 test suites
+- v3.45 CRITICAL regression on stress-50: 14pg/54288b → 20pg/57025b (+43% pages)
+- Root cause: `tex.count["interlinepenalty"] = 0` in post_linebreak_filter resets globally
+- New issues: 1 GHOST NARROWING + 1 HOLLOW CARRY-OVER on stress-50 (v3.44 had 0)
+- Re-extracted detect-layout-issues.py via git cat-file → v13 (no MARGIN), 0 EXCESSIVE NARROWING
+- Confirmed #197 was false alarm (original error: git ls-tree without --full-tree)
+- Created Task #198 (v3.45 regression), updated #197 as false alarm in BLACKBOARD
+- Updated BLACKBOARD comm log, created journals/qa/2026-06-18.md, updated worklog
+
+Stage Summary:
+- v3.45 has CRITICAL regression: stress-50 +6 pages from interlinepenalty=0 reset
+- Task #198 created for Programmer: remove tex.count["interlinepenalty"] = 0
+- #197 confirmed false alarm; git index lesson documented
+- All future file extractions must use git cat-file -p or git ls-tree --full-tree
+
