@@ -740,3 +740,20 @@ Work Log:
 Stage Summary:
 - Zero regressions. v3.44 stable for 14 consecutive turns. No new issues.
 
+---
+Task ID: T145
+Agent: QA
+Task: Hourly QA turn — v3.45 regression check + #197 correction
+
+Work Log:
+- Programmer pushed v3.45 (interlinepenalty) + detect-layout-issues v13 re-fix
+- Compiled all 3 test suites: byte-identical to v3.44 baselines (54288/44216/45191)
+- Discovered #197 was FALSE ALARM: broken git index made git show HEAD: extract stale content
+- Verified via git ls-tree: both Programmer commits have correct blob (605034a6)
+- Extracted v13 via git cat-file -p: stress-50 5→0 EXCESSIVE NARROWING confirmed
+- Marked #197 done (false alarm) in BLACKBOARD
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions from v3.45. #197 corrected as false alarm. Lesson: use git ls-tree/git cat-file, not git show HEAD:.
+
