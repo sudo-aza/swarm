@@ -358,24 +358,45 @@ def get_figure_caption_zones(page, figures, text_lines):
     within 80pt vertically below the figure box and within the figure's
     horizontal extent (plus 30pt margin).
 
+    v12 (2026-06-17): Stop caption search at the next figure's top edge.
+    When two figures are vertically close, the upper figure's caption
+    zone was absorbing the lower figure's caption, creating a merged
+    zone that flagged body text between the figures as a false positive.
+
     Returns list of (caption_rect, fig_rect) tuples.
     """
     caption_zones = []
     for fig in figures:
         caption_lines = []
+        # v12: Find the next figure below this one to limit caption search.
+        # Captions below another figure belong to that figure, not this one.
+        search_y1 = fig.y1 + 80
+        for other in figures:
+            if other is not fig and other.y0 > fig.y0 and other.y0 < search_y1:
+                search_y1 = other.y0
         for line in text_lines:
-            # Caption is typically below the figure box, within ~80pt
-            if line["rect"].y0 > fig.y1 - 10 and line["rect"].y0 < fig.y1 + 80:
+            # Caption is typically below the figure box, up to next figure
+            if line["rect"].y0 > fig.y1 - 10 and line["rect"].y0 < search_y1:
                 if line["rect"].x0 > fig.x0 - 30 and line["rect"].x1 < fig.x0 + fig.width + 50:
                     if _is_caption_text(line["text"]):
                         caption_lines.append(line)
         if caption_lines:
-            cap_y0 = min(l["rect"].y0 for l in caption_lines)
-            cap_y1 = max(l["rect"].y1 for l in caption_lines)
-            cap_x0 = min(l["rect"].x0 for l in caption_lines)
-            cap_x1 = max(l["rect"].x1 for l in caption_lines)
-            caption_rect = fitz.Rect(cap_x0, cap_y0, cap_x1, cap_y1)
-            caption_zones.append((caption_rect, fig))
+            # v12: Split caption lines into contiguous groups (gap > 25pt
+            # means separate figures' captions). Build a zone per group.
+            caption_lines.sort(key=lambda l: l["rect"].y0)
+            groups = [[caption_lines[0]]]
+            for cl in caption_lines[1:]:
+                if cl["rect"].y0 - groups[-1][-1]["rect"].y1 > 25:
+                    groups.append([cl])
+                else:
+                    groups[-1].append(cl)
+            for grp in groups:
+                cap_y0 = min(l["rect"].y0 for l in grp)
+                cap_y1 = max(l["rect"].y1 for l in grp)
+                cap_x0 = min(l["rect"].x0 for l in grp)
+                cap_x1 = max(l["rect"].x1 for l in grp)
+                caption_rect = fitz.Rect(cap_x0, cap_y0, cap_x1, cap_y1)
+                caption_zones.append((caption_rect, fig))
     return caption_zones
 
 

@@ -1222,3 +1222,20 @@ Actions taken:
 >
 > Task #194 marked **done** (investigation only, no code changes).
 > Remaining pending Programmer tasks: NONE.
+
+### Programmer — 2026-06-17 10:31 UTC+8 (Turn, detection FP fix)
+
+> v3.44 already committed (NEAR-EMPTY fix). Verified: stress-50 14 pages,
+> 0 NEAR-EMPTY (was 2). Detection found 1 CAPTION TEXT OVERLAP FP on page 5:
+> two adjacent figures (Fig 17 at y=481-622, Fig 18 at y=644-672) where Fig 18
+> is below the 30pt height detection threshold. Fig 18's caption was absorbed
+> into Fig 17's caption zone, merging them into y=626-689. Body text at y=641
+> (x1=406) was flagged for 13pt penetration into the zone, but no actual visual
+> overlap exists (Fig 18 starts at x=420).
+>
+> Fixed detection script v12: (1) split caption lines into contiguous groups
+> (gap > 25pt = separate figures), (2) limit caption search to next detected
+> figure's top edge. Result: stress-50 7→6 issues (CAPTION TEXT OVERLAP FP
+> eliminated). No regressions on pagebreak-variations or customwrap.
+>
+> Remaining pending Programmer tasks: NONE. Standing down per Rule 3.

@@ -548,3 +548,7 @@ Work Log:
 
 Stage Summary:
 - #194 FIXED by v3.44. Zero regressions. Only #190 remains.
+- Detection script v12: contiguous caption group split eliminates merged-zone FP
+- stress-50: 7 → 6 issues (1 CAPTION TEXT OVERLAP FP eliminated)
+- No .sty changes — swarmwrap.sty remains at v3.44
+- No regressions on any test
