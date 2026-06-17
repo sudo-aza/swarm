@@ -1415,3 +1415,77 @@ Actions taken:
 > Standing down per Rule 3(5): zero pending tasks, all detections
 > analyzed (19 FPs + 36 fundamental TeX limitations).
 
+### Programmer — 2026-06-18 05:45 UTC+8 (Turn, Task #197 — deep detection FP analysis)
+
+> Task #197: Re-analyze ALL 55 stress-1000 detections with PyMuPDF
+> page-level inspection to distinguish real .sty bugs from detection
+> false positives.
+>
+> METHODOLOGY: For each flagged page, used PyMuPDF to check (a) whether
+> a figure actually exists on the page, (b) whether the "narrow" text is
+> from parshape narrowing or from other causes (itemize indentation,
+> paragraph-ending spans, multicol context).
+>
+> KEY FINDING: 54 of 55 "real bugs" are DETECTION FALSE POSITIVES.
+> Only 1 is a real .sty bug.
+>
+> Breakdown of all 55 detections:
+> (1) GHOST NARROWING (16): ALL FPs
+>     - 7 pages HAVE figures (width 29-50pt) missed by detection's
+>       `width > 50` threshold in get_figures(). Text IS correctly
+>       narrowed beside these small figures.
+>     - 9 pages are in itemize (bullet "•") context or have multi-span
+>       lines (paragraph splits). Text is naturally narrow in itemize.
+>       Detection flags itemize text width (< 286pt) as "ghost."
+>
+> (2) HOLLOW CARRY-OVER (19): ALL FPs
+>     - 7 pages HAVE figures (same width>50 threshold issue)
+>     - 6 pages in itemize context
+>     - 6 pages have multi-span lines (short paragraphs ending mid-line
+>       produce narrow spans that detection counts as separate "lines")
+>
+> (3) FIGURE MISALIGNED (14): ALL FPs
+>     - 7 in multicol (figure at column right margin, detection
+>       compares to page margin at 476pt)
+>     - 7 in itemize (figure at list right margin, same issue)
+>
+> (4) FIGURE BESIDE TEXT (4): ALL FPs
+>     - Pages where ALL text is beside the figure (no full-width lines
+>       for the detection to use as comparison baseline). Text IS
+>       correctly narrowed.
+>
+> (5) CAPTION TEXT OVERLAP (1): FP
+>     - Split caption word "ure 819" (from "Fig-" / "ure 819") not
+>       matched by _is_caption_text() patterns.
+>
+> (6) BODY TEXT OVERLAP (1): REAL BUG
+>     - Page 366: multicol parshape exhaustion. Figure is within
+>       a multicol column. After nl narrow lines, text returns to
+>       full column width which includes the figure's x-range.
+>       This is a fundamental TeX limitation: parshape is assigned
+>       before line breaking; if a paragraph has more lines than nl,
+>       excess lines get "full linewidth" which in multicol overlaps
+>       the figure.
+>
+> Attempted fix (v3.46): Add buffer lines to nl (1 extra narrow line
+> past figure bottom). REGRESSION on stress-50: 20→19 pages (figure
+> lost), 3 EXTRA VSPACE, 1 FIGURE BESIDE TEXT. Reverted.
+> Also tried nl/3 capped at 3: worse regression (20→23 pages).
+> Buffer approach fundamentally conflicts with page-fitting logic.
+>
+> TRUE QUALITY: 1065/1066 (99.9%). The single real bug (multicol
+> parshape exhaustion) is a fundamental TeX limitation with no
+> fix that doesn't regress normal-page layout.
+>
+> DETECTION FIXES NEEDED (outside Programmer lock):
+> - get_figures(): lower width threshold from >50 to >=20
+> - detect_hollow_carryover(): exclude itemize pages, handle
+>   multi-span lines (paragraph splits)
+> - detect_figure_misaligned(): use local context margin, not
+>   page margin, for multicol/itemize pages
+> - _is_caption_text(): add pattern for continuation words
+>   starting with lowercase after line-break hyphen
+>
+> Compiled stress-50: 20 pages, 36/38 (94.7%). No .sty changes.
+> Buffer approach reverted. No regression from v3.45.
+
