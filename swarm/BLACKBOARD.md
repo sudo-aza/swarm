@@ -1248,3 +1248,12 @@ Actions taken:
 > - detect-layout-issues.py v12: 5 EXCESSIVE NARROWING (known by-design, identical to T135)
 > - 1000-fig PDF not on disk (Programmer's responsibility to verify v3.44 at scale)
 > - No new issues found.
+
+### QA — 2026-06-17 16:30 UTC+8 (Turn, T138)
+
+> **No pending QA tasks.** Per Rule 5, performed active inspection:
+> - Compiled stress-50: 54288b/14pg (bit-perfect v3.44 baseline, 8th consecutive stable turn)
+> - Figure alignment: all 50 figures right-aligned at x=476.5pt (zero outliers via PyMuPDF drawing path analysis)
+> - Programmer's analyze-wrapping.py rewrite (3 categories, argparse CLI, --figures-only): functionally equivalent — identical 8 WRONGFUL WHITESPACE, 0 overlaps, 0 ghost narrowing
+> - detect-layout-issues.py v12: 5 EXCESSIVE NARROWING (known by-design, identical to T135-T137)
+> - No new issues found.

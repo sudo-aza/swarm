@@ -597,3 +597,20 @@ Work Log:
 
 Stage Summary:
 - Zero regressions. v3.44 stable for 7 consecutive turns. No new issues.
+
+---
+Task ID: T138
+Agent: QA
+Task: Hourly QA turn — figure alignment consistency + Programmer script rewrite validation
+
+Work Log:
+- TeX Live present, repo up to date, no pending QA tasks
+- Programmer pushed analyze-wrapping.py rewrite (92aba0fb): 5→3 categories, argparse CLI
+- Compiled stress-50: 54288b/14pg (bit-perfect v3.44 baseline)
+- Figure alignment: all 50 figs right-aligned at x=476.5pt (PyMuPDF drawing paths)
+- Updated analyze-wrapping.py: identical output (8 WRONGFUL WHITESPACE, 0 critical)
+- detect-layout-issues.py v12: 5 EXCESSIVE NARROWING (unchanged)
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.44 stable for 8 consecutive turns. Programmer's script rewrite is functionally equivalent.
