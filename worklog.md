@@ -582,3 +582,18 @@ Work Log:
 
 Stage Summary:
 - Zero regressions. v3.44 merge boundaries clean.
+
+---
+Task ID: T137
+Agent: QA
+Task: Hourly QA turn — baseline compilation + detector cross-check
+
+Work Log:
+- TeX Live present, repo up to date, no pending QA tasks
+- Compiled stress-50: 54288b/14pg (bit-perfect v3.44 baseline)
+- analyze-wrapping.py: 0 critical issues, 8 WRONGFUL WHITESPACE (known cosmetic)
+- detect-layout-issues.py v12: 5 EXCESSIVE NARROWING (known by-design, identical to T135)
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Zero regressions. v3.44 stable for 7 consecutive turns. No new issues.
