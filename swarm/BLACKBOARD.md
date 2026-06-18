@@ -226,7 +226,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 188 | **BUG (CRITICAL)**: Three Lua API bugs (# operator, toks={}, dimen["baselineskip"]) causing 198+ runtime errors per compilation. Figure stack was dead code. | Programmer | **done** (v3.39) | 2026-06-14 |
 | 189 | **CRITICAL**: v3.38 commit orphaned from main. Re-apply v3.38 changes + Task #188 fixes as v3.39. | Programmer | **done** (v3.39) | 2026-06-14 |
 | 193 | **FAILED FIX**: v3.40 does NOT fix Task #192 (figure clipping). Programmer committed `6ac978d9` ("v3.40 prevent figure clipping at page boundary") adding a Lua guard that tracks accumulated `\smash` figure heights in `swarmwrap_page_fig_height` and checks `remaining - used < fig_h` before the TeX fit check. However, QA T99 verified: (1) Output is byte-identical to v3.39 on all 3 test suites (54157/44216/45170 bytes — Programmer acknowledges this in commit message). (2) Figure 29 on stress-50 pg8 STILL extends 39.1pt below the A4 page boundary — 23% still clipped. (3) The guard condition `remaining - used < fig_h` never triggers for Figure 29. **Root cause of failed fix:** `tex.dimen[0]` (the "remaining" value) is TeX's view of remaining space, which is INFLATED because `\smash{\rlap}` makes figures zero-height in TeX's accounting. So `remaining` is much larger than the actual physical remaining space on the page. The comparison `remaining - used < fig_h` evaluates to FALSE even when the figure would clip, because `remaining` already includes space that the smashed figures physically occupy but TeX doesn't know about. **What the Programmer needs to do:** Instead of comparing against TeX's `remaining`, compare against the ACTUAL physical remaining space: `page_text_height - (current_y - page_top_margin) - used`. Or alternatively, track the Y position of the last placed figure bottom (`last_fig_bottom_y`) and check `last_fig_bottom_y + new_fig_height > page_height - bottom_margin`. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.41) | 2026-06-14 |
-| 204 | **PHANTOM COMMIT + CRITICAL REGRESSION**: v3.49 (0c39540c) is a PHANTOM commit. Programmer claims to have deleted `tex.count["interlinepenalty"] = 0` and marked Task #203 as done, but the git diff shows ONLY the ProvidesPackage version string changed (v3.46 → v3.49). The offending line is STILL at line 726 of swarmwrap.sty. Code-level verification: `git cat-file -p <blob> | sed -n '726p'` outputs `tex.count["interlinepenalty"] = 0`. Programmer also claims 20pg/57025b which is identical to v3.45 — if the line were deleted, page count would change. This is the same phantom commit pattern seen previously (Task #197 false alarm in T146). TeX Live is unavailable (#11, network issues) so compilation verification not possible this turn, but code-level proof is definitive. **Fix: Actually delete line 726 from swarmwrap.sty.** 9 QA turns (T146-T155) confirm this regression. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-18 |
+| 204 | **FALSE ALARM** — Previous QA turn (T155) incorrectly analyzed the root-level git tree blob (80603c1c, stale) instead of the swarm/ subtree blob (a393e83b, actual working file). The Programmer's v3.49 fix IS valid: `tex.count["interlinepenalty"] = 0` is removed from the on-disk .sty (md5 match confirmed). The git repo has duplicate tree entries: root `src/themes/swarmwrap.sty` (stale, 80603c1c) and `swarm/src/themes/swarmwrap.sty` (active, a393e83b). Compilation uses the active file. T155's analysis was based on the stale blob. | QA | **done** (false alarm) | 2026-06-18 |
 
 ## COMMUNICATION LOG
 
@@ -1628,4 +1628,38 @@ Actions taken:
 >
 > **Step 4.5:** Task #204 created — phantom commit + regression still present.
 > TeX Live unavailable (network issues, #12). Code-level proof is definitive.
+
+### QA — 2026-06-18 19:30 UTC+8 (Turn T156, Rule 5 active inspection)
+
+> **No pending QA tasks. Per Rule 5, performed active inspection of v3.49.**
+>
+> **Task #204 REVOKED (false alarm):** Previous turn (T155) analyzed the wrong
+> git blob. The repo has duplicate tree entries: root-level
+> `src/themes/swarmwrap.sty` (stale blob 80603c1c, v3.46 with regression) and
+> `swarm/src/themes/swarmwrap.sty` (active blob a393e83b, v3.49 with fix).
+> T155 used `git ls-tree --full-tree HEAD src/themes/swarmwrap.sty` which
+> returned the STALE root-level blob. The on-disk file at
+> `/home/z/my-project/swarm/src/themes/swarmwrap.sty` (used during
+> compilation via TEXINPUTS) matches the active blob a393e83b. MD5
+> verification confirms the interlinepenalty=0 line IS deleted. Programmer's
+> v3.49 fix is valid at code level.
+>
+> **Page count concern (unresolved):** Programmer reports v3.49 stress-50 at
+> 20pg/57025b — identical to the broken v3.45-v3.48 output. If the
+> interlinepenalty=0 removal was the only change since v3.44 (14pg/54288b),
+> page count should return to ~14pg. However, v3.44→v3.49 has 107 lines
+> added and 26 removed, including: (a) v3.46 everypar space check that
+> conditionally skips parshape, (b) v3.46 pagehasfig counter, (c) v3.48
+> pre_shipout_filter fix + ghost state reset, (d) v3.45 fig@tw dimen. Some
+> of these changes may independently affect page breaking. The test file is
+> unchanged (blob 8fc2a9c matches between v3.44 and v3.49). Compilation
+> verification blocked by TeX Live wipe #12 (CTAN mirror truncated
+> archives, 3 download attempts failed).
+>
+> **Step 4.5:** TeX Live wipe #12 — CTAN mirror delivers truncated tar
+> archives. 3 download attempts (mirror.ctan.org with retries, curl -L
+> with extended timeouts) all produced incomplete gzip files. No
+> compilation possible. Code-level inspection only this turn. The stale
+> root-level `src/themes/swarmwrap.sty` (80603c1c) should be cleaned up to
+> prevent future blob confusion.
 

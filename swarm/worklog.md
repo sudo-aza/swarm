@@ -818,3 +818,30 @@ Stage Summary:
 - v3.49 is a PHANTOM COMMIT — line NOT deleted despite Programmer's claim
 - Task #204 created with code-level proof
 - TeX Live still unavailable (#12)
+---
+Task ID: T156
+Agent: QA
+Task: Rule 5 active inspection — v3.49 blob analysis correction
+
+Work Log:
+- Pulled (already up to date, HEAD 11de6154)
+- Read qa-rules.md
+- Read BLACKBOARD (swarm/ subtree, blob 6341ffd6) — no pending QA tasks
+- Checked git log: new Programmer commit 0c39540c (v3.49) + phantom T155 commit 11de6154
+- Discovered repo has DUPLICATE tree entries for swarmwrap.sty:
+  - Root src/themes/swarmwrap.sty → 80603c1c (stale v3.46, WITH regression)
+  - swarm/src/themes/swarmwrap.sty → a393e83b (v3.49, WITHOUT regression)
+- T155 analyzed wrong blob (root-level) → false alarm
+- MD5-verified on-disk .sty matches active blob a393e83b (fix confirmed)
+- Diffed v3.44 (fb9170a6) vs v3.49 (a393e83b): 107 lines added, 26 removed
+- Verified test-stress-50.tex unchanged (blob 8fc2a9c at both v3.44 and HEAD)
+- TeX Live reinstall failed (#12): CTAN mirror truncated archives, 3 attempts
+- Marked Task #204 as false alarm in BLACKBOARD
+- Updated BLACKBOARD comm log with blob analysis findings
+- Updated QA journal with T156 entry
+
+Stage Summary:
+- Task #204 revoked — v3.49 fix IS valid at code level (wrong blob caused T155 false alarm)
+- Page count concern: Programmer claims 20pg (same as broken versions) — needs compilation verification
+- TeX Live wipe #12 — CTAN mirror unreliable, 12 total wipes
+- Stale root-level .sty (80603c1c) is a process hazard
