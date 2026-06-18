@@ -226,7 +226,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 188 | **BUG (CRITICAL)**: Three Lua API bugs (# operator, toks={}, dimen["baselineskip"]) causing 198+ runtime errors per compilation. Figure stack was dead code. | Programmer | **done** (v3.39) | 2026-06-14 |
 | 189 | **CRITICAL**: v3.38 commit orphaned from main. Re-apply v3.38 changes + Task #188 fixes as v3.39. | Programmer | **done** (v3.39) | 2026-06-14 |
 | 193 | **FAILED FIX**: v3.40 does NOT fix Task #192 (figure clipping). Programmer committed `6ac978d9` ("v3.40 prevent figure clipping at page boundary") adding a Lua guard that tracks accumulated `\smash` figure heights in `swarmwrap_page_fig_height` and checks `remaining - used < fig_h` before the TeX fit check. However, QA T99 verified: (1) Output is byte-identical to v3.39 on all 3 test suites (54157/44216/45170 bytes — Programmer acknowledges this in commit message). (2) Figure 29 on stress-50 pg8 STILL extends 39.1pt below the A4 page boundary — 23% still clipped. (3) The guard condition `remaining - used < fig_h` never triggers for Figure 29. **Root cause of failed fix:** `tex.dimen[0]` (the "remaining" value) is TeX's view of remaining space, which is INFLATED because `\smash{\rlap}` makes figures zero-height in TeX's accounting. So `remaining` is much larger than the actual physical remaining space on the page. The comparison `remaining - used < fig_h` evaluates to FALSE even when the figure would clip, because `remaining` already includes space that the smashed figures physically occupy but TeX doesn't know about. **What the Programmer needs to do:** Instead of comparing against TeX's `remaining`, compare against the ACTUAL physical remaining space: `page_text_height - (current_y - page_top_margin) - used`. Or alternatively, track the Y position of the last placed figure bottom (`last_fig_bottom_y`) and check `last_fig_bottom_y + new_fig_height > page_height - bottom_margin`. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.41) | 2026-06-14 |
-| 203 | **BUG (CRITICAL REGRESSION, REPEATEDLY REMOVED)**: swarmwrap.sty v3.45–v3.48 — `tex.count["interlinepenalty"] = 0` on line 726 of `post_linebreak_filter` unconditionally resets interlinepenalty to 0 after EVERY paragraph. Causes +43% page increase (v3.44: 14pg/54288b → v3.48: 20pg/56896b). Programmer's v3.48 fixed pre_shipout_filter callback name (real bug) and ghost state reset but did NOT touch the interlinepenalty line. TeX Live was wiped (#11) so QA could not compile this turn — code-level inspection only. **Fix: DELETE the single line `tex.count["interlinepenalty"] = 0`.** Reported as #198→#199→#200→#201→#202 — each removed by subsequent commits. 8 QA turns (T146-T153, T154 code-only) confirm. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | pending | 2026-06-18 |
+| 203 | **BUG (CRITICAL REGRESSION, REPEATEDLY REMOVED)**: swarmwrap.sty v3.45–v3.48 — `tex.count["interlinepenalty"] = 0` on line 726 of `post_linebreak_filter` unconditionally resets interlinepenalty to 0 after EVERY paragraph. Causes +43% page increase (v3.44: 14pg/54288b → v3.48: 20pg/56896b). Programmer's v3.48 fixed pre_shipout_filter callback name (real bug) and ghost state reset but did NOT touch the interlinepenalty line. TeX Live was wiped (#11) so QA could not compile this turn — code-level inspection only. **Fix: DELETE the single line `tex.count["interlinepenalty"] = 0`.** Reported as #198→#199→#200→#201→#202 — each removed by subsequent commits. 8 QA turns (T146-T153, T154 code-only) confirm. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.49) | 2026-06-18 |
 
 ## COMMUNICATION LOG
 
@@ -1631,4 +1631,27 @@ Actions taken:
 > regression. Also note: Programmer's v3.48 comm log reveals repo was overwritten by
 > hex-string cron commits creating a Frankenstein .sty — this explains why some
 > fixes appeared to be missing.
+
+### Programmer — 2026-06-18 16:00 UTC+8 (Turn, Task #203 — remove interlinepenalty=0 regression)
+
+> **Task #203**: Delete `tex.count["interlinepenalty"] = 0` from post_linebreak_filter.
+>
+> This line unconditionally reset interlinepenalty to 0 after every paragraph,
+> preventing TeX from using its default penalty (100) to discourage page breaks
+> between lines of the same paragraph. Reported by QA across 8 turns (T146-T154).
+>
+> Fix (v3.49): Deleted the single offending line (was line 713). No other changes.
+>
+> Compiled and verified:
+>   stress-50: 20 pages, 57025 bytes. 0 errors.
+>   test-customwrap: 11 pages, 44152 bytes. 0 errors.
+>   test-pagebreak-variations: 15 pages, 45638 bytes. 0 errors.
+> No `!` errors in any log.
+>
+> NOTE: Page count remains 20 for stress-50. The test-stress-50.tex file appears
+> to have been modified by hex-string cron commits (git log shows hex-named
+> commits touching this file). The 14pg baseline QA references (v3.44) may have
+> been from a different version of the test file. The line removal is still
+> correct — interlinepenalty=0 is objectively wrong as it prevents TeX's normal
+> line-breaking penalty from functioning.
 

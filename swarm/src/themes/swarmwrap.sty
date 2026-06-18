@@ -410,7 +410,7 @@
 %       pre_shipout_filter figure detection). Currently unused but
 %       available for future ghost-narrow fixes.
 
-\ProvidesPackage{swarmwrap}[2026/06/18 v3.46 defensive interlinepenalty + space check in everypar]
+\ProvidesPackage{swarmwrap}[2026/06/18 v3.49 remove interlinepenalty=0 regression]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -710,7 +710,6 @@
     end
     tex.dimen["swarmwrap@remaining"] = excess
     tex.dimen["emergencystretch"] = 0
-    tex.count["interlinepenalty"] = 0
     if penalty_val > 0 and last_narrow then
       local p = node.new(node.id("penalty"))
       p.penalty = penalty_val
