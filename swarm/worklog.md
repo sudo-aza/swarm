@@ -940,3 +940,24 @@ Stage Summary:
 - Root-level v3.50 also re-introduces interlinepenalty=0 regression
 - Third incident from duplicate tree entries (T155, T156, T160)
 - Task #206 created for Programmer
+
+---
+Task ID: T161
+Agent: QA
+Task: Rule 5 active inspection — 1000-fig baseline with v3.49
+
+Work Log:
+- No pending QA tasks, no new Programmer commits
+- Compiled test-1000fig.tex with v3.49 + TL2026 (2-pass)
+- Analyzed 183-page PDF with PyMuPDF
+- Figure distribution: 149×6, 17×5, 1×4, 1×2, 15×1 figs/page
+- 0 near-empty, 0 ghost narrowing, 0 pages with 0 figures
+- 15 low-util pages (1 fig, 5.5% ink) — DEFERRED waste pattern
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- 1000-fig v3.49 baseline: 183pg/287309b on TL2026
+- 81% of pages have 6 figs (efficient packing)
+- 15 pages (8.2%) have only 1 fig with ~5.5% ink — DEFERRED waste
+- Programmer's 332pg claim is inconsistent with QA's 183pg measurement
+- No new bugs found this turn

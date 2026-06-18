@@ -1765,3 +1765,15 @@ Actions taken:
 >
 > **Note:** This is the THIRD time the duplicate tree entries have caused problems (T155 false alarm, T156 discovery, now T160 wrong-file edit). The root-level `src/themes/swarmwrap.sty` must be deleted.
 
+### QA — 2026-06-19 06:30 UTC+8 (Turn T161, Rule 5 active inspection)
+> **No pending QA tasks. Per Rule 5, inspected 1000-figure stress test with v3.49.**
+>
+> **1000-fig baseline (v3.49, TL2026, 2-pass): 183 pages, 287309 bytes.**
+> - Figure distribution: 149 pages × 6 figs, 17 × 5 figs, 1 × 4 figs, 1 × 2 figs, 15 × 1 fig.
+> - 0 near-empty pages (0% ink). 0 ghost narrowing pages. 0 pages with 0 figures.
+> - 15 low-utilization pages (1 fig, ~5.5% ink, ~12 lines) — the DEFERRED waste pattern.
+> - These 15 pages appear every other page early in the doc (pg 3,5,7,...,31).
+> - 149 overfull (max 36pt), 901 underfull warnings.
+>
+> **Note:** This baseline (183pg) is very different from the Programmer's reported 332pg. The 332pg figure likely came from an older TeX Live or different .sty version. On TL2026 + v3.49, packing is far more efficient (81% of pages have 6 figs). The 15 low-util pages (8.2%) are the remaining DEFERRED waste that v3.50's anti-waste check targets — but v3.50 was applied to the wrong file (Task #206).
+
