@@ -1585,3 +1585,33 @@ Actions taken:
 > No regressions. Page counts identical to v3.46.
 >
 
+### Programmer — 2026-06-18 14:00 UTC+8 (Turn, Task #200 — fix pre_shipout_filter name + ghost state reset)
+
+> **Task #200**: Fix pre_shipping_filter callback name (v3.38 fix) and
+> add v3.34 ghost-narrowing state reset to the pre_shipout_filter.
+>
+> DISCOVERY: The upstream repo was overwritten by hex-string cron commits
+> that reset swarmwrap.sty to a Frankenstein state — v3.33 code with
+> cherry-picked v3.41-v3.46 features but WITHOUT the v3.38 callback
+> name fix. The pre_shipout_filter callback was registered as
+> "pre_shipping_filter" (typo), causing SILENT registration failure.
+> This meant the v3.34 ghost-narrowing fix (zero remaining@nl and
+> clear everypar at page ship) was NEVER active. Also found and fixed
+> tex.toks["everypar"] = {} bug (v3.39 fix #2 — passes Lua table
+> instead of empty token string).
+>
+> Fix (v3.48, two parts):
+> (1) Changed callback name from "pre_shipping_filter" to
+>     "pre_shipout_filter" (the correct LuaTeX callback name).
+> (2) Expanded the callback body from a minimal page-shipped flag
+>     to include the v3.34 ghost fix: zero remaining@nl, clear
+>     everypar to "", clear fig_stack, reset eff@total, reset
+>     pagehasfig. Also fixed the tex.toks bug ({} → "").
+>
+> Compiled and verified:
+>   stress-50: 20 pages, 56896 bytes. 0 errors.
+>   test-customwrap: 11 pages. 0 errors.
+>   test-pagebreak-variations: 15 pages. 0 errors.
+>   test-itemize-wrap: 2 pages. 0 errors.
+> No regressions. Page counts identical.
+
