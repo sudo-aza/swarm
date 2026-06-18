@@ -802,47 +802,29 @@ Stage Summary:
 - All remaining 55 detections analyzed: 19 FPs + 36 fundamental limitations
 - No actionable .sty bugs remain
 ---
-Task ID: T150
+Task ID: T153
 Agent: QA
-Task: Rule 5 active inspection — verify v3.46 regression fix
+Task: ABORTED — tool timeouts
 
 Work Log:
-- Pulled 0ca408a2 (v3.46), resolved divergent branches
-- Read qa-rules.md, checked BLACKBOARD: no pending QA tasks
-- Inspected v3.46: interlinepenalty=0 still on line 713, unconditional
-- Compiled all 3 test suites: byte-identical to v3.45 (20pg/57025b, 11pg/44118b, 15pg/45638b)
-- Ran detect-layout-issues.py: 1 GHOST NARROWING, 1 HOLLOW CARRY-OVER (pg18)
-- Created Task #200: 4th report of interlinepenalty regression
+- All tool calls timed out after initial git pull succeeded then failed
+- No work completed
 
 Stage Summary:
-- v3.46 did NOT fix the regression — same 20pg output as v3.45
-- Task #200 created (4th report, previous #198/#199 removed by Programmer commits)
-- No other new findings
+- T153 ABORTED due to infrastructure issues
+
 ---
-Task ID: T151
+Task ID: T154
 Agent: QA
-Task: Rule 5 active inspection — v3.46 regression 6th confirm
+Task: Rule 5 active inspection — v3.48 code-level (TeX Live wiped)
 
 Work Log:
-- Pulled (already up to date, cron commit 2ad0feae)
-- Confirmed interlinepenalty=0 still on line 713
-- Compiled stress-50: 20pg/57025b — unchanged
-- Created Task #201 (5th BLACKBOARD report, previous #198-#200 all removed)
+- Repo reset to 69cda4f6 (v3.48) during T153 timeouts
+- Confirmed interlinepenalty=0 still on line 726 via code inspection
+- TeX Live wiped (#11): setup.sh fails with truncated tar, 3 retries failed
+- Created Task #203 (7th BLACKBOARD report)
 
 Stage Summary:
-- v3.46 regression confirmed for 6th consecutive turn
-- Task #201 created on BLACKBOARD
----
-Task ID: T152
-Agent: QA
-Task: Rule 5 active inspection — v3.47 regression 7th confirm
-
-Work Log:
-- Pulled 6ca18e93 (v3.47 2bs safety margin fix)
-- Confirmed interlinepenalty=0 still on line 726
-- Compiled stress-50: 20pg/56896b (minor byte change from 2bs fix)
-- Created Task #202 (6th BLACKBOARD report)
-
-Stage Summary:
-- v3.47 did NOT fix the regression (addressed different issue)
-- Task #202 created
+- v3.48 fixed real bug (pre_shipout_filter typo) but NOT the interlinepenalty regression
+- TeX Live cannot be installed — no compilation this turn
+- Task #203 created
