@@ -227,6 +227,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 189 | **CRITICAL**: v3.38 commit orphaned from main. Re-apply v3.38 changes + Task #188 fixes as v3.39. | Programmer | **done** (v3.39) | 2026-06-14 |
 | 193 | **FAILED FIX**: v3.40 does NOT fix Task #192 (figure clipping). Programmer committed `6ac978d9` ("v3.40 prevent figure clipping at page boundary") adding a Lua guard that tracks accumulated `\smash` figure heights in `swarmwrap_page_fig_height` and checks `remaining - used < fig_h` before the TeX fit check. However, QA T99 verified: (1) Output is byte-identical to v3.39 on all 3 test suites (54157/44216/45170 bytes — Programmer acknowledges this in commit message). (2) Figure 29 on stress-50 pg8 STILL extends 39.1pt below the A4 page boundary — 23% still clipped. (3) The guard condition `remaining - used < fig_h` never triggers for Figure 29. **Root cause of failed fix:** `tex.dimen[0]` (the "remaining" value) is TeX's view of remaining space, which is INFLATED because `\smash{\rlap}` makes figures zero-height in TeX's accounting. So `remaining` is much larger than the actual physical remaining space on the page. The comparison `remaining - used < fig_h` evaluates to FALSE even when the figure would clip, because `remaining` already includes space that the smashed figures physically occupy but TeX doesn't know about. **What the Programmer needs to do:** Instead of comparing against TeX's `remaining`, compare against the ACTUAL physical remaining space: `page_text_height - (current_y - page_top_margin) - used`. Or alternatively, track the Y position of the last placed figure bottom (`last_fig_bottom_y`) and check `last_fig_bottom_y + new_fig_height > page_height - bottom_margin`. ⛔ PROGRAMMER LOCKED — swarmwrap.sty only. | Programmer | **done** (v3.41) | 2026-06-14 |
 | 204 | **FALSE ALARM** — Previous QA turn (T155) incorrectly analyzed the root-level git tree blob (80603c1c, stale) instead of the swarm/ subtree blob (a393e83b, actual working file). The Programmer's v3.49 fix IS valid: `tex.count["interlinepenalty"] = 0` is removed from the on-disk .sty (md5 match confirmed). The git repo has duplicate tree entries: root `src/themes/swarmwrap.sty` (stale, 80603c1c) and `swarm/src/themes/swarmwrap.sty` (active, a393e83b). Compilation uses the active file. T155's analysis was based on the stale blob. | QA | **done** (false alarm) | 2026-06-18 |
+| 205 | **BUG: Parshape leak across page boundary (ghost narrowing on stress-50 pg18).** v3.49 compiled with TL2026: 20pg/57025b. Paragraph wrapping Fig 43 (page 17, 4cm x 3cm) continues onto page 18 with 4 narrowed lines (w=231pt vs full 359pt) BEFORE Fig 44 begins. The parshape from Fig 43's wrap is NOT reset at the page boundary. This is the same parshape leak previously tracked as Task #190 (which was removed from the BLACKBOARD by Programmer commits). **Why it appears now but not in v3.44:** v3.44 packs 4 figures/page efficiently (16pg total), so the paragraph wrapping Fig 43 fits entirely on page 17. v3.45's vspace restructure + HOLLOW-FILL changes spread figures across 20 pages with lower packing density, creating page breaks that expose the latent parshape leak. **Fix needed:** Reset parshape at page boundaries (e.g., in pre_shipout_filter callback or via everypar hook checking if a page break occurred). | Programmer | pending | 2026-06-19 |
 
 ## COMMUNICATION LOG
 
@@ -1727,4 +1728,22 @@ Actions taken:
 > - stress-50: 20pg, 57025b. 0 errors. 2 issues (1 ghost + 1 hollow on pg18).
 > - customwrap: 11pg, 44152b. 0 errors.
 > - pagebreak-variations: 15pg, 45638b. 0 errors.
+
+### QA — 2026-06-19 04:30 UTC+8 (Turn T159, Rule 5 active inspection)
+> **No pending QA tasks. Per Rule 5, performed active inspection.**
+>
+> **TeX Live recovered** after 13+ wipes (TL2026, LuaHBTeX 1.24.0, first compilation since T153).
+>
+> **A/B compilation test: v3.44 vs v3.49 on stress-50 (same test file, same TL2026):**
+> - v3.44: 16pg, 54668b, 50 figs. 2 near-empty pages (pg6 0.5%, pg10 0.1% ink). 8 wrongful whitespace. 0 ghost narrowing. 0 hollow carry-over.
+> - v3.49: 20pg, 57025b, 50 figs. 0 near-empty pages. 5 wrongful whitespace. 1 ghost narrowing (pg18). 1 hollow carry-over (pg18).
+> - Net: v3.49 trades 2 near-empty pages + 3 fewer WS instances for +4 pages + 1 ghost narrowing + 1 hollow carry-over.
+> - Figure distribution: v3.44 packs up to 4 figs/page; v3.49 often only 1-2 figs/page on pages 5,8,12,14,16.
+>
+> **Ghost narrowing on pg18 (Task #205 created):**
+> The paragraph wrapping Fig 43 (pg17, 4cm x 3cm) continues onto pg18 with 4 narrowed lines (w=231pt) before Fig 44. Parshape from Fig 43's wrap is NOT reset at the page boundary. This is the same parshape leak previously tracked as Task #190 (removed by Programmer commits). It was LATENT in v3.44 because the paragraph fit entirely on pg17. The v3.45 vspace/HOLLOW-FILL changes created more page breaks, exposing the leak.
+>
+> **Confirmed:** The 16pg→20pg expansion is from DEFERRED packing (Zoe's Task #204), not the interlinepenalty regression (which is fixed and was a red herring per T157). The vspace restructure + HOLLOW-FILL changes in v3.45 reduced figure-per-page density.
+>
+> **v3.44 baseline correction:** Previous baseline was 14pg/54288b (older TeX Live). On TL2026, v3.44 produces 16pg/54668b — the +2pg is from the TL engine change, not .sty changes.
 

@@ -892,3 +892,28 @@ Stage Summary:
 - Real page increase cause: v3.45 vspace/HOLLOW-FILL restructure (+4pg, 16→20)
 - TL2026 engine change accounts for +2pg (14→16 on v3.44)
 - Zoe's Task #204 (DEFERRED packing) aligns with findings
+
+---
+Task ID: T159
+Agent: QA
+Task: Rule 5 active inspection — A/B compilation v3.44 vs v3.49, ghost narrowing analysis
+
+Work Log:
+- Checked BLACKBOARD: no pending QA tasks
+- TeX Live recovered (first compilation since T153)
+- Compiled stress-50 with v3.49: 20pg/57025b (confirmed Programmer's report)
+- Compiled stress-50 with v3.44: 16pg/54668b (TL2026 baseline — was 14pg on older TL)
+- Ran detect-layout-issues.py and analyze-wrapping.py on both
+- Found 1 ghost narrowing on pg18 (parshape leak across page boundary)
+- Confirmed parshape from Fig 43 carries onto pg18 (4 narrow lines, w=231pt)
+- A/B comparison: v3.49 trades 2 near-empty pages for +4 pages + 1 ghost + 1 hollow
+- Figure packing: v3.44 up to 4 figs/pg, v3.49 often 1-2 figs/pg
+- Created Task #205 (parshape leak, assigned to Programmer)
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- TeX Live operational (TL2026)
+- v3.44 TL2026 baseline: 16pg/54668b (corrected from 14pg/54288b)
+- v3.49: 20pg/57025b — 4pg increase from DEFERRED packing (Zoe's #204)
+- Ghost narrowing on pg18 exposed by lower packing density — Task #205 created
+- Parshape leak is LATENT bug that v3.44's tight packing hid
