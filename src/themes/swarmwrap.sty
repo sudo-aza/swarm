@@ -290,7 +290,7 @@
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
 
-\ProvidesPackage{swarmwrap}[2026/06/08 v3.33 ghost narrowing reduction]
+\ProvidesPackage{swarmwrap}[2026/06/18 v3.48 fix pre_shipout_filter name + add ghost state reset]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -434,18 +434,28 @@
   \swarmwrap@in@listfalse
 }
 
-% ── Lua callback: pre_shipping_filter (v3.32) ──────────────────────
-% Detects page shipping to fix hollow carry-over (Task #172).
-% Sets a flag when TeX ships a page. \swarmwrapnext checks this
-% flag after \par to detect page overflow.
+% ── Lua callback: pre_shipout_filter (v3.32, extended v3.34, name fix v3.38) ─────────
+% v3.32: Detects page shipping to fix hollow carry-over (Task #172).
+% v3.34: Zero remaining@nl and clear everypar on page shipping to
+%   prevent cross-page multi-paragraph ghost narrowing.
+% v3.38: Fixed callback name from pre_shipping_filter (silent failure).
 \ifswarmwrap@luatex
 \directlua{
   swarmwrap_page_shipped = false
-  luatexbase.add_to_callback("pre_shipping_filter",
+  swarmwrap_fig_stack = {}
+  luatexbase.add_to_callback("pre_shipout_filter",
     function(head, groupcode)
       swarmwrap_page_shipped = true
+      local rnl = tex.count["swarmwrap@remaining@nl"]
+      if rnl > 0 then
+        tex.count["swarmwrap@remaining@nl"] = 0
+        tex.toks["everypar"] = ""
+      end
+      swarmwrap_fig_stack = {}
+      tex.dimen["swarmwrap@eff@total"] = 0
+      tex.count["swarmwrappagehasfig"] = 0
       return head
-    end, "swarmwrap: detect page shipping")
+    end, "swarmwrap: page shipout ghost fix + stack clear")
 }
 \fi
 
@@ -508,7 +518,7 @@
       end
       -- v3.29: Clear everypar when no remaining narrow lines
       if tex.count["swarmwrap@remaining@nl"] == 0 then
-        tex.toks["everypar"] = {}
+        tex.toks["everypar"] = ""
       end
     end
     -- Compute remaining figure height
