@@ -917,3 +917,26 @@ Stage Summary:
 - v3.49: 20pg/57025b — 4pg increase from DEFERRED packing (Zoe's #204)
 - Ghost narrowing on pg18 exposed by lower packing density — Task #205 created
 - Parshape leak is LATENT bug that v3.44's tight packing hid
+
+---
+Task ID: T160
+Agent: QA
+Task: Rule 4.5 — v3.50 wrong-file process bug detection
+
+Work Log:
+- Checked BLACKBOARD: no pending QA tasks
+- Pulled new commit a6ffaf8f (Programmer: "v3.50 anti-waste squeeze check")
+- git diff-tree showed changes to src/themes/swarmwrap.sty (root-level), NOT swarm/src/themes/swarmwrap.sty
+- Verified active file MD5 still 09b8a50a (v3.49, unchanged)
+- Compiled with correct TEXINPUTS (swarm/src/themes:) → 20pg/57025b (v3.49)
+- Compiled with root TEXINPUTS (src/themes:) → 19pg/56578b (Programmer's result)
+- Found root-level v3.50 still contains interlinepenalty=0 regression (v3.46 base)
+- Created Task #206 (CRITICAL: apply v3.50 to correct file, delete stale root file)
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- CRITICAL: Programmer's v3.50 commit modified the WRONG file (stale root-level .sty)
+- Active swarm/src/themes/swarmwrap.sty is unchanged (v3.49)
+- Root-level v3.50 also re-introduces interlinepenalty=0 regression
+- Third incident from duplicate tree entries (T155, T156, T160)
+- Task #206 created for Programmer
