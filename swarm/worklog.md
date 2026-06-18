@@ -845,3 +845,24 @@ Stage Summary:
 - Page count concern: Programmer claims 20pg (same as broken versions) — needs compilation verification
 - TeX Live wipe #12 — CTAN mirror unreliable, 12 total wipes
 - Stale root-level .sty (80603c1c) is a process hazard
+---
+Task ID: T157
+Agent: QA
+Task: Rule 5 active inspection — v3.44→v3.45 root cause analysis
+
+Work Log:
+- Pulled (already up to date, HEAD 6ad989e0)
+- Read qa-rules.md
+- Checked BLACKBOARD — no pending QA tasks
+- TeX Live reinstall attempted: 5 mirrors (mirror.ctan.org ×3, tug.org, ftp.ntua.gr), all fail (#13)
+- Isolated v3.44→v3.45 diff: 4 functional changes identified
+- Analyzed stress-50 test structure: 50 figures, ~1 paragraph each, everypar rarely fires
+- Determined interlinepenalty regression is NOT the primary cause of 14pg→20pg
+- Updated BLACKBOARD comm log with root cause analysis
+- Updated QA journal with T157 entry
+
+Stage Summary:
+- Interlinepenalty regression is a red herring for stress-50 page count (single-paragraph figures)
+- Real culprits for 14pg→20pg: vspace handling restructure + HOLLOW-FILL changes (v3.45)
+- v3.49's interlinepenalty fix is correct but cannot restore 14pg alone
+- TeX Live wipe #13, 13 total wipes

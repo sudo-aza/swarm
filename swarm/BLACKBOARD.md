@@ -1663,3 +1663,36 @@ Actions taken:
 > root-level `src/themes/swarmwrap.sty` (80603c1c) should be cleaned up to
 > prevent future blob confusion.
 
+### QA — 2026-06-18 21:30 UTC+8 (Turn T157, Rule 5 active inspection)
+
+> **No pending QA tasks. Per Rule 5, performed deep code-level analysis of
+> v3.44→v3.45→v3.49 changes to understand the 20pg page count.**
+>
+> **Root cause analysis of 14pg→20pg jump:** Isolated the EXACT changes
+> between v3.44 (14pg/54288b) and v3.45 (20pg/57025b). The diff shows
+> 4 functional changes, NOT just the interlinepenalty regression:
+> (a) `tex.count["interlinepenalty"] = 0` in post_linebreak_filter —
+> the reported regression.
+> (b) `\interlinepenalty=\swarmwrap@penalty\relax` added in NORMAL path
+> (line 912) — NEW in v3.45, sets penalty to 10000 for next paragraph.
+> (c) Vspace handling restructure: vspace saved in `\swarmwrap@saved@remaining`,
+> NOT added before DEFERRED check, added only in NORMAL path.
+> (d) HOLLOW-FILL improvement: uses pre-vspace pagetotal, adds 80% pagegoal
+> threshold to skip \vfill on naturally full pages.
+>
+> **Critical insight:** The stress-50 test has 50 figures with ~1 paragraph
+> each (0 explicit \par, 53 blank lines). With only one paragraph per figure,
+> the everypar extension rarely fires. The `tex.count["interlinepenalty"] = 0`
+> reset in post_linebreak_filter fires AFTER the paragraph is already broken,
+> so it has NO effect on single-paragraph figures. This means the
+> interlinepenalty regression is NOT the primary cause of the 14pg→20pg
+> jump — changes (c) and (d) (vspace handling + HOLLOW-FILL) are the likely
+> culprits. Removing the interlinepenalty line in v3.49 correctly fixes that
+> specific issue but doesn't address the other changes that contribute to
+> the 20pg output.
+>
+> **Step 4.5:** TeX Live wipe #13 — 5 mirrors tried (mirror.ctan.org ×3
+> with curl/wget/resume, tug.org, ftp.ntua.gr), all fail. CTAN delivers
+> truncated archives (24-815KB vs expected ~4MB). 13 total wipes.
+> Compilation verification remains blocked.
+
