@@ -818,3 +818,17 @@ Stage Summary:
 - v3.46 did NOT fix the regression — same 20pg output as v3.45
 - Task #200 created (4th report, previous #198/#199 removed by Programmer commits)
 - No other new findings
+---
+Task ID: T151
+Agent: QA
+Task: Rule 5 active inspection — v3.46 regression 6th confirm
+
+Work Log:
+- Pulled (already up to date, cron commit 2ad0feae)
+- Confirmed interlinepenalty=0 still on line 713
+- Compiled stress-50: 20pg/57025b — unchanged
+- Created Task #201 (5th BLACKBOARD report, previous #198-#200 all removed)
+
+Stage Summary:
+- v3.46 regression confirmed for 6th consecutive turn
+- Task #201 created on BLACKBOARD
