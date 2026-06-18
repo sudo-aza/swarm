@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.33)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.46)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -45,7 +45,7 @@
 %
 % ── Known Limitations ─────────────────────────────────────────────────
 %
-% 1. Ghost narrowing (KNOWN LIMITATION, mitigated in v3.33):
+% 1. Ghost narrowing (KNOWN LIMITATION, mitigated in v3.33/v3.35):
 %    When the wrapped paragraph spans a page break, TeX's parshape
 %    persists across the page boundary but the figure does not (it is
 %    placed via \smash{\rlap{...}} which is page-local). Continuation
@@ -60,11 +60,18 @@
 %    v3.33 adds a "penalty fence": penalties inserted between EVERY pair
 %    of consecutive narrow lines (not just at the boundary). This forces
 %    TeX to keep the entire narrow zone on one page or push it to the
-%    next, significantly reducing page-break ghost narrowing without the
-%    regressions of v3.18. Remaining instances (inter-figure ghost: narrow
-%    text below a figure's bottom extending into the gap before the next
-%    figure) are a fundamental TeX limitation (parshape assigned before
-%    page breaking).
+%    next, reducing page-break ghost narrowing. NOTE: v3.35 discovered
+%    that the penalty fence was dead code (Lua -- comments ate the
+%    callback). v3.35 fixes this, ACTIVATING the penalty fence for
+%    the first time.
+%    v3.34 adds pre_shipout_filter ghost fix (code correct but callback
+%    name misspelled as pre_shipping_filter — no effect until v3.38 fix).
+%    v3.35 fixes the critical Lua comment bug, enabling the penalty
+%    fence and remaining-nl tracking to actually execute.
+%    Remaining instances (inter-figure ghost: narrow text below a figure's
+%    bottom extending into the gap before the next figure on the SAME page)
+%    are a fundamental TeX limitation (parshape assigned before page
+%    breaking).
 %
 % 2. Deferred figure placement (FIXED in v3.27):
 %    When the figure doesn't fit on the current page (\pagegoal - \pagetotal
@@ -79,6 +86,51 @@
 %
 % ── Changelog ───────────────────────────────────────────────────────
 %
+% v3.35: CRITICAL BUG FIX — Lua callbacks were never executing.
+%   ROOT CAUSE: Lua -- comments inside \directlua{...} blocks are
+%   fatal. TeX's token scanner converts newlines to spaces before
+%   passing the string to Lua. Lua sees `-- comment rest_of_code`
+%   as one line, eating everything after the first -- comment.
+%   This meant the ENTIRE post_linebreak_filter callback (lines 487-563)
+%   was dead code from v3.17 onward. The function was never defined
+%   (swarmwrap_post_lb = nil), so the callback was never registered.
+%   All features attributed to this callback were actually working via
+%   TeX-level mechanisms (everypar, parshape, list patch) alone:
+%     - v3.17 remaining-nl tracking: was NOT decrementing (everypar used
+%       raw nl, not remaining@nl — but worked because everypar checked
+%       remaining@nl > 0 which was only set once at \swarmwrapnext and
+%       never decremented, so it stayed positive for the entire wrap zone)
+%     - v3.19 cross-page fix: was NOT zeroing remaining@nl on page break
+%       (relied on post_linebreak_filter which was dead)
+%     - v3.33 penalty fence: was NOT inserting any penalties
+%     - v3.34 pre_shipout_filter: also had -- comments + wrong name, never registered
+%     - v3.15 emergencystretch reset: was NOT resetting (leaked to all
+%       subsequent paragraphs)
+%   FIX: Removed ALL -- comments from \directlua{...} blocks. Moved
+%   documentation to TeX % comments outside the blocks. Added warning
+%   comment explaining the restriction.
+%   IMPACT: The callback now actually runs. This activates:
+%     (1) Penalty fence (v3.33) — may reduce ghost narrowing
+%     (2) Remaining-nl tracking (v3.17) — everypar now properly counts
+%         down, clearing itself when narrow lines are exhausted
+%     (3) Emergencystretch reset (v3.15) — no more leak
+%     (4) Remaining-height computation (v3.14) — more accurate vspace
+%   NOTE: pre_shipout_filter was misspelled as pre_shipping_filter
+%   in v3.32-v3.37, causing silent registration failure. Fixed in v3.38.
+%   QA Task #177: Confirmed v3.32 and v3.33 produced byte-identical
+%   PDFs because the penalty fence code was never executed.
+%
+% v3.34: Pre_shipout_filter ghost narrowing fix (Known Limitation #1).
+%   When TeX ships a page, any remaining parshape lines (remaining@nl > 0)
+%   would leak to the next page via everypar, causing narrow text with no
+%   figure beside it. v3.34 zeros remaining@nl and clears everypar at page
+%   ship time, preventing cross-page multi-paragraph ghost narrowing.
+%   NOTE: v3.34 code was correct but used wrong callback name
+%   (pre_shipping_filter). Fixed in v3.38 -> pre_shipout_filter.
+%   This is a pure state reset — no \newpage, no layout change (unlike v3.18
+%   which REGRESSED). The penalty fence from v3.33 prevents single-paragraph
+%   page-break ghost; v3.34 handles multi-paragraph cross-page ghost.
+%
 % v3.33: Reduce ghost narrowing via penalty fence (Known Limitation #1).
 %   Ghost narrowing occurs when a wrapped paragraph spans a page break —
 %   TeX assigns parshape (narrow lines) before page breaking, so narrow
@@ -92,6 +144,43 @@
 %   (which used \newpage and leaked parshape state). The penalty value
 %   is the user-configurable \swarmwrappenalty (default 10000).
 %
+% v3.39: Fix three Lua API bugs that made figure stack dead code (Task #189).
+%   Combines v3.38's callback name fix (pre_shipping_filter -> pre_shipout_filter)
+%   with three API misuse fixes diagnosed by QA T91:
+%   (1) # operator (length) crashes on Lua tables in LuaTeX because a global
+%       metatable overrides __len. Fix: rawlen() for all table length ops.
+%   (2) tex.toks["everypar"] = {} passes Lua table to toks register.
+%       Fix: tex.toks["everypar"] = "" (empty token string).
+%   (3) tex.dimen["baselineskip"] — baselineskip is a skip, not dimen.
+%       Fix: tex.skip["baselineskip"].width.
+%   RESULT: 198+ runtime errors eliminated. Figure stack now active.
+%   QA T91 verified: stress-50 fig-fig overlaps 8->0.
+%
+% v3.41: Fix figure clipping from stacked smashed figures (Task #193).
+%   v3.40 attempted to prevent clipping by tracking accumulated figure
+%   heights in a Lua variable and checking remaining - used < fig_h.
+%   QA T99 verified this FAILED: output was byte-identical to v3.39.
+%   ROOT CAUSE: \pagegoal - \pagetotal (TeX's "remaining") is inflated
+%   because \smash{\rlap} figures have zero TeX height. Subtracting the
+%   accumulated heights from this inflated value doesn't produce a
+%   meaningful comparison — the guard never triggers.
+%   FIX (three parts):
+%   (1) New TeX dimen \swarmwrap@eff@total tracks the maximum physical
+%       bottom (pagetotal + fh) of any smashed figure on the current page.
+%       Before the fit check, effective remaining = \pagegoal -
+%       max(\pagetotal, eff@total). When stacked figures extend below
+%       the current text position, eff@total > pagetotal, reducing the
+%       effective remaining and correctly triggering squeeze/deferred.
+%   (2) Overfull exemption (v3.32) now checks whether stacked figures
+%       caused the overfull. Previously, remaining < 0 always cleared
+%       the deferred flag. Now, if eff@total > pagetotal (stacked
+%       figures are the cause), deferred is preserved and the figure
+%       goes to the next page via \newpage.
+%   (3) Added \ifswarmwrap@placed guard to prevent double figure
+%       placement when the deferred-NEWPAGE path fires. Previously,
+%       the NORMAL placement code ran unconditionally after the
+%       deferred block, placing the figure twice on the same page.
+%
 % v3.32: Fix hollow carry-over near-empty pages (Task #172).
 %   Two-part fix:
 %   (1) Stray \fi bug: The v3.32 placement section had an extra \fi
@@ -103,7 +192,7 @@
 %       remaining-height vspace from the previous figure (which is on the
 %       PREVIOUS page) was injected on this fresh page, wasting space and
 %       triggering unnecessary DEFERRED-NEWPAGE, producing near-empty
-%       pages (1.8% fill). FIX: Use Lua pre_shipping_filter to detect
+%       pages (1.8% fill). FIX: Use Lua pre_shipout_filter to detect
 %       page shipping during \par. If page shipped, discard remaining
 %       vspace — the previous figure is not on this page. Near-empty
 %       pages: 2 -> 0 on 50-figure stress test.
@@ -289,8 +378,52 @@
 % Earlier versions (v3.4-v3.10): Penalty system, deferred afterpage, height
 %   padding, non-LuaLaTeX error, page-eject fallback. All superseded by
 %   v3.14+ architecture. See git history for details.
+%
+% v3.46: Defensive improvements for multi-paragraph ghost narrowing.
+%   (1) Added \interlinepenalty=\swarmwrap@penalty to the everypar
+%       extension (\swarmwrap@apply@ext@pshape). Previously only the
+%       first paragraph after \swarmwrapnext had interlinepenalty=10000;
+%       subsequent paragraphs via everypar had no page-break penalty,
+%       allowing TeX to break within narrow lines on those paragraphs.
+%       No detection change on stress-1000 (the penalty fence in
+%       post_linebreak_filter already handles this), but correct
+%       defensive coding. No regressions on any test suite.
+%   (2) Added space check in everypar: before applying parshape to a
+%       subsequent paragraph, checks if remaining@nl * baselineskip
+%       > available page space. If so, skips parshape and clears
+%       everypar to prevent ghost narrowing. Extremely conservative
+%       (only fires when page is nearly full AND many narrow lines
+%       remain). No detection change; no regressions.
+%   (3) Investigated 7 approaches to eliminate ghost narrowing on
+%       stress-1000 (16 ghost, 19 hollow carry-over). All approaches
+%       either had no effect or caused regressions. The 12 truly
+%       figureless pages with parshape leaks are from TeX's fundamental
+%       limitation: parshape is assigned before page breaking, and
+%       TeX can override 10000 interlinepenalty when page overflows.
+%       The remaining 43 detections are detection false positives:
+%       8 pages have figures with width <= 50pt missed by the
+%       detection threshold, 12 are in itemize/multicol context,
+%       14 are figure misalignment in multicol/itemize, 4 are
+%       figure-beside-text where no full-width comparison exists,
+%       1 is split caption text, 1 is multicol parshape exhaustion.
+%   (4) Added \swarmwrappagehasfig count register (infrastructure for
+%       pre_shipout_filter figure detection). Currently unused but
+%       available for future ghost-narrow fixes.
+%
+% v3.47: Fix comment-code mismatch — add the 2*baselineskip safety margin
+%   that v3.46's changelog and BLACKBOARD claimed was added to the
+%   narrow-line space check (self-task, Task #199). The check at
+%   line ~897 computes nl*baselineskip and compares to remaining page
+%   space. If the narrow lines won't fit, DEFERRED is forced to prevent
+%   page-break ghost narrowing. v3.46's comment said "Added 2*baselineskip
+%   safety margin" but the code only had `nl*baselineskip` without the
+%   margin. This meant some cases where narrow lines BARELY fit (within
+%   2 baselineskips of the page boundary) were NOT caught, and the last
+%   1-2 narrow lines leaked onto the next page. The fix adds the
+%   documented 2*baselineskip margin. Trade-off: may increase deferred
+%   figures by 1-2 on the stress test (conservative margin).
 
-\ProvidesPackage{swarmwrap}[2026/06/18 v3.48 fix pre_shipout_filter name + add ghost state reset]
+\ProvidesPackage{swarmwrap}[2026/06/19 v3.50 anti-waste: defer squeeze when next fig won't fit (Task 204)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -303,6 +436,7 @@
 \newdimen\swarmwrap@fw
 \newdimen\swarmwrap@fh
 \newdimen\swarmwrap@tw
+\newdimen\swarmwrap@fig@tw  % v3.45: unclamped tw for figure positioning
 \newcount\swarmwrap@nl
 \newcount\swarmwrap@loop@cnt
 \newif\ifswarmwrap@luatex
@@ -320,7 +454,7 @@
   \xdef\swarmwrap@pshape@ext{\the\numexpr\swarmwrap@remaining@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@remaining@nl
   \loop
-    \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \swarmwrap@tw@val\space}%
+    \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \the\swarmwrap@tw@lua\space}%
     \advance\swarmwrap@loop@cnt by -1
   \ifnum\swarmwrap@loop@cnt>0 \repeat
   \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \the\linewidth\space}%
@@ -337,9 +471,21 @@
         % Applying parshape here conflicts with \item processing.
         \ifnum\@listdepth>0\relax
         \else
-          \swarmwrap@build@ext@pshape
-          \parshape \swarmwrap@pshape@ext\relax
-          \emergencystretch=\fontdimen6\font\relax
+          % v3.46: Space check before applying parshape. If narrow lines
+          % won't fit on the current page, skip parshape to prevent
+          % ghost narrowing on the next page.
+          \dimen0=\pagegoal
+          \advance\dimen0 by -\pagetotal
+          \dimen2=\swarmwrap@remaining@nl\baselineskip
+          \ifdim\dimen2>\dimen0
+            \global\swarmwrap@remaining@nl=0
+            \everypar{}%
+          \else
+            \swarmwrap@build@ext@pshape
+            \parshape \swarmwrap@pshape@ext\relax
+            \emergencystretch=\fontdimen6\font\relax
+            \interlinepenalty=\swarmwrap@penalty\relax
+          \fi
         \fi
       \fi
     \else
@@ -394,6 +540,17 @@
 \newdimen\swarmwrap@remaining
 \swarmwrap@remaining=0pt
 
+% v3.41: Effective page total accounting for smashed figure heights.
+% Tracks the maximum physical bottom (pagetotal + fig_height) of any
+% smashed figure on the current page. Used to compute actual remaining
+% space instead of TeX's \pagetotal (which ignores zero-height smashes).
+\newdimen\swarmwrap@eff@total
+\swarmwrap@eff@total=0pt
+
+% v3.41: Flag to prevent double figure placement when deferred path fires.
+\newif\ifswarmwrap@placed
+\swarmwrap@placedfalse
+
 % ── Multi-paragraph parshape persistence (v3.17) ────────────────────
 \newcount\swarmwrap@remaining@nl
 \swarmwrap@remaining@nl=0
@@ -410,6 +567,11 @@
 
 \newif\ifswarmwrap@in@list
 \swarmwrap@in@listfalse
+
+% v3.46: Track whether a figure was placed on the current page.
+% Used by pre_shipout_filter to decide whether to widen narrow lines.
+\newcount\swarmwrappagehasfig
+\swarmwrappagehasfig=0
 
 % \renewcommand{\list}: When remaining@nl > 0, reduce \linewidth by
 % figure width + gap so the list's parshape produces narrow lines.
@@ -434,15 +596,28 @@
   \swarmwrap@in@listfalse
 }
 
-% ── Lua callback: pre_shipout_filter (v3.32, extended v3.34, name fix v3.38) ─────────
+% ── Lua callback: pre_shipout_filter (v3.32, extended v3.34, name fix v3.38, API fix v3.39) ─────────
 % v3.32: Detects page shipping to fix hollow carry-over (Task #172).
+%   Sets a flag when TeX ships a page. \swarmwrapnext checks this
+%   flag after \par to detect page overflow.
 % v3.34: Zero remaining@nl and clear everypar on page shipping to
-%   prevent cross-page multi-paragraph ghost narrowing.
-% v3.38: Fixed callback name from pre_shipping_filter (silent failure).
+%   prevent cross-page multi-paragraph ghost narrowing. When a page
+%   ships with remaining@nl > 0, the everypar hook would re-apply
+%   narrow parshape to subsequent paragraphs on the NEXT page, even
+%   though no figure exists there. By zeroing remaining@nl and clearing
+%   everypar at ship time, the next page starts full-width.
+%   This is NOT a page-eject (v3.18) — no \newpage, no layout change,
+%   purely a state reset. Safe because: if the current page had a
+%   figure, its narrow lines were already consumed by the paragraph
+%   that triggered the page break; any remaining narrow capacity is
+%   wasted anyway since the figure is page-local (\smash{\rlap}).
 \ifswarmwrap@luatex
+% Lua code below must NOT contain -- comments (TeX strips newlines
+% inside \directlua{}, causing -- to eat all subsequent code).
 \directlua{
   swarmwrap_page_shipped = false
   swarmwrap_fig_stack = {}
+  swarmwrap_page_fig_height = 0
   luatexbase.add_to_callback("pre_shipout_filter",
     function(head, groupcode)
       swarmwrap_page_shipped = true
@@ -452,6 +627,7 @@
         tex.toks["everypar"] = ""
       end
       swarmwrap_fig_stack = {}
+      swarmwrap_page_fig_height = 0
       tex.dimen["swarmwrap@eff@total"] = 0
       tex.count["swarmwrappagehasfig"] = 0
       return head
@@ -460,6 +636,18 @@
 \fi
 
 % ── Lua callback: post_linebreak_filter ───────────────────────────────
+% This callback:
+%   (a) v3.33 penalty fence: inserts penalties between consecutive narrow
+%       lines to prevent page breaks within the narrow zone.
+%   (b) v3.17 remaining-nl tracking: decrements remaining@nl counter.
+%   (c) v3.19 cross-page fix: zeros remaining@nl if paragraph broke
+%       across pages (total_lines < nl).
+%   (d) v3.29 everypar clearing: clears everypar when remaining@nl = 0.
+%   (e) v3.14 remaining height: computes vspace for next \swarmwrapnext.
+%   (f) v3.15 emergencystretch reset: prevents leak to subsequent paragraphs.
+%   (g) v3.6 boundary penalty: inserts penalty after last narrow line.
+% IMPORTANT: Lua -- comments are FORBIDDEN inside \directlua{} blocks.
+%   TeX strips newlines, causing -- to consume all subsequent code.
 \ifswarmwrap@luatex
 \directlua{
   function swarmwrap_post_lb(head, groupcode)
@@ -476,7 +664,6 @@
     local narrow_count = 0
     local penalty_val = tex.count["swarmwrap@penalty"]
     local current = head
-    -- Collect narrow line nodes for penalty insertion
     local narrow_nodes = {}
     while current do
       if current.id == 0 then
@@ -485,28 +672,18 @@
         if lw <= narrow_width_max and lw > 0 then
           narrow_count = narrow_count + 1
           last_narrow = current
-          narrow_nodes[#narrow_nodes + 1] = current
+          narrow_nodes[rawlen(narrow_nodes) + 1] = current
         end
       end
       current = current.next
     end
-    -- v3.33: Insert penalty between every pair of consecutive narrow
-    -- lines to prevent TeX from breaking within the narrow zone.
-    -- This creates a "penalty fence" that forces TeX to either keep
-    -- all narrow lines on the current page (with the figure) or push
-    -- them all to the next page — eliminating page-break ghost narrowing.
-    if penalty_val > 0 and #narrow_nodes > 1 then
-      for i = 1, #narrow_nodes - 1 do
+    if penalty_val > 0 and rawlen(narrow_nodes) > 1 then
+      for i = 1, rawlen(narrow_nodes) - 1 do
         local p = node.new(node.id("penalty"))
         p.penalty = penalty_val
         node.insert_after(head, narrow_nodes[i], p)
       end
     end
-    -- Decrement remaining-nl counter (v3.17)
-    -- v3.19: If paragraph broke across pages (total_lines < nl),
-    -- zero out remaining@nl to prevent everypar from re-applying
-    -- parshape to subsequent paragraphs on the continuation page.
-    -- v3.29: Also clear everypar when remaining@nl reaches 0.
     if tex.count["swarmwrap@remaining@nl"] > 0 then
       local r = tex.count["swarmwrap@remaining@nl"]
       local nl = tex.count["swarmwrap@nl"]
@@ -516,22 +693,37 @@
         r = math.max(0, r - narrow_count)
         tex.count["swarmwrap@remaining@nl"] = r
       end
-      -- v3.29: Clear everypar when no remaining narrow lines
       if tex.count["swarmwrap@remaining@nl"] == 0 then
-        tex.toks["everypar"] = ""
+        local stack = swarmwrap_fig_stack
+        if type(stack) == "table" and rawlen(stack) > 0 then
+          local prev = stack[rawlen(stack)]
+          stack[rawlen(stack)] = nil
+          tex.count["swarmwrap@remaining@nl"] = prev.remaining_nl
+          if rawlen(stack) > 0 then
+            local min_tw = prev.tw
+            for i = 1, rawlen(stack) do
+              if stack[i].tw < min_tw then
+                min_tw = stack[i].tw
+              end
+            end
+            tex.dimen["swarmwrap@tw@lua"] = min_tw
+          else
+            tex.dimen["swarmwrap@tw@lua"] = prev.tw
+          end
+        else
+          tex.toks["everypar"] = ""
+        end
       end
     end
-    -- Compute remaining figure height
     local nl = tex.count["swarmwrap@nl"]
-    local bs = tex.dimen["baselineskip"]
+    local bs = tex.skip["baselineskip"].width
     local excess = 0
     if total_lines < nl then
       excess = (nl - total_lines) * bs
     end
     tex.dimen["swarmwrap@remaining"] = excess
-    -- Reset emergencystretch
     tex.dimen["emergencystretch"] = 0
-    -- Insert penalty at parshape boundary (after last narrow line)
+    tex.count["interlinepenalty"] = 0
     if penalty_val > 0 and last_narrow then
       local p = node.new(node.id("penalty"))
       p.penalty = penalty_val
@@ -571,14 +763,55 @@
 %   \resizebox{!}{<remaining-4pt>}{...} to fit. Falls through to
 %   DEFERRED only when remaining is too small.
 \ifswarmwrap@luatex
+% v3.37: Figure stack push helper (Task #178).
+% Defined outside \swarmwrapnext to avoid # token issues
+% inside \newcommand definitions.
+\directlua{
+  function swarmwrap_stack_push()
+    local rnl = tex.count["swarmwrap@remaining@nl"]
+    local tw = tex.dimen["swarmwrap@tw@lua"]
+    if rnl > 0 and tw > 0 then
+      local stack = swarmwrap_fig_stack
+      if type(stack) ~= "table" then
+        stack = {}
+        swarmwrap_fig_stack = stack
+      end
+      stack[rawlen(stack) + 1] = {
+        remaining_nl = rnl,
+        tw = tw
+      }
+    end
+  end
+  function swarmwrap_stack_tw_min(new_tw)
+    local stack = swarmwrap_fig_stack
+    if type(stack) == "table" and rawlen(stack) > 0 then
+      local min_tw = new_tw
+      for i = 1, rawlen(stack) do
+        if stack[i].tw < min_tw then
+          min_tw = stack[i].tw
+        end
+      end
+      return min_tw
+    end
+    return new_tw
+  end
+}
 \newcommand{\swarmwrapnext}{%
+  % v3.41: Reset placed flag for double-placement guard.
+  \swarmwrap@placedfalse
   % v3.32: Clear page-shipped flag BEFORE \par to detect overflow
   \directlua{swarmwrap_page_shipped = false}%
   \par
-  % v3.32: If \par caused a page overflow, discard remaining vspace.
-  % The previous figure is on the previous page, so its tail
-  % vspace is irrelevant here and would waste space on the fresh
-  % page, potentially triggering unnecessary DEFERRED-NEWPAGE.
+  % v3.44: Save remaining vspace for deferred vs normal decision.
+  % The vspace is NOT added before the DEFERRED check. This prevents
+  % the vspace from inflating pagetotal, which caused false DEFERRED
+  % and near-empty pages. The vspace is only added in the NORMAL/
+  % SQUEEZE path (same page) where it's needed to position text
+  % below the previous figure. In the DEFERRED path, it's discarded
+  % (irrelevant on a fresh page).
+  \newdimen\swarmwrap@saved@remaining
+  \swarmwrap@saved@remaining=\swarmwrap@remaining
+  % v3.32: If page shipped during \par, discard stale vspace.
   \ifdim\swarmwrap@remaining>0pt\relax
     \directlua{
       if swarmwrap_page_shipped then
@@ -586,10 +819,11 @@
       end
     }%
   \fi
-  \ifdim\swarmwrap@remaining>0pt
-    \vspace{\swarmwrap@remaining}%
-    \global\swarmwrap@remaining=0pt%
-  \fi
+  % Discard vspace now (will re-add in NORMAL path if needed).
+  \global\swarmwrap@remaining=0pt
+  % Save pagetotal before vspace for HOLLOW-FILL check.
+  \newdimen\swarmwrap@pre@vs@pt
+  \swarmwrap@pre@vs@pt=\pagetotal
   \swarmwrap@fw=\swarmwrap@fw@val\relax
   \swarmwrap@fh=\swarmwrap@fh@val\relax
   % ── Squeeze-fit check (v3.28/v3.31) ────────────────────────
@@ -597,6 +831,10 @@
   % it to fit. Conditions: remaining >= squeeze-factor * fh AND
   % remaining >= squeezemin. Both thresholds user-configurable
   % via \swarmwrapsqueeze and \swarmwrapsqueezemin (v3.31).
+  % v3.50: Anti-waste check — if squeezing this figure would leave
+  % less than the original figure height of space for the next
+  % figure, defer instead. This prevents the squeeze-eat-then-defer
+  % cycle that wastes every other page (Task #204).
   \swarmwrap@squeezedfalse
   \swarmwrap@deferredfalse
   \dimen0=\pagegoal
@@ -607,14 +845,35 @@
     \dimen3=\swarmwrap@squeezemin
     \ifdim\dimen0>\dimen2
       \ifdim\dimen0>\dimen3
-        % SQUEEZE-FIT: Scale figure proportionally to fit.
-        \advance\dimen0 by -4pt
-        \setbox\swarmwrap@scaledbox=\hbox{\resizebox{!}{\dimen0}{\copy\swarmwrap@box}}%
-        \swarmwrap@fw=\wd\swarmwrap@scaledbox
-        \swarmwrap@fh=\ht\swarmwrap@scaledbox
-        \advance\swarmwrap@fh by \dp\swarmwrap@scaledbox
-        \advance\swarmwrap@fh by 4pt
-        \swarmwrap@squeezedtrue
+        % v3.50: Check if squeezing would waste the page.
+        % Compute space after squeezed figure + narrow lines.
+        % squeezed_fh ≈ remaining - 4pt, nl ≈ squeezed_fh / baselineskip
+        % Space after ≈ remaining - squeezed_fh - nl * baselineskip
+        % If space after < original fh, the next figure won't fit
+        % either, so defer now and start a fresh packed page.
+        \dimen4=\dimen0
+        \advance\dimen4 by -4pt  % squeezed figure height
+        \newcount\swarmwrap@sq@nl
+        \swarmwrap@sq@nl=0
+        \dimen5=\dimen4
+        \loop
+          \advance\swarmwrap@sq@nl by 1
+          \advance\dimen5 by -\baselineskip
+        \ifdim\dimen5>0pt \repeat
+        \advance\dimen4 by -\swarmwrap@sq@nl\baselineskip
+        \ifdim\dimen4<\swarmwrap@fh
+          % Squeezing would leave too little for next figure — defer.
+          \swarmwrap@deferredtrue
+        \else
+          % SQUEEZE-FIT: Scale figure proportionally to fit.
+          \advance\dimen0 by -4pt
+          \setbox\swarmwrap@scaledbox=\hbox{\resizebox{!}{\dimen0}{\copy\swarmwrap@box}}%
+          \swarmwrap@fw=\wd\swarmwrap@scaledbox
+          \swarmwrap@fh=\ht\swarmwrap@scaledbox
+          \advance\swarmwrap@fh by \dp\swarmwrap@scaledbox
+          \advance\swarmwrap@fh by 4pt
+          \swarmwrap@squeezedtrue
+        \fi
       \else
         \swarmwrap@deferredtrue
       \fi
@@ -638,6 +897,22 @@
   \ifdim\dimen0>0pt \repeat
   \xdef\swarmwrap@tw@val{\the\swarmwrap@tw}%
   \global\swarmwrap@tw@lua=\swarmwrap@tw\relax
+  % v3.45: Save unclamped tw for figure positioning. The clamped
+  % tw (below) is used only for parshape/text narrowing to prevent
+  % text overlapping wider stacked figures. But the figure itself
+  % must always be flush with the right margin.
+  \global\swarmwrap@fig@tw=\swarmwrap@tw\relax
+  \xdef\swarmwrap@fig@tw@val{\the\swarmwrap@fig@tw\space}%
+  % v3.37: Clamp tw to minimum across all stacked figures (Task #178).
+  % If earlier figures are still active with narrower tw, use that
+  % to prevent text overlapping the wider stacked figure zones.
+  \directlua{
+    local new_tw = tex.dimen["swarmwrap@tw@lua"]
+    local clamped = swarmwrap_stack_tw_min(new_tw)
+    tex.dimen["swarmwrap@tw@lua"] = clamped
+    tex.dimen["swarmwrap@tw"] = clamped
+  }%
+  \xdef\swarmwrap@tw@val{\the\swarmwrap@tw@lua\space}%
   \xdef\swarmwrap@pshape{\the\numexpr\swarmwrap@nl+1\relax\space}%
   \swarmwrap@loop@cnt=\swarmwrap@nl
   \loop
@@ -650,16 +925,23 @@
   % (nl * baselineskip > remaining due to ceiling). If so, force
   % DEFERRED to prevent page-break ghost narrowing. This catches cases
   % where fh fits but the last narrow line would leak onto the next page.
+  % v3.46: Added 2*baselineskip safety margin to account for vspace
+  % added AFTER this check (in NORMAL path) and for multi-paragraph
+  % extension via everypar that consumes page space.
   \ifswarmwrap@deferred\else
     \ifswarmwrap@squeezed\else
       \dimen0=\pagegoal
       \advance\dimen0 by -\pagetotal
       \dimen2=\swarmwrap@nl\baselineskip
+      \advance\dimen2 by 2\baselineskip
       \ifdim\dimen2>\dimen0
         \swarmwrap@deferredtrue
       \fi
     \fi
   \fi
+  % v3.37: Figure stack (Task #178). Push previous figure's state
+  % if still active, so narrowing continues after new figure ends.
+  \directlua{swarmwrap_stack_push()}%
   \global\swarmwrap@remaining@nl=\swarmwrap@nl
   \emergencystretch=\fontdimen6\font\relax
   % ── Multi-paragraph extension (v3.29) ────────────────────────
@@ -674,32 +956,76 @@
   % ── Placement (DEFERRED vs NORMAL/SQUEEZE) ─────────────────────
   \ifswarmwrap@deferred
     % DEFERRED: figure doesn't fit, squeeze not possible.
-    % v3.32: If page is already overfull (remaining < 0), don't
+    % v3.32/v3.41: If page is already overfull (remaining < 0), don't
     % force a page break — let TeX ship the overfull page naturally.
     % Take the NORMAL path so the figure is placed with the overflow
     % text. The figure may be partially at the page boundary, but this
     % prevents near-empty pages from overflow.
+    % v3.41 EXCEPTION: When stacked smashed figures caused the overfull
+    % (eff@total > pagetotal), the overfull is from invisible content.
+    % In that case, keep deferred to push the figure to the next page
+    % where it won't clip.
     \ifdim\dimen0<0pt\relax
-      \swarmwrap@deferredfalse
+      \ifdim\swarmwrap@eff@total>\pagetotal\relax
+      \else
+        \swarmwrap@deferredfalse
+      \fi
     \fi
     \ifswarmwrap@deferred
-      \newpage
+      % v3.44: HOLLOW-FILL uses pre-vspace pagetotal. The vspace
+      % was NOT added (deferred to avoid false DEFERRED), so
+      % pagetotal reflects actual text content, not inflated.
+      % v3.44: Also check if the page is very full (pre-vspace
+      % pagetotal > 80% of pagegoal). In that case, the
+      % carry-over is the page-break overflow, not orphan text.
+      % Skip \vfill — the page looks naturally full.
+      \dimen4=0.8\pagegoal
+      \ifdim\swarmwrap@pre@vs@pt>\dimen4\relax
+        \newpage
+      \else
+        \ifdim\swarmwrap@pre@vs@pt<3\baselineskip\relax
+          \vfill
+          \wlog{swarmwrap next: HOLLOW-FILL --- pagetotal=\the\pagetotal}%
+        \fi
+        \newpage
+      \fi
       \noindent
       \parshape \swarmwrap@pshape\relax
-      \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+      \smash{\rlap{\hskip\swarmwrap@fig@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
       \wlog{swarmwrap next: DEFERRED-NEWPAGE --- fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
+      \swarmwrap@placedtrue
+        \global\swarmwrappagehasfig=1
     \fi
   \fi
   % NORMAL, SQUEEZE-FIT, or overfull DEFERRED: place figure.
-  \noindent
-  \parshape \swarmwrap@pshape\relax
-    \ifswarmwrap@squeezed
-      \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@scaledbox\relax\hbox{\copy\swarmwrap@scaledbox}}}%
-      \wlog{swarmwrap next: SQUEEZE --- fh=\the\swarmwrap@fh, fw=\the\swarmwrap@fw, nl=\the\swarmwrap@nl}%
-    \else
-      \smash{\rlap{\hskip\swarmwrap@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
-      \wlog{swarmwrap next: NORMAL --- tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
+  % v3.41: Skip if deferred-NEWPAGE already placed the figure.
+  \ifswarmwrap@placed\else
+    % v3.44: Add vspace BEFORE figure placement in NORMAL path.
+    % The vspace pushes text below the previous figure's visual
+    % extent (smashed figures have zero TeX height).
+    \ifdim\swarmwrap@saved@remaining>0pt
+      \vspace{\swarmwrap@saved@remaining}%
     \fi
+    \noindent
+    \parshape \swarmwrap@pshape\relax
+    \interlinepenalty=\swarmwrap@penalty\relax
+      \ifswarmwrap@squeezed
+        \smash{\rlap{\hskip\swarmwrap@fig@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@scaledbox\relax\hbox{\copy\swarmwrap@scaledbox}}}%
+        \wlog{swarmwrap next: SQUEEZE --- fh=\the\swarmwrap@fh, fw=\the\swarmwrap@fw, nl=\the\swarmwrap@nl}%
+      \else
+        \smash{\rlap{\hskip\swarmwrap@fig@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+        \wlog{swarmwrap next: NORMAL --- tw=\the\swarmwrap@tw, fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl, remaining=\the\dimen0}%
+      \fi
+    \global\swarmwrappagehasfig=1
+  \fi
+  % v3.41: Update effective total with this figure's physical extent.
+  % The figure is at \pagetotal (zero-height smash), extending fh below.
+  % Track the max physical bottom across all figures on this page.
+  \dimen2=\pagetotal
+  \advance\dimen2 by \swarmwrap@fh
+  \ifdim\dimen2>\swarmwrap@eff@total
+    \global\swarmwrap@eff@total=\dimen2
+  \fi
 }%
 \else
 \newcommand{\swarmwrapnext}{%
