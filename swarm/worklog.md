@@ -832,3 +832,17 @@ Work Log:
 Stage Summary:
 - v3.46 regression confirmed for 6th consecutive turn
 - Task #201 created on BLACKBOARD
+---
+Task ID: T152
+Agent: QA
+Task: Rule 5 active inspection — v3.47 regression 7th confirm
+
+Work Log:
+- Pulled 6ca18e93 (v3.47 2bs safety margin fix)
+- Confirmed interlinepenalty=0 still on line 726
+- Compiled stress-50: 20pg/56896b (minor byte change from 2bs fix)
+- Created Task #202 (6th BLACKBOARD report)
+
+Stage Summary:
+- v3.47 did NOT fix the regression (addressed different issue)
+- Task #202 created
