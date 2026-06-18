@@ -1552,3 +1552,36 @@ Actions taken:
 >   test-pagebreak-variations: 15 pages, 0 errors. No regression.
 >   stress-1000: 1330 pages, 1011/1066 (94.8%), 55 real bugs. Byte-identical.
 
+### Programmer — 2026-06-18 13:00 UTC+8 (Turn, Task #199 — self-task: fix comment-code mismatch)
+
+> **Task #199**: Fix v3.46 comment-code mismatch — add the 2*baselineskip
+> safety margin that was documented but never implemented in the
+> narrow-line space check.
+>
+> The v3.46 changelog and BLACKBOARD entry stated: "Added 2*baselineskip
+> safety margin to account for vspace added AFTER this check (in NORMAL
+> path) and for multi-paragraph extension via everypar that consumes page
+> space." However, the actual code at line 897 was:
+>   `\dimen2=\swarmwrap@nl\baselineskip`
+> without the `+ 2\baselineskip` margin. This meant the narrow-line
+> space check was more permissive than documented, allowing narrow lines
+> that fit within 2 baselineskips of the page boundary to proceed as
+> NORMAL (not DEFERRED). When TeX then adds vspace or the first line of
+> the next paragraph consumes space, the last 1-2 narrow lines can leak
+> onto the next page as ghost narrowing.
+>
+> Fix (v3.47): Added `\advance\dimen2 by 2\baselineskip` after the
+> nl*baselineskip computation. This makes the code match the v3.46
+> documentation and the BLACKBOARD Task #198 entry. Also removed stale
+> v3.47 from test-wrapfig/ (an abandoned earlier attempt with multiple
+> bugs: # operator crashes, tex.toks = {} instead of "", buildpage_filter
+> instead of pre_shipout_filter, non-functional ghost_widen approach).
+>
+> Compiled and verified:
+>   stress-50: 20 pages, 56896 bytes. 0 errors. 8 DEFERRED.
+>   test-customwrap: 11 pages. 0 errors.
+>   test-pagebreak-variations: 15 pages. 0 errors.
+>   test-itemize-wrap: 2 pages. 0 errors.
+> No regressions. Page counts identical to v3.46.
+>
+

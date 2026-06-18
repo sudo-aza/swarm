@@ -409,8 +409,21 @@
 %   (4) Added \swarmwrappagehasfig count register (infrastructure for
 %       pre_shipout_filter figure detection). Currently unused but
 %       available for future ghost-narrow fixes.
+%
+% v3.47: Fix comment-code mismatch — add the 2*baselineskip safety margin
+%   that v3.46's changelog and BLACKBOARD claimed was added to the
+%   narrow-line space check (self-task, Task #199). The check at
+%   line ~897 computes nl*baselineskip and compares to remaining page
+%   space. If the narrow lines won't fit, DEFERRED is forced to prevent
+%   page-break ghost narrowing. v3.46's comment said "Added 2*baselineskip
+%   safety margin" but the code only had `nl*baselineskip` without the
+%   margin. This meant some cases where narrow lines BARELY fit (within
+%   2 baselineskips of the page boundary) were NOT caught, and the last
+%   1-2 narrow lines leaked onto the next page. The fix adds the
+%   documented 2*baselineskip margin. Trade-off: may increase deferred
+%   figures by 1-2 on the stress test (conservative margin).
 
-\ProvidesPackage{swarmwrap}[2026/06/18 v3.46 defensive interlinepenalty + space check in everypar]
+\ProvidesPackage{swarmwrap}[2026/06/18 v3.47 add missing 2bs safety margin to narrow-line space check]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -895,6 +908,7 @@
       \dimen0=\pagegoal
       \advance\dimen0 by -\pagetotal
       \dimen2=\swarmwrap@nl\baselineskip
+      \advance\dimen2 by 2\baselineskip
       \ifdim\dimen2>\dimen0
         \swarmwrap@deferredtrue
       \fi
