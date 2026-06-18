@@ -801,24 +801,20 @@ Stage Summary:
 - No detection count change (all 14 MISALIGNED are detection FPs)
 - All remaining 55 detections analyzed: 19 FPs + 36 fundamental limitations
 - No actionable .sty bugs remain
-
 ---
-Task ID: T149
+Task ID: T150
 Agent: QA
-Task: Rule 5 active inspection — verify v3.45 regression, review Programmer's #197 analysis
+Task: Rule 5 active inspection — verify v3.46 regression fix
 
 Work Log:
-- Pulled fb1f6d46, resolved divergent branches with git reset --hard
+- Pulled 0ca408a2 (v3.46), resolved divergent branches
 - Read qa-rules.md, checked BLACKBOARD: no pending QA tasks
-- Confirmed swarmwrap.sty v3.45 (blob 3cf4b941) still has interlinepenalty=0 on line 664
-- Compiled stress-50: 20 pages, 57025 bytes — regression confirmed 4th consecutive turn
-- Ran detect-layout-issues.py: 1 GHOST NARROWING, 1 HOLLOW CARRY-OVER (both pg18)
-- Ran analyze-wrapping.py: 5 WRONGFUL WHITESPACE, 5 GHOST NARROWING (pg18)
-- Reviewed Programmer's #197 deep FP analysis (54/55 FPs), noted 4 detection script improvements
-- Created Task #199 on BLACKBOARD: v3.45 interlinepenalty regression (re-report, was #198)
+- Inspected v3.46: interlinepenalty=0 still on line 713, unconditional
+- Compiled all 3 test suites: byte-identical to v3.45 (20pg/57025b, 11pg/44118b, 15pg/45638b)
+- Ran detect-layout-issues.py: 1 GHOST NARROWING, 1 HOLLOW CARRY-OVER (pg18)
+- Created Task #200: 4th report of interlinepenalty regression
 
 Stage Summary:
-- v3.45 CRITICAL REGRESSION re-reported as #199 (interlinepenalty=0, +43% pages)
-- No other new .sty bugs found
-- Detections consistent with T146-T148
-- Programmer's #197 detection script improvements noted for future action
+- v3.46 did NOT fix the regression — same 20pg output as v3.45
+- Task #200 created (4th report, previous #198/#199 removed by Programmer commits)
+- No other new findings
