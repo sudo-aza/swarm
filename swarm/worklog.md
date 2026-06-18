@@ -866,3 +866,29 @@ Stage Summary:
 - Real culprits for 14pg→20pg: vspace handling restructure + HOLLOW-FILL changes (v3.45)
 - v3.49's interlinepenalty fix is correct but cannot restore 14pg alone
 - TeX Live wipe #13, 13 total wipes
+---
+Task ID: T158
+Agent: QA
+Task: Rule 5 active inspection — definitive A/B test, TeX Live reinstall
+
+Work Log:
+- git fetch + reset --hard origin/main (local HEAD was stale, new zoe commit 2cba8d02)
+- Read qa-rules.md
+- No pending QA tasks (new zoe Task #204 assigned to Programmer)
+- TeX Live reinstall: Python urllib.request downloaded 5.1MB valid archive (curl truncation workaround)
+- TL2026 (LuaHBTeX 1.24.0) installed: scheme-small + fontsrecommended + luatex
+- Compiled v3.49 stress-50: 20pg, 57025b (confirms Programmer)
+- Compiled v3.49 customwrap: 11pg, 44152b
+- Compiled v3.49 pbv: 15pg, 45638b
+- A/B test: v3.44 = 16pg; v3.44 + interlinepenalty=0 = 16pg (byte-identical)
+- DEFINITIVE: interlinepenalty=0 has ZERO effect
+- Page density analysis: v3.44 has 2 near-empty pages (1.8%), v3.49 has 7 LOW-FILL (17-37%)
+- Detection script: 2 issues on v3.49 stress-50 (1 ghost + 1 hollow on pg18)
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- TeX Live REINSTALLED (wipe #14 ended). Python download workaround for CTAN.
+- Interlinepenalty=0 PROVEN harmless — 8 QA turns were wrong
+- Real page increase cause: v3.45 vspace/HOLLOW-FILL restructure (+4pg, 16→20)
+- TL2026 engine change accounts for +2pg (14→16 on v3.44)
+- Zoe's Task #204 (DEFERRED packing) aligns with findings

@@ -1696,3 +1696,35 @@ Actions taken:
 > truncated archives (24-815KB vs expected ~4MB). 13 total wipes.
 > Compilation verification remains blocked.
 
+### QA — 2026-06-18 23:30 UTC+8 (Turn T158, Rule 5 active inspection)
+
+> **No pending QA tasks. Per Rule 5, compiled v3.49 and performed definitive
+> page count analysis. TeX Live reinstalled successfully (Python download
+> workaround for curl truncation).**
+>
+> **DEFINITIVE PROOF: interlinepenalty=0 has ZERO effect on stress-50.**
+> A/B test: v3.44 (16pg/54668b) vs v3.44 + interlinepenalty=0 line
+> (16pg/54668b, byte-identical). The post_linebreak_filter reset fires AFTER
+> line breaking is complete, so it cannot affect page layout for
+> single-paragraph figures. All 8 QA turns (T146-T154) that blamed this
+> line for the 14→20pg jump were incorrect.
+>
+> **Actual cause of page increase: vspace/HOLLOW-FILL changes.**
+> v3.44→v3.49 page density analysis:
+> - v3.44 (16pg): 14 well-packed pages (70-76% fill), 2 near-empty (1.8%).
+>   Pattern: 4-5 full pages, then 1 near-empty DEFERRED eject.
+> - v3.49 (20pg): 13 decent pages (42-74%), 7 LOW-FILL (17-37%).
+>   Pattern: alternating full and partially-wasted pages.
+> The v3.44 vspace handling packed figures tightly at the cost of occasional
+> blank eject pages. The v3.45 restructure ("save vspace for DEFERRED
+> decision") spreads content across more pages with less-efficient packing.
+>
+> **TeX Live note:** v3.44 baseline is 16pg on TL2026 (was 14pg on prior TL).
+> TL engine change accounts for 2pg. The .sty changes account for +4pg
+> (16→20). Also confirms Zoe's Task #204 (DEFERRED packing waste).
+>
+> **Compilation results (v3.49, TL2026, 2-pass):**
+> - stress-50: 20pg, 57025b. 0 errors. 2 issues (1 ghost + 1 hollow on pg18).
+> - customwrap: 11pg, 44152b. 0 errors.
+> - pagebreak-variations: 15pg, 45638b. 0 errors.
+
