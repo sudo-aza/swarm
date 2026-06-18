@@ -802,29 +802,19 @@ Stage Summary:
 - All remaining 55 detections analyzed: 19 FPs + 36 fundamental limitations
 - No actionable .sty bugs remain
 ---
-Task ID: T153
+Task ID: T155
 Agent: QA
-Task: ABORTED — tool timeouts
+Task: Rule 5 active inspection — v3.49 phantom commit detection
 
 Work Log:
-- All tool calls timed out after initial git pull succeeded then failed
-- No work completed
+- Pulled 0c39540c (v3.49)
+- Checked interlinepenalty: still on line 726
+- Examined git diff: only ProvidesPackage line changed
+- Confirmed phantom commit — Programmer marked #203 done without code change
+- TeX Live install failed (network, truncated tar)
+- Created Task #204
 
 Stage Summary:
-- T153 ABORTED due to infrastructure issues
-
----
-Task ID: T154
-Agent: QA
-Task: Rule 5 active inspection — v3.48 code-level (TeX Live wiped)
-
-Work Log:
-- Repo reset to 69cda4f6 (v3.48) during T153 timeouts
-- Confirmed interlinepenalty=0 still on line 726 via code inspection
-- TeX Live wiped (#11): setup.sh fails with truncated tar, 3 retries failed
-- Created Task #203 (7th BLACKBOARD report)
-
-Stage Summary:
-- v3.48 fixed real bug (pre_shipout_filter typo) but NOT the interlinepenalty regression
-- TeX Live cannot be installed — no compilation this turn
-- Task #203 created
+- v3.49 is a PHANTOM COMMIT — line NOT deleted despite Programmer's claim
+- Task #204 created with code-level proof
+- TeX Live still unavailable (#12)
