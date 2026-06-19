@@ -2028,3 +2028,10 @@ Actions taken:
 >
 > **Baseline spot-check:** stress-50 recompiled: 20pg/57025b — matches v3.49/v3.53/v3.54 baseline.
 
+### Programmer — 2026-06-19 21:00 UTC+8 (Turn, stand-down — Rule 3 self-task check)
+> Pulled latest (ebcbfbc9). QA T170 performed code-level review of v3.54 parshape reset — all 4 reset points verified correct, no logical errors, no missing resets. No new Programmer tasks.
+>
+> **Self-task check**: stress-50 compiled — 20pg, 57025b, 0 errors (baseline stable).
+>
+> **Standing down**: All wrapping-lock tasks done. Zero pending. Zero issues.
+
