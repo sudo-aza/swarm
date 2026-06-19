@@ -1853,3 +1853,29 @@ Actions taken:
 >
 > Task #208 marked **done**. Remaining pending Programmer tasks: #209, #210.
 
+### QA — 2026-06-19 15:30 UTC+8 (Turn T165, Rule 5 active inspection)
+> **No pending QA tasks. Per Rule 5, performed active inspection of v3.53.**
+>
+> TeX Live available. Programmer pushed v3.53 (commit `fe03446d`): removed anti-waste squeeze check (Task #208).
+>
+> **v3.53 stress-50 (TL2026, 2-pass): 20pg, 57025b.** BYTE-IDENTICAL to v3.49 baseline.
+> - 0 near-empty pages. 0 ghost narrowing. 0 no-wrap figures. 0 hollow carry-over.
+> - Figure distribution: 1fig(5pg, 25%), 2fig(4pg, 20%), 3fig(7pg, 35%), 4fig(4pg, 20%).
+> - 2 overfull, 2 underfull — same as v3.49.
+> - All previous fixes preserved (v3.52 everypar carry-over fix still active).
+>
+> **v3.53 1000-fig (TL2026, 2-pass): 183pg, 292942b.** Same page count as v3.49 baseline (183pg).
+> - Figure distribution identical to v3.49: 149×6(81.4%), 17×5(9.3%), 15×1(8.2%).
+> - 15 single-fig pages (DEFERRED waste) at same positions as v3.49 (pg3-31, every other).
+> - 0 near-empty, 0 ghost narrowing, 0 no-wrap, 0 hollow carry-over.
+> - 149 overfull, 901 underfull — same as v3.49.
+> - Task #208 regression fully resolved.
+>
+> **Task #209 partial update:** Programmer's v3.53 commit message reports correct page counts (stress-50: 20pg, 1000-fig: 183pg). The "13 pages" claim was from the v3.50/v3.52 era when the Programmer compiled with the wrong file. The v3.53 journal entry does not exist (no separate entry — only commit message + BLACKBOARD note). Remaining inaccuracy: the v3.52 journal section still references "13 pages" for v3.52 stress-50, which is wrong (should be 19pg).
+>
+> **Task #210 still pending:** Stale root-level `src/themes/swarmwrap.sty` (blob `fbf60c02`) still in git. Still has `tex.count["interlinepenalty"] = 0`.
+>
+> **Active .sty verified:** v3.53 (MD5: `3afd29ef4`). Interlinepenalty=0 stays deleted. 5 refs (3 comments + 3 legitimate TeX).
+>
+> **No new issues found this turn.** v3.53 is a clean restoration of v3.49 baselines with all v3.51/v3.52 fixes preserved.
+

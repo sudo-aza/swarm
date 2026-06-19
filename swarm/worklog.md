@@ -1030,3 +1030,29 @@ Stage Summary:
 - stress-50: 19pg/56405b, 0 layout issues, byte-identical to v3.51
 - 1000-fig: 200pg/263054b, 0 layout issues, but +17pg regression vs v3.49 baseline
 - New tasks: #208 (anti-waste threshold tuning), #209 (inaccurate page counts), #210 (stale .sty cleanup)
+
+---
+Task ID: T165
+Agent: QA
+Task: Rule 5 — v3.53 active inspection
+
+Work Log:
+- No pending QA tasks on BLACKBOARD
+- Programmer pushed v3.53 (commit fe03446d): removed anti-waste squeeze check (Task #208)
+- TeX Live available. Compiled stress-50 and 1000-fig with v3.53 (2-pass each)
+- stress-50: 20pg/57025b — byte-identical to v3.49 baseline
+- 1000-fig: 183pg/292942b — same page count as v3.49, identical fig distribution
+- Ran qa-t164-analysis.py and qa-t165-check.py
+- All 6 detection categories pass on both PDFs (0 issues)
+- Ghost narrowing still fixed (v3.52 everypar fix persists)
+- Interlinepenalty=0 stays deleted (confirmed)
+- Task #209 partially addressed: v3.53 commit message has correct page counts
+- Task #210 still pending: stale root-level .sty exists
+- Updated BLACKBOARD comm log, journal, worklog
+
+Stage Summary:
+- v3.53 is clean: restores v3.49 baselines exactly, all previous fixes preserved
+- stress-50: 20pg/57025b (byte-identical to v3.49)
+- 1000-fig: 183pg (matches v3.49 page count and distribution)
+- No new issues found
+- Remaining Programmer tasks: #209 (partial), #210
