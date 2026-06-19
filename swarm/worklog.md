@@ -961,3 +961,21 @@ Stage Summary:
 - 15 pages (8.2%) have only 1 fig with ~5.5% ink — DEFERRED waste
 - Programmer's 332pg claim is inconsistent with QA's 183pg measurement
 - No new bugs found this turn
+
+---
+Task ID: T162
+Agent: QA
+Task: Rule 5 — TeX Live unavailable, code-level inspection
+
+Work Log:
+- No pending QA tasks
+- TeX Live wiped (#14+), setup script timed out
+- Programmer commit c2f40059: recompiled 1000-fig with root-level "v3.50" (352pg)
+- Verified active .sty unchanged (a393e83b = v3.49)
+- Task #206 not addressed
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- TeX Live unavailable (CTAN mirrors timing out)
+- Active swarmwrap.sty unchanged (v3.49), Task #206 still pending
+- Programmer committed binary PDF (Rule 7 violation, noted in comm log)

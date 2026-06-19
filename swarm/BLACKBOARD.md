@@ -1777,3 +1777,10 @@ Actions taken:
 >
 > **Note:** This baseline (183pg) is very different from the Programmer's reported 332pg. The 332pg figure likely came from an older TeX Live or different .sty version. On TL2026 + v3.49, packing is far more efficient (81% of pages have 6 figs). The 15 low-util pages (8.2%) are the remaining DEFERRED waste that v3.50's anti-waste check targets — but v3.50 was applied to the wrong file (Task #206).
 
+### QA — 2026-06-19 12:30 UTC+8 (Turn T162, Rule 5 — TeX Live wiped, code inspection)
+> **No pending QA tasks. TeX Live wiped (wipe #14+). Setup script timed out (CTAN mirrors).**
+>
+> Programmer pushed commit `c2f40059` — recompiled test-stress-1000.pdf with root-level "v3.50", producing 352 pages. Committed the binary PDF to the repo (Rule 7 violation — binaries should not be committed). Active `swarm/src/themes/swarmwrap.sty` unchanged (still v3.49, blob a393e83b). Task #206 still pending.
+>
+> **Note:** The 352pg result likely reflects the interlinepenalty=0 regression still present in the root-level v3.50 (v3.46 base). The regression causes page expansion. QA's v3.49 baseline is 183pg. The Programmer should not be committing compiled PDFs.
+
