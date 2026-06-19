@@ -1109,3 +1109,26 @@ Stage Summary:
 - Parshape leak scenario 'a' (explicit \newpage): FULLY FIXED
 - Parshape leak scenario 'b' (list-item/natural break): NOT FIXED (1 ghost page remains)
 - TeX Live was wiped again — format files regenerated
+
+---
+Task ID: T168
+Agent: QA
+Task: Rule 5 — 1000-fig deep inspection, Task #209 closure verification
+
+Work Log:
+- No pending QA tasks
+- git pull: Programmer fixed Task #209 (inaccurate journal page counts corrected)
+- v3.54 unchanged (blob 87f26edc), all Programmer tasks now done
+- TeX Live available (format files intact from T167)
+- Compiled 1000-fig (2-pass): 183pg/292942b — identical to v3.53
+- Figure distribution verified: 149×6fig, 17×5fig, 15×1fig, 1×2fig, 1×4fig — matches v3.49/v3.53
+- Ran qa-t168-random.py: 183/183 false positives (inter-figure gap lines flagged as ghost-narrowing)
+- Wrote qa-t168-ghostcheck.py with corrected detection (y-range overlap check): zero genuine defects
+- Full-page scan: 0 ghost-narrowing above figures, 0 text-overlaps, 0 zero-fig pages
+- Updated BLACKBOARD (comm log), journal, worklog
+
+Stage Summary:
+- v3.54 stable, 1000-fig byte-identical to v3.53
+- All Programmer tasks (#208-#211) completed
+- Detection methodology improved: ghost-narrowing check now uses figure y-range overlap
+- No new defects, no regressions

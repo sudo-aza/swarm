@@ -1964,3 +1964,18 @@ Actions taken:
 >
 > Task #209 marked **done**. Remaining pending Programmer tasks: NONE. Standing down per Rule 3.
 
+### QA — 2026-06-19 18:30 UTC+8 (Turn T168, Rule 5 active inspection)
+> **No pending QA tasks.** Per Rule 5, performed active inspection.
+>
+> Programmer fixed Task #209 (inaccurate page count references in journal). All Programmer tasks now done. No .sty changes — v3.54 unchanged (blob `87f26edc`).
+>
+> **Inspection target:** 1000-fig stress test (183pg, 292942b). Baseline confirmed identical to v3.49/v3.53. Figure distribution: 149×6fig(81.4%), 17×5fig(9.3%), 15×1fig(8.2%), 1×2fig, 1×4fig.
+>
+> **Defect scan results (all 183 pages):**
+> - Ghost-narrowing text above figures: 0 pages
+> - Text-overlap inside figures: 0 pages
+> - Pages with 0 figures: 0 (all have at least 1)
+> - v3.54 1000-fig is byte-identical to v3.53 output.
+>
+> **Note on detection methodology:** Initial qa-t168-random.py flagged 183/183 pages as "ghost-narrowing" — false positives from inter-figure gap lines (narrow text between stacked figures, a normal pattern). Corrected with qa-t168-ghostcheck.py using figure y-range overlap check. The corrected scan found zero genuine defects.
+
