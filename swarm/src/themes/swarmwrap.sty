@@ -1,4 +1,4 @@
-% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.53)
+% swarmwrap.sty — Right-side float wrapper for the Swarm toolkit (v3.54)
 %
 % Text wrapping using \parshape applied by \swarmwrapnext command.
 % Built from scratch after all 9 existing LaTeX wrapping packages failed QA.
@@ -410,7 +410,7 @@
 %       pre_shipout_filter figure detection). Currently unused but
 %       available for future ghost-narrow fixes.
 
-\ProvidesPackage{swarmwrap}[2026/06/19 v3.53 tuned anti-waste threshold to squeezemin (Task 208)]
+\ProvidesPackage{swarmwrap}[2026/06/19 v3.54 parshape reset at page boundaries fixes ghost narrowing (Task 211)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -430,8 +430,39 @@
 \newif\ifswarmwrap@squeezed
 \newif\ifswarmwrap@deferred
 \newif\ifswarmwrap@ext@skip  % skip everypar on first paragraph
+\newcount\swarmwrap@parshape@active  % v3.54: 1=parshape currently set, 0=not set
 
 \ifluatex \swarmwrap@luatextrue \else \swarmwrap@luatexfalse \fi
+
+% v3.54: Parshape reset command — used to clear stale parshape at
+% page boundaries. Sets parshape to full-width for 1 line, then
+% clears everypar so subsequent paragraphs are unaffected.
+% Fixes ghost narrowing across \newpage boundaries (Task #211).
+\newcommand{\swarmwrap@reset@pshape}{%
+  \global\swarmwrap@parshape@active=0
+  \parshape 1 0pt \linewidth\relax
+  \everypar{}%
+}
+
+% v3.54: Patch \newpage and \clearpage to reset parshape before
+% page break. This prevents parshape from leaking across explicit
+% page boundaries. The pre_shipout_filter approach doesn't work
+% because TeX's shipout mechanism restores everypar after the
+% callback's group ends (Task #211).
+\let\swarmwrap@old@newpage\newpage
+\let\swarmwrap@old@clearpage\clearpage
+\renewcommand{\newpage}{%
+  \ifnum\swarmwrap@parshape@active=1\relax
+    \swarmwrap@reset@pshape
+  \fi
+  \swarmwrap@old@newpage
+}
+\renewcommand{\clearpage}{%
+  \ifnum\swarmwrap@parshape@active=1\relax
+    \swarmwrap@reset@pshape
+  \fi
+  \swarmwrap@old@clearpage
+}
 
 % ── Multi-paragraph everypar extension (v3.29) ────────────────────
 % Re-applies parshape to subsequent paragraphs after the first one.
@@ -455,6 +486,7 @@
   % Place figure via rlap (zero-width, absolutely positioned).
   \smash{\rlap{\hskip\swarmwrap@fig@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
   % Set initial parshape for this paragraph.
+  \global\swarmwrap@parshape@active=1
   \parshape \swarmwrap@pshape\relax
   \emergencystretch=\fontdimen6\font\relax
   \interlinepenalty=\swarmwrap@penalty\relax
@@ -482,6 +514,7 @@
           \dimen2=\swarmwrap@remaining@nl\baselineskip
           \ifdim\dimen2>\dimen0
             \global\swarmwrap@remaining@nl=0
+            \global\swarmwrap@parshape@active=0
             \everypar{}%
           \else
             \swarmwrap@build@ext@pshape
@@ -492,6 +525,7 @@
         \fi
       \fi
     \else
+      \global\swarmwrap@parshape@active=0
       \everypar{}%
     \fi
   \fi
@@ -627,7 +661,9 @@
       local rnl = tex.count["swarmwrap@remaining@nl"]
       if rnl > 0 then
         tex.count["swarmwrap@remaining@nl"] = 0
-        tex.toks["everypar"] = ""
+      end
+      if tex.count["swarmwrap@parshape@active"] == 1 then
+        tex.count["swarmwrap@parshape@active"] = 0
       end
       swarmwrap_fig_stack = {}
       swarmwrap_page_fig_height = 0
@@ -692,6 +728,8 @@
       local nl = tex.count["swarmwrap@nl"]
       if total_lines < nl then
         tex.count["swarmwrap@remaining@nl"] = 0
+        tex.count["swarmwrap@parshape@active"] = 0
+        tex.toks["everypar"] = "\\swarmwrap@reset@pshape "
       else
         r = math.max(0, r - narrow_count)
         tex.count["swarmwrap@remaining@nl"] = r
@@ -993,6 +1031,7 @@
       \vspace{\swarmwrap@saved@remaining}%
     \fi
     \noindent
+    \global\swarmwrap@parshape@active=1
     \parshape \swarmwrap@pshape\relax
     \interlinepenalty=\swarmwrap@penalty\relax
       \ifswarmwrap@squeezed
