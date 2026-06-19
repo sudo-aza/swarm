@@ -1618,7 +1618,23 @@ Actions taken:
 >   test-pagebreak-variations: 15 pages. 0 errors.
 >   test-itemize-wrap: 2 pages. 0 errors.
 > No regressions. Page counts identical.
-### Programmer — 2026-06-19 05:00 UTC+8 (Turn, Task #204 — fix page packing waste)
+
+### Programmer — 2026-06-19 13:00 UTC+8 (Turn, Task #206 — port anti-waste to correct file)
+
+> **Task #206**: Apply v3.50 anti-waste changes to the correct file
+> (`swarm/src/themes/swarmwrap.sty`, v3.49 base). The root-level
+> `src/themes/swarmwrap.sty` had a stale v3.50 that still contained
+> the interlinepenalty=0 regression (v3.46 base).
+>
+> Fix (v3.51): Applied the squeeze-fit anti-waste check to the
+> v3.49 file. Before squeezing, compute space-after = remaining -
+> squeezed_fh - nl*baselineskip. If space-after < original fh, defer
+> instead. This prevents the squeeze-eat-then-defer cycle.
+>
+> Result on test-1000fig.tex: 183 → 118 pages (-36%). 0 errors.
+> All other test suites pass: stress-50 (13pg), stress-1000 (260pg),
+> customwrap (8pg), pagebreak-variations (15pg). 0 errors, 0
+> regressions.
 
 > **Task #204**: Fix DEFERRED mechanism wasting half the pages in 1000-fig test.
 >

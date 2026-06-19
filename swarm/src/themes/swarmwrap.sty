@@ -410,7 +410,7 @@
 %       pre_shipout_filter figure detection). Currently unused but
 %       available for future ghost-narrow fixes.
 
-\ProvidesPackage{swarmwrap}[2026/06/18 v3.49 remove interlinepenalty=0 regression]
+\ProvidesPackage{swarmwrap}[2026/06/19 v3.51 anti-waste: defer squeeze when next fig won't fit (Task 206)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -823,18 +823,43 @@
   \advance\dimen0 by -\pagetotal
   \ifdim\dimen0<\swarmwrap@fh
     % Figure doesn't fit. Try squeeze-fit.
+    % v3.51: Anti-waste check — if squeezing this figure would leave
+    % less than the original figure height of space for the next
+    % figure, defer instead. This prevents the squeeze-eat-then-defer
+    % cycle that wastes every other page (Task #204, ported in #206).
     \dimen2=\swarmwrap@squeeze@factor\swarmwrap@fh
     \dimen3=\swarmwrap@squeezemin
     \ifdim\dimen0>\dimen2
       \ifdim\dimen0>\dimen3
-        % SQUEEZE-FIT: Scale figure proportionally to fit.
-        \advance\dimen0 by -4pt
-        \setbox\swarmwrap@scaledbox=\hbox{\resizebox{!}{\dimen0}{\copy\swarmwrap@box}}%
-        \swarmwrap@fw=\wd\swarmwrap@scaledbox
-        \swarmwrap@fh=\ht\swarmwrap@scaledbox
-        \advance\swarmwrap@fh by \dp\swarmwrap@scaledbox
-        \advance\swarmwrap@fh by 4pt
-        \swarmwrap@squeezedtrue
+        % v3.51: Check if squeezing would waste the page.
+        % Compute space after squeezed figure + narrow lines.
+        % squeezed_fh ≈ remaining - 4pt, nl ≈ squeezed_fh / baselineskip
+        % Space after ≈ remaining - squeezed_fh - nl * baselineskip
+        % If space after < original fh, the next figure won't fit
+        % either, so defer now and start a fresh packed page.
+        \dimen4=\dimen0
+        \advance\dimen4 by -4pt  % squeezed figure height
+        \newcount\swarmwrap@sq@nl
+        \swarmwrap@sq@nl=0
+        \dimen5=\dimen4
+        \loop
+          \advance\swarmwrap@sq@nl by 1
+          \advance\dimen5 by -\baselineskip
+        \ifdim\dimen5>0pt \repeat
+        \advance\dimen4 by -\swarmwrap@sq@nl\baselineskip
+        \ifdim\dimen4<\swarmwrap@fh
+          % Squeezing would leave too little for next figure — defer.
+          \swarmwrap@deferredtrue
+        \else
+          % SQUEEZE-FIT: Scale figure proportionally to fit.
+          \advance\dimen0 by -4pt
+          \setbox\swarmwrap@scaledbox=\hbox{\resizebox{!}{\dimen0}{\copy\swarmwrap@box}}%
+          \swarmwrap@fw=\wd\swarmwrap@scaledbox
+          \swarmwrap@fh=\ht\swarmwrap@scaledbox
+          \advance\swarmwrap@fh by \dp\swarmwrap@scaledbox
+          \advance\swarmwrap@fh by 4pt
+          \swarmwrap@squeezedtrue
+        \fi
       \else
         \swarmwrap@deferredtrue
       \fi
