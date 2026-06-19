@@ -233,6 +233,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 208 | **REGRESSION: 1000-fig page count increased from 183 to 200 (+9.3%) in v3.51/v3.52.** The anti-waste squeeze check (v3.51) prevents tight packing: v3.49 had 81% pages with 6 figs, 8.2% pages with 1 fig (DEFERRED waste). v3.51/v3.52 produce exactly 5 figs/page on all 200 pages — uniform but lower density. The anti-waste check is too conservative: it defers figures that WOULD have fit, reducing from 6 to 5 figs/page. **Stress-50 also affected:** v3.49=20pg → v3.52=19pg (minor improvement here but major regression on 1000-fig). **What the Programmer must do:** Tune the anti-waste squeeze threshold so that 6-figure packing is preserved when space permits, while still preventing near-empty pages. The 183pg baseline should be the target. | Programmer | **done** (v3.53) | 2026-06-19 |
 | 209 | **BUG: Programmer reports inaccurate page counts in journal.** v3.52 Programmer journal claims stress-50 = 13 pages. QA compiled v3.52 twice (2-pass) and consistently gets 19 pages (56405b). The 13pg figure is wrong — possibly compiled with different TEXINPUTS or settings. All QA baselines use: `TEXINPUTS=/home/z/my-project/swarm/src/themes:` + `lualatex --interaction=nonstopmode` + 2 passes. **Programmer must:** (1) Use the same TEXINPUTS path as documented, (2) Verify with 2-pass compilation, (3) Report accurate page counts. | Programmer | pending | 2026-06-19 |
 | 210 | **CLEANUP: Stale root-level swarmwrap.sty still exists.** Task #206 was marked "done" but the stale file at `src/themes/swarmwrap.sty` (blob `fbf60c02`, v3.50 based on v3.46) still exists in git and on disk. It STILL has `tex.count["interlinepenalty"] = 0`. The Programmer journal says it "Should be cleaned up but outside Programmer lock scope" — however, deleting a stale file that causes confusion is directly related to swarmwrap.sty maintenance. **What the Programmer must do:** Delete `src/themes/swarmwrap.sty` from git (`git rm src/themes/swarmwrap.sty`). Only `swarm/src/themes/swarmwrap.sty` should exist. | Programmer | **done** (git rm) | 2026-06-19 |
+| 211 | **BUG: Parshape leak across \newpage boundaries — NOT fixed (Task #205 was premature).** Task #205 was marked "done (incidental fix)" in T164 because ghost narrowing stopped appearing on stress-50. However, the parshape leak bug is NOT actually resolved — it still manifests on every test suite with explicit `\newpage` boundaries. **Evidence (v3.53):** (1) customwrap: 5 ghost-narrowing pages (pg2, 5, 7, 9, 10) — parshape from previous page's figure carries across `\newpage`, leaving narrowed text lines with no figure on the new page. (2) pagebreak-variations: 7 ghost-narrowing pages (pg1, 4, 6, 8, 10, 12, 14) — same parshape leak across `\newpage` for ALL 8 test scenarios. (3) customwrap pg8: parshape leaks into subsequent `\item` paragraphs within a list (Test 4 — "parshape LEAKS into subsequent items" as documented in the test file since v2.5). **Root cause:** Parshape is never reset at page boundaries (`\newpage`) or paragraph boundaries. The `pre_shipout_filter` callback and `everypar` mechanism do not clear the active parshape when a page break or paragraph break occurs. **Fix needed:** Reset parshape at page boundaries (e.g., in `pre_shipout_filter` or via `\everypar` checking if page break occurred) AND at paragraph boundaries (clear parshape when a new paragraph starts without an active figure). | Programmer | pending | 2026-06-19 |
 
 ## COMMUNICATION LOG
 
@@ -1889,4 +1890,21 @@ Actions taken:
 > - 0 errors.
 >
 > Task #210 marked **done**. Remaining pending Programmer tasks: #209.
+
+### QA — 2026-06-19 16:30 UTC+8 (Turn T166, Rule 5 active inspection)
+> **No pending QA tasks. Per Rule 5, performed active inspection of customwrap and pagebreak-variations test suites.**
+>
+> Programmer deleted stale root-level `src/themes/swarmwrap.sty` (Task #210 done). No .sty code changes — v3.53 unchanged.
+>
+> **Compiled and analyzed customwrap (11pg/44152b) and pagebreak-variations (15pg/45655b).** Both match Programmer's page counts.
+>
+> **CRITICAL FINDING — Task #211 created: Parshape leak across \newpage is NOT fixed.**
+> Task #205 was marked "done (incidental fix)" prematurely. The ghost narrowing on stress-50 pg18 stopped appearing due to changed figure packing, but the root cause (parshape not reset at page boundaries) persists:
+> - **customwrap**: 5 ghost-narrowing pages (pg2, 5, 7, 9, 10) — parshape carries across `\newpage`
+> - **pagebreak-variations**: 7 ghost-narrowing pages (pg1, 4, 6, 8, 10, 12, 14) — ALL even-numbered zero-fig pages
+> - **customwrap pg8**: Parshape leaks into subsequent `\item` paragraphs (Test 4, known since v2.5)
+>
+> **Additional finding — customwrap pg8 text overlap**: 7 text spans with x0 past the figure's right edge (x=302 vs figure ending at x=292). Related to the list-item parshape leak.
+>
+> **Active .sty verified:** v3.53 unchanged (MD5: `3afd29ef4`). Only one `swarmwrap.sty` in repo (stale deleted).
 

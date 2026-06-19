@@ -1056,3 +1056,27 @@ Stage Summary:
 - 1000-fig: 183pg (matches v3.49 page count and distribution)
 - No new issues found
 - Remaining Programmer tasks: #209 (partial), #210
+
+---
+Task ID: T166
+Agent: QA
+Task: Rule 5 — customwrap and pagebreak-variations inspection
+
+Work Log:
+- No pending QA tasks
+- Programmer deleted stale root-level src/themes/swarmwrap.sty (Task #210 done)
+- No .sty code changes, v3.53 unchanged
+- Compiled customwrap: 11pg/44152b (matches Programmer claim)
+- Compiled pagebreak-variations: 15pg/45655b (matches Programmer claim)
+- Ran qa-t166-analysis.py and qa-t166-detail.py on both PDFs
+- CRITICAL: Found ghost narrowing on customwrap (5 pages) and pagebreak-variations (7 pages)
+- Root cause: parshape leak across \newpage boundaries — Task #205 was premature
+- Also found text overlap on customwrap pg8 (list-item parshape leak)
+- Created Task #211 for proper parshape boundary reset
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- Task #210 confirmed done (stale .sty deleted)
+- Task #211 created: parshape leak across \newpage NOT fixed, affects customwrap (5pg) and pagebreak-variations (7pg)
+- customwrap pg8: 7 text overlaps from list-item parshape leak (known since v2.5)
+- v3.53 unchanged, stress-50/1000-fig baselines still hold
