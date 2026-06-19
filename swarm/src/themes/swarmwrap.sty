@@ -410,7 +410,7 @@
 %       pre_shipout_filter figure detection). Currently unused but
 %       available for future ghost-narrow fixes.
 
-\ProvidesPackage{swarmwrap}[2026/06/19 v3.51 anti-waste: defer squeeze when next fig won't fit (Task 206)]
+\ProvidesPackage{swarmwrap}[2026/06/19 v3.52 deferred everypar prevents carry-over consuming parshape (Task 207)]
 
 \RequirePackage{graphicx}
 \RequirePackage{ifluatex}
@@ -445,6 +445,22 @@
     \advance\swarmwrap@loop@cnt by -1
   \ifnum\swarmwrap@loop@cnt>0 \repeat
   \xdef\swarmwrap@pshape@ext{\swarmwrap@pshape@ext 0pt \the\linewidth\space}%
+}
+
+% v3.52: Deferred everypar — used when a figure is deferred to a new page
+% (anti-waste or normal defer). Sets parshape and places figure at the start
+% of the FIRST new paragraph on the fresh page, not on carry-over text.
+% This prevents carry-over from consuming parshape lines (Task #207).
+\newcommand{\swarmwrap@deferred@everypar}{%
+  % Place figure via rlap (zero-width, absolutely positioned).
+  \smash{\rlap{\hskip\swarmwrap@fig@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+  % Set initial parshape for this paragraph.
+  \parshape \swarmwrap@pshape\relax
+  \emergencystretch=\fontdimen6\font\relax
+  \interlinepenalty=\swarmwrap@penalty\relax
+  % Now switch to the standard extension everypar for subsequent paragraphs.
+  \global\swarmwrap@ext@skipfalse
+  \everypar=\expandafter{\swarmwrap@apply@ext@pshape}%
 }
 
 \newcommand{\swarmwrap@apply@ext@pshape}{%
@@ -974,9 +990,15 @@
         \fi
         \newpage
       \fi
-      \noindent
-      \parshape \swarmwrap@pshape\relax
-      \smash{\rlap{\hskip\swarmwrap@fig@tw@val\hskip\swarmwrap@gap\raise\dimexpr\ht\strutbox-\ht\swarmwrap@box\relax\hbox{\copy\swarmwrap@box}}}%
+      % v3.52: Use everypar to defer parshape+figure placement to
+      % the FIRST NEW paragraph on the fresh page. This prevents
+      % carry-over text from the previous page's broken paragraph
+      % from consuming the parshape lines (Task #207).
+      % pre_shipout_filter already cleared everypar, so setting it
+      % here is safe.
+      \ifnum\@listdepth=0\relax
+        \everypar=\expandafter{\swarmwrap@deferred@everypar}%
+      \fi
       \wlog{swarmwrap next: DEFERRED-NEWPAGE --- fh=\the\swarmwrap@fh, nl=\the\swarmwrap@nl}%
       \swarmwrap@placedtrue
         \global\swarmwrappagehasfig=1

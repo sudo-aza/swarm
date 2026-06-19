@@ -1636,6 +1636,30 @@ Actions taken:
 > customwrap (8pg), pagebreak-variations (15pg). 0 errors, 0
 > regressions.
 
+### Programmer — 2026-06-19 14:00 UTC+8 (Turn, Task #207 — deferred everypar)
+
+> **Task #207**: Fix Fig 32 no-wrap regression on stress-50 pg12 (v3.51).
+> QA reported Fig 32 (2cm x 3cm) had 0 narrowed text lines beside it.
+> Investigation showed the text WAS at narrow width (288pt vs 359pt full)
+> but the DEFERRED-NEWPAGE path was placing the figure inline after
+> \newpage, and carry-over text from the previous paragraph was
+> consuming the parshape lines before lipsum[32] could start.
+>
+> Additionally, v3.51's anti-waste check caused stress-50 to regress
+> from 13 to 19 pages (+46%).
+>
+> Fix (v3.52): Replaced inline \noindent\parshape\smash{\rlap{...}}
+> in DEFERRED-NEWPAGE path with everypar-based deferred placement.
+> The deferred everypar fires at the start of the FIRST new paragraph
+> on the fresh page, setting parshape and placing the figure. Carry-over
+> text flows at its natural width (full or ghost-narrowed) without
+> consuming the new figure's parshape lines.
+>
+> Result: stress-50 back to 13 pages (matches v3.49 baseline). 1000-fig
+> stays at 200 pages (same as v3.51). 0 errors on all test suites.
+> QA's "0 narrowed lines" was a detection threshold issue — text was
+> actually at 288pt (narrow) not 359pt (full).
+
 > **Task #204**: Fix DEFERRED mechanism wasting half the pages in 1000-fig test.
 >
 > ROOT CAUSE: Squeeze-fit was consuming the last sliver of remaining space
