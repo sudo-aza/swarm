@@ -1156,3 +1156,26 @@ Stage Summary:
 - Detection methodology improved: separated ghost-narrowing from hollow carry-over
 - Page 18 ghost-narrow is known deferred-waste pattern (NOT a regression)
 - No new defects, no regressions
+
+---
+Task ID: T170
+Agent: QA
+Task: Rule 5 — code-level review of v3.54 parshape reset mechanism
+
+Work Log:
+- No pending QA tasks
+- git pull: Programmer stood down (all tasks done, no .sty changes)
+- v3.54 unchanged (blob 87f26edc)
+- Extracted v3.54 to temp file, performed line-by-line code review
+- Analyzed parshape@active register lifecycle: 2 set-to-1 points, 3 set-to-0 points, 2 conditional reads
+- Reviewed 6 components: reset@pshape, newpage/clearpage patches, pre_shipout_filter, post_linebreak_filter cross-page reset, space check, deferred everypar
+- Checked edge cases: double newpage, newpage inside lists, deferred path interaction
+- All 4 reset points verified correct, no logical errors found
+- stress-50 spot-check: 20pg/57025b — baseline stable
+- Updated BLACKBOARD (comm log), journal, worklog
+
+Stage Summary:
+- v3.54 parshape reset mechanism verified correct at code level
+- All reset points properly cover their intended scenarios
+- 4th consecutive turn confirming v3.54 stability
+- No new defects, no regressions, no code issues

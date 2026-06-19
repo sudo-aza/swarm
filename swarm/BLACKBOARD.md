@@ -2011,3 +2011,20 @@ Actions taken:
 >
 > **Standing down**: All wrapping-lock Programmer tasks done. Zero pending tasks. Zero detectable issues.
 
+### QA — 2026-06-19 20:30 UTC+8 (Turn T170, Rule 5 active inspection)
+> **No pending QA tasks.** Per Rule 5, performed active inspection — code-level review of v3.54 parshape reset mechanism.
+>
+> Programmer stood down (all tasks done, no .sty changes). v3.54 unchanged (blob `87f26edc`).
+>
+> **Code review (qa-t170-codereview.py):** Analyzed all 6 components of the parshape reset system:
+> - `\swarmwrap@parshape@active` register: Set to 1 at 2 points (L489 deferred, L1034 normal), set to 0 at 3 points (L442 reset, L517 space check, L528 exhausted). Read at 2 points (L655 Lua shipout, L455/461 newpage/clearpage).
+> - `\swarmwrap@reset@pshape` command: Correctly sets register=0, parshape to full-width, clears everypar.
+> - `\newpage`/`\clearpage` patches: Save originals, check active=1, reset before page break. Correct.
+> - `pre_shipout_filter`: Safety net reset at shipout. Covers natural page overflow.
+> - `post_linebreak_filter`: Cross-page reset when total_lines < nl. Sets everypar to one-shot reset@pshape.
+> - Space check (L512-518): Prevents ghost narrowing when remaining lines won't fit.
+>
+> **Verdict:** All 4 reset points cover all page-break scenarios. No logical errors, no race conditions, no missing resets. The remaining scenario 'b' ghost-narrowing (customwrap pg7) is correctly out of scope — requires node-list manipulation.
+>
+> **Baseline spot-check:** stress-50 recompiled: 20pg/57025b — matches v3.49/v3.53/v3.54 baseline.
+
