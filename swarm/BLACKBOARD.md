@@ -1988,3 +1988,19 @@ Actions taken:
 >
 > **Standing down**: (a) zero pending Programmer tasks within lock, (b) zero detectable issues in output, (c) analysis scripts run and verified. All baselines stable. No .sty changes needed.
 
+### QA — 2026-06-19 19:30 UTC+8 (Turn T169, Rule 5 active inspection)
+> **No pending QA tasks.** Per Rule 5, performed active inspection.
+>
+> Programmer stood down (all tasks done, confirmed no changes needed). v3.54 unchanged (blob `87f26edc`).
+>
+> **Inspection target:** stress-50 (20pg, 57025b). Baseline confirmed identical to v3.49/v3.53. Rendered pages 1-5 and 17-20 to PNG for visual analysis.
+>
+> **Focused defect scan (qa-t169-focused.py):**
+> - TRUE ghost-narrowing: 1 page (pg18) — deferred-waste pattern, Figure 44 caption on page with no figure. Same as v3.49 baseline (T159 first observed). NOT a regression.
+> - Hollow carry-over: 18 of 20 pages — narrow text below figure bottom (expected parshape continuation). NOT a defect.
+> - Text overlap: 0 pages
+> - No-wrap: 0 pages
+> - Near-empty: 0 pages
+>
+> **Detection methodology refinement:** Distinguished TRUE ghost-narrowing (narrow text at page top, 0 figs, no overhead) from hollow carry-over (narrow text below figures). Previous scripts (T167/T168) flagged both as "ghost-narrowing." New qa-t169-focused.py correctly separates them. Page 18 ghost is the known deferred-waste pattern — 8.2% of 1000-fig pages also show this.
+

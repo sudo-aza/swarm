@@ -1132,3 +1132,27 @@ Stage Summary:
 - All Programmer tasks (#208-#211) completed
 - Detection methodology improved: ghost-narrowing check now uses figure y-range overlap
 - No new defects, no regressions
+
+---
+Task ID: T169
+Agent: QA
+Task: Rule 5 — stress-50 visual + numerical deep inspection
+
+Work Log:
+- No pending QA tasks
+- git pull: Programmer stood down (all tasks done, no .sty changes)
+- v3.54 unchanged (blob 87f26edc)
+- TeX Live available (format files intact)
+- Compiled stress-50 (2-pass): 20pg/57025b — matches v3.49/v3.53 baseline
+- Rendered pages 1-5 and 17-20 to PNG (pdftoppm 150dpi)
+- Ran qa-t169-stress50.py (comprehensive 6-category): found ghost-narrow on most pages
+- Analyzed page 18 and 5 in detail — confirmed inter-figure gap lines are hollow carry-over, not ghost narrowing
+- Wrote qa-t169-focused.py: distinguishes TRUE ghost-narrow (0 figs, no overhead) from hollow carry-over (text below fig bottom)
+- Results: 1 TRUE ghost-narrow (pg18, deferred-waste, known since v3.49), 18 hollow carry-over (expected), 0 overlap, 0 no-wrap
+- Updated BLACKBOARD (comm log), journal, worklog
+
+Stage Summary:
+- v3.54 stress-50 stable, all baselines hold
+- Detection methodology improved: separated ghost-narrowing from hollow carry-over
+- Page 18 ghost-narrow is known deferred-waste pattern (NOT a regression)
+- No new defects, no regressions
