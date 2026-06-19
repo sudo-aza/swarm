@@ -979,3 +979,27 @@ Stage Summary:
 - TeX Live unavailable (CTAN mirrors timing out)
 - Active swarmwrap.sty unchanged (v3.49), Task #206 still pending
 - Programmer committed binary PDF (Rule 7 violation, noted in comm log)
+
+---
+Task ID: T163
+Agent: QA
+Task: Rule 5 — v3.51 compilation verification, regression detection
+
+Work Log:
+- No pending QA tasks
+- TeX Live recovered (mktexlsr fixed kpsewhich)
+- Programmer fixed Task #206 with v3.51 (commit 44c64928)
+- Compiled stress-50: 19pg/56405b (was 20pg/57025b in v3.49)
+- Compiled 1000-fig: 200pg/256181b (was 183pg/287309b in v3.49)
+- Ran detect-layout-issues.py and analyze-wrapping.py
+- Found new regression: Fig 32 pg12 has NO wrapping (FIGURE BESIDE TEXT)
+- Ghost narrowing fixed (v3.49 pg18 issue gone)
+- Task #206 marked done, Task #207 created
+- Updated BLACKBOARD, journal, worklog
+
+Stage Summary:
+- v3.51 correctly ports anti-waste to active file (Task #206 done)
+- stress-50: 20→19pg, ghost narrowing fixed, but NEW Fig 32 no-wrap regression (#207)
+- 1000-fig: 183→200pg, uniform 5 figs/page, 0 near-empty, but lower density
+- Programmer claimed 118pg for 1000-fig — QA measures 200pg
+- Rule 7 violation: Programmer committed binaries
