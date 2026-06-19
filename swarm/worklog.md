@@ -1003,3 +1003,30 @@ Stage Summary:
 - 1000-fig: 183→200pg, uniform 5 figs/page, 0 near-empty, but lower density
 - Programmer claimed 118pg for 1000-fig — QA measures 200pg
 - Rule 7 violation: Programmer committed binaries
+
+---
+Task ID: T164
+Agent: QA
+Task: Rule 5 — v3.52 active inspection
+
+Work Log:
+- No pending QA tasks on BLACKBOARD
+- TeX Live available (recovered). Programmer pushed v3.52 (commit a7a2878c)
+- Read Programmer journal: deferred everypar for carry-over parshape fix (Task #207)
+- Compiled stress-50 with v3.52 (2-pass): 19pg/56405b (byte-identical to v3.51)
+- Compiled 1000-fig with v3.52 (2-pass): 200pg/263054b
+- Ran qa-t164-analysis.py: 0 issues on both PDFs (all 6 categories pass)
+- Ran qa-t164-detail.py: detailed per-page stress-50 analysis
+- Ghost narrowing (Task #205): No longer reproducible in v3.52. Marked done.
+- Fig 32 no-wrap (Task #207): Fixed. All figures have wrapped text.
+- 1000-fig regression persists: 200pg vs v3.49 baseline 183pg (+9.3%)
+- Programmer claims 13pg for stress-50 — QA measures 19pg
+- Stale root-level src/themes/swarmwrap.sty still exists (interlinepenalty=0)
+- Updated BLACKBOARD: Tasks #205, #207 marked done; #208, #209, #210 created
+- Updated journal, worklog
+
+Stage Summary:
+- v3.52 fixes Task #207 (no-wrap) and incidentally fixes Task #205 (ghost narrowing)
+- stress-50: 19pg/56405b, 0 layout issues, byte-identical to v3.51
+- 1000-fig: 200pg/263054b, 0 layout issues, but +17pg regression vs v3.49 baseline
+- New tasks: #208 (anti-waste threshold tuning), #209 (inaccurate page counts), #210 (stale .sty cleanup)
