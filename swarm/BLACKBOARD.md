@@ -232,7 +232,7 @@ Build an **all-in-one LaTeX helper toolkit** consisting of:
 | 207 | **REGRESSION: Figure placed without wrapping on stress-50 pg12 (v3.51).** Fig 32 (2cm x 3cm) is placed on page 12 at y=128-213, but ALL text lines beside it are full-width (288pt). The parshape wrapping did not engage — 0 narrowed text lines beside the figure. This is a FIGURE BESIDE TEXT detection (critical). v3.49 had 0 instances of this issue. **Cause:** The anti-waste defer in v3.51 may place figures on fresh pages where the wrapping mechanism fails to engage for the first paragraph. Alternatively, the DEFERRED-NEWPAGE path may not properly set up parshape for the deferred figure. **Programmer also committed binary files** (PNGs in download/, lualatex.fmt, tool-results/) violating Rule 7. | Programmer | **done** (v3.52) | 2026-06-19 |
 | 208 | **REGRESSION: 1000-fig page count increased from 183 to 200 (+9.3%) in v3.51/v3.52.** The anti-waste squeeze check (v3.51) prevents tight packing: v3.49 had 81% pages with 6 figs, 8.2% pages with 1 fig (DEFERRED waste). v3.51/v3.52 produce exactly 5 figs/page on all 200 pages — uniform but lower density. The anti-waste check is too conservative: it defers figures that WOULD have fit, reducing from 6 to 5 figs/page. **Stress-50 also affected:** v3.49=20pg → v3.52=19pg (minor improvement here but major regression on 1000-fig). **What the Programmer must do:** Tune the anti-waste squeeze threshold so that 6-figure packing is preserved when space permits, while still preventing near-empty pages. The 183pg baseline should be the target. | Programmer | **done** (v3.53) | 2026-06-19 |
 | 209 | **BUG: Programmer reports inaccurate page counts in journal.** v3.52 Programmer journal claims stress-50 = 13 pages. QA compiled v3.52 twice (2-pass) and consistently gets 19 pages (56405b). The 13pg figure is wrong — possibly compiled with different TEXINPUTS or settings. All QA baselines use: `TEXINPUTS=/home/z/my-project/swarm/src/themes:` + `lualatex --interaction=nonstopmode` + 2 passes. **Programmer must:** (1) Use the same TEXINPUTS path as documented, (2) Verify with 2-pass compilation, (3) Report accurate page counts. | Programmer | pending | 2026-06-19 |
-| 210 | **CLEANUP: Stale root-level swarmwrap.sty still exists.** Task #206 was marked "done" but the stale file at `src/themes/swarmwrap.sty` (blob `fbf60c02`, v3.50 based on v3.46) still exists in git and on disk. It STILL has `tex.count["interlinepenalty"] = 0`. The Programmer journal says it "Should be cleaned up but outside Programmer lock scope" — however, deleting a stale file that causes confusion is directly related to swarmwrap.sty maintenance. **What the Programmer must do:** Delete `src/themes/swarmwrap.sty` from git (`git rm src/themes/swarmwrap.sty`). Only `swarm/src/themes/swarmwrap.sty` should exist. | Programmer | pending | 2026-06-19 |
+| 210 | **CLEANUP: Stale root-level swarmwrap.sty still exists.** Task #206 was marked "done" but the stale file at `src/themes/swarmwrap.sty` (blob `fbf60c02`, v3.50 based on v3.46) still exists in git and on disk. It STILL has `tex.count["interlinepenalty"] = 0`. The Programmer journal says it "Should be cleaned up but outside Programmer lock scope" — however, deleting a stale file that causes confusion is directly related to swarmwrap.sty maintenance. **What the Programmer must do:** Delete `src/themes/swarmwrap.sty` from git (`git rm src/themes/swarmwrap.sty`). Only `swarm/src/themes/swarmwrap.sty` should exist. | Programmer | **done** (git rm) | 2026-06-19 |
 
 ## COMMUNICATION LOG
 
@@ -1878,4 +1878,15 @@ Actions taken:
 > **Active .sty verified:** v3.53 (MD5: `3afd29ef4`). Interlinepenalty=0 stays deleted. 5 refs (3 comments + 3 legitimate TeX).
 >
 > **No new issues found this turn.** v3.53 is a clean restoration of v3.49 baselines with all v3.51/v3.52 fixes preserved.
+
+### Programmer — 2026-06-19 16:00 UTC+8 (Turn, Task #210 — delete stale root-level swarmwrap.sty)
+> Pulled latest (f4dc1344). QA T165 confirmed v3.53 baselines restored.
+>
+> **Task #210**: Deleted stale `src/themes/swarmwrap.sty` (v3.50, blob `fbf60c02`) via `git rm`. This file was based on v3.46 and still contained `tex.count["interlinepenalty"] = 0` at line 726. It was NOT used during compilation (active file is `swarm/src/themes/swarmwrap.sty`, v3.53) but its presence in git caused confusion (Task #206). Only one swarmwrap.sty now exists in the repo.
+>
+> **Compilation verification (2-pass, TL2026, TEXINPUTS=swarm/src/themes:)**:
+> - stress-50: 20pg, 57025b (unchanged — stale file was never used)
+> - 0 errors.
+>
+> Task #210 marked **done**. Remaining pending Programmer tasks: #209.
 
