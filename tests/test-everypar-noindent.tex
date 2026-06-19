@@ -1,0 +1,30 @@
+\documentclass[11pt,a4paper]{article}
+
+\newcount\testremaining
+
+\begin{document}
+
+\section{Test: everypar without noindent}
+
+\testremaining=5
+\everypar{%
+  \wlog{HOOK: remaining=\the\testremaining}%
+  \ifnum\testremaining>0
+    \parshape 6 0pt 200pt 0pt 200pt 0pt 200pt 0pt 200pt 0pt 200pt 0pt 345.0pt\relax
+  \else
+    \everypar{}%
+  \fi
+}%
+First paragraph. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut purus elit, vestibulum ut, placerat ac, adipiscing vitae, felis. Curabitur dictum gravida mauris. Nam arcu.
+
+Second paragraph. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Mauris ut leo. Cras viverra metus.
+
+Third paragraph. Sed diam turpis, molestie vitae, placerat a, pede.
+
+Fourth paragraph. Donec nonummy pellentesque ante. Phasellus adipiscing semper elit.
+
+Fifth paragraph. Proin fermentum massa ac nisl. Aliquam erat volutpat.
+
+\everypar{}%
+
+\end{document}

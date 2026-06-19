@@ -1,0 +1,12 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{swarmwrap}
+\pagestyle{empty}
+\begin{document}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}\centering\rule{\linewidth}{2cm}\end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+Test.
+\directlua{texio.write_nl("tw@sp = " .. "\swarmwrap@tw@sp")}}
+\directlua{texio.write_nl("tonumber = " .. tostring(string.match("\swarmwrap@tw@sp", "([%d%.]+)"))}
+\end{document}

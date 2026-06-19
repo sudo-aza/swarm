@@ -13,7 +13,7 @@ from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 # ========== 接口配置（修改此处即可切换环境）==========
-BASE_URL = "https://publicapi.chatglm.cn/chatglm_public/skill"
+BASE_URL = "https://publicapi.chatglm.cn/chatglm_public/skill-test"
 API_PATH = "/zp/volunteer/intelligenceVolunteer"
 # =====================================================
 

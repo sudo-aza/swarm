@@ -1,0 +1,28 @@
+{
+  "choices": [
+    {
+      "finish_reason": "stop",
+      "index": 0,
+      "message": {
+        "content": "1. Yes  \n2. Yes  \n3. Bottom half (text is narrowed to the left of the figure, occupying the bottom portion of the page)  \n4. FALSE POSITIVE",
+        "role": "assistant"
+      }
+    }
+  ],
+  "created": 1779394387,
+  "id": "202605220412594290a62984e74ebb",
+  "model": "glm-4.6v",
+  "object": "chat.completion",
+  "request_id": "202605220412594290a62984e74ebb",
+  "usage": {
+    "completion_tokens": 40,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 2709,
+    "prompt_tokens_details": {
+      "cached_tokens": 4
+    },
+    "total_tokens": 2749
+  }
+}
