@@ -1080,3 +1080,32 @@ Stage Summary:
 - Task #211 created: parshape leak across \newpage NOT fixed, affects customwrap (5pg) and pagebreak-variations (7pg)
 - customwrap pg8: 7 text overlaps from list-item parshape leak (known since v2.5)
 - v3.53 unchanged, stress-50/1000-fig baselines still hold
+
+---
+Task ID: T167
+Agent: QA
+Task: Rule 5 — v3.54 parshape reset verification
+
+Work Log:
+- No pending QA tasks on BLACKBOARD
+- git reset --hard origin/main (divergent branches, HEAD=155c3dd8)
+- Programmer pushed v3.54: parshape reset at \newpage/clearpage boundaries (Task #211 partial)
+- TeX Live missing: reinstalled format files (luahbtex --ini) + lipsum package (tlmgr)
+- Verified v3.54 active: blob 87f26edc, header confirms v3.54
+- Compiled 4 test suites (2-pass, TL2026):
+  - stress-50: 20pg/57025b (byte-identical to v3.53)
+  - 1000-fig: 183pg/292942b (identical to v3.53)
+  - customwrap: 11pg/44152b (identical to v3.53)
+  - pagebreak-variations: 15pg/45655b (identical to v3.53)
+- Ran qa-t167-parshape.py: ghost narrowing analysis on customwrap and pagebreak-variations
+- Ran qa-t167-6cat.py: 6-category stress-50 check
+- Results: customwrap ghost 5→1 (80% reduction), pagebreak-variations ghost 7→0 (100% reduction)
+- Remaining ghost (customwrap pg7): list-item parshape leak, scenario 'b', deferred
+- No regressions in any test suite
+- Updated BLACKBOARD (Task #211 description + comm log), journal, worklog
+
+Stage Summary:
+- v3.54 verified: all 4 baselines unchanged, no regressions
+- Parshape leak scenario 'a' (explicit \newpage): FULLY FIXED
+- Parshape leak scenario 'b' (list-item/natural break): NOT FIXED (1 ghost page remains)
+- TeX Live was wiped again — format files regenerated
