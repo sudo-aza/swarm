@@ -1,8 +1,13 @@
 ---
 name: gaokao-collect-student-info
 description: >-
+<<<<<<< HEAD
   高考志愿填报信息采集：以考生原生表述为准，收集省份、分数、选科等 API 必填项及兴趣、
   家庭、就业方向等辅助信息，尽量不做改写与过度归纳，输出结构化 student.json。
+=======
+  高考志愿填报信息采集：收集考生省份、分数、选科等 API 必填项，以及兴趣、就业方向、
+  意向城市/院校/专业类等倾向信息（供下游 API 选填参数使用），输出结构化 student.json。
+>>>>>>> 060dea563fde9bdb7958e4b32f7b04ea8aa848cd
   适用于高考志愿咨询开场、考生信息登记、志愿填报前的信息收集。
 ---
 
@@ -10,6 +15,7 @@ description: >-
 
 本 Skill 是志愿推荐流水线的**第一步**，仅负责与用户对话并产出 `student.json`，不调用 API、不做推荐。
 
+<<<<<<< HEAD
 ## 核心原则：还原原生描述
 
 **只负责收集，不负责加工。** 下游专业推荐、院校推荐依赖考生**自己怎么说**，过度改写会造成信息 gap。
@@ -24,6 +30,8 @@ description: >-
 
 向用户复述确认时，也应**引用其原话**核对，而非用你改写后的版本代替。
 
+=======
+>>>>>>> 060dea563fde9bdb7958e4b32f7b04ea8aa848cd
 ## 上下游
 
 - **上游**：无
@@ -43,6 +51,7 @@ description: >-
 | `gradeType` | 仅北京/上海/天津：本科/专科 | 本科 |
 | `rank` | 位次，无则 `null` | 5000 |
 
+<<<<<<< HEAD
 ### 辅助画像（原话优先，供下游分析）
 
 | 字段 | 说明 | 填写要求 |
@@ -59,13 +68,36 @@ description: >-
 | `notes` | 其他补充 | 不适合归入上述字段的**原话**、禁忌、特殊诉求 |
 
 倾向字段的 API 映射由下游 [gaokao-fetch-volunteers](../gaokao-fetch-volunteers/SKILL.md) 处理；本阶段**不必**为凑 API 参数而改写或补全 `preferred_*`。
+=======
+### 辅助画像（Agent 分析与下游 API 倾向）
+
+| 字段 | 说明 | 下游用途 |
+|------|------|----------|
+| `interests` | 兴趣爱好 | 推断 `preferred_major_classes` |
+| `family_situation` | 家庭情况 | Agent 分析 |
+| `career_direction` | 未来就业方向 | 推断 `preferred_major_classes` |
+| `subject_scores` | 各科分数 | Agent 分析 |
+| `preferred_cities` | 意向城市数组 | 推导 API `provinces` |
+| `preferred_provinces` | 意向省份数组（可由城市推导） | API `provinces` |
+| `preferred_universities` | 心仪院校数组 | API `universitys` |
+| `preferred_tags` | 院校层次/属性，如 985、211 | API `tags` |
+| `preferred_major_classes` | 专业类意向，如 计算机类 | API `majorClass` |
+| `notes` | 排除性偏好等补充 | 后续推荐 Skill |
+
+**倾向字段尽量在采集阶段结构化写入**，避免遗漏。映射规则见 [gaokao-fetch-volunteers/preference_mapping.md](../gaokao-fetch-volunteers/preference_mapping.md)。
+>>>>>>> 060dea563fde9bdb7958e4b32f7b04ea8aa848cd
 
 ## 工作流程
 
 1. 用自然语言逐项询问，缺什么问什么；可分批提问。
 2. 根据省份确认 `classify` / `subjects` / `gradeType` 是否必填，规则见 [reference.md](reference.md)。
+<<<<<<< HEAD
 3. 将考生回答**按原意录入**对应字段；仅对 API 必填项做格式归一。
 4. 信息齐全后保存 `output/student.json`，**用考生原话复述**关键内容并请其确认。
+=======
+3. 从对话中提取院校/城市/专业/层次偏好，写入 `preferred_*` 字段。
+4. 信息齐全后保存 `output/student.json`，向用户复述并请确认。
+>>>>>>> 060dea563fde9bdb7958e4b32f7b04ea8aa848cd
 
 ## 输出格式
 
@@ -80,9 +112,14 @@ description: >-
   "batch": "本科批",
   "rank": null,
   "gradeType": null,
+<<<<<<< HEAD
   "interests": "考生原话，勿改写",
   "career_direction": "考生原话，勿改写",
   "family_situation": "考生原话，勿改写",
+=======
+  "interests": "编程、人工智能",
+  "career_direction": "互联网/硬科技",
+>>>>>>> 060dea563fde9bdb7958e4b32f7b04ea8aa848cd
   "preferred_cities": ["北京", "上海", "深圳"],
   "preferred_provinces": ["北京", "上海", "广东"],
   "preferred_universities": ["北京航空航天大学"],
@@ -95,8 +132,12 @@ description: >-
 ## 注意事项
 
 - `batch` 下游会自动修正，此处可填用户口中的「本科批」。
+<<<<<<< HEAD
 - 排斥性偏好（如不要偏远）用考生原话写入 `notes`，**不要**写入 `preferred_provinces`，也不要改写成书面语。
 - 复述确认时展示的是**考生自己的表述**，不是 Agent 润色后的版本。
+=======
+- 排斥性偏好（如不要偏远）只写 `notes`，**不要**写入 `preferred_provinces`。
+>>>>>>> 060dea563fde9bdb7958e4b32f7b04ea8aa848cd
 - 输出路径使用绝对路径交付用户。
 
 ## 附加资源

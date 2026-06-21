@@ -1,0 +1,137 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{lipsum}
+\usepackage{caption}
+\usepackage{swarmwrap}
+
+\title{Consecutive Figures Overlap Test}
+\author{Programmer}
+\date{2026-05-20}
+
+\begin{document}
+\maketitle
+
+% Test A: Two short figures close together
+% Figure A1 is small (2cm x 2cm) with 1 lipsum paragraph
+\section*{Test A: Short figure then another short figure}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{2cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Figure A1 (2cm x 2cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[1]
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Figure A2 (3cm x 3cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[2]
+\lipsum[3]
+
+% Test B: Tall figure followed by short figure
+\section*{Test B: Tall figure then short figure}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{8cm}
+    \captionof{figure}{Figure B1 (3cm x 8cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[4]
+\lipsum[5]
+\begin{swarmwrap}%
+  \begin{minipage}[t]{2cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Figure B2 (2cm x 2cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[6]
+
+% Test C: Short figure followed by tall figure on same page
+\section*{Test C: Short figure then tall figure}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{2cm}
+    \centering
+    \rule{\linewidth}{2cm}
+    \captionof{figure}{Figure C1 (2cm x 2cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[7]
+\begin{swarmwrap}%
+  \begin{minipage}[t]{4cm}
+    \centering
+    \rule{\linewidth}{10cm}
+    \captionof{figure}{Figure C2 (4cm x 10cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[8]
+\lipsum[9]
+
+% Test D: Figure with text that runs off page, next figure on next page
+\section*{Test D: Figure spanning page boundary}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{10cm}
+    \captionof{figure}{Figure D1 (3cm x 10cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[10]
+\lipsum[11]
+\lipsum[12]
+\lipsum[13]
+\begin{swarmwrap}%
+  \begin{minipage}[t]{2cm}
+    \centering
+    \rule{\linewidth}{3cm}
+    \captionof{figure}{Figure D2 (2cm x 3cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[14]
+\lipsum[15]
+
+% Test E: Multiple consecutive figures with very short text
+\section*{Test E: Multiple figures with minimal text}
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Figure E1 (3cm x 5cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[16]
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Figure E2 (3cm x 5cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[17]
+\begin{swarmwrap}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \rule{\linewidth}{5cm}
+    \captionof{figure}{Figure E3 (3cm x 5cm).}
+  \end{minipage}%
+\end{swarmwrap}%
+\swarmwrapnext
+\lipsum[18]
+
+\end{document}

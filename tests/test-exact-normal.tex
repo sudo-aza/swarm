@@ -1,0 +1,79 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{lipsum}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\newsavebox\testbox
+\newdimen\tfw \newdimen\tfh \newdimen\ttw \newcount\tnl \newcount\tremaining
+
+\begin{document}
+
+\section{Exact reproduction of swarmwrap NORMAL path}
+
+% Simulate \begin{swarmwrap}...\end{swarmwrap}
+\begin{lrbox}{\testbox}%
+  \begin{minipage}[t]{3cm}
+    \centering
+    \textcolor{red!30}{\rule{\linewidth}{3cm}}
+    test caption
+  \end{minipage}%
+\end{lrbox}%
+\global\setbox\testbox=\box\testbox
+\tfw=\wd\testbox
+\tfh=\ht\testbox
+\advance\tfh by \dp\testbox
+\advance\tfh by 4pt
+
+% Simulate \swarmwrapnext (NORMAL path)
+\everypar{}% Clear any previous hook
+\ttw=\linewidth
+\advance\ttw by -\tfw
+\advance\ttw by -14pt
+\tnl=0
+\dimen0=\tfh
+\loop
+  \advance\tnl by 1
+  \advance\dimen0 by -\baselineskip
+\ifdim\dimen0>0pt \repeat
+
+\wlog{tw=\the\ttw, fh=\the\tfh, nl=\the\tnl}%
+
+% Build parshape string (same as swarmwrap)
+\newcount\tloop
+\xdef\testpshape{\the\numexpr\tnl+1\relax\space}%
+\tloop=\tnl
+\loop
+  \xdef\testpshape{\testpshape 0pt \the\ttw\space}%
+  \advance\tloop by -1
+\ifnum\tloop>0 \repeat
+\xdef\testpshape{\testpshape 0pt \the\linewidth\space}%
+
+\wlog{parshape entries: \testpshape}%
+
+% Now the ACTUAL NORMAL path sequence:
+\emergencystretch=\fontdimen6\font\relax
+\noindent
+\parshape \testpshape\relax
+
+% Check remaining space
+\dimen0=\pagegoal
+\advance\dimen0 by -\pagetotal
+\wlog{remaining space: \the\dimen0, fh: \the\tfh}%
+
+% NORMAL: place figure inline
+\smash{\rlap{\hskip\ttw\hskip14pt\raise\dimexpr\ht\strutbox-\ht\testbox\relax\hbox{\copy\testbox}}}%
+\wlog{FIGURE PLACED}%
+
+\tremaining=\tnl
+\everypar{%
+  \wlog{EVERYPAR: remaining=\the\tremaining}%
+}%
+\wlog{EVERYPAR SET: remaining=\the\tremaining}%
+
+% Text: same as stress test
+\lipsum[1]\lipsum[2]
+
+\wlog{AFTER LIPSUM}%
+\everypar{}%
+
+\end{document}

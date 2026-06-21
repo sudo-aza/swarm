@@ -1,0 +1,34 @@
+\documentclass[11pt,a4paper]{article}
+
+\newcount\testremaining
+
+\begin{document}
+
+\section{Test: noindent + everypar interaction}
+
+\noindent
+\wlog{AFTER noindent, before setting everypar}%
+\testremaining=5
+\everypar{%
+  \wlog{HOOK: remaining=\the\testremaining}%
+  \ifnum\testremaining>0
+    \parshape 6 0pt 200pt 0pt 200pt 0pt 200pt 0pt 200pt 0pt 200pt 0pt 345.0pt\relax
+  \else
+    \everypar{}%
+  \fi
+}%
+\wlog{AFTER setting everypar, before text}%
+
+Para one. Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Ut purus elit, vestibulum ut, placerat ac, adipiscing vitae, felis. Curabitur dictum.
+
+Para two. Pellentesque habitant morbi tristique senectus et netus et malesuada.
+
+Para three. Sed diam turpis, molestie vitae, placerat a, pede.
+
+Para four. Cras viverra metus rhoncus sem. Nulla et diam.
+
+Para five. Aliquam erat volutpat.
+
+\everypar{}%
+
+\end{document}

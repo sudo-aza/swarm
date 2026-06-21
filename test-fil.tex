@@ -1,0 +1,68 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage{lipsum}
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+
+% Load the actual widening function from swarmwrap.sty but with debug
+\directlua{
+  -- Copy the ghost_widen logic from swarmwrap.sty (post_linebreak_filter)
+  -- But test it with a manual parshape to verify fil insertion works
+  local orig_plb = luatexbase.remove_from_callback("post_linebreak_filter", "swarmwrap: penalty at parshape boundary")
+  local widen_count = 0
+  
+  function test_widen(head, groupcode)
+    local fullw = 360 * 65536  -- full text width in scaled pts
+    local narrow_tw = 220 * 65536  -- narrow text width
+    local narrow_max = narrow_tw + 15 * 65536
+    local current = head
+    while current do
+      if current.id == 0 then
+        local lw = current.width / 65536.0
+        if lw <= narrow_max and lw > 0 then
+          widen_count = widen_count + 1
+          local orig_w = current.width
+          current.width = fullw
+          local inner_head = current.head
+          if inner_head then
+            local inner_last = node.tail(inner_head)
+            local fil = node.new(node.id("glue"))
+            fil.stretch = 65536
+            fil.stretch_order = 2
+            if inner_last then
+              node.insert_after(inner_head, inner_last, fil)
+            end
+          end
+          texio.write_nl("WIDEN: " .. widen_count .. " lines. Line was " .. tostring(orig_w / 65536.0) .. "pt, now " .. tostring(current.width / 65536.0) .. "pt")
+        end
+      end
+      current = current.next
+    end
+    return head
+  end
+  
+  luatexbase.add_to_callback("post_linebreak_filter",
+    function(head, groupcode)
+      return test_widen(head, groupcode)
+    end, "test_widen")
+}
+
+\begin{document}
+\vspace*{3cm}
+\noindent\textbf{Start here.}\par
+% Create a parshape that spans 15 narrow lines then full width
+\parshape 15 0pt 220pt 0pt 220pt 0pt 220pt 0pt 220pt 0pt 220pt 0pt 220pt 0pt 220pt 0pt 220pt 0pt 220pt 0pt 220pt 0pt 360pt
+This is line 1 of narrow text.
+This is line 2 of narrow text.
+This is line 3 of narrow text.
+This is line 4 of narrow text.
+This is line 5 of narrow text.
+This is line 6 of narrow text, might break.
+This is line 7 of narrow text.
+This is line 8 of narrow text, continuation lines.
+This is line 9 of narrow text.
+This is line 10 of narrow text, last narrow.
+This is line 11, full width.
+\parshape 1 0pt 360pt
+\lipsum[1]%
+\end{document}
